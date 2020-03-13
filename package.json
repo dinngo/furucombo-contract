@@ -2,9 +2,14 @@
   "name": "legocontract",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "truffle-config.js",
+  "directories": {
+    "test": "test"
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "scripts/build.sh",
+    "compile": "truffle compile",
+    "test": "npm run compile && scripts/test.sh --network development"
   },
   "repository": {
     "type": "git",
@@ -13,6 +18,13 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@openzeppelin/test-helpers": "^0.5.5",
+    "chai": "^4.2.0",
+    "chai-as-promised": "^7.1.1",
+    "chai-bignumber": "^3.0.0",
+    "ethereumjs-abi": "^0.6.8",
+    "ethereumjs-util": "^6.2.0",
+    "ganache-cli": "^6.9.1",
     "truffle": "^5.1.16"
   }
 }
