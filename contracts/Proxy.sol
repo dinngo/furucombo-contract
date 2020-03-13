@@ -54,5 +54,10 @@ contract Proxy {
                 IERC20(token).transfer(msg.sender, amount);
             tokens.pop();
         }
+
+        // Balance should also be returned to user
+        uint256 amount = address(this).balance;
+        if (amount > 0)
+            msg.sender.transfer(amount);
     }
 }
