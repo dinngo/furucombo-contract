@@ -1,0 +1,32 @@
+variables:
+  DEPLOY_OWNER_PRIVKEY: 0xBF3862CD1EE53F542C483E4F55BEE2D0B13014A7D6AD1B0CA457240C2888C1FB
+
+image: 376433862203.dkr.ecr.us-east-1.amazonaws.com/dinngo-blockchain-base:latest
+
+before_script:
+ - apk add --no-cache nodejs nodejs-npm git python g++ make
+ - npm install
+
+stages:
+ - build
+ - test
+ - deploy
+
+build:
+ stage: build
+ tags: [docker]
+ script:
+   - npm run build
+
+test:
+ stage: test
+ tags: [docker]
+ script:
+   - npm run test
+
+deploy:
+ stage: deploy
+ tags: [docker]
+ script:
+   - ./node_modules/.bin/ganache-cli -p 8242 -a $DEPLOY_OWNER_PRIVKEY &
+     #   - truffle migrate --network integration
