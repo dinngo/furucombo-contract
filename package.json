@@ -26,5 +26,8 @@
     "ethereumjs-util": "^6.2.0",
     "ganache-cli": "^6.9.1",
     "truffle": "^5.1.16"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^2.5.0"
   }
 }

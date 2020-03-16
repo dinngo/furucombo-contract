@@ -11,6 +11,8 @@ contract Proxy {
         _;
     }
 
+    function () payable external {}
+
     function batchExec(address[] memory tos, bytes[] memory datas)
         isTokenEmpty
         public
