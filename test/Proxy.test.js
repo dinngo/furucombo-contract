@@ -90,10 +90,40 @@ contract('Proxy', function ([_, deployer, user1]) {
         it('single', async function () {
             const index = 0;
             const to = this.fooHandler.address;
-            const data = abi.simpleEncode('bar(uint256):(uint256)', index);
-            await this.proxy.execMock(to, data, { from: user1, value: ether('1') });
-            expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0.5'));
-            expect(await this.foo0.balanceOf.call(this.proxy.address)).to.be.bignumber.eq(ether('0.5'));
+            const data = abi.simpleEncode('bar(uint256,uint256):(uint256)', ether('1'), index);
+            await this.proxy.execMock(to, data, { value: ether('1') });
+            expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
+            expect(await this.foo0.balanceOf.call(this.proxy.address)).to.be.bignumber.eq(ether('0'));
+        });
+
+        it('multiple', async function () {
+            const index = [0, 1, 2];
+            const value = [ether('0.1'), ether('0.2'), ether('0.5')];
+            const to = [
+                this.fooHandler.address,
+                this.fooHandler.address,
+                this.fooHandler.address,
+            ];
+            const data = [
+                abi.simpleEncode('bar(uint256,uint256):(uint256)', value[0], index[0]),
+                abi.simpleEncode('bar(uint256,uint256):(uint256)', value[1], index[1]),
+                abi.simpleEncode('bar(uint256,uint256):(uint256)', value[2], index[2]),
+            ];
+            const receipt = await this.proxy.batchExec(to, data, { from: user1, value: ether('1') });
+            expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
+            expect(await balanceUser1.delta()).to.be.bignumber.eq(
+                ether('0').sub(
+                    value[0].add(value[1]).add(value[2]).div(new BN('2'))
+                ).sub(
+                    new BN(receipt.receipt.gasUsed)
+                )
+            );
+            expect(await this.foo0.balanceOf.call(this.proxy.address)).to.be.bignumber.eq(ether('0'));
+            expect(await this.foo0.balanceOf.call(user1)).to.be.bignumber.eq(value[0].div(new BN('2')));
+            expect(await this.foo1.balanceOf.call(this.proxy.address)).to.be.bignumber.eq(ether('0'));
+            expect(await this.foo1.balanceOf.call(user1)).to.be.bignumber.eq(value[1].div(new BN('2')));
+            expect(await this.foo2.balanceOf.call(this.proxy.address)).to.be.bignumber.eq(ether('0'));
+            expect(await this.foo2.balanceOf.call(user1)).to.be.bignumber.eq(value[2].div(new BN('2')));
         });
     });
 });

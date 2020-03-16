@@ -5,6 +5,8 @@ import "../Proxy.sol";
 
 contract ProxyMock is Proxy {
     function execMock(address to, bytes memory data) public payable returns (bytes memory result) {
-        return _exec(to, data);
+        result = _exec(to, data);
+        _postProcess();
+        return result;
     }
 }
