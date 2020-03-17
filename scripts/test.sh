@@ -28,7 +28,9 @@ start_ganache() {
     if [ "$SOLIDITY_COVERAGE" = true ]; then
         node_modules/.bin/testrpc-sc --gasLimit 0xfffffffffff --port "$ganache_port" -m "$TEST_MNEMONIC_PHRASE" > /dev/null &
     else
-        node_modules/.bin/ganache-cli --gasLimit 0xfffffffffff -m "$TEST_MNEMONIC_PHRASE" > /dev/null &
+        # node_modules/.bin/ganache-cli --gasLimit 0xfffffffffff -m "$TEST_MNEMONIC_PHRASE" > /dev/null &
+        node_modules/.bin/ganache-cli --gasLimit 0xfffffffffff -f https://mainnet.infura.io/v3/2075ef13da494f34bc4807fc60275b5e -m "$TEST_MNEMONIC_PHRASE" > /dev/null &
+
     fi
 
     ganache_pid=$!
