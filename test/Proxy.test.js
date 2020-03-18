@@ -12,7 +12,23 @@ const Foo2Factory = artifacts.require('Foo2Factory');
 const Foo2Handler = artifacts.require('Foo2Handler');
 const Proxy = artifacts.require('ProxyMock');
 
+async function resetAccount(account) {
+    const ETHProvider = '0x742d35Cc6634C0532925a3b844Bc454e4438f44e';
+    const d = ether('100').sub(new BN(await web3.eth.getBalance(account)));
+    if (d.isZero())
+        return;
+    else if (d.isNeg())
+        await web3.eth.sendTransaction({ from: account, to: ETHProvider, value: d.neg() });
+    else
+        await web3.eth.sendTransaction({ from: ETHProvider, to: account, value: d });
+}
+
 contract('Proxy', function ([_, deployer, user1]) {
+    beforeEach(async function () {
+        await resetAccount(_);
+        await resetAccount(user1);
+    });
+
     let balanceUser1;
     let balanceProxy;
 
