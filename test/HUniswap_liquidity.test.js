@@ -73,7 +73,6 @@ contract('Liquidity', function ([_, deployer, user1, user2]) {
 
             expect(await balanceUser1.delta()).to.be.bignumber.lt(ether('0'));
             //expect(await this.daiswap.balanceOf.call(user1)).to.be.bignumber.eq(result);
-            console.log(utils.fromWei(await this.daiswap.balanceOf.call(user1)));
             expect(await this.daiswap.balanceOf.call(user1)).to.be.bignumber.gt(ether('0'));
         });
     });

@@ -2,8 +2,6 @@ const { balance, BN, constants, ether, expectEvent, expectRevert, time } = requi
 const { tracker } = balance;
 const { latest } = time;
 const abi = require('ethereumjs-abi');
-const web3 = require('web3');
-const eth = require('web3-eth');
 const utils = web3.utils;
 
 const { expect } = require('chai');
@@ -46,19 +44,10 @@ contract('Swap', function ([_, deployer, user1, user2]) {
         let balanceUser2;
         let balanceProxy;
 
-        before(async function () {
+        beforeEach(async function () {
             balanceUser1 = await tracker(user1);
             balanceUser2 = await tracker(user2);
             balanceProxy = await tracker(this.proxy.address);
-            expect(await balanceUser1.get() == ether('100'));
-            expect(await balanceUser2.get() == ether('100'));
-            expect(await balanceProxy.get() == ether('0'));
-        });
-
-        beforeEach(async function () {
-            console.log('user1 balance: ' + utils.fromWei(await balanceUser1.get()));
-            console.log('user2 balance: ' + utils.fromWei(await balanceUser2.get()));
-            console.log('proxy balance: ' + utils.fromWei(await balanceProxy.get()));
         });
 
         it('normal', async function () {
