@@ -9,7 +9,7 @@
   "scripts": {
     "build": "scripts/build.sh",
     "compile": "truffle compile",
-    "test": "npm run compile && scripts/test.sh --network development"
+    "test": "scripts/test.sh --network development"
   },
   "repository": {
     "type": "git",

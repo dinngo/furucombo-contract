@@ -11,12 +11,7 @@ cleanup() {
     fi
 }
 
-
-if [ "$SOLIDITY_COVERAGE" = true ]; then
-    ganache_port=8555
-else
-    ganache_port=8545
-fi
+ganache_port=8545
 
 ganache_running() {
     nc -z localhost "$ganache_port"
@@ -25,13 +20,9 @@ ganache_running() {
 start_ganache() {
     TEST_MNEMONIC_PHRASE="candy maple cake sugar pudding cream honey rich smooth crumble sweet treat"
 
-    if [ "$SOLIDITY_COVERAGE" = true ]; then
-        node_modules/.bin/testrpc-sc --gasLimit 0xfffffffffff --port "$ganache_port" -m "$TEST_MNEMONIC_PHRASE" > /dev/null &
-    else
-        # node_modules/.bin/ganache-cli --gasLimit 0xfffffffffff -m "$TEST_MNEMONIC_PHRASE" > /dev/null &
-        node_modules/.bin/ganache-cli --gasLimit 0xfffffffffff -f https://mainnet.infura.io/v3/2075ef13da494f34bc4807fc60275b5e -m "$TEST_MNEMONIC_PHRASE" > /dev/null &
+    # node_modules/.bin/ganache-cli --gasLimit 0xfffffffffff -m "$TEST_MNEMONIC_PHRASE" > /dev/null &
+    node_modules/.bin/ganache-cli --gasLimit 0xfffffffffff -f https://mainnet.infura.io/v3/2075ef13da494f34bc4807fc60275b5e -m "$TEST_MNEMONIC_PHRASE" > /dev/null &
 
-    fi
 
     ganache_pid=$!
 }
@@ -45,9 +36,4 @@ fi
 
 truffle version
 
-if [ "$SOLIDITY_COVERAGE" = true ]; then
-    node_modules/.bin/solidity-coverage
-else
-    node_modules/.bin/truffle test "$@"
-fi
-
+node_modules/.bin/truffle test "$@"
