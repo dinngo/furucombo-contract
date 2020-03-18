@@ -13,7 +13,24 @@ const Proxy = artifacts.require('Proxy');
 const IToken = artifacts.require('IERC20');
 const IUniswapExchange = artifacts.require('IUniswapExchange');
 
+async function resetAccount(account) {
+    const ETHProvider = '0x742d35Cc6634C0532925a3b844Bc454e4438f44e';
+    const d = ether('100').sub(new BN(await web3.eth.getBalance(account)));
+    if (d.isZero())
+        return;
+    else if (d.isNeg())
+        await web3.eth.sendTransaction({ from: account, to: ETHProvider, value: d.neg() });
+    else
+        await web3.eth.sendTransaction({ from: ETHProvider, to: account, value: d });
+}
+
 contract('Swap', function ([_, deployer, user1, user2]) {
+    beforeEach(async function () {
+        await resetAccount(_);
+        await resetAccount(user1);
+        await resetAccount(user2);
+    });
+
     const DAI = '0x6b175474e89094c44da98b954eedeac495271d0f';
     const DAISwap = '0x2a1530C4C41db0B0b2bB646CB5Eb1A67b7158667';
 
