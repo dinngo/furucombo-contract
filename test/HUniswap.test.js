@@ -6,21 +6,13 @@ const utils = web3.utils;
 
 const { expect } = require('chai');
 
+const { DAI_TOKEN, DAI_UNISWAP } = require('./utils/constants');
+const { resetAccount } = require('./utils/utils');
+
 const HUniswap = artifacts.require('HUniswap');
 const Proxy = artifacts.require('Proxy');
 const IToken = artifacts.require('IERC20');
 const IUniswapExchange = artifacts.require('IUniswapExchange');
-
-async function resetAccount(account) {
-    const ETHProvider = '0x742d35Cc6634C0532925a3b844Bc454e4438f44e';
-    const d = ether('100').sub(new BN(await web3.eth.getBalance(account)));
-    if (d.isZero())
-        return;
-    else if (d.isNeg())
-        await web3.eth.sendTransaction({ from: account, to: ETHProvider, value: d.neg() });
-    else
-        await web3.eth.sendTransaction({ from: ETHProvider, to: account, value: d });
-}
 
 contract('Swap', function ([_, deployer, user1, user2]) {
     beforeEach(async function () {
@@ -29,14 +21,11 @@ contract('Swap', function ([_, deployer, user1, user2]) {
         await resetAccount(user2);
     });
 
-    const DAI = '0x6b175474e89094c44da98b954eedeac495271d0f';
-    const DAISwap = '0x2a1530C4C41db0B0b2bB646CB5Eb1A67b7158667';
-
     before(async function () {
         this.proxy = await Proxy.new({ from: deployer });
         this.huniswap = await HUniswap.new({ from: deployer });
-        this.dai = await IToken.at(DAI);
-        this.daiswap = await IUniswapExchange.at(DAISwap);
+        this.dai = await IToken.at(DAI_TOKEN);
+        this.daiswap = await IUniswapExchange.at(DAI_UNISWAP);
     });
 
     describe('Exact input', function () {
@@ -54,7 +43,7 @@ contract('Swap', function ([_, deployer, user1, user2]) {
             const value = [ether('1')];
             const to = [this.huniswap.address];
             const data = [
-                abi.simpleEncode('ethToTokenSwapInput(uint256,address,uint256):(uint256)', value[0], DAI, new BN('1'))
+                abi.simpleEncode('ethToTokenSwapInput(uint256,address,uint256):(uint256)', value[0], DAI_TOKEN, new BN('1'))
             ];
             const deadline = (await latest()).add(new BN('100'));
             const uniswapAmount = await this.daiswap.ethToTokenSwapInput.call(
@@ -88,7 +77,7 @@ contract('Swap', function ([_, deployer, user1, user2]) {
                 abi.simpleEncode(
                     'ethToTokenSwapInput(uint256,address,uint256):(uint256)',
                     value[0],
-                    DAI,
+                    DAI_TOKEN,
                     uniswapAmount.add(ether('0.1'))
                 )
             ];
