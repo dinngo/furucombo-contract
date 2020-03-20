@@ -10,6 +10,7 @@ const { CETHER } = require('./utils/constants');
 const { resetAccount } = require('./utils/utils');
 
 const HCEther = artifacts.require('HCEther');
+const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('Proxy');
 const IToken = artifacts.require('IERC20');
 const ICEther = artifacts.require('ICEther');
@@ -21,8 +22,10 @@ contract('CEther', function ([_, deployer, user1]) {
     });
 
     before(async function () {
-        this.proxy = await Proxy.new({ from: deployer });
-        this.hcether = await HCEther.new({ from: deployer });
+        this.registry = await Registry.new();
+        this.proxy = await Proxy.new(this.registry.address);
+        this.hcether = await HCEther.new();
+        await this.registry.register(this.hcether.address, utils.asciiToHex("CEther"));
         this.cether = await ICEther.at(CETHER);
     });
 

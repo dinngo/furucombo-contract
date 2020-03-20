@@ -1,6 +1,7 @@
 const { balance, BN, constants, ether, expectEvent, expectRevert } = require('@openzeppelin/test-helpers');
 const { tracker } = balance;
 const abi = require('ethereumjs-abi');
+const utils = web3.utils;
 
 const { expect } = require('chai');
 
@@ -12,6 +13,7 @@ const FooHandler = artifacts.require('FooHandler');
 const Foo2 = artifacts.require('Foo2');
 const Foo2Factory = artifacts.require('Foo2Factory');
 const Foo2Handler = artifacts.require('Foo2Handler');
+const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('ProxyMock');
 
 contract('Proxy', function ([_, deployer, user1]) {
@@ -24,7 +26,8 @@ contract('Proxy', function ([_, deployer, user1]) {
     let balanceProxy;
 
     before(async function () {
-        this.proxy = await Proxy.new();
+        this.registry = await Registry.new();
+        this.proxy = await Proxy.new(this.registry.address);
     });
 
     describe('execute', function () {
@@ -37,6 +40,7 @@ contract('Proxy', function ([_, deployer, user1]) {
             this.foo1 = await Foo.at(await this.fooFactory.addressOf.call(1));
             this.foo2 = await Foo.at(await this.fooFactory.addressOf.call(2));
             this.fooHandler = await FooHandler.new();
+            await this.registry.register(this.fooHandler.address, utils.asciiToHex("foo"));
         });
 
         it('single', async function () {
@@ -87,6 +91,7 @@ contract('Proxy', function ([_, deployer, user1]) {
             this.foo1 = await Foo2.at(await this.fooFactory.addressOf.call(1));
             this.foo2 = await Foo2.at(await this.fooFactory.addressOf.call(2));
             this.fooHandler = await Foo2Handler.new();
+            await this.registry.register(this.fooHandler.address, utils.asciiToHex("foo2"));
         });
 
         beforeEach(async function () {

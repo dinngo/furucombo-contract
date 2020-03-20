@@ -3,6 +3,10 @@ pragma experimental ABIEncoderV2;
 
 import "./ERC20/IERC20.sol";
 
+interface IRegistry {
+    function isValid(address handler) external view returns (bool result);
+}
+
 contract Proxy {
     address[] public tokens;
 
@@ -12,6 +16,27 @@ contract Proxy {
     }
 
     function () payable external {}
+    // keccak256 hash of "furucombo.handler.registry"
+    bytes32 private constant HANDLER_REGISTRY =
+        0x6874162fd62902201ea0f4bf541086067b3b88bd802fac9e150fd2d1db584e19;
+
+    constructor(address registry) public {
+        bytes32 slot = HANDLER_REGISTRY;
+        assembly {
+            sstore(slot, registry)
+        }
+    }
+
+    function _getRegistry() internal view returns (address registry) {
+        bytes32 slot = HANDLER_REGISTRY;
+        assembly {
+            registry := sload(slot)
+        }
+    }
+
+    function _isValid(address handler) internal view returns (bool result) {
+        return IRegistry(_getRegistry()).isValid(handler);
+    }
 
     function batchExec(address[] memory tos, bytes[] memory datas)
         isTokenEmpty
@@ -21,6 +46,7 @@ contract Proxy {
         _preProcess();
 
         for (uint256 i = 0; i < tos.length; i++) {
+            require(_isValid(tos[i]), "invalid handler");
             _exec(tos[i], datas[i]);
         }
 
