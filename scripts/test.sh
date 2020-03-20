@@ -20,7 +20,7 @@ ganache_running() {
 start_ganache() {
     TEST_MNEMONIC_PHRASE="candy maple cake sugar pudding cream honey rich smooth crumble sweet treat"
     ETHER_PROVIDER="0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
-    DAI_PROVIDER="0x447a9652221f46471a2323B98B73911cda58FD8A"
+    DAI_PROVIDER="0x2a1530C4C41db0B0b2bB646CB5Eb1A67b7158667"
 
     # node_modules/.bin/ganache-cli --gasLimit 0xfffffffffff -m "$TEST_MNEMONIC_PHRASE" > /dev/null &
     node_modules/.bin/ganache-cli --gasLimit 0xfffffffffff -f https://mainnet.infura.io/v3/2075ef13da494f34bc4807fc60275b5e -m "$TEST_MNEMONIC_PHRASE" -u "$ETHER_PROVIDER" -u "$DAI_PROVIDER" > /dev/null &
