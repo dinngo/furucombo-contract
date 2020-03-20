@@ -10,6 +10,7 @@ const { DAI_TOKEN, DAI_UNISWAP, DAI_PROVIDER, ETH_PROVIDER } = require('./utils/
 const { resetAccount } = require('./utils/utils');
 
 const HUniswap = artifacts.require('HUniswap');
+const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('Proxy');
 const IToken = artifacts.require('IERC20');
 const IUniswapExchange = artifacts.require('IUniswapExchange');
@@ -21,7 +22,8 @@ contract('SwapIntegration', function ([_, deployer, user1]) {
     });
 
     before(async function () {
-        this.proxy = await Proxy.new({ from: deployer });
+        this.registry = await Registry.new();
+        this.proxy = await Proxy.new(this.registry.address);
     });
 
     let balanceUser1;
@@ -35,6 +37,7 @@ contract('SwapIntegration', function ([_, deployer, user1]) {
     describe('Uniswap Swap', function () {
         before(async function () {
             this.huniswap = await HUniswap.new({ from: deployer });
+            await this.registry.register(this.huniswap.address, utils.asciiToHex("Uniswap"));
         });
 
         describe('Uniswap Addliquidity', function () {
