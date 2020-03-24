@@ -14,9 +14,11 @@ contract HCToken is HandlerBase {
     }
 
     function mint(address cToken, uint256 amount) external {
-        IERC20(_getToken(cToken)).approve(cToken, amount);
+        address token = _getToken(cToken);
+        IERC20(token).safeApprove(cToken, amount);
         ICToken compound = ICToken(cToken);
-        require(compound.mint(amount) != 0, "mint failed");
+        compound.mint(amount);
+        IERC20(token).safeApprove(cToken, 0);
 
         // Update involved token
         _updateToken(cToken);
