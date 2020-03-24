@@ -28,8 +28,8 @@ contract HUniswap_2 is HandlerBase {
     }
 
     function tokenToEthSwapOutput(
-        uint256 max_tokens,
         address token,
+        uint256 max_tokens,
         uint256 eth_bought
     ) external returns (uint256 tokens_sold) {
         IUniswapFactory uniswapFactory = IUniswapFactory(getFactory());
@@ -37,5 +37,21 @@ contract HUniswap_2 is HandlerBase {
         IERC20(token).safeApprove(address(uniswap), max_tokens);
         tokens_sold = uniswap.tokenToEthSwapOutput(eth_bought, max_tokens, now);
         IERC20(token).safeApprove(address(uniswap), 0);
+    }
+
+    function removeLiquidity(
+        address token,
+        uint256 amount,
+        uint256 min_eth,
+        uint256 min_tokens
+    ) external returns (uint256 eth_gain, uint256 token_gain) {
+        IUniswapFactory uniswapFactory = IUniswapFactory(getFactory());
+        IUniswapExchange uniswap = IUniswapExchange(uniswapFactory.getExchange(token));
+        IERC20(address(uniswap)).safeApprove(address(uniswap), amount);
+        (eth_gain, token_gain) = uniswap.removeLiquidity(amount, min_eth, min_tokens, now + 1);
+        IERC20(address(uniswap)).safeApprove(address(uniswap), 0);
+
+        // Update involved token
+        _updateToken(token);
     }
 }

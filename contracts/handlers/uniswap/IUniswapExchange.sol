@@ -10,9 +10,11 @@ interface IUniswapExchange {
     // HUniswap_2
     function tokenToEthSwapInput(uint256 tokens_sold, uint256 min_eth, uint256 deadline) external returns (uint256  eth_bought);
     function tokenToEthSwapOutput(uint256 eth_bought, uint256 max_tokens, uint256 deadline) external returns (uint256  tokens_sold);
+    function removeLiquidity(uint256 amount, uint256 min_eth, uint256 min_tokens, uint256 deadline) external returns (uint256, uint256);
+
+    // Unsupported
     function tokenAddress() external view returns (address token);
     function factoryAddress() external view returns (address factory);
-    function removeLiquidity(uint256 amount, uint256 min_eth, uint256 min_tokens, uint256 deadline) external returns (uint256, uint256);
     function getEthToTokenInputPrice(uint256 eth_sold) external view returns (uint256 tokens_bought);
     function getEthToTokenOutputPrice(uint256 tokens_bought) external view returns (uint256 eth_sold);
     function getTokenToEthInputPrice(uint256 tokens_sold) external view returns (uint256 eth_bought);
