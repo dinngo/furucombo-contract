@@ -44,7 +44,7 @@ contract('CEther', function ([_, deployer, user1]) {
             const data = [
                 abi.simpleEncode('mint(uint256)', value[0]),
             ];
-            const rate = await this.cether.exchangeRateCurrent.call();
+            const rate = await this.cether.exchangeRateStored.call();
             const result = ether('0.1').mul(ether('1')).div(rate);
             const receipt = await this.proxy.batchExec(to, data, { from: user1, value: ether('0.1') });
             const cetherUser1 = await this.cether.balanceOf.call(user1);
