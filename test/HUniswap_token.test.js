@@ -16,6 +16,10 @@ const IToken = artifacts.require('IERC20');
 const IUniswapExchange = artifacts.require('IUniswapExchange');
 
 contract('Swap', function ([_, deployer, user1, user2, someone]) {
+    const tokenAddress = DAI_TOKEN;
+    const uniswapAddress = DAI_UNISWAP;
+    const providerAddress = DAI_PROVIDER;
+
     beforeEach(async function () {
         await resetAccount(_);
         await resetAccount(user1);
@@ -27,6 +31,8 @@ contract('Swap', function ([_, deployer, user1, user2, someone]) {
         this.proxy = await Proxy.new(this.registry.address);
         this.huniswap = await HUniswap.new();
         await this.registry.register(this.huniswap.address, utils.asciiToHex("Uniswap"));
+        this.token = await IToken.at(tokenAddress);
+        this.swap = await IUniswapExchange.at(uniswapAddress);
     });
 
     describe('Exact input', function () {
@@ -40,40 +46,33 @@ contract('Swap', function ([_, deployer, user1, user2, someone]) {
             balanceProxy = await tracker(this.proxy.address);
         });
 
-        describe('DAI', function () {
-            before(async function () {
-                this.dai = await IToken.at(DAI_TOKEN);
-                this.daiswap = await IUniswapExchange.at(DAI_UNISWAP);
-            });
+        it('normal', async function () {
+            const value = [ether('100')];
+            const to = [this.huniswap.address];
+            const data = [
+                abi.simpleEncode('tokenToEthSwapInput(address,uint256,uint256):(uint256)', tokenAddress, value[0], new BN('1'))
+            ];
+            await this.token.transfer(this.proxy.address, value[0], { from: providerAddress });
+            await this.token.transfer(someone, value[0], { from: providerAddress });
+            await this.token.approve(this.swap.address, value[0], { from: someone });
 
-            it('normal', async function () {
-                const value = [ether('100')];
-                const to = [this.huniswap.address];
-                const data = [
-                    abi.simpleEncode('tokenToEthSwapInput(address,uint256,uint256):(uint256)', DAI_TOKEN, value[0], new BN('1'))
-                ];
-                await this.dai.transfer(this.proxy.address, value[0], { from: DAI_PROVIDER });
-                await this.dai.transfer(someone, value[0], { from: DAI_PROVIDER });
-                await this.dai.approve(this.daiswap.address, value[0], { from: someone });
+            const deadline = (await latest()).add(new BN('100'));
+            const result = await this.swap.tokenToEthSwapInput.call(
+                value[0],
+                new BN('1'),
+                deadline,
+                { from: someone }
+            );
+            const receipt = await this.proxy.batchExec(to, data, { from: user1 });
 
-                const deadline = (await latest()).add(new BN('100'));
-                const result = await this.daiswap.tokenToEthSwapInput.call(
-                    value[0],
-                    new BN('1'),
-                    deadline,
-                    { from: someone }
-                );
-                const receipt = await this.proxy.batchExec(to, data, { from: user1 });
-
-                expect(await this.dai.balanceOf.call(user1)).to.be.bignumber.eq(ether('0'));
-                expect(await this.dai.balanceOf.call(this.proxy.address)).to.be.bignumber.eq(ether('0'));
-                expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
-                expect(await balanceUser1.delta()).to.be.bignumber.eq(
-                    result.sub(
-                        new BN(receipt.receipt.gasUsed)
-                    )
-                );
-            });
+            expect(await this.token.balanceOf.call(user1)).to.be.bignumber.eq(ether('0'));
+            expect(await this.token.balanceOf.call(this.proxy.address)).to.be.bignumber.eq(ether('0'));
+            expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
+            expect(await balanceUser1.delta()).to.be.bignumber.eq(
+                result.sub(
+                    new BN(receipt.receipt.gasUsed)
+                )
+            );
         });
     });
 });

@@ -16,10 +16,8 @@ const IToken = artifacts.require('IERC20');
 const ICEther = artifacts.require('ICEther');
 
 contract('CEther', function ([_, deployer, user1]) {
-    beforeEach(async function () {
-        await resetAccount(_);
-        await resetAccount(user1);
-    });
+    let balanceUser1;
+    let balanceProxy;
 
     before(async function () {
         this.registry = await Registry.new();
@@ -29,10 +27,9 @@ contract('CEther', function ([_, deployer, user1]) {
         this.cether = await ICEther.at(CETHER);
     });
 
-    let balanceUser1;
-    let balanceProxy;
-
     beforeEach(async function () {
+        await resetAccount(_);
+        await resetAccount(user1);
         balanceUser1 = await tracker(user1);
         balanceProxy = await tracker(this.proxy.address);
     });
