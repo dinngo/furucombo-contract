@@ -13,7 +13,7 @@ contract HCToken is HandlerBase {
         return ICToken(token).underlying();
     }
 
-    function mint(address cToken, uint256 amount) external {
+    function mint(address cToken, uint256 amount) external payable {
         address token = _getToken(cToken);
         IERC20(token).safeApprove(cToken, amount);
         ICToken compound = ICToken(cToken);
