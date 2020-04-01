@@ -55,11 +55,12 @@ contract('Swap', function ([_, deployer, user1, user2]) {
                 { from: user1, value: ether('1') }
             );
 */
-            //const rate = await this.swap.getExpectedRate.call('0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE', tokenAddress, ether('1'));
+            const rate = await this.swap.getExpectedRate.call('0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE', tokenAddress, ether('1'));
             console.log(rate);
+            const kyberswapAmount = value[0].mul(rate[1]);
             const receipt = await this.proxy.batchExec(to, data, { from: user1, value: ether('1') });
-/*
-            expect(await this.token.balanceOf.call(user1)).to.be.bignumber.eq(uniswapAmount);
+            console.log(utils.fromWei(await this.token.balanceOf.call(user1)));
+            expect(await this.token.balanceOf.call(user1)).to.be.bignumber.eq(kyberswapAmount);
             expect(await this.token.balanceOf.call(this.proxy.address)).to.be.bignumber.eq(ether('0'));
             expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
             expect(await balanceUser1.delta()).to.be.bignumber.eq(
@@ -69,7 +70,6 @@ contract('Swap', function ([_, deployer, user1, user2]) {
                     new BN(receipt.receipt.gasUsed)
                 )
             );
-*/
         });
 
 /*

@@ -20,9 +20,9 @@ contract HKyberswap is HandlerBase {
         address token,
         uint256 minRate
     ) external payable returns (uint256 destAmount) {
-        uint256 minRate;
+        //uint256 minRate;
         IKyberNetworkProxy kyber = IKyberNetworkProxy(getProxy());
-        (, minRate) = kyber.getExpectedRate(ETH_TOKEN_ADDRESS, token, value);
+        //(, minRate) = kyber.getExpectedRate(IERC20(ETH_TOKEN_ADDRESS), IERC20(token), value);
         destAmount = kyber.swapEtherToToken.value(value)(IERC20(token), minRate);
 
         // Update involved token
