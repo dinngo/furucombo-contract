@@ -44,14 +44,12 @@ contract('Swap', function ([_, deployer, user1, user2]) {
         it('normal', async function () {
             const value = [ether('1')];
             const to = [this.hkyberswap.address];
-            const data = [
-                abi.simpleEncode('swapEtherToToken(uint256,address,uint256):(uint256)', value[0], tokenAddress, new BN('1'))
-            ];
             const rate = await this.swap.getExpectedRate.call('0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE', tokenAddress, ether('1'));
-            console.log(rate);
+            const data = [
+                abi.simpleEncode('swapEtherToToken(uint256,address,uint256):(uint256)', value[0], tokenAddress, rate[1])
+            ];
             const kyberswapAmount = value[0].mul(rate[1]).div(ether('1'));
             const receipt = await this.proxy.batchExec(to, data, { from: user1, value: ether('1') });
-            console.log(utils.fromWei(await this.token.balanceOf.call(user1)));
             expect(await this.token.balanceOf.call(user1)).to.be.bignumber.gt(kyberswapAmount);
             expect(await this.token.balanceOf.call(this.proxy.address)).to.be.bignumber.eq(ether('0'));
             expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
@@ -64,23 +62,12 @@ contract('Swap', function ([_, deployer, user1, user2]) {
             );
         });
 
-/*
-        it('min amount too high', async function () {
+        it('min rate too high', async function () {
             const value = [ether('1')];
-            const to = [this.huniswap.address];
-            const deadline = (await latest()).add(new BN('100'));
-            const uniswapAmount = await this.swap.ethToTokenSwapInput.call(
-                new BN('1'),
-                deadline,
-                { from: user2, value: ether('1') }
-            );
+            const to = [this.hkyberswap.address];
+            const rate = await this.swap.getExpectedRate.call('0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE', tokenAddress, ether('1'));
             const data = [
-                abi.simpleEncode(
-                    'ethToTokenSwapInput(uint256,address,uint256):(uint256)',
-                    value[0],
-                    tokenAddress,
-                    uniswapAmount.add(ether('0.1'))
-                )
+                abi.simpleEncode('swapEtherToToken(uint256,address,uint256):(uint256)', value[0], tokenAddress, rate[0].mul(new BN('1.5')))
             ];
             await expectRevert.unspecified(
                 this.proxy.batchExec(to, data, { from: user2, value: ether('1') })
@@ -89,6 +76,5 @@ contract('Swap', function ([_, deployer, user1, user2]) {
             expect(await this.token.balanceOf.call(this.proxy.address)).to.be.bignumber.eq(ether('0'));
             expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
         });
-*/
     });
 });
