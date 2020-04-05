@@ -20,12 +20,41 @@ contract HKyberswap is HandlerBase {
         address token,
         uint256 minRate
     ) external payable returns (uint256 destAmount) {
-        //uint256 minRate;
         IKyberNetworkProxy kyber = IKyberNetworkProxy(getProxy());
-        //(, minRate) = kyber.getExpectedRate(IERC20(ETH_TOKEN_ADDRESS), IERC20(token), value);
         destAmount = kyber.swapEtherToToken.value(value)(IERC20(token), minRate);
 
         // Update involved token
         _updateToken(token);
+    }
+
+    function swapTokenToEther(
+        address token,
+        uint256 tokenQty,
+        uint256 minRate
+    ) external payable returns (uint256 destAmount) {
+        IKyberNetworkProxy kyber = IKyberNetworkProxy(getProxy());
+        IERC20(token).safeApprove(address(kyber), tokenQty);
+        destAmount = kyber.swapTokenToEther(IERC20(token), tokenQty, minRate);
+        IERC20(token).safeApprove(address(kyber), 0);
+    }
+
+    function swapTokenToToken(
+        address srcToken,
+        uint256 srcQty,
+        address destToken,
+        uint256 minRate
+    ) external payable returns (uint256 destAmount) {
+        IKyberNetworkProxy kyber = IKyberNetworkProxy(getProxy());
+        IERC20(srcToken).safeApprove(address(kyber), srcQty);
+        destAmount = kyber.swapTokenToToken(
+            IERC20(srcToken),
+            srcQty,
+            IERC20(destToken),
+            minRate
+        );
+        IERC20(srcToken).safeApprove(address(kyber), 0);
+
+        // Update involved token
+        _updateToken(destToken);
     }
 }
