@@ -20,12 +20,13 @@ const Proxy = artifacts.require('Proxy');
 const IToken = artifacts.require('IERC20');
 const IKyberNetworkProxy = artifacts.require('IKyberNetworkProxy');
 
-contract('KyberNetwork Swap', function ([_, deployer, user1, user2, someone]) {
+contract('KyberNetwork Swap', function ([_, deployer, user1, user2, user3, someone]) {
     const tokenAddress = DAI_TOKEN;
     const providerAddress = DAI_PROVIDER;
 
     let balanceUser1;
     let balanceUser2;
+    let balanceUser3;
     let balanceProxy;
 
     before(async function () {
@@ -41,8 +42,10 @@ contract('KyberNetwork Swap', function ([_, deployer, user1, user2, someone]) {
         await resetAccount(_);
         await resetAccount(user1);
         await resetAccount(user2);
+        await resetAccount(user3);
         balanceUser1 = await tracker(user1);
         balanceUser2 = await tracker(user2);
+        balanceUser3 = await tracker(user3);
         balanceProxy = await tracker(this.proxy.address);
     });
 
@@ -149,7 +152,7 @@ contract('KyberNetwork Swap', function ([_, deployer, user1, user2, someone]) {
                 const receipt = await this.proxy.batchExec(
                     to,
                     data,
-                    { from: user2 }
+                    { from: user2, value: ether('1') }
                 );
 
                 expect(await this.token.balanceOf.call(user2)).to.be.bignumber.eq(ether('0'));
@@ -164,10 +167,14 @@ contract('KyberNetwork Swap', function ([_, deployer, user1, user2, someone]) {
         });
     });
 
-/*
     describe('Token to Token', function () {
         const srcTokenAddress = tokenAddress;
         const destTokenAddress = BAT_TOKEN;
+
+        before(async function () {
+            this.destToken = await IToken.at(destTokenAddress);
+        });
+
         describe('Exact input', function () {
             it('normal', async function () {
                 const value = [ether('1')];
@@ -195,10 +202,18 @@ contract('KyberNetwork Swap', function ([_, deployer, user1, user2, someone]) {
                 const receipt = await this.proxy.batchExec(
                     to,
                     data,
-                    { from: user1, value: ether('1') }
+                    { from: user3, value: ether('1') }
                 );
+
+                expect(await this.token.balanceOf.call(user3)).to.be.bignumber.eq(ether('0'));
+                expect(await this.token.balanceOf.call(this.proxy.address)).to.be.bignumber.eq(ether('0'));
+                expect(await this.destToken.balanceOf.call(user3)).to.be.bignumber.gt(kyberswapAmount);
+                expect(await this.destToken.balanceOf.call(this.proxy.address)).to.be.bignumber.eq(ether('0'));
+                expect(await balanceUser3.delta()).to.be.bignumber.eq(
+                    ether('0').sub(new BN(receipt.receipt.gasUsed))
+                );
+                expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
             });
         });
     });
-*/
 });
