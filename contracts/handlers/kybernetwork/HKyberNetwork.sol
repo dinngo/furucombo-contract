@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "../HandlerBase.sol";
 import "./IKyberNetworkProxy.sol";
 
-contract HKyberswap is HandlerBase {
+contract HKyberNetwork is HandlerBase {
     using SafeERC20 for IERC20;
 
     address ETH_TOKEN_ADDRESS = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;

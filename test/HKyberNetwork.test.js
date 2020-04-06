@@ -22,7 +22,7 @@ const {
 } = require("./utils/constants");
 const { resetAccount } = require("./utils/utils");
 
-const HKyberswap = artifacts.require("HKyberswap");
+const HKyberNetwork = artifacts.require("HKyberNetwork");
 const Registry = artifacts.require("Registry");
 const Proxy = artifacts.require("Proxy");
 const IToken = artifacts.require("IERC20");
@@ -47,9 +47,9 @@ contract("KyberNetwork Swap", function([
   before(async function() {
     this.registry = await Registry.new();
     this.proxy = await Proxy.new(this.registry.address);
-    this.hkyberswap = await HKyberswap.new();
+    this.hkybernetwork = await HKyberNetwork.new();
     await this.registry.register(
-      this.hkyberswap.address,
+      this.hkybernetwork.address,
       utils.asciiToHex("Kyberswap")
     );
     this.token = await IToken.at(tokenAddress);
@@ -71,7 +71,7 @@ contract("KyberNetwork Swap", function([
     describe("Exact input", function() {
       it("normal", async function() {
         const value = [ether("1")];
-        const to = [this.hkyberswap.address];
+        const to = [this.hkybernetwork.address];
         const rate = await this.swap.getExpectedRate.call(
           "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
           tokenAddress,
@@ -106,7 +106,7 @@ contract("KyberNetwork Swap", function([
 
       it("min rate too high", async function() {
         const value = [ether("1")];
-        const to = [this.hkyberswap.address];
+        const to = [this.hkybernetwork.address];
         const rate = await this.swap.getExpectedRate.call(
           "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
           tokenAddress,
@@ -141,7 +141,7 @@ contract("KyberNetwork Swap", function([
     describe("Exact input", function() {
       it("normal", async function() {
         const value = [ether("1")];
-        const to = [this.hkyberswap.address];
+        const to = [this.hkybernetwork.address];
         const rate = await this.swap.getExpectedRate.call(
           tokenAddress,
           "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
@@ -189,7 +189,7 @@ contract("KyberNetwork Swap", function([
     describe("Exact input", function() {
       it("normal", async function() {
         const value = [ether("1")];
-        const to = [this.hkyberswap.address];
+        const to = [this.hkybernetwork.address];
         const rate = await this.swap.getExpectedRate.call(
           srcTokenAddress,
           destTokenAddress,
