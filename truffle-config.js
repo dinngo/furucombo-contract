@@ -25,24 +25,24 @@
 // const mnemonic = fs.readFileSync(".secret").toString().trim();
 
 module.exports = {
-    networks: {
-        development: {
-            host: "localhost",
-            port: 8545,
-            network_id: "*",
-            gasPrice: 0x01,
-            gas: 5000000
-        },
-    },
-    compilers: {
-        solc: {
-            version: "0.5.16",
-            settings: {
-                optimizer: {
-                    enabled: true,
-                    runs: 200
-                }
-            }
-        }
+  networks: {
+    development: {
+      host: "localhost",
+      port: 8545,
+      network_id: "*",
+      gasPrice: 0x01,
+      gas: 5000000
     }
+  },
+  compilers: {
+    solc: {
+      version: "0.5.16",
+      settings: {
+        optimizer: {
+          enabled: true,
+          runs: 200
+        }
+      }
+    }
+  }
 };
