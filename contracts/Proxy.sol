@@ -5,6 +5,7 @@ import "./ERC20/IERC20.sol";
 
 interface IRegistry {
     function isValid(address handler) external view returns (bool result);
+    function getInfo(address handler) external view returns (bytes32 info);
 }
 
 contract Proxy {
@@ -15,7 +16,16 @@ contract Proxy {
         _;
     }
 
-    function () payable external {}
+    function () payable external {
+        require(_isValid(msg.sender));
+
+        if (msg.data.length != 0) {
+            address target = address(bytes20(IRegistry(_getRegistry()).getInfo(msg.sender)));
+            require(_isValid(target), "Invalid handler");
+            _exec(target, msg.data);
+        }
+    }
+
     // keccak256 hash of "furucombo.handler.registry"
     bytes32 private constant HANDLER_REGISTRY =
         0x6874162fd62902201ea0f4bf541086067b3b88bd802fac9e150fd2d1db584e19;
@@ -44,13 +54,20 @@ contract Proxy {
         payable
     {
         _preProcess();
+        _execs(tos, datas);
+        _postProcess();
+    }
 
+    function execs(address[] memory tos, bytes[] memory datas) public payable {
+        require(msg.sender == address(this), "Does not allow external calls");
+        _execs(tos, datas);
+    }
+
+    function _execs(address[] memory tos, bytes[] memory datas) public payable {
         for (uint256 i = 0; i < tos.length; i++) {
-            require(_isValid(tos[i]), "invalid handler");
+            require(_isValid(tos[i]), "Invalid handler");
             _exec(tos[i], datas[i]);
         }
-
-        _postProcess();
     }
 
     function _exec(address _to, bytes memory _data) internal returns (bytes memory result) {
