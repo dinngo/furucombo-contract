@@ -1,9 +1,9 @@
-const { BN, ether } = require("@openzeppelin/test-helpers");
+const { BN, ether } = require('@openzeppelin/test-helpers');
 
-const { ETH_PROVIDER } = require("./constants");
+const { ETH_PROVIDER } = require('./constants');
 
 async function resetAccount(account) {
-  const d = ether("100").sub(new BN(await web3.eth.getBalance(account)));
+  const d = ether('100').sub(new BN(await web3.eth.getBalance(account)));
   if (d.isZero()) return;
   else if (d.isNeg())
     await web3.eth.sendTransaction({
