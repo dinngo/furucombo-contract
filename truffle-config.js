@@ -27,16 +27,16 @@
 module.exports = {
   networks: {
     development: {
-      host: "localhost",
+      host: 'localhost',
       port: 8545,
-      network_id: "*",
+      network_id: '*',
       gasPrice: 0x01,
       gas: 5000000
     }
   },
   compilers: {
     solc: {
-      version: "0.5.16",
+      version: '0.5.16',
       settings: {
         optimizer: {
           enabled: true,
