@@ -11,4 +11,8 @@ contract ProxyMock is Proxy {
         _postProcess();
         return result;
     }
+
+    function updateTokenMock(address token) public {
+        tokens.push(token);
+    }
 }
