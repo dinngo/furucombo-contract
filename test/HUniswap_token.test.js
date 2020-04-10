@@ -17,7 +17,7 @@ const { expect } = require('chai');
 const { DAI_TOKEN, DAI_UNISWAP, DAI_PROVIDER } = require('./utils/constants');
 const { resetAccount } = require('./utils/utils');
 
-const HUniswap = artifacts.require('HUniswap_2');
+const HUniswap = artifacts.require('HUniswap');
 const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('ProxyMock');
 const IToken = artifacts.require('IERC20');

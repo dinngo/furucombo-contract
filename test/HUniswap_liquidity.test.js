@@ -23,7 +23,7 @@ const {
 const { resetAccount } = require('./utils/utils');
 
 const HUniswap = artifacts.require('HUniswap');
-const HUniswap_2 = artifacts.require('HUniswap_2');
+const HUniswap_2 = artifacts.require('HUniswap');
 const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('Proxy');
 const IToken = artifacts.require('IERC20');
