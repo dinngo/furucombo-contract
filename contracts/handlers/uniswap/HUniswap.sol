@@ -1,6 +1,5 @@
 pragma solidity ^0.5.0;
 
-import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 
 import "../HandlerBase.sol";
@@ -8,7 +7,6 @@ import "./IUniswapFactory.sol";
 import "./IUniswapExchange.sol";
 
 contract HUniswap is HandlerBase {
-    using SafeMath for uint256;
     using SafeERC20 for IERC20;
 
     address constant UNISWAP_FACTORY = 0xc0a47dFe034B400B47bDaD5FecDa2621de6c4d95;
@@ -79,8 +77,8 @@ contract HUniswap is HandlerBase {
 
     function tokenToEthSwapOutput(
         address token,
-        uint256 max_tokens,
-        uint256 eth_bought
+        uint256 eth_bought,
+        uint256 max_tokens
     ) external payable returns (uint256 tokens_sold) {
         IUniswapExchange uniswap = _getExchange(token);
         IERC20(token).safeApprove(address(uniswap), max_tokens);
