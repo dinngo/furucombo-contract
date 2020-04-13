@@ -12,18 +12,8 @@ contract Proxy {
     address[] public tokens;
 
     modifier isTokenEmpty() {
-        require(tokens.length == 0, "token list not empty");
+        require(tokens.length == 0, "Token list not empty");
         _;
-    }
-
-    function () payable external {
-        require(_isValid(msg.sender));
-
-        if (msg.data.length != 0) {
-            address target = address(bytes20(IRegistry(_getRegistry()).getInfo(msg.sender)));
-            require(_isValid(target), "Invalid handler");
-            _exec(target, msg.data);
-        }
     }
 
     // keccak256 hash of "furucombo.handler.registry"
@@ -37,19 +27,17 @@ contract Proxy {
         }
     }
 
-    function _getRegistry() internal view returns (address registry) {
-        bytes32 slot = HANDLER_REGISTRY;
-        assembly {
-            registry := sload(slot)
+    function () payable external {
+        require(_isValid(msg.sender));
+
+        if (msg.data.length != 0) {
+            address target = address(bytes20(IRegistry(_getRegistry()).getInfo(msg.sender)));
+            require(_isValid(target), "Invalid handler");
+            _exec(target, msg.data);
         }
     }
 
-    function _isValid(address handler) internal view returns (bool result) {
-        return IRegistry(_getRegistry()).isValid(handler);
-    }
-
     function batchExec(address[] memory tos, bytes[] memory datas)
-        isTokenEmpty
         public
         payable
     {
@@ -63,7 +51,8 @@ contract Proxy {
         _execs(tos, datas);
     }
 
-    function _execs(address[] memory tos, bytes[] memory datas) public payable {
+    function _execs(address[] memory tos, bytes[] memory datas) internal {
+        require(tos.length == datas.length, "Tos and datas length inconsistent");
         for (uint256 i = 0; i < tos.length; i++) {
             require(_isValid(tos[i]), "Invalid handler");
             _exec(tos[i], datas[i]);
@@ -87,8 +76,7 @@ contract Proxy {
         }
     }
 
-    function _preProcess() internal {
-    }
+    function _preProcess() isTokenEmpty internal {}
 
     function _postProcess() internal {
         // Token involved should be returned to user
@@ -104,5 +92,16 @@ contract Proxy {
         uint256 amount = address(this).balance;
         if (amount > 0)
             msg.sender.transfer(amount);
+    }
+
+    function _getRegistry() internal view returns (address registry) {
+        bytes32 slot = HANDLER_REGISTRY;
+        assembly {
+            registry := sload(slot)
+        }
+    }
+
+    function _isValid(address handler) internal view returns (bool result) {
+        return IRegistry(_getRegistry()).isValid(handler);
     }
 }
