@@ -1,7 +1,8 @@
 pragma solidity ^0.5.0;
 pragma experimental ABIEncoderV2;
 
-import "./ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/utils/Address.sol";
 
 interface IRegistry {
     function isValid(address handler) external view returns (bool result);
@@ -9,6 +10,8 @@ interface IRegistry {
 }
 
 contract Proxy {
+    using Address for address;
+
     address[] public tokens;
 
     modifier isTokenEmpty() {
@@ -28,11 +31,11 @@ contract Proxy {
     }
 
     function () payable external {
-        require(_isValid(msg.sender));
+        require(Address.isContract(msg.sender), "Not allowed from EOA");
 
         if (msg.data.length != 0) {
+            require(_isValid(msg.sender), "Invalid caller");
             address target = address(bytes20(IRegistry(_getRegistry()).getInfo(msg.sender)));
-            require(_isValid(target), "Invalid handler");
             _exec(target, msg.data);
         }
     }
@@ -54,12 +57,12 @@ contract Proxy {
     function _execs(address[] memory tos, bytes[] memory datas) internal {
         require(tos.length == datas.length, "Tos and datas length inconsistent");
         for (uint256 i = 0; i < tos.length; i++) {
-            require(_isValid(tos[i]), "Invalid handler");
             _exec(tos[i], datas[i]);
         }
     }
 
     function _exec(address _to, bytes memory _data) internal returns (bytes memory result) {
+        require(_isValid(_to), "Invalid handler");
         assembly {
             let succeeded := delegatecall(sub(gas, 5000), _to, add(_data, 0x20), mload(_data), 0, 0)
             let size := returndatasize
