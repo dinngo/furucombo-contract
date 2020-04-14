@@ -28,21 +28,13 @@ const Proxy = artifacts.require('ProxyMock');
 const IToken = artifacts.require('IERC20');
 const IKyberNetworkProxy = artifacts.require('IKyberNetworkProxy');
 
-contract('KyberNetwork Swap', function([
-  _,
-  deployer,
-  user1,
-  user2,
-  user3,
-  someone
-]) {
+contract('KyberNetwork Swap', function([_, deployer, user, someone]) {
   const tokenAddress = DAI_TOKEN;
   const providerAddress = DAI_PROVIDER;
 
-  let balanceUser1;
-  let balanceUser2;
-  let balanceUser3;
+  let balanceUser;
   let balanceProxy;
+  let tokenUser;
 
   before(async function() {
     this.registry = await Registry.new();
@@ -58,13 +50,10 @@ contract('KyberNetwork Swap', function([
 
   beforeEach(async function() {
     await resetAccount(_);
-    await resetAccount(user1);
-    await resetAccount(user2);
-    await resetAccount(user3);
-    balanceUser1 = await tracker(user1);
-    balanceUser2 = await tracker(user2);
-    balanceUser3 = await tracker(user3);
+    await resetAccount(user);
+    balanceUser = await tracker(user);
     balanceProxy = await tracker(this.proxy.address);
+    tokenUser = await this.token.balanceOf.call(user);
   });
 
   describe('Ether to Token', function() {
@@ -85,17 +74,17 @@ contract('KyberNetwork Swap', function([
         );
         const kyberswapAmount = value.mul(rate[1]).div(ether('1'));
         const receipt = await this.proxy.execMock(to, data, {
-          from: user1,
+          from: user,
           value: ether('1')
         });
-        expect(await this.token.balanceOf.call(user1)).to.be.bignumber.gt(
-          kyberswapAmount
+        expect(await this.token.balanceOf.call(user)).to.be.bignumber.gt(
+          tokenUser.add(kyberswapAmount)
         );
         expect(
           await this.token.balanceOf.call(this.proxy.address)
         ).to.be.bignumber.eq(ether('0'));
         expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
-        expect(await balanceUser1.delta()).to.be.bignumber.eq(
+        expect(await balanceUser.delta()).to.be.bignumber.eq(
           ether('0')
             .sub(ether('1'))
             .sub(new BN(receipt.receipt.gasUsed))
@@ -118,12 +107,12 @@ contract('KyberNetwork Swap', function([
         );
         await expectRevert.unspecified(
           this.proxy.execMock(to, data, {
-            from: user2,
+            from: user,
             value: ether('1')
           })
         );
-        expect(await this.token.balanceOf.call(user2)).to.be.bignumber.eq(
-          ether('0')
+        expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
+          tokenUser
         );
         expect(
           await this.token.balanceOf.call(this.proxy.address)
@@ -155,18 +144,18 @@ contract('KyberNetwork Swap', function([
         await this.proxy.updateTokenMock(this.token.address);
         const kyberswapAmount = value.mul(rate[1]).div(ether('1'));
         const receipt = await this.proxy.execMock(to, data, {
-          from: user2,
+          from: user,
           value: ether('1')
         });
 
-        expect(await this.token.balanceOf.call(user2)).to.be.bignumber.eq(
-          ether('0')
+        expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
+          tokenUser
         );
         expect(
           await this.token.balanceOf.call(this.proxy.address)
         ).to.be.bignumber.eq(ether('0'));
         expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
-        expect(await balanceUser2.delta()).to.be.bignumber.gt(
+        expect(await balanceUser.delta()).to.be.bignumber.gt(
           kyberswapAmount.sub(new BN(receipt.receipt.gasUsed))
         );
       });
@@ -203,23 +192,23 @@ contract('KyberNetwork Swap', function([
         await this.proxy.updateTokenMock(this.token.address);
         const kyberswapAmount = value.mul(rate[1]).div(ether('1'));
         const receipt = await this.proxy.execMock(to, data, {
-          from: user3,
+          from: user,
           value: ether('1')
         });
 
-        expect(await this.token.balanceOf.call(user3)).to.be.bignumber.eq(
-          ether('0')
+        expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
+          tokenUser
         );
         expect(
           await this.token.balanceOf.call(this.proxy.address)
         ).to.be.bignumber.eq(ether('0'));
-        expect(await this.destToken.balanceOf.call(user3)).to.be.bignumber.gt(
+        expect(await this.destToken.balanceOf.call(user)).to.be.bignumber.gt(
           kyberswapAmount
         );
         expect(
           await this.destToken.balanceOf.call(this.proxy.address)
         ).to.be.bignumber.eq(ether('0'));
-        expect(await balanceUser3.delta()).to.be.bignumber.eq(
+        expect(await balanceUser.delta()).to.be.bignumber.eq(
           ether('0').sub(new BN(receipt.receipt.gasUsed))
         );
         expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
