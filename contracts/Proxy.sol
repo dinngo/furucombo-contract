@@ -1,21 +1,24 @@
 pragma solidity ^0.5.0;
 pragma experimental ABIEncoderV2;
 
-import "./ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/utils/Address.sol";
 
 interface IRegistry {
     function isValid(address handler) external view returns (bool result);
+    function getInfo(address handler) external view returns (bytes32 info);
 }
 
 contract Proxy {
+    using Address for address;
+
     address[] public tokens;
 
     modifier isTokenEmpty() {
-        require(tokens.length == 0, "token list not empty");
+        require(tokens.length == 0, "Token list not empty");
         _;
     }
 
-    function () payable external {}
     // keccak256 hash of "furucombo.handler.registry"
     bytes32 private constant HANDLER_REGISTRY =
         0x6874162fd62902201ea0f4bf541086067b3b88bd802fac9e150fd2d1db584e19;
@@ -27,33 +30,39 @@ contract Proxy {
         }
     }
 
-    function _getRegistry() internal view returns (address registry) {
-        bytes32 slot = HANDLER_REGISTRY;
-        assembly {
-            registry := sload(slot)
+    function () payable external {
+        require(Address.isContract(msg.sender), "Not allowed from EOA");
+
+        if (msg.data.length != 0) {
+            require(_isValid(msg.sender), "Invalid caller");
+            address target = address(bytes20(IRegistry(_getRegistry()).getInfo(msg.sender)));
+            _exec(target, msg.data);
         }
     }
 
-    function _isValid(address handler) internal view returns (bool result) {
-        return IRegistry(_getRegistry()).isValid(handler);
-    }
-
     function batchExec(address[] memory tos, bytes[] memory datas)
-        isTokenEmpty
         public
         payable
     {
         _preProcess();
-
-        for (uint256 i = 0; i < tos.length; i++) {
-            require(_isValid(tos[i]), "invalid handler");
-            _exec(tos[i], datas[i]);
-        }
-
+        _execs(tos, datas);
         _postProcess();
     }
 
+    function execs(address[] memory tos, bytes[] memory datas) public payable {
+        require(msg.sender == address(this), "Does not allow external calls");
+        _execs(tos, datas);
+    }
+
+    function _execs(address[] memory tos, bytes[] memory datas) internal {
+        require(tos.length == datas.length, "Tos and datas length inconsistent");
+        for (uint256 i = 0; i < tos.length; i++) {
+            _exec(tos[i], datas[i]);
+        }
+    }
+
     function _exec(address _to, bytes memory _data) internal returns (bytes memory result) {
+        require(_isValid(_to), "Invalid handler");
         assembly {
             let succeeded := delegatecall(sub(gas, 5000), _to, add(_data, 0x20), mload(_data), 0, 0)
             let size := returndatasize
@@ -70,8 +79,7 @@ contract Proxy {
         }
     }
 
-    function _preProcess() internal {
-    }
+    function _preProcess() isTokenEmpty internal {}
 
     function _postProcess() internal {
         // Token involved should be returned to user
@@ -87,5 +95,16 @@ contract Proxy {
         uint256 amount = address(this).balance;
         if (amount > 0)
             msg.sender.transfer(amount);
+    }
+
+    function _getRegistry() internal view returns (address registry) {
+        bytes32 slot = HANDLER_REGISTRY;
+        assembly {
+            registry := sload(slot)
+        }
+    }
+
+    function _isValid(address handler) internal view returns (bool result) {
+        return IRegistry(_getRegistry()).isValid(handler);
     }
 }

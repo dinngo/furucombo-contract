@@ -179,4 +179,16 @@ contract('Proxy', function([_, deployer, user1]) {
       );
     });
   });
+
+  describe('Direct transfer', function() {
+    it('Should fail', async function() {
+      await expectRevert.unspecified(
+        web3.eth.sendTransaction({
+          from: user1,
+          to: this.proxy.address,
+          value: ether('1')
+        })
+      );
+    });
+  });
 });
