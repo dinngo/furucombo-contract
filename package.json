@@ -1,7 +1,7 @@
 {
-  "name": "legocontract",
-  "version": "1.0.0",
-  "description": "",
+  "name": "Furucombo",
+  "version": "0.2.0",
+  "description": "Furucombo contracts",
   "main": "truffle-config.js",
   "directories": {
     "test": "test"
@@ -15,7 +15,7 @@
     "type": "git",
     "url": "git@garage.dinngo.co:hackathon-black/legocontract.git"
   },
-  "author": "",
+  "author": "Ben Huang",
   "license": "ISC",
   "devDependencies": {
     "@openzeppelin/test-helpers": "^0.5.5",
