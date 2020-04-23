@@ -8,15 +8,37 @@ import "./ICToken.sol";
 contract HCToken is HandlerBase {
     using SafeERC20 for IERC20;
 
-    function mint(address cToken, uint256 amount) external payable {
+    function mint(address cToken, uint256 mintAmount) external payable {
         address token = _getToken(cToken);
-        IERC20(token).safeApprove(cToken, amount);
+        IERC20(token).safeApprove(cToken, mintAmount);
         ICToken compound = ICToken(cToken);
-        compound.mint(amount);
+        compound.mint(mintAmount);
         IERC20(token).safeApprove(cToken, 0);
 
         // Update involved token
         _updateToken(cToken);
+    }
+
+    function redeem(address cToken, uint256 redeemTokens) external payable {
+        ICToken compound = ICToken(cToken);
+        IERC20(cToken).safeApprove(cToken, redeemTokens);
+        compound.redeem(redeemTokens);
+        IERC20(cToken).safeApprove(cToken, 0);
+        address token = _getToken(cToken);
+
+        // Update involved token
+        _updateToken(token);
+    }
+
+    function redeemUnderlying(address cToken, uint256 redeemAmount) external payable {
+        ICToken compound = ICToken(cToken);
+        IERC20(cToken).safeApprove(cToken, 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF);
+        compound.redeemUnderlying(redeemAmount);
+        IERC20(cToken).safeApprove(cToken, 0);
+        address token = _getToken(cToken);
+
+        // Update involved token
+        _updateToken(token);
     }
 
     function _getToken(address token) internal view returns (address result) {

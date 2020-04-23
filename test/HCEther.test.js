@@ -26,6 +26,7 @@ const ICEther = artifacts.require('ICEther');
 contract('CEther', function([_, deployer, user]) {
   let balanceUser;
   let balanceProxy;
+  let cetherUser;
 
   before(async function() {
     this.registry = await Registry.new();
@@ -51,9 +52,7 @@ contract('CEther', function([_, deployer, user]) {
       const to = this.hcether.address;
       const data = abi.simpleEncode('mint(uint256)', value);
       const rate = await this.cether.exchangeRateStored.call();
-      const result = ether('0.1')
-        .mul(ether('1'))
-        .div(rate);
+      const result = value.mul(ether('1')).div(rate);
       const receipt = await this.proxy.execMock(to, data, {
         from: user,
         value: ether('0.1')
@@ -67,6 +66,72 @@ contract('CEther', function([_, deployer, user]) {
           .sub(ether('0.1'))
           .sub(new BN(receipt.receipt.gasUsed))
       );
+    });
+  });
+
+  describe('Redeem', function() {
+    beforeEach(async function() {
+      await this.cether.mint({
+        from: user,
+        value: ether('1')
+      });
+      cetherUser = await this.cether.balanceOf.call(user);
+    });
+
+    it('normal', async function() {
+      const value = cetherUser;
+      const to = this.hcether.address;
+      const data = abi.simpleEncode('redeem(uint256)', value);
+      const rate = await this.cether.exchangeRateStored.call();
+      const result = value.mul(rate).div(ether('1'));
+      await this.cether.transfer(this.proxy.address, value, { from: user });
+      await this.proxy.updateTokenMock(this.cether.address);
+      await balanceUser.get();
+      const receipt = await this.proxy.execMock(to, data, {
+        from: user,
+        value: ether('0.1')
+      });
+      expect(await this.cether.balanceOf.call(user)).to.be.bignumber.eq(
+        ether('0')
+      );
+      expect(
+        (await balanceUser.delta())
+          .mul(new BN('1000'))
+          .divRound(result.sub(new BN(receipt.receipt.gasUsed)))
+      ).to.be.bignumber.eq(new BN('1000'));
+    });
+  });
+
+  describe('Redeem Underlying', function() {
+    beforeEach(async function() {
+      await this.cether.mint({
+        from: user,
+        value: ether('1')
+      });
+      cetherUser = await this.cether.balanceOf.call(user);
+    });
+
+    it('normal', async function() {
+      const value = ether('1');
+      const to = this.hcether.address;
+      const data = abi.simpleEncode('redeemUnderlying(uint256)', value);
+      const rate = await this.cether.exchangeRateStored.call();
+      const result = value.mul(ether('1')).div(rate);
+      await this.cether.transfer(this.proxy.address, cetherUser, {
+        from: user
+      });
+      await this.proxy.updateTokenMock(this.cether.address);
+      await balanceUser.get();
+      const receipt = await this.proxy.execMock(to, data, {
+        from: user,
+        value: ether('0.1')
+      });
+      expect(await balanceUser.delta()).to.be.bignumber.eq(
+        value.sub(new BN(receipt.receipt.gasUsed))
+      );
+      expect(
+        (await this.cether.balanceOf.call(user)).sub(cetherUser.sub(result))
+      ).to.be.bignumber.lt(new BN('1000'));
     });
   });
 });

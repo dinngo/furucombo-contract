@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+### Added
+
+- Support Compound CEther and CToken redeem and redeemUnderlying.
+
 ## [0.2.0] - 2020-04-20
 
 ### Added
