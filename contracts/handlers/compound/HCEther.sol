@@ -1,9 +1,10 @@
 pragma solidity ^0.5.0;
 
-import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
+import '@openzeppelin/contracts/token/ERC20/SafeERC20.sol';
 
-import "../HandlerBase.sol";
-import "./ICEther.sol";
+import '../HandlerBase.sol';
+import './ICEther.sol';
+
 
 contract HCEther is HandlerBase {
     using SafeERC20 for IERC20;
@@ -21,14 +22,14 @@ contract HCEther is HandlerBase {
     function redeem(uint256 redeemTokens) external payable {
         ICEther compound = ICEther(CETHER);
         IERC20(CETHER).safeApprove(CETHER, redeemTokens);
-        compound.redeem(redeemTokens);
+        require(compound.redeem(redeemTokens) == 0, 'compound redeem failed');
         IERC20(CETHER).safeApprove(CETHER, 0);
     }
 
     function redeemUnderlying(uint256 redeemAmount) external payable {
         ICEther compound = ICEther(CETHER);
         IERC20(CETHER).safeApprove(CETHER, 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF);
-        compound.redeemUnderlying(redeemAmount);
+        require(compound.redeemUnderlying(redeemAmount) == 0, 'compound redeem underlying failed');
         IERC20(CETHER).safeApprove(CETHER, 0);
     }
 }

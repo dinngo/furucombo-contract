@@ -1,9 +1,10 @@
 pragma solidity ^0.5.0;
 
-import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
+import '@openzeppelin/contracts/token/ERC20/SafeERC20.sol';
 
-import "../HandlerBase.sol";
-import "./ICToken.sol";
+import '../HandlerBase.sol';
+import './ICToken.sol';
+
 
 contract HCToken is HandlerBase {
     using SafeERC20 for IERC20;
@@ -12,7 +13,8 @@ contract HCToken is HandlerBase {
         address token = _getToken(cToken);
         IERC20(token).safeApprove(cToken, mintAmount);
         ICToken compound = ICToken(cToken);
-        compound.mint(mintAmount);
+        // compound.mint(mintAmount);
+        require(compound.mint(mintAmount) == 0, 'compound mint failed');
         IERC20(token).safeApprove(cToken, 0);
 
         // Update involved token
@@ -22,7 +24,7 @@ contract HCToken is HandlerBase {
     function redeem(address cToken, uint256 redeemTokens) external payable {
         ICToken compound = ICToken(cToken);
         IERC20(cToken).safeApprove(cToken, redeemTokens);
-        compound.redeem(redeemTokens);
+        require(compound.redeem(redeemTokens) == 0, 'compound redeem failed');
         IERC20(cToken).safeApprove(cToken, 0);
         address token = _getToken(cToken);
 
@@ -33,7 +35,7 @@ contract HCToken is HandlerBase {
     function redeemUnderlying(address cToken, uint256 redeemAmount) external payable {
         ICToken compound = ICToken(cToken);
         IERC20(cToken).safeApprove(cToken, 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF);
-        compound.redeemUnderlying(redeemAmount);
+        require(compound.redeemUnderlying(redeemAmount) == 0, 'compound redeem underlying failed');
         IERC20(cToken).safeApprove(cToken, 0);
         address token = _getToken(cToken);
 
