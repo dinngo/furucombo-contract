@@ -19,6 +19,14 @@ async function resetAccount(account) {
     });
 }
 
+function profileGas(receipt) {
+  receipt.logs.forEach(element => {
+    if (element.event === 'DeltaGas')
+      console.log('Gas cost: ' + element.args.gas.toString());
+  });
+}
+
 module.exports = {
-  resetAccount
+  resetAccount,
+  profileGas
 };
