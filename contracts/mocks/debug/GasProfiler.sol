@@ -8,10 +8,6 @@ contract GasProfiler {
     event DeltaGas(bytes32 tag, uint256 gas);
     event GetGas(bytes32 tag, uint256 gas);
 
-    modifier update() {
-        _;
-        _setBase();
-    }
     function _setBase() internal {
         bytes32 slot = GAS_BASE;
         assembly {
@@ -26,11 +22,13 @@ contract GasProfiler {
         }
     }
 
-    function _deltaGas(bytes32 tag) internal update {
+    function _deltaGas(bytes32 tag) internal {
         emit DeltaGas(tag, _getBase() - gasleft());
+        _setBase();
     }
 
-    function _getGas(bytes32 tag) internal update {
+    function _getGas(bytes32 tag) internal {
         emit GetGas(tag, _getBase());
+        _setBase();
     }
 }
