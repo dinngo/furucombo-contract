@@ -13,7 +13,6 @@ contract HCToken is HandlerBase {
         address token = _getToken(cToken);
         IERC20(token).safeApprove(cToken, mintAmount);
         ICToken compound = ICToken(cToken);
-        // compound.mint(mintAmount);
         require(compound.mint(mintAmount) == 0, 'compound mint failed');
         IERC20(token).safeApprove(cToken, 0);
 
