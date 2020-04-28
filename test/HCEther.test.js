@@ -1,4 +1,12 @@
-const { balance, BN, constants, ether, expectEvent, expectRevert, time } = require('@openzeppelin/test-helpers');
+const {
+  balance,
+  BN,
+  constants,
+  ether,
+  expectEvent,
+  expectRevert,
+  time,
+} = require('@openzeppelin/test-helpers');
 const { tracker } = balance;
 const { latest } = time;
 const abi = require('ethereumjs-abi');
@@ -15,28 +23,31 @@ const Proxy = artifacts.require('ProxyMock');
 const IToken = artifacts.require('IERC20');
 const ICEther = artifacts.require('ICEther');
 
-contract('CEther', function ([_, deployer, user]) {
+contract('CEther', function([_, deployer, user]) {
   let balanceUser;
   let balanceProxy;
   let cetherUser;
 
-  before(async function () {
+  before(async function() {
     this.registry = await Registry.new();
     this.proxy = await Proxy.new(this.registry.address);
     this.hcether = await HCEther.new();
-    await this.registry.register(this.hcether.address, utils.asciiToHex('CEther'));
+    await this.registry.register(
+      this.hcether.address,
+      utils.asciiToHex('CEther')
+    );
     this.cether = await ICEther.at(CETHER);
   });
 
-  beforeEach(async function () {
+  beforeEach(async function() {
     await resetAccount(_);
     await resetAccount(user);
     balanceUser = await tracker(user);
     balanceProxy = await tracker(this.proxy.address);
   });
 
-  describe('Mint', function () {
-    it('normal', async function () {
+  describe('Mint', function() {
+    it('normal', async function() {
       const value = ether('0.1');
       const to = this.hcether.address;
       const data = abi.simpleEncode('mint(uint256)', value);
@@ -47,15 +58,19 @@ contract('CEther', function ([_, deployer, user]) {
         value: ether('0.1'),
       });
       const cetherUser = await this.cether.balanceOf.call(user);
-      expect(cetherUser.mul(new BN('1000')).divRound(result)).to.be.bignumber.eq(new BN('1000'));
+      expect(
+        cetherUser.mul(new BN('1000')).divRound(result)
+      ).to.be.bignumber.eq(new BN('1000'));
       expect(await balanceUser.delta()).to.be.bignumber.eq(
-        ether('0').sub(ether('0.1')).sub(new BN(receipt.receipt.gasUsed))
+        ether('0')
+          .sub(ether('0.1'))
+          .sub(new BN(receipt.receipt.gasUsed))
       );
     });
   });
 
-  describe('Redeem', function () {
-    beforeEach(async function () {
+  describe('Redeem', function() {
+    beforeEach(async function() {
       await this.cether.mint({
         from: user,
         value: ether('1'),
@@ -63,7 +78,7 @@ contract('CEther', function ([_, deployer, user]) {
       cetherUser = await this.cether.balanceOf.call(user);
     });
 
-    it('normal', async function () {
+    it('normal', async function() {
       const value = cetherUser;
       const to = this.hcether.address;
       const data = abi.simpleEncode('redeem(uint256)', value);
@@ -76,13 +91,17 @@ contract('CEther', function ([_, deployer, user]) {
         from: user,
         value: ether('0.1'),
       });
-      expect(await this.cether.balanceOf.call(user)).to.be.bignumber.eq(ether('0'));
+      expect(await this.cether.balanceOf.call(user)).to.be.bignumber.eq(
+        ether('0')
+      );
       expect(
-        (await balanceUser.delta()).mul(new BN('1000')).divRound(result.sub(new BN(receipt.receipt.gasUsed)))
+        (await balanceUser.delta())
+          .mul(new BN('1000'))
+          .divRound(result.sub(new BN(receipt.receipt.gasUsed)))
       ).to.be.bignumber.eq(new BN('1000'));
     });
 
-    it('revert', async function () {
+    it('revert', async function() {
       const value = cetherUser;
       const to = this.hcether.address;
       const data = abi.simpleEncode('redeem(uint256)', value);
@@ -97,8 +116,8 @@ contract('CEther', function ([_, deployer, user]) {
     });
   });
 
-  describe('Redeem Underlying', function () {
-    beforeEach(async function () {
+  describe('Redeem Underlying', function() {
+    beforeEach(async function() {
       await this.cether.mint({
         from: user,
         value: ether('1'),
@@ -106,7 +125,7 @@ contract('CEther', function ([_, deployer, user]) {
       cetherUser = await this.cether.balanceOf.call(user);
     });
 
-    it('normal', async function () {
+    it('normal', async function() {
       const value = ether('1');
       const to = this.hcether.address;
       const data = abi.simpleEncode('redeemUnderlying(uint256)', value);
@@ -121,11 +140,15 @@ contract('CEther', function ([_, deployer, user]) {
         from: user,
         value: ether('0.1'),
       });
-      expect(await balanceUser.delta()).to.be.bignumber.eq(value.sub(new BN(receipt.receipt.gasUsed)));
-      expect((await this.cether.balanceOf.call(user)).sub(cetherUser.sub(result))).to.be.bignumber.lt(new BN('1000'));
+      expect(await balanceUser.delta()).to.be.bignumber.eq(
+        value.sub(new BN(receipt.receipt.gasUsed))
+      );
+      expect(
+        (await this.cether.balanceOf.call(user)).sub(cetherUser.sub(result))
+      ).to.be.bignumber.lt(new BN('1000'));
     });
 
-    it('revert', async function () {
+    it('revert', async function() {
       const value = ether('1');
       const to = this.hcether.address;
       const data = abi.simpleEncode('redeemUnderlying(uint256)', value);

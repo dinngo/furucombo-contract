@@ -5,7 +5,7 @@ const {
   ether,
   expectEvent,
   expectRevert,
-  time
+  time,
 } = require('@openzeppelin/test-helpers');
 const { tracker } = balance;
 const { latest } = time;
@@ -20,7 +20,7 @@ const {
   ETH_PROVIDER,
   DAI_TOKEN,
   DAI_PROVIDER,
-  AAVEPROTOCOL_PROVIDER
+  AAVEPROTOCOL_PROVIDER,
 } = require('./utils/constants');
 const { resetAccount } = require('./utils/utils');
 
@@ -57,7 +57,7 @@ contract('Aave flashloan', function([_, deployer, user]) {
     await web3.eth.sendTransaction({
       from: ETH_PROVIDER,
       to: this.faucet.address,
-      value: ether('1000')
+      value: ether('1000'),
     });
   });
 
@@ -76,7 +76,7 @@ contract('Aave flashloan', function([_, deployer, user]) {
         '0x' +
           abi
             .simpleEncode('drain(address,uint256)', this.faucet.address, value)
-            .toString('hex')
+            .toString('hex'),
       ];
       const test = web3.eth.abi.encodeParameters(
         ['address[]', 'bytes[]'],
@@ -91,7 +91,7 @@ contract('Aave flashloan', function([_, deployer, user]) {
       );
       const receipt = await this.proxy.execMock(to, data, {
         from: user,
-        value: ether('0.1')
+        value: ether('0.1'),
       });
       expect(await balanceUser.delta()).to.be.bignumber.eq(
         value
@@ -108,7 +108,7 @@ contract('Aave flashloan', function([_, deployer, user]) {
     before(async function() {
       this.token = await IToken.at(tokenAddress);
       await this.token.transfer(this.faucet.address, ether('1000'), {
-        from: tokenProvider
+        from: tokenProvider,
       });
     });
 
@@ -130,7 +130,7 @@ contract('Aave flashloan', function([_, deployer, user]) {
               tokenAddress,
               value
             )
-            .toString('hex')
+            .toString('hex'),
       ];
       const test = web3.eth.abi.encodeParameters(
         ['address[]', 'bytes[]'],
@@ -145,7 +145,7 @@ contract('Aave flashloan', function([_, deployer, user]) {
       );
       const receipt = await this.proxy.execMock(to, data, {
         from: user,
-        value: ether('0.1')
+        value: ether('0.1'),
       });
       expect(await balanceUser.delta()).to.be.bignumber.eq(
         ether('0').sub(new BN(receipt.receipt.gasUsed))
@@ -163,7 +163,7 @@ contract('Aave flashloan', function([_, deployer, user]) {
     before(async function() {
       this.token = await IToken.at(tokenAddress);
       await this.token.transfer(this.faucet.address, ether('1000'), {
-        from: tokenProvider
+        from: tokenProvider,
       });
     });
 
@@ -180,7 +180,7 @@ contract('Aave flashloan', function([_, deployer, user]) {
         '0x' +
           abi
             .simpleEncode('drain(address,uint256)', this.faucet.address, value)
-            .toString('hex')
+            .toString('hex'),
       ];
       const test1 = web3.eth.abi.encodeParameters(
         ['address[]', 'bytes[]'],
@@ -197,7 +197,7 @@ contract('Aave flashloan', function([_, deployer, user]) {
               tokenAddress,
               value
             )
-            .toString('hex')
+            .toString('hex'),
       ];
       const test2 = web3.eth.abi.encodeParameters(
         ['address[]', 'bytes[]'],
@@ -217,12 +217,12 @@ contract('Aave flashloan', function([_, deployer, user]) {
           DAI_TOKEN,
           value,
           util.toBuffer(test2)
-        )
+        ),
       ];
 
       const receipt = await this.proxy.batchExec(to, data, {
         from: user,
-        value: ether('0.1')
+        value: ether('0.1'),
       });
       expect(await balanceUser.delta()).to.be.bignumber.eq(
         value
@@ -250,7 +250,7 @@ contract('Aave flashloan', function([_, deployer, user]) {
               tokenAddress,
               value
             )
-            .toString('hex')
+            .toString('hex'),
       ];
       const exec = web3.eth.abi.encodeParameters(
         ['address[]', 'bytes[]'],
@@ -266,7 +266,7 @@ contract('Aave flashloan', function([_, deployer, user]) {
               value,
               util.toBuffer(exec)
             )
-            .toString('hex')
+            .toString('hex'),
       ];
       const flashToken = web3.eth.abi.encodeParameters(
         ['address[]', 'bytes[]'],
@@ -282,7 +282,7 @@ contract('Aave flashloan', function([_, deployer, user]) {
       await expectRevert(
         this.proxy.execMock(to, data, {
           from: user,
-          value: ether('0.1')
+          value: ether('0.1'),
         }),
         'reentrant call'
       );

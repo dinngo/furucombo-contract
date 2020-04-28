@@ -5,7 +5,7 @@ const {
   ether,
   expectEvent,
   expectRevert,
-  time
+  time,
 } = require('@openzeppelin/test-helpers');
 const { tracker } = balance;
 const { latest } = time;
@@ -21,7 +21,7 @@ const {
   DAI_TOKEN,
   DAI_UNISWAP,
   BAT_TOKEN,
-  AAVEPROTOCOL_PROVIDER
+  AAVEPROTOCOL_PROVIDER,
 } = require('./utils/constants');
 const { resetAccount } = require('./utils/utils');
 
@@ -96,7 +96,7 @@ contract('Aave flashloan', function([_, deployer, user]) {
           value[1],
           tokenAddress,
           maxToken
-        )
+        ),
       ];
       const flashTx = util.toBuffer(
         web3.eth.abi.encodeParameters(
@@ -114,7 +114,7 @@ contract('Aave flashloan', function([_, deployer, user]) {
 
       const receipt = await this.proxy.execMock(to, data, {
         from: user,
-        value: ether('1.1')
+        value: ether('1.1'),
       });
       expect(await balanceUser.delta()).to.be.bignumber.gt(
         ether('0')

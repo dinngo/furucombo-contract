@@ -5,7 +5,7 @@ const {
   ether,
   expectEvent,
   expectRevert,
-  time
+  time,
 } = require('@openzeppelin/test-helpers');
 const { tracker } = balance;
 const { MAX_UINT256 } = constants;
@@ -18,7 +18,7 @@ const {
   DAI_UNISWAP,
   DAI_PROVIDER,
   BAT_TOKEN,
-  ETH_PROVIDER
+  ETH_PROVIDER,
 } = require('./utils/constants');
 const { resetAccount } = require('./utils/utils');
 
@@ -81,7 +81,7 @@ contract('Swap', function([_, deployer, user, someone]) {
         );
         const receipt = await this.proxy.execMock(to, data, {
           from: user,
-          value: ether('1')
+          value: ether('1'),
         });
         expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
           tokenUser.add(uniswapAmount)
@@ -143,7 +143,7 @@ contract('Swap', function([_, deployer, user, someone]) {
         );
         const receipt = await this.proxy.execMock(to, data, {
           from: user,
-          value: ether('1')
+          value: ether('1'),
         });
         expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
           tokenUser.add(ether('100'))
@@ -177,7 +177,7 @@ contract('Swap', function([_, deployer, user, someone]) {
         await expectRevert.unspecified(
           this.proxy.execMock(to, data, {
             from: user,
-            value: ether('1')
+            value: ether('1'),
           })
         );
       });
@@ -215,12 +215,12 @@ contract('Swap', function([_, deployer, user, someone]) {
           new BN('1')
         );
         await this.token.transfer(this.proxy.address, value, {
-          from: providerAddress
+          from: providerAddress,
         });
         await this.proxy.updateTokenMock(this.token.address);
         await this.token.transfer(someone, value, { from: providerAddress });
         await this.token.approve(this.swap.address, value, {
-          from: someone
+          from: someone,
         });
 
         const deadline = (await latest()).add(new BN('100'));
@@ -256,13 +256,13 @@ contract('Swap', function([_, deployer, user, someone]) {
           value
         );
         await this.token.transfer(this.proxy.address, value, {
-          from: providerAddress
+          from: providerAddress,
         });
         await this.proxy.updateTokenMock(this.token.address);
         await this.proxy.updateTokenMock(this.token.address);
         await this.token.transfer(someone, value, { from: providerAddress });
         await this.token.approve(this.swap.address, value, {
-          from: someone
+          from: someone,
         });
 
         const deadline = (await latest()).add(new BN('100'));
@@ -273,7 +273,7 @@ contract('Swap', function([_, deployer, user, someone]) {
           { from: someone }
         );
         const receipt = await this.proxy.execMock(to, data, {
-          from: user
+          from: user,
         });
         expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
           tokenUser.add(value).sub(result)
@@ -321,14 +321,14 @@ contract('Swap', function([_, deployer, user, someone]) {
           token1Address
         );
         await this.token0.transfer(this.proxy.address, value, {
-          from: providerAddress
+          from: providerAddress,
         });
         await this.proxy.updateTokenMock(this.token0.address);
         await this.token0.transfer(someone, value, {
-          from: providerAddress
+          from: providerAddress,
         });
         await this.token0.approve(this.swap.address, value, {
-          from: someone
+          from: someone,
         });
 
         const deadline = (await latest()).add(new BN('100'));
@@ -366,14 +366,14 @@ contract('Swap', function([_, deployer, user, someone]) {
           token1Address
         );
         await this.token0.transfer(this.proxy.address, value, {
-          from: providerAddress
+          from: providerAddress,
         });
         await this.proxy.updateTokenMock(this.token0.address);
         await this.token0.transfer(someone, value, {
-          from: providerAddress
+          from: providerAddress,
         });
         await this.token0.approve(this.swap.address, value, {
-          from: someone
+          from: someone,
         });
 
         const deadline = (await latest()).add(new BN('100'));
@@ -386,7 +386,7 @@ contract('Swap', function([_, deployer, user, someone]) {
           { from: someone }
         );
         const receipt = await this.proxy.execMock(to, data, {
-          from: user
+          from: user,
         });
         expect(await this.token0.balanceOf.call(user)).to.be.bignumber.eq(
           token0User.add(value).sub(result)

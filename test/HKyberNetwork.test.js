@@ -5,7 +5,7 @@ const {
   ether,
   expectEvent,
   expectRevert,
-  time
+  time,
 } = require('@openzeppelin/test-helpers');
 const { tracker } = balance;
 const { latest } = time;
@@ -18,7 +18,7 @@ const {
   BAT_TOKEN,
   DAI_TOKEN,
   DAI_PROVIDER,
-  KYBERNETWORK_PROXY
+  KYBERNETWORK_PROXY,
 } = require('./utils/constants');
 const { resetAccount } = require('./utils/utils');
 
@@ -75,7 +75,7 @@ contract('KyberNetwork Swap', function([_, deployer, user, someone]) {
         const kyberswapAmount = value.mul(rate[1]).div(ether('1'));
         const receipt = await this.proxy.execMock(to, data, {
           from: user,
-          value: ether('1')
+          value: ether('1'),
         });
         expect(await this.token.balanceOf.call(user)).to.be.bignumber.gt(
           tokenUser.add(kyberswapAmount)
@@ -108,7 +108,7 @@ contract('KyberNetwork Swap', function([_, deployer, user, someone]) {
         await expectRevert.unspecified(
           this.proxy.execMock(to, data, {
             from: user,
-            value: ether('1')
+            value: ether('1'),
           })
         );
         expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
@@ -139,13 +139,13 @@ contract('KyberNetwork Swap', function([_, deployer, user, someone]) {
           rate[1]
         );
         await this.token.transfer(this.proxy.address, value, {
-          from: providerAddress
+          from: providerAddress,
         });
         await this.proxy.updateTokenMock(this.token.address);
         const kyberswapAmount = value.mul(rate[1]).div(ether('1'));
         const receipt = await this.proxy.execMock(to, data, {
           from: user,
-          value: ether('1')
+          value: ether('1'),
         });
 
         expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
@@ -187,13 +187,13 @@ contract('KyberNetwork Swap', function([_, deployer, user, someone]) {
           rate[1]
         );
         await this.token.transfer(this.proxy.address, value, {
-          from: providerAddress
+          from: providerAddress,
         });
         await this.proxy.updateTokenMock(this.token.address);
         const kyberswapAmount = value.mul(rate[1]).div(ether('1'));
         const receipt = await this.proxy.execMock(to, data, {
           from: user,
-          value: ether('1')
+          value: ether('1'),
         });
 
         expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(

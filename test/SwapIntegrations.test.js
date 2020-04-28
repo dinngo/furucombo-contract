@@ -5,7 +5,7 @@ const {
   ether,
   expectEvent,
   expectRevert,
-  time
+  time,
 } = require('@openzeppelin/test-helpers');
 const { tracker } = balance;
 const { latest } = time;
@@ -78,11 +78,11 @@ contract('SwapIntegration', function([_, deployer, user1]) {
             value[1],
             tokenAddress,
             maxToken
-          )
+          ),
         ];
         const receipt = await this.proxy.batchExec(to, data, {
           from: user1,
-          value: ether('1')
+          value: ether('1'),
         });
         expect(await balanceUser1.delta()).to.be.bignumber.eq(
           ether('0')

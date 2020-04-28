@@ -5,7 +5,7 @@ const {
   ether,
   expectEvent,
   expectRevert,
-  time
+  time,
 } = require('@openzeppelin/test-helpers');
 const { tracker } = balance;
 const { latest } = time;
@@ -16,7 +16,7 @@ const {
   DAI_TOKEN,
   DAI_UNISWAP,
   DAI_PROVIDER,
-  ETH_PROVIDER
+  ETH_PROVIDER,
 } = require('./utils/constants');
 const { resetAccount } = require('./utils/utils');
 
@@ -59,7 +59,7 @@ contract('Liquidity', function([_, deployer, user]) {
   describe('Add', function() {
     beforeEach(async function() {
       await this.token.transfer(this.proxy.address, ether('100'), {
-        from: user
+        from: user,
       });
       await this.proxy.updateTokenMock(this.token.address);
     });
@@ -75,7 +75,7 @@ contract('Liquidity', function([_, deployer, user]) {
       );
       const deadline = (await latest()).add(new BN('100'));
       await this.token.approve(this.swap.address, ether('1000'), {
-        from: user
+        from: user,
       });
       const result = await this.swap.addLiquidity.call(
         new BN('1'),
@@ -85,7 +85,7 @@ contract('Liquidity', function([_, deployer, user]) {
       );
       const receipt = await this.proxy.execMock(to, data, {
         from: user,
-        value: ether('0.1')
+        value: ether('0.1'),
       });
 
       expect(await balanceUser.delta()).to.be.bignumber.lt(ether('0'));
@@ -101,12 +101,12 @@ contract('Liquidity', function([_, deployer, user]) {
     beforeEach(async function() {
       await this.token.transfer(user, ether('100'), { from: providerAddress });
       await this.token.approve(this.swap.address, ether('1000'), {
-        from: user
+        from: user,
       });
       deadline = (await latest()).add(new BN('100'));
       await this.swap.addLiquidity(new BN('1'), ether('100'), deadline, {
         from: user,
-        value: ether('0.1')
+        value: ether('0.1'),
       });
       tokenUser = await this.token.balanceOf.call(user);
       uniTokenUser = await this.swap.balanceOf.call(user);
@@ -123,7 +123,7 @@ contract('Liquidity', function([_, deployer, user]) {
         new BN('1')
       );
       await this.swap.approve(this.swap.address, uniTokenUser, {
-        from: user
+        from: user,
       });
       const result = await this.swap.removeLiquidity.call(
         uniTokenUser,
@@ -133,7 +133,7 @@ contract('Liquidity', function([_, deployer, user]) {
         { from: user }
       );
       await this.swap.transfer(this.proxy.address, uniTokenUser, {
-        from: user
+        from: user,
       });
       await this.proxy.updateTokenMock(this.swap.address);
       await balanceUser.get();

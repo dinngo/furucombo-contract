@@ -4,7 +4,7 @@ const {
   constants,
   ether,
   expectEvent,
-  expectRevert
+  expectRevert,
 } = require('@openzeppelin/test-helpers');
 const { tracker } = balance;
 const abi = require('ethereumjs-abi');
@@ -74,18 +74,18 @@ contract('Proxy', function([_, deployer, user1]) {
       const to = [
         this.fooHandler.address,
         this.fooHandler.address,
-        this.fooHandler.address
+        this.fooHandler.address,
       ];
       const data = [
         abi.simpleEncode('bar(uint256,uint256):(uint256)', index[0], num[0]),
         abi.simpleEncode('bar(uint256,uint256):(uint256)', index[1], num[1]),
-        abi.simpleEncode('bar(uint256,uint256):(uint256)', index[2], num[2])
+        abi.simpleEncode('bar(uint256,uint256):(uint256)', index[2], num[2]),
       ];
       await this.proxy.batchExec(to, data);
       const result = [
         await this.foo0.accounts.call(this.proxy.address),
         await this.foo1.accounts.call(this.proxy.address),
-        await this.foo2.accounts.call(this.proxy.address)
+        await this.foo2.accounts.call(this.proxy.address),
       ];
       expect(result[0]).to.be.bignumber.eq(num[0]);
       expect(result[1]).to.be.bignumber.eq(num[1]);
@@ -137,16 +137,16 @@ contract('Proxy', function([_, deployer, user1]) {
       const to = [
         this.fooHandler.address,
         this.fooHandler.address,
-        this.fooHandler.address
+        this.fooHandler.address,
       ];
       const data = [
         abi.simpleEncode('bar(uint256,uint256):(uint256)', value[0], index[0]),
         abi.simpleEncode('bar(uint256,uint256):(uint256)', value[1], index[1]),
-        abi.simpleEncode('bar(uint256,uint256):(uint256)', value[2], index[2])
+        abi.simpleEncode('bar(uint256,uint256):(uint256)', value[2], index[2]),
       ];
       const receipt = await this.proxy.batchExec(to, data, {
         from: user1,
-        value: ether('1')
+        value: ether('1'),
       });
       expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
       expect(await balanceUser1.delta()).to.be.bignumber.eq(
@@ -186,7 +186,7 @@ contract('Proxy', function([_, deployer, user1]) {
         web3.eth.sendTransaction({
           from: user1,
           to: this.proxy.address,
-          value: ether('1')
+          value: ether('1'),
         })
       );
     });

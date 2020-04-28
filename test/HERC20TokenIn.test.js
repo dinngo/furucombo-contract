@@ -5,7 +5,7 @@ const {
   ether,
   expectEvent,
   expectRevert,
-  time
+  time,
 } = require('@openzeppelin/test-helpers');
 const { tracker } = balance;
 const { latest } = time;
@@ -18,7 +18,7 @@ const {
   DAI_TOKEN,
   DAI_PROVIDER,
   BAT_TOKEN,
-  BAT_PROVIDER
+  BAT_PROVIDER,
 } = require('./utils/constants');
 const { resetAccount } = require('./utils/utils');
 
@@ -60,7 +60,7 @@ contract('ERC20TokenIn', function([_, deployer, user, someone]) {
         value
       );
       await this.token0.transfer(user, value[0], {
-        from: providerAddresses[0]
+        from: providerAddresses[0],
       });
       await this.token0.approve(this.proxy.address, value[0], { from: user });
 
@@ -69,12 +69,12 @@ contract('ERC20TokenIn', function([_, deployer, user, someone]) {
       await expectEvent.inTransaction(receipt.tx, this.token0, 'Transfer', {
         from: user,
         to: this.proxy.address,
-        value: value[0]
+        value: value[0],
       });
       await expectEvent.inTransaction(receipt.tx, this.token0, 'Transfer', {
         from: this.proxy.address,
         to: user,
-        value: value[0]
+        value: value[0],
       });
     });
   });
@@ -94,39 +94,39 @@ contract('ERC20TokenIn', function([_, deployer, user, someone]) {
         value
       );
       await this.token0.transfer(user, value[0], {
-        from: providerAddresses[0]
+        from: providerAddresses[0],
       });
       await this.token0.approve(this.proxy.address, value[0], { from: user });
       await this.token1.transfer(user, value[1], {
-        from: providerAddresses[1]
+        from: providerAddresses[1],
       });
       await this.token1.approve(this.proxy.address, value[1], { from: user });
 
       const receipt = await this.proxy.execMock(to, data, {
         from: user,
-        value: ether('1')
+        value: ether('1'),
       });
 
       await expectEvent.inTransaction(receipt.tx, this.token0, 'Transfer', {
         from: user,
         to: this.proxy.address,
-        value: value[0]
+        value: value[0],
       });
       await expectEvent.inTransaction(receipt.tx, this.token0, 'Transfer', {
         from: this.proxy.address,
         to: user,
-        value: value[0]
+        value: value[0],
       });
 
       await expectEvent.inTransaction(receipt.tx, this.token1, 'Transfer', {
         from: user,
         to: this.proxy.address,
-        value: value[1]
+        value: value[1],
       });
       await expectEvent.inTransaction(receipt.tx, this.token1, 'Transfer', {
         from: this.proxy.address,
         to: user,
-        value: value[1]
+        value: value[1],
       });
     });
   });
