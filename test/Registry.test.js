@@ -7,16 +7,16 @@ const {
   expectRevert,
   time,
 } = require('@openzeppelin/test-helpers');
-const { tracker } = balance;
-const { latest } = time;
-const { ZERO_ADDRESS } = constants;
+const {tracker} = balance;
+const {latest} = time;
+const {ZERO_ADDRESS} = constants;
 const abi = require('ethereumjs-abi');
 const utils = web3.utils;
 
-const { expect } = require('chai');
+const {expect} = require('chai');
 
-const { CETHER } = require('./utils/constants');
-const { resetAccount } = require('./utils/utils');
+const {CETHER} = require('./utils/constants');
+const {resetAccount} = require('./utils/utils');
 
 const Registry = artifacts.require('Registry');
 
@@ -35,7 +35,7 @@ contract('Registry', function([_, deployer, handler1, handler2, someone]) {
 
     it('non owner', async function() {
       await expectRevert.unspecified(
-        this.registry.register(handler1, info, { from: someone })
+        this.registry.register(handler1, info, {from: someone})
       );
     });
 
@@ -70,7 +70,7 @@ contract('Registry', function([_, deployer, handler1, handler2, someone]) {
 
     it('non owner', async function() {
       await expectRevert.unspecified(
-        this.registry.unregister(handler1, { from: someone })
+        this.registry.unregister(handler1, {from: someone})
       );
     });
 

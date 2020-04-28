@@ -6,13 +6,13 @@ const {
   expectEvent,
   expectRevert,
 } = require('@openzeppelin/test-helpers');
-const { tracker } = balance;
+const {tracker} = balance;
 const abi = require('ethereumjs-abi');
 const utils = web3.utils;
 
-const { expect } = require('chai');
+const {expect} = require('chai');
 
-const { resetAccount } = require('./utils/utils');
+const {resetAccount} = require('./utils/utils');
 
 const Foo = artifacts.require('Foo');
 const FooFactory = artifacts.require('FooFactory');
@@ -39,7 +39,7 @@ contract('Proxy', function([_, deployer, user1]) {
 
   describe('execute', function() {
     before(async function() {
-      this.fooFactory = await FooFactory.new({ from: deployer });
+      this.fooFactory = await FooFactory.new({from: deployer});
       expect(this.fooFactory.address).to.be.eq(
         '0xb9A219631Aed55eBC3D998f17C3840B7eC39C0cc'
       );
@@ -95,7 +95,7 @@ contract('Proxy', function([_, deployer, user1]) {
 
   describe('execute with token', function() {
     before(async function() {
-      this.fooFactory = await Foo2Factory.new({ from: deployer });
+      this.fooFactory = await Foo2Factory.new({from: deployer});
       expect(this.fooFactory.address).to.be.eq(
         '0x4D2D24899c0B115a1fce8637FCa610Fe02f1909e'
       );
@@ -124,7 +124,7 @@ contract('Proxy', function([_, deployer, user1]) {
         ether('1'),
         index
       );
-      await this.proxy.execMock(to, data, { value: ether('1') });
+      await this.proxy.execMock(to, data, {value: ether('1')});
       expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
       expect(
         await this.foo0.balanceOf.call(this.proxy.address)

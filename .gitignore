@@ -8,3 +8,4 @@ build/
 
 # lol macs
 .DS_Store
+package-lock.json

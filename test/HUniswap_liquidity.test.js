@@ -7,18 +7,18 @@ const {
   expectRevert,
   time,
 } = require('@openzeppelin/test-helpers');
-const { tracker } = balance;
-const { latest } = time;
+const {tracker} = balance;
+const {latest} = time;
 const abi = require('ethereumjs-abi');
 const utils = web3.utils;
-const { expect } = require('chai');
+const {expect} = require('chai');
 const {
   DAI_TOKEN,
   DAI_UNISWAP,
   DAI_PROVIDER,
   ETH_PROVIDER,
 } = require('./utils/constants');
-const { resetAccount } = require('./utils/utils');
+const {resetAccount} = require('./utils/utils');
 
 const HUniswap = artifacts.require('HUniswap');
 const Registry = artifacts.require('Registry');
@@ -45,7 +45,7 @@ contract('Liquidity', function([_, deployer, user]) {
     );
     this.token = await IToken.at(tokenAddress);
     this.swap = await IUniswapExchange.at(uniswapAddress);
-    await this.token.transfer(user, ether('1000'), { from: providerAddress });
+    await this.token.transfer(user, ether('1000'), {from: providerAddress});
   });
 
   beforeEach(async function() {
@@ -81,7 +81,7 @@ contract('Liquidity', function([_, deployer, user]) {
         new BN('1'),
         ether('100'),
         deadline,
-        { from: user, value: ether('0.1') }
+        {from: user, value: ether('0.1')}
       );
       const receipt = await this.proxy.execMock(to, data, {
         from: user,
@@ -99,7 +99,7 @@ contract('Liquidity', function([_, deployer, user]) {
     let deadline;
 
     beforeEach(async function() {
-      await this.token.transfer(user, ether('100'), { from: providerAddress });
+      await this.token.transfer(user, ether('100'), {from: providerAddress});
       await this.token.approve(this.swap.address, ether('1000'), {
         from: user,
       });
@@ -130,14 +130,14 @@ contract('Liquidity', function([_, deployer, user]) {
         new BN('1'),
         new BN('1'),
         deadline,
-        { from: user }
+        {from: user}
       );
       await this.swap.transfer(this.proxy.address, uniTokenUser, {
         from: user,
       });
       await this.proxy.updateTokenMock(this.swap.address);
       await balanceUser.get();
-      const receipt = await this.proxy.execMock(to, data, { from: user });
+      const receipt = await this.proxy.execMock(to, data, {from: user});
       expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
         tokenUser.add(result['1'])
       );

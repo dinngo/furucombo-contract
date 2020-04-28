@@ -7,13 +7,13 @@ const {
   expectRevert,
   time,
 } = require('@openzeppelin/test-helpers');
-const { tracker } = balance;
-const { latest } = time;
+const {tracker} = balance;
+const {latest} = time;
 const abi = require('ethereumjs-abi');
 const util = require('ethereumjs-util');
 const utils = web3.utils;
 
-const { expect } = require('chai');
+const {expect} = require('chai');
 
 const {
   ETH_PROVIDER,
@@ -23,7 +23,7 @@ const {
   BAT_TOKEN,
   AAVEPROTOCOL_PROVIDER,
 } = require('./utils/constants');
-const { resetAccount } = require('./utils/utils');
+const {resetAccount} = require('./utils/utils');
 
 const HAave = artifacts.require('HAaveProtocol');
 const HMock = artifacts.require('HMock');
@@ -66,7 +66,7 @@ contract('Aave flashloan', function([_, deployer, user]) {
     const uniswapAddress = DAI_UNISWAP;
 
     before(async function() {
-      this.huniswap = await HUniswap.new({ from: deployer });
+      this.huniswap = await HUniswap.new({from: deployer});
       await this.registry.register(
         this.huniswap.address,
         utils.asciiToHex('Uniswap')
@@ -81,7 +81,7 @@ contract('Aave flashloan', function([_, deployer, user]) {
       const maxToken = await this.swap.ethToTokenSwapInput.call(
         new BN('1'),
         deadline,
-        { from: user, value: value[0] }
+        {from: user, value: value[0]}
       );
       const flashTo = [this.huniswap.address, this.huniswap.address];
       const flashData = [

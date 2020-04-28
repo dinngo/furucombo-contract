@@ -7,12 +7,12 @@ const {
   expectRevert,
   time,
 } = require('@openzeppelin/test-helpers');
-const { tracker } = balance;
-const { MAX_UINT256 } = constants;
-const { latest } = time;
+const {tracker} = balance;
+const {MAX_UINT256} = constants;
+const {latest} = time;
 const abi = require('ethereumjs-abi');
 const utils = web3.utils;
-const { expect } = require('chai');
+const {expect} = require('chai');
 const {
   DAI_TOKEN,
   DAI_UNISWAP,
@@ -20,7 +20,7 @@ const {
   BAT_TOKEN,
   ETH_PROVIDER,
 } = require('./utils/constants');
-const { resetAccount } = require('./utils/utils');
+const {resetAccount} = require('./utils/utils');
 
 const HUniswap = artifacts.require('HUniswap');
 const Registry = artifacts.require('Registry');
@@ -41,7 +41,7 @@ contract('Swap', function([_, deployer, user, someone]) {
   beforeEach(async function() {
     await resetAccount(_);
     await resetAccount(user);
-    this.proxy = await Proxy.new(this.registry.address, { from: deployer });
+    this.proxy = await Proxy.new(this.registry.address, {from: deployer});
   });
 
   describe('Ether to Token', function() {
@@ -77,7 +77,7 @@ contract('Swap', function([_, deployer, user, someone]) {
         const uniswapAmount = await this.swap.ethToTokenSwapInput.call(
           new BN('1'),
           deadline,
-          { from: user, value: ether('1') }
+          {from: user, value: ether('1')}
         );
         const receipt = await this.proxy.execMock(to, data, {
           from: user,
@@ -104,7 +104,7 @@ contract('Swap', function([_, deployer, user, someone]) {
         const uniswapAmount = await this.swap.ethToTokenSwapInput.call(
           new BN('1'),
           deadline,
-          { from: user, value: ether('1') }
+          {from: user, value: ether('1')}
         );
         const data = abi.simpleEncode(
           'ethToTokenSwapInput(uint256,address,uint256):(uint256)',
@@ -113,7 +113,7 @@ contract('Swap', function([_, deployer, user, someone]) {
           uniswapAmount.add(ether('0.1'))
         );
         await expectRevert.unspecified(
-          this.proxy.execMock(to, data, { from: user, value: ether('1') })
+          this.proxy.execMock(to, data, {from: user, value: ether('1')})
         );
         expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
           tokenUser
@@ -139,7 +139,7 @@ contract('Swap', function([_, deployer, user, someone]) {
         const uniswapAmount = await this.swap.ethToTokenSwapOutput.call(
           ether('100'),
           deadline,
-          { from: user, value: ether('1') }
+          {from: user, value: ether('1')}
         );
         const receipt = await this.proxy.execMock(to, data, {
           from: user,
@@ -172,7 +172,7 @@ contract('Swap', function([_, deployer, user, someone]) {
         const uniswapAmount = await this.swap.ethToTokenSwapOutput.call(
           ether('100'),
           deadline,
-          { from: user, value: ether('1') }
+          {from: user, value: ether('1')}
         );
         await expectRevert.unspecified(
           this.proxy.execMock(to, data, {
@@ -218,7 +218,7 @@ contract('Swap', function([_, deployer, user, someone]) {
           from: providerAddress,
         });
         await this.proxy.updateTokenMock(this.token.address);
-        await this.token.transfer(someone, value, { from: providerAddress });
+        await this.token.transfer(someone, value, {from: providerAddress});
         await this.token.approve(this.swap.address, value, {
           from: someone,
         });
@@ -228,9 +228,9 @@ contract('Swap', function([_, deployer, user, someone]) {
           value,
           new BN('1'),
           deadline,
-          { from: someone }
+          {from: someone}
         );
-        const receipt = await this.proxy.execMock(to, data, { from: user });
+        const receipt = await this.proxy.execMock(to, data, {from: user});
 
         expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
           tokenUser
@@ -260,7 +260,7 @@ contract('Swap', function([_, deployer, user, someone]) {
         });
         await this.proxy.updateTokenMock(this.token.address);
         await this.proxy.updateTokenMock(this.token.address);
-        await this.token.transfer(someone, value, { from: providerAddress });
+        await this.token.transfer(someone, value, {from: providerAddress});
         await this.token.approve(this.swap.address, value, {
           from: someone,
         });
@@ -270,7 +270,7 @@ contract('Swap', function([_, deployer, user, someone]) {
           ether('0.1'),
           value,
           deadline,
-          { from: someone }
+          {from: someone}
         );
         const receipt = await this.proxy.execMock(to, data, {
           from: user,
@@ -338,9 +338,9 @@ contract('Swap', function([_, deployer, user, someone]) {
           new BN('1'),
           deadline,
           token1Address,
-          { from: someone }
+          {from: someone}
         );
-        const receipt = await this.proxy.execMock(to, data, { from: user });
+        const receipt = await this.proxy.execMock(to, data, {from: user});
 
         expect(await this.token0.balanceOf.call(user)).to.be.bignumber.eq(
           token0User
@@ -383,7 +383,7 @@ contract('Swap', function([_, deployer, user, someone]) {
           MAX_UINT256,
           deadline,
           token1Address,
-          { from: someone }
+          {from: someone}
         );
         const receipt = await this.proxy.execMock(to, data, {
           from: user,

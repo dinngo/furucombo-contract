@@ -7,12 +7,12 @@ const {
   expectRevert,
   time,
 } = require('@openzeppelin/test-helpers');
-const { tracker } = balance;
-const { latest } = time;
+const {tracker} = balance;
+const {latest} = time;
 const abi = require('ethereumjs-abi');
 const utils = web3.utils;
 
-const { expect } = require('chai');
+const {expect} = require('chai');
 
 const {
   DAI_TOKEN,
@@ -20,7 +20,7 @@ const {
   BAT_TOKEN,
   BAT_PROVIDER,
 } = require('./utils/constants');
-const { resetAccount } = require('./utils/utils');
+const {resetAccount} = require('./utils/utils');
 
 const HERC20TokenIn = artifacts.require('HERC20TokenIn');
 const Registry = artifacts.require('Registry');
@@ -62,9 +62,9 @@ contract('ERC20TokenIn', function([_, deployer, user, someone]) {
       await this.token0.transfer(user, value[0], {
         from: providerAddresses[0],
       });
-      await this.token0.approve(this.proxy.address, value[0], { from: user });
+      await this.token0.approve(this.proxy.address, value[0], {from: user});
 
-      const receipt = await this.proxy.execMock(to, data, { from: user });
+      const receipt = await this.proxy.execMock(to, data, {from: user});
 
       await expectEvent.inTransaction(receipt.tx, this.token0, 'Transfer', {
         from: user,
@@ -96,11 +96,11 @@ contract('ERC20TokenIn', function([_, deployer, user, someone]) {
       await this.token0.transfer(user, value[0], {
         from: providerAddresses[0],
       });
-      await this.token0.approve(this.proxy.address, value[0], { from: user });
+      await this.token0.approve(this.proxy.address, value[0], {from: user});
       await this.token1.transfer(user, value[1], {
         from: providerAddresses[1],
       });
-      await this.token1.approve(this.proxy.address, value[1], { from: user });
+      await this.token1.approve(this.proxy.address, value[1], {from: user});
 
       const receipt = await this.proxy.execMock(to, data, {
         from: user,

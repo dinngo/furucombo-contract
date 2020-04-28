@@ -7,15 +7,15 @@ const {
   expectRevert,
   time,
 } = require('@openzeppelin/test-helpers');
-const { tracker } = balance;
-const { latest } = time;
+const {tracker} = balance;
+const {latest} = time;
 const abi = require('ethereumjs-abi');
 const utils = web3.utils;
 
-const { expect } = require('chai');
+const {expect} = require('chai');
 
-const { DAI_TOKEN, DAI_UNISWAP, CDAI } = require('./utils/constants');
-const { resetAccount } = require('./utils/utils');
+const {DAI_TOKEN, DAI_UNISWAP, CDAI} = require('./utils/constants');
+const {resetAccount} = require('./utils/utils');
 
 const HUniswap = artifacts.require('HUniswap');
 const HCToken = artifacts.require('HCToken');
@@ -47,7 +47,7 @@ contract('SwapIntegration', function([_, deployer, user1]) {
     const uniswapAddress = DAI_UNISWAP;
 
     before(async function() {
-      this.huniswap = await HUniswap.new({ from: deployer });
+      this.huniswap = await HUniswap.new({from: deployer});
       await this.registry.register(
         this.huniswap.address,
         utils.asciiToHex('Uniswap')
@@ -63,7 +63,7 @@ contract('SwapIntegration', function([_, deployer, user1]) {
         const maxToken = await this.swap.ethToTokenSwapInput.call(
           new BN('1'),
           deadline,
-          { from: user1, value: value[0] }
+          {from: user1, value: value[0]}
         );
         const to = [this.huniswap.address, this.huniswap.address];
         const data = [
