@@ -17,7 +17,7 @@ contract SimpleToken is ERC20 {
   string public constant symbol = "SIM"; // solium-disable-line uppercase
   uint8 public constant decimals = 18; // solium-disable-line uppercase
 
-  uint256 public constant INITIAL_SUPPLY = 10000 * (10 ** uint256(decimals));
+  uint256 public constant INITIAL_SUPPLY = 10000 * (10**uint256(decimals));
 
   /**
    * @dev Constructor that gives msg.sender all of existing tokens.
@@ -25,5 +25,4 @@ contract SimpleToken is ERC20 {
   constructor() public {
     _mint(msg.sender, INITIAL_SUPPLY);
   }
-
 }
