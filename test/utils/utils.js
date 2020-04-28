@@ -22,7 +22,11 @@ async function resetAccount(account) {
 function profileGas(receipt) {
   receipt.logs.forEach(element => {
     if (element.event === 'DeltaGas')
-      console.log('Gas cost: ' + element.args.gas.toString());
+      console.log(
+        web3.utils.hexToAscii(element.args.tag) +
+          ': ' +
+          element.args.gas.toString()
+      );
   });
 }
 
