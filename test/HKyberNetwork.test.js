@@ -20,7 +20,7 @@ const {
   DAI_PROVIDER,
   KYBERNETWORK_PROXY
 } = require('./utils/constants');
-const { resetAccount } = require('./utils/utils');
+const { resetAccount, profileGas } = require('./utils/utils');
 
 const HKyberNetwork = artifacts.require('HKyberNetwork');
 const Registry = artifacts.require('Registry');
@@ -89,6 +89,7 @@ contract('KyberNetwork Swap', function([_, deployer, user, someone]) {
             .sub(ether('1'))
             .sub(new BN(receipt.receipt.gasUsed))
         );
+        profileGas(receipt);
       });
 
       it('min rate too high', async function() {
@@ -158,6 +159,7 @@ contract('KyberNetwork Swap', function([_, deployer, user, someone]) {
         expect(await balanceUser.delta()).to.be.bignumber.gt(
           kyberswapAmount.sub(new BN(receipt.receipt.gasUsed))
         );
+        profileGas(receipt);
       });
     });
   });
@@ -212,6 +214,7 @@ contract('KyberNetwork Swap', function([_, deployer, user, someone]) {
           ether('0').sub(new BN(receipt.receipt.gasUsed))
         );
         expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
+        profileGas(receipt);
       });
     });
   });

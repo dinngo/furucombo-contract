@@ -20,7 +20,7 @@ const {
   BAT_TOKEN,
   ETH_PROVIDER
 } = require('./utils/constants');
-const { resetAccount } = require('./utils/utils');
+const { resetAccount, profileGas } = require('./utils/utils');
 
 const HUniswap = artifacts.require('HUniswap');
 const Registry = artifacts.require('Registry');
@@ -95,6 +95,7 @@ contract('Swap', function([_, deployer, user, someone]) {
             .sub(ether('1'))
             .sub(new BN(receipt.receipt.gasUsed))
         );
+        profileGas(receipt);
       });
 
       it('min amount too high', async function() {
@@ -157,6 +158,7 @@ contract('Swap', function([_, deployer, user, someone]) {
             .sub(uniswapAmount)
             .sub(new BN(receipt.receipt.gasUsed))
         );
+        profileGas(receipt);
       });
 
       it('insufficient ether', async function() {
@@ -242,6 +244,7 @@ contract('Swap', function([_, deployer, user, someone]) {
         expect(await balanceUser.delta()).to.be.bignumber.eq(
           result.sub(new BN(receipt.receipt.gasUsed))
         );
+        profileGas(receipt);
       });
     });
 
@@ -285,6 +288,7 @@ contract('Swap', function([_, deployer, user, someone]) {
         expect(await balanceUser.delta()).to.be.bignumber.eq(
           ether('0.1').sub(new BN(receipt.receipt.gasUsed))
         );
+        profileGas(receipt);
       });
     });
   });
@@ -351,6 +355,7 @@ contract('Swap', function([_, deployer, user, someone]) {
         expect(await this.token1.balanceOf.call(user)).to.be.bignumber.eq(
           result
         );
+        profileGas(receipt);
       });
     });
 
@@ -397,6 +402,7 @@ contract('Swap', function([_, deployer, user, someone]) {
         expect(await this.token1.balanceOf.call(user)).to.be.bignumber.eq(
           token1User.add(value)
         );
+        profileGas(receipt);
       });
     });
   });

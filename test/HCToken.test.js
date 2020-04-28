@@ -15,7 +15,7 @@ const utils = web3.utils;
 const { expect } = require('chai');
 
 const { CDAI, DAI_TOKEN, DAI_PROVIDER } = require('./utils/constants');
-const { resetAccount } = require('./utils/utils');
+const { resetAccount, profileGas } = require('./utils/utils');
 
 const HCToken = artifacts.require('HCToken');
 const Registry = artifacts.require('Registry');
@@ -76,6 +76,7 @@ contract('CToken', function([_, deployer, user]) {
       expect(await balanceUser.delta()).to.be.bignumber.eq(
         ether('0').sub(new BN(receipt.receipt.gasUsed))
       );
+      profileGas(receipt);
     });
   });
 
@@ -114,6 +115,7 @@ contract('CToken', function([_, deployer, user]) {
           .mul(new BN('1000'))
           .divRound(result)
       ).to.be.bignumber.eq(new BN('1000'));
+      profileGas(receipt);
     });
   });
 
@@ -155,6 +157,7 @@ contract('CToken', function([_, deployer, user]) {
         (await this.ctoken.balanceOf.call(user)).sub(ctokenUser.sub(result))
       ).to.be.bignumber.lt(new BN('1000'));
       */
+      profileGas(receipt);
     });
   });
 });
