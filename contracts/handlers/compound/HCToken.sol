@@ -37,8 +37,7 @@ contract HCToken is HandlerBase {
   {
     ICToken compound = ICToken(cToken);
     IERC20(cToken).safeApprove(
-      cToken,
-      0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+      cToken,0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
     );
     require(
       compound.redeemUnderlying(redeemAmount) == 0,
