@@ -89,7 +89,8 @@ contract('CToken', function([_, deployer, user]) {
       );
       await this.proxy.updateTokenMock(this.token.address);
       await expectRevert.unspecified(
-        this.proxy.execMock(to, data, {from: user})
+        this.proxy.execMock(to, data, {from: user}),
+        'compound mint failed'
       );
     });
   });
@@ -145,7 +146,8 @@ contract('CToken', function([_, deployer, user]) {
         this.proxy.execMock(to, data, {
           from: user,
           value: ether('0.1'),
-        })
+        }),
+        'compound redeem failed'
       );
     });
   });
@@ -206,7 +208,8 @@ contract('CToken', function([_, deployer, user]) {
         this.proxy.execMock(to, data, {
           from: user,
           value: ether('0.1'),
-        })
+        }),
+        'compound redeem underlying failed'
       );
     });
   });

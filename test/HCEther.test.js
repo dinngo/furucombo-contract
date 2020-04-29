@@ -113,7 +113,8 @@ contract('CEther', function([_, deployer, user]) {
         this.proxy.execMock(to, data, {
           from: user,
           value: ether('0.1'),
-        })
+        }),
+        'compound redeem failed'
       );
     });
   });
@@ -160,7 +161,8 @@ contract('CEther', function([_, deployer, user]) {
         this.proxy.execMock(to, data, {
           from: user,
           value: ether('0.1'),
-        })
+        }),
+        'compound redeem underlying failed'
       );
     });
   });
