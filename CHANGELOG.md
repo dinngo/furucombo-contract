@@ -7,6 +7,13 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 - Support Compound CEther and CToken redeem and redeemUnderlying.
+- Gas profiling.
+- Apply prettier for solidity and js files.
+
+### Fixed
+
+- Revert CEther redeem and redeemUnderlying on failure.
+- Revert CToken mint, redeem and redeemUnderlying on failure.
 
 ## [0.2.0] - 2020-04-20
 
