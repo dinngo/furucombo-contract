@@ -7,13 +7,13 @@ const {
   expectRevert,
   time,
 } = require('@openzeppelin/test-helpers');
-const {tracker} = balance;
-const {latest} = time;
+const { tracker } = balance;
+const { latest } = time;
 const abi = require('ethereumjs-abi');
 const util = require('ethereumjs-util');
 const utils = web3.utils;
 
-const {expect} = require('chai');
+const { expect } = require('chai');
 
 const {
   ETH_TOKEN,
@@ -22,7 +22,7 @@ const {
   DAI_PROVIDER,
   AAVEPROTOCOL_PROVIDER,
 } = require('./utils/constants');
-const {resetAccount} = require('./utils/utils');
+const { resetAccount } = require('./utils/utils');
 
 const HAave = artifacts.require('HAaveProtocol');
 const HMock = artifacts.require('HMock');

@@ -7,15 +7,15 @@ const {
   expectRevert,
   time,
 } = require('@openzeppelin/test-helpers');
-const {tracker} = balance;
-const {latest} = time;
+const { tracker } = balance;
+const { latest } = time;
 const abi = require('ethereumjs-abi');
 const utils = web3.utils;
 
-const {expect} = require('chai');
+const { expect } = require('chai');
 
-const {CETHER} = require('./utils/constants');
-const {resetAccount, profileGas} = require('./utils/utils');
+const { CETHER } = require('./utils/constants');
+const { resetAccount, profileGas } = require('./utils/utils');
 
 const HCEther = artifacts.require('HCEther');
 const Registry = artifacts.require('Registry');
@@ -85,7 +85,7 @@ contract('CEther', function([_, deployer, user]) {
       const data = abi.simpleEncode('redeem(uint256)', value);
       const rate = await this.cether.exchangeRateStored.call();
       const result = value.mul(rate).div(ether('1'));
-      await this.cether.transfer(this.proxy.address, value, {from: user});
+      await this.cether.transfer(this.proxy.address, value, { from: user });
       await this.proxy.updateTokenMock(this.cether.address);
       await balanceUser.get();
       const receipt = await this.proxy.execMock(to, data, {

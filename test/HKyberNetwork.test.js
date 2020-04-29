@@ -7,12 +7,12 @@ const {
   expectRevert,
   time,
 } = require('@openzeppelin/test-helpers');
-const {tracker} = balance;
-const {latest} = time;
+const { tracker } = balance;
+const { latest } = time;
 const abi = require('ethereumjs-abi');
 const utils = web3.utils;
 
-const {expect} = require('chai');
+const { expect } = require('chai');
 
 const {
   BAT_TOKEN,
@@ -20,7 +20,7 @@ const {
   DAI_PROVIDER,
   KYBERNETWORK_PROXY,
 } = require('./utils/constants');
-const {resetAccount, profileGas} = require('./utils/utils');
+const { resetAccount, profileGas } = require('./utils/utils');
 
 const HKyberNetwork = artifacts.require('HKyberNetwork');
 const Registry = artifacts.require('Registry');
