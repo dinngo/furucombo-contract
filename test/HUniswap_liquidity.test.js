@@ -18,7 +18,7 @@ const {
   DAI_PROVIDER,
   ETH_PROVIDER,
 } = require('./utils/constants');
-const {resetAccount} = require('./utils/utils');
+const {resetAccount, profileGas} = require('./utils/utils');
 
 const HUniswap = artifacts.require('HUniswap');
 const Registry = artifacts.require('Registry');
@@ -92,6 +92,7 @@ contract('Liquidity', function([_, deployer, user]) {
       expect(await this.swap.balanceOf.call(user)).to.be.bignumber.eq(
         uniTokenUser.add(result)
       );
+      profileGas(receipt);
     });
   });
 
@@ -144,6 +145,7 @@ contract('Liquidity', function([_, deployer, user]) {
       expect(await balanceUser.delta()).to.be.bignumber.eq(
         result['0'].sub(new BN(receipt.receipt.gasUsed))
       );
+      profileGas(receipt);
     });
   });
 });

@@ -15,7 +15,7 @@ const utils = web3.utils;
 const {expect} = require('chai');
 
 const {CETHER} = require('./utils/constants');
-const {resetAccount} = require('./utils/utils');
+const {resetAccount, profileGas} = require('./utils/utils');
 
 const HCEther = artifacts.require('HCEther');
 const Registry = artifacts.require('Registry');
@@ -66,6 +66,7 @@ contract('CEther', function([_, deployer, user]) {
           .sub(ether('0.1'))
           .sub(new BN(receipt.receipt.gasUsed))
       );
+      profileGas(receipt);
     });
   });
 
@@ -99,6 +100,7 @@ contract('CEther', function([_, deployer, user]) {
           .mul(new BN('1000'))
           .divRound(result.sub(new BN(receipt.receipt.gasUsed)))
       ).to.be.bignumber.eq(new BN('1000'));
+      profileGas(receipt);
     });
 
     it('revert', async function() {
@@ -146,6 +148,7 @@ contract('CEther', function([_, deployer, user]) {
       expect(
         (await this.cether.balanceOf.call(user)).sub(cetherUser.sub(result))
       ).to.be.bignumber.lt(new BN('1000'));
+      profileGas(receipt);
     });
 
     it('revert', async function() {

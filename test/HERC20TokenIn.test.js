@@ -20,7 +20,7 @@ const {
   BAT_TOKEN,
   BAT_PROVIDER,
 } = require('./utils/constants');
-const {resetAccount} = require('./utils/utils');
+const {resetAccount, profileGas} = require('./utils/utils');
 
 const HERC20TokenIn = artifacts.require('HERC20TokenIn');
 const Registry = artifacts.require('Registry');
@@ -76,6 +76,7 @@ contract('ERC20TokenIn', function([_, deployer, user, someone]) {
         to: user,
         value: value[0],
       });
+      profileGas(receipt);
     });
   });
 
@@ -128,6 +129,7 @@ contract('ERC20TokenIn', function([_, deployer, user, someone]) {
         to: user,
         value: value[1],
       });
+      profileGas(receipt);
     });
   });
 });
