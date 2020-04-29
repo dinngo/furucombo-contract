@@ -6,6 +6,7 @@ import "../HandlerBase.sol";
 import "./IUniswapFactory.sol";
 import "./IUniswapExchange.sol";
 
+
 contract HUniswap is HandlerBase {
     using SafeERC20 for IERC20;
 
@@ -33,7 +34,12 @@ contract HUniswap is HandlerBase {
     ) external payable returns (uint256 eth_gain, uint256 token_gain) {
         IUniswapExchange uniswap = _getExchange(token);
         IERC20(address(uniswap)).safeApprove(address(uniswap), amount);
-        (eth_gain, token_gain) = uniswap.removeLiquidity(amount, min_eth, min_tokens, now + 1);
+        (eth_gain, token_gain) = uniswap.removeLiquidity(
+            amount,
+            min_eth,
+            min_tokens,
+            now + 1
+        );
         IERC20(address(uniswap)).safeApprove(address(uniswap), 0);
 
         // Update involved token
@@ -46,7 +52,10 @@ contract HUniswap is HandlerBase {
         uint256 min_tokens
     ) external payable returns (uint256 tokens_bought) {
         IUniswapExchange uniswap = _getExchange(token);
-        tokens_bought = uniswap.ethToTokenSwapInput.value(value)(min_tokens, now);
+        tokens_bought = uniswap.ethToTokenSwapInput.value(value)(
+            min_tokens,
+            now
+        );
 
         // Update involved token
         _updateToken(token);
@@ -58,7 +67,10 @@ contract HUniswap is HandlerBase {
         uint256 tokens_bought
     ) external payable returns (uint256 eth_sold) {
         IUniswapExchange uniswap = _getExchange(token);
-        eth_sold = uniswap.ethToTokenSwapOutput.value(value)(tokens_bought, now);
+        eth_sold = uniswap.ethToTokenSwapOutput.value(value)(
+            tokens_bought,
+            now
+        );
 
         // Update involved token
         _updateToken(token);
@@ -128,7 +140,11 @@ contract HUniswap is HandlerBase {
         _updateToken(token_addr);
     }
 
-    function _getExchange(address token) internal view returns (IUniswapExchange uniswap) {
+    function _getExchange(address token)
+        internal
+        view
+        returns (IUniswapExchange uniswap)
+    {
         IUniswapFactory uniswapFactory = IUniswapFactory(UNISWAP_FACTORY);
         uniswap = IUniswapExchange(uniswapFactory.getExchange(token));
     }

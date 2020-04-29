@@ -11,18 +11,18 @@ import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
  * `StandardToken` functions.
  */
 contract SimpleToken is ERC20 {
-  using SafeERC20 for ERC20;
+    using SafeERC20 for ERC20;
 
-  string public constant name = "SimpleToken"; // solium-disable-line uppercase
-  string public constant symbol = "SIM"; // solium-disable-line uppercase
-  uint8 public constant decimals = 18; // solium-disable-line uppercase
+    string public constant name = "SimpleToken"; // solium-disable-line uppercase
+    string public constant symbol = "SIM"; // solium-disable-line uppercase
+    uint8 public constant decimals = 18; // solium-disable-line uppercase
 
-  uint256 public constant INITIAL_SUPPLY = 10000 * (10**uint256(decimals));
+    uint256 public constant INITIAL_SUPPLY = 10000 * (10**uint256(decimals));
 
-  /**
-   * @dev Constructor that gives msg.sender all of existing tokens.
-   */
-  constructor() public {
-    _mint(msg.sender, INITIAL_SUPPLY);
-  }
+    /**
+     * @dev Constructor that gives msg.sender all of existing tokens.
+     */
+    constructor() public {
+        _mint(msg.sender, INITIAL_SUPPLY);
+    }
 }

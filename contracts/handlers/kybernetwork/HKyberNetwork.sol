@@ -6,6 +6,7 @@ import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "../HandlerBase.sol";
 import "./IKyberNetworkProxy.sol";
 
+
 contract HKyberNetwork is HandlerBase {
     using SafeERC20 for IERC20;
 
@@ -18,7 +19,10 @@ contract HKyberNetwork is HandlerBase {
         uint256 minRate
     ) external payable returns (uint256 destAmount) {
         IKyberNetworkProxy kyber = IKyberNetworkProxy(KYBERNETWORK_PROXY);
-        destAmount = kyber.swapEtherToToken.value(value)(IERC20(token), minRate);
+        destAmount = kyber.swapEtherToToken.value(value)(
+            IERC20(token),
+            minRate
+        );
 
         // Update involved token
         _updateToken(token);

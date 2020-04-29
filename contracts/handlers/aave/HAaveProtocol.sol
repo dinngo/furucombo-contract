@@ -8,9 +8,11 @@ import "./ILendingPoolAddressesProvider.sol";
 import "./FlashLoanReceiverBase.sol";
 import "../HandlerBase.sol";
 
+
 interface IProxy {
     function execs(address[] calldata tos, bytes[] calldata datas) external;
 }
+
 
 contract HAaveProtocol is HandlerBase, FlashLoanReceiverBase {
     using SafeERC20 for IERC20;
@@ -26,8 +28,7 @@ contract HAaveProtocol is HandlerBase, FlashLoanReceiverBase {
         lendingPool.flashLoan(address(this), _reserve, _amount, _params);
 
         // Update involved token
-        if (_reserve != ETHADDRESS)
-            _updateToken(_reserve);
+        if (_reserve != ETHADDRESS) _updateToken(_reserve);
     }
 
     function executeOperation(
@@ -37,7 +38,8 @@ contract HAaveProtocol is HandlerBase, FlashLoanReceiverBase {
         bytes calldata _params
     ) external payable {
         (address[] memory tos, bytes[] memory datas) = abi.decode(
-            _params, (address[], bytes[])
+            _params,
+            (address[], bytes[])
         );
         IProxy(address(this)).execs(tos, datas);
         transferFundsBackToPoolInternal(_reserve, _amount.add(_fee));
