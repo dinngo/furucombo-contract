@@ -1,4 +1,4 @@
 #!/bin/bash
 set -o errexit
 ./node_modules/prettier/bin-prettier.js --write test/*
-./node_modules/prettier/bin-prettier.js --write contracts/**/*
+./node_modules/prettier/bin-prettier.js --write contracts/**/**/*.sol
