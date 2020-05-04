@@ -10,7 +10,7 @@ Any direct modification to develop branch is prohibited. Please work on your own
 
 ## A typical workflow
 
-1. Make sure you fork is updated
+1. Make sure your fork is updated
 
 ```
 cd legocontract
@@ -25,7 +25,7 @@ git rebase upstream/develop
 git checkout -b some-feature
 ```
 
-3. Do your work and **Unit test**, commit and push to you fork
+3. Do your work and **Unit test**, commit and push to your fork
 
 ```
 git add contracts/yourFile.sol tests/yourFile.test.js
@@ -33,6 +33,6 @@ git commit "some-feature"
 git push origin some-feature
 ```
 
-4. Update [change log](CHANGELOG.md). Description should be written under proper tag in the **unreleased** section.
+4. Update [changelog](CHANGELOG.md). Description should be written under proper tag in the **unreleased** section. You may refer to [here](https://keepachangelog.com/en/1.0.0/).
 
-4. Issue a new MR
+5. Issue a new MR
