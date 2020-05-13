@@ -2,9 +2,9 @@ pragma solidity ^0.5.0;
 
 
 contract HandlerBase {
-    address[] public tokens;
+    bytes32[] cache;
 
     function _updateToken(address token) internal {
-        tokens.push(token);
+        cache.push(bytes20(token));
     }
 }

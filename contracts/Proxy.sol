@@ -15,10 +15,10 @@ interface IRegistry {
 contract Proxy {
     using Address for address;
 
-    address[] public tokens;
+    bytes32[] cache;
 
-    modifier isTokenEmpty() {
-        require(tokens.length == 0, "Token list not empty");
+    modifier isCacheEmpty() {
+        require(cache.length == 0, "Cache not empty");
         _;
     }
 
@@ -100,16 +100,16 @@ contract Proxy {
         }
     }
 
-    function _preProcess() internal isTokenEmpty {}
+    function _preProcess() internal isCacheEmpty {}
 
     function _postProcess() internal {
         // Token involved should be returned to user
-        while (tokens.length > 0) {
-            address token = tokens[tokens.length - 1];
+        while (cache.length > 0) {
+            address token = address(bytes20(cache[cache.length - 1]));
 
             uint256 amount = IERC20(token).balanceOf(address(this));
             if (amount > 0) IERC20(token).transfer(msg.sender, amount);
-            tokens.pop();
+            cache.pop();
         }
 
         // Balance should also be returned to user
