@@ -3,17 +3,12 @@ pragma experimental ABIEncoderV2;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
+import "./interface/IRegistry.sol";
 import "./Cache.sol";
+import "./Config.sol";
 
 
-interface IRegistry {
-    function isValid(address handler) external view returns (bool result);
-
-    function getInfo(address handler) external view returns (bytes32 info);
-}
-
-
-contract Proxy is Cache {
+contract Proxy is Cache, Config {
     using Address for address;
 
     // keccak256 hash of "furucombo.handler.registry"
@@ -60,8 +55,7 @@ contract Proxy is Cache {
         );
         for (uint256 i = 0; i < tos.length; i++) {
             _exec(tos[i], datas[i]);
-            if (cache[cache.length - 1] != bytes32(0))
-                cache.push(bytes20(tos[i]));
+            _setPostProcess(tos[i]);
         }
     }
 
@@ -96,17 +90,23 @@ contract Proxy is Cache {
         }
     }
 
+    function _setPostProcess(address _to) internal {
+        if (cache.peek() == bytes32(uint256(HandlerType.Noop))) cache.pop();
+        else if (cache.peek() == bytes32(uint256(HandlerType.Token))) return;
+        else cache.push(bytes20(_to));
+    }
+
     function _preProcess() internal isCacheEmpty {}
 
     function _postProcess() internal {
         // Token involved should be returned to user
         while (cache.length > 0) {
-            address to = _getCacheAddress();
+            address to = cache.getAddress();
             if (to == address(0)) {
-                address token = _getCacheAddress();
+                address token = cache.getAddress();
                 uint256 amount = IERC20(token).balanceOf(address(this));
                 if (amount > 0) IERC20(token).transfer(msg.sender, amount);
-            } else _exec(to, abi.encodeWithSelector(0xc2722916)); // postProcess function signature
+            } else _exec(to, abi.encodeWithSelector(POSTPROCESS_SIG));
         }
 
         // Balance should also be returned to user

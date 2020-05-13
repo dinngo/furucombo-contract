@@ -15,7 +15,7 @@ contract ProxyMock is Proxy, GasProfiler {
     {
         _setBase();
         result = _exec(to, data);
-        if (cache[cache.length - 1] != bytes32(0)) cache.push(bytes20(to));
+        _setPostProcess(to);
         _deltaGas("Gas");
         _postProcess();
         return result;

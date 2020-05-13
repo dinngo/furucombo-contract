@@ -23,7 +23,7 @@ contract HERC20TokenIn is HandlerBase {
                 amounts[i]
             );
 
-            // Update involved token
+            // Update post process
             _updateToken(tokens[i]);
         }
     }
