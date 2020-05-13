@@ -15,6 +15,7 @@ contract ProxyMock is Proxy, GasProfiler {
     {
         _setBase();
         result = _exec(to, data);
+        if (cache[cache.length - 1] != bytes32(0)) cache.push(bytes20(to));
         _deltaGas("Gas");
         _postProcess();
         return result;
@@ -22,5 +23,6 @@ contract ProxyMock is Proxy, GasProfiler {
 
     function updateTokenMock(address token) public {
         cache.push(bytes20(token));
+        cache.push(bytes32(0));
     }
 }

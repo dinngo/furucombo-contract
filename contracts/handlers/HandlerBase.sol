@@ -1,10 +1,16 @@
 pragma solidity ^0.5.0;
 
+import "../Cache.sol";
 
-contract HandlerBase {
-    bytes32[] cache;
+
+contract HandlerBase is Cache {
+    modifier addFunctionSelector() {
+        _;
+        _setCache(msg.sig);
+    }
 
     function _updateToken(address token) internal {
-        cache.push(bytes20(token));
+        _setCacheAddress(token);
+        _setCache(bytes32(0));
     }
 }
