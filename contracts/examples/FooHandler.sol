@@ -26,6 +26,7 @@ contract FooHandler is HandlerBase {
 
     function bar(uint256 index, uint256 a) public returns (uint256 result) {
         address target = getFoo(index);
+        _updateNoop();
         return IFoo(target).bar(a);
     }
 }
