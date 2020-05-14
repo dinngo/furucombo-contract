@@ -9,11 +9,7 @@ import "./ILendingPoolCore.sol";
 import "./ILendingPoolAddressesProvider.sol";
 import "./FlashLoanReceiverBase.sol";
 import "../HandlerBase.sol";
-
-
-interface IProxy {
-    function execs(address[] calldata tos, bytes[] calldata datas) external;
-}
+import "../../interface/IProxy.sol";
 
 contract HAaveProtocol is HandlerBase, FlashLoanReceiverBase {
     using SafeERC20 for IERC20;
@@ -32,6 +28,7 @@ contract HAaveProtocol is HandlerBase, FlashLoanReceiverBase {
 
         // Update involved token
         if (_reserve != ETHADDRESS) _updateToken(_reserve);
+        else _updateNoop();
     }
 
     function executeOperation(
