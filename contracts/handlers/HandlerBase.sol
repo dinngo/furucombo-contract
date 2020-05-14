@@ -7,6 +7,15 @@ import "../Config.sol";
 contract HandlerBase is Cache, Config {
     function postProcess() external payable {
         revert("Invalid post process");
+        /* Implementation template
+        bytes4 sig = cache.getSig();
+        if (sig == bytes4(keccak256(bytes("handlerFunction_1()")))) {
+            // Do something
+        } else if (sig == bytes4(keccak256(bytes("handlerFunction_2()")))) {
+            bytes32 temp = cache.get();
+            // Do something
+        } else revert("Invalid post process");
+        */
     }
 
     function _updateNoop() internal {
