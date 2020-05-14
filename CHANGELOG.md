@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+### Added
+
+- Add cache handling mechanism.
+- Support customized handler post processor.
+
+### Changed
+
+- Change `address[] tokens` to `bytes32[] cache`.
+
 ## [0.3.0] - 2020-05-25
 
 ### Added
