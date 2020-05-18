@@ -20,6 +20,8 @@ const FooHandler = artifacts.require('FooHandler');
 const Foo2 = artifacts.require('Foo2');
 const Foo2Factory = artifacts.require('Foo2Factory');
 const Foo2Handler = artifacts.require('Foo2Handler');
+const Foo3 = artifacts.require('Foo3');
+const Foo3Handler = artifacts.require('Foo3Handler');
 const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('ProxyMock');
 
@@ -189,6 +191,36 @@ contract('Proxy', function([_, deployer, user1]) {
           value: ether('1'),
         })
       );
+    });
+  });
+
+  describe('execute with customized post process', function() {
+    before(async function() {
+      this.foo = await Foo3.new();
+      this.fooHandler = await Foo3Handler.new();
+      await this.registry.register(
+        this.fooHandler.address,
+        utils.asciiToHex('foo3')
+      );
+    });
+
+    beforeEach(async function() {
+      balanceUser1 = await tracker(user1);
+      balanceProxy = await tracker(this.proxy.address);
+    });
+
+    it('post process 1', async function() {
+      const to = this.fooHandler.address;
+      const data = abi.simpleEncode('bar1(address)', this.foo.address);
+      await this.proxy.execMock(to, data, { value: ether('1') });
+      expect(await this.foo.num.call()).to.be.bignumber.eq(new BN('1'));
+    });
+
+    it('post process 2', async function() {
+      const to = this.fooHandler.address;
+      const data = abi.simpleEncode('bar2(address)', this.foo.address);
+      await this.proxy.execMock(to, data, { value: ether('1') });
+      expect(await this.foo.num.call()).to.be.bignumber.eq(new BN('2'));
     });
   });
 });

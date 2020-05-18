@@ -1,0 +1,50 @@
+pragma solidity ^0.5.0;
+
+import "../handlers/HandlerBase.sol";
+
+
+interface IFoo3 {
+    function bar1() external;
+
+    function bar2() external;
+
+    function reset1() external;
+
+    function reset2() external;
+}
+
+
+contract Foo3Handler is HandlerBase {
+    function bar1(address foo) public payable {
+        IFoo3 target = IFoo3(foo);
+        target.bar1();
+
+        // Update post process
+        bytes32[] memory params = new bytes32[](1);
+        params[0] = bytes20(foo);
+        _updatePostProcess(params);
+    }
+
+    function bar2(address foo) public payable {
+        IFoo3 target = IFoo3(foo);
+        target.bar2();
+
+        // Update post process
+        bytes32[] memory params = new bytes32[](1);
+        params[0] = bytes20(foo);
+        _updatePostProcess(params);
+    }
+
+    function postProcess() external payable {
+        bytes4 sig = cache.getSig();
+        if (sig == bytes4(keccak256(bytes("bar1(address)")))) {
+            address foo = cache.getAddress();
+            IFoo3 target = IFoo3(foo);
+            target.reset1();
+        } else if (sig == bytes4(keccak256(bytes("bar2(address)")))) {
+            address foo = cache.getAddress();
+            IFoo3 target = IFoo3(foo);
+            target.reset2();
+        } else revert("Invalid post process");
+    }
+}
