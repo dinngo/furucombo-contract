@@ -86,9 +86,7 @@ contract('Aave', function([_, deployer, user]) {
 
       console.log('AETHER balance: ' + aetherUser);
       console.log('value: ' + value);
-      expect(
-        aetherUser.to.be.bignumber.eq(new BN(value))
-      );
+      expect(aetherUser).to.be.bignumber.eq(new BN(value));
       expect(await balanceUser.delta()).to.be.bignumber.eq(
         ether('0')
           .sub(new BN(value))
@@ -120,9 +118,7 @@ contract('Aave', function([_, deployer, user]) {
 
       console.log('AToken balance: ' + atokenUser);
       console.log('value: ' + value);
-      expect(
-        atokenUser.to.be.bignumber.eq(new BN(value))
-      );
+      expect(atokenUser).to.be.bignumber.eq(new BN(value));
       expect(await balanceUser.delta()).to.be.bignumber.eq(
         ether('0').sub(new BN(receipt.receipt.gasUsed))
       );
