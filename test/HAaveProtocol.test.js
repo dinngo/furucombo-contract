@@ -153,32 +153,17 @@ contract('Aave', function([_, deployer, user]) {
       );
 
       const aetherUserBefore = await this.aether.balanceOf.call(user);
-      console.log(`user eth before: ${await web3.eth.getBalance(user)}`);
-      console.log(`proxy eth before: ${await web3.eth.getBalance(this.proxy.address)}`);
-      console.log(`user aeth before: ${aetherUserBefore}`);
-      console.log(`proxy aeth before: ${await this.aether.balanceOf.call(this.proxy.address)}`);
-      
-      
       await this.aether.transfer(this.proxy.address, value, { from: user });
       await this.proxy.updateTokenMock(this.aether.address);
       await balanceUser.get();
-
-      console.log(`user eth middle: ${await web3.eth.getBalance(user)}`);
-      console.log(`proxy eth middle: ${await web3.eth.getBalance(this.proxy.address)}`);
-      console.log(`user aeth middle: ${await this.aether.balanceOf.call(user)}`);
-      console.log(`proxy aeth middle: ${await this.aether.balanceOf.call(this.proxy.address)}`);
       
       const receipt = await this.proxy.execMock(
         to, 
         data, 
         { from: user }
       );
-      const aetherUserAfter = await this.aether.balanceOf.call(user);
-      console.log(`user eth after: ${await web3.eth.getBalance(user)}`);
-      console.log(`proxy eth after: ${await web3.eth.getBalance(this.proxy.address)}`);
-      console.log(`user aeth after: ${await this.aether.balanceOf.call(user)}`);
-      console.log(`proxy aeth after: ${await this.aether.balanceOf.call(this.proxy.address)}`);
 
+      const aetherUserAfter = await this.aether.balanceOf.call(user);
       const interestMax = value
         .mul(new BN(1))
         .div(new BN(10000));
@@ -209,18 +194,10 @@ contract('Aave', function([_, deployer, user]) {
       await this.lendingPool.deposit(this.token.address, value, 0, { from: user });
       const atokenUserBefore = await this.atoken.balanceOf.call(user);
       const tokenUserBefore = await this.token.balanceOf.call(user);
-      console.log(`user DAI before: ${await this.token.balanceOf.call(user)}`);
-      console.log(`proxy DAI before: ${await this.token.balanceOf.call(this.proxy.address)}`);
-      console.log(`user aDAI before: ${atokenUserBefore}`);
-      console.log(`proxy aDAI before: ${await this.atoken.balanceOf.call(this.proxy.address)}`);
       
       await this.atoken.transfer(this.proxy.address, value, { from: user });
       await this.proxy.updateTokenMock(this.atoken.address);
       await balanceUser.get();
-      console.log(`user DAI middle: ${await this.token.balanceOf.call(user)}`);
-      console.log(`proxy DAI middle: ${await this.token.balanceOf.call(this.proxy.address)}`);
-      console.log(`user aDAI middle: ${await this.atoken.balanceOf.call(user)}`);
-      console.log(`proxy aDAI middle: ${await this.atoken.balanceOf.call(this.proxy.address)}`);
 
       const receipt = await this.proxy.execMock(
         to, 
@@ -229,10 +206,6 @@ contract('Aave', function([_, deployer, user]) {
       );
       const atokenUserAfter = await this.atoken.balanceOf.call(user);
       const tokenUserAfter = await this.token.balanceOf.call(user);
-      console.log(`user DAI after: ${await this.token.balanceOf.call(user)}`);
-      console.log(`proxy DAI after: ${await this.token.balanceOf.call(this.proxy.address)}`);
-      console.log(`user aDAI after: ${await this.atoken.balanceOf.call(user)}`);
-      console.log(`proxy aDAI after: ${await this.atoken.balanceOf.call(this.proxy.address)}`);
 
       const interestMax = value
         .mul(new BN(1))
