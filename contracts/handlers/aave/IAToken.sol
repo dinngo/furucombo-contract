@@ -1,6 +1,7 @@
 pragma solidity ^0.5.0;
 
 interface IAToken {
+    function underlyingAssetAddress() external returns(address);
     function redirectInterestStream(address _to) external;
     function redirectInterestStreamOf(address _from, address _to) external;
     function allowInterestRedirectionTo(address _to) external;

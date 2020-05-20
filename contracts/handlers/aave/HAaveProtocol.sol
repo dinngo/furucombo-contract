@@ -3,6 +3,7 @@ pragma experimental ABIEncoderV2;
 
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
+import "./IAToken.sol";
 import "./ILendingPool.sol";
 import "./ILendingPoolCore.sol";
 import "./ILendingPoolAddressesProvider.sol";
@@ -65,6 +66,15 @@ contract HAaveProtocol is HandlerBase, FlashLoanReceiverBase {
         
         address aToken = _getAToken(_reserve);
         _updateToken(aToken);
+    }
+
+    function redeem(
+        address _aToken,
+        uint256 _amount
+    ) external payable {
+        IAToken(_aToken).redeem(_amount);
+        address underlyingAsset = IAToken(_aToken).underlyingAssetAddress();
+        if (underlyingAsset != ETHADDRESS)  _updateToken(underlyingAsset);
     }
 
     function _getAToken(address _reserve) internal returns(address) {

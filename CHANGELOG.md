@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
-- Support Aave deposit.
+- Support Aave deposit and redeem.
 
 ## [0.2.1] - 2020-05-04
 

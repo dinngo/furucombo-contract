@@ -53,9 +53,10 @@ contract('Aave', function([_, deployer, user]) {
       utils.asciiToHex('Aave Protocol')
     );
     this.provider = await IProvider.at(AAVEPROTOCOL_PROVIDER);
-    const lendingPoolAddress = await this.provider.getLendingPool.call();
-    this.lendingPool = await ILendingPool.at(lendingPoolAddress);
-    await this.registry.register(lendingPoolAddress, this.haave.address);
+    this.lendingPoolCoreAddress = await this.provider.getLendingPoolCore.call();
+    this.lendingPoolAddress = await this.provider.getLendingPool.call();
+    this.lendingPool = await ILendingPool.at(this.lendingPoolAddress);
+    await this.registry.register(this.lendingPoolAddress, this.haave.address);
     this.aether = await IAToken.at(AETHER);
     this.token = await IToken.at(tokenAddress);
     this.atoken = await IAToken.at(atokenAddress);
@@ -84,8 +85,6 @@ contract('Aave', function([_, deployer, user]) {
       );
       const aetherUser = await this.aether.balanceOf.call(user);
 
-      console.log('AETHER balance: ' + aetherUser);
-      console.log('value: ' + value);
       expect(aetherUser).to.be.bignumber.eq(new BN(value));
       expect(await balanceUser.delta()).to.be.bignumber.eq(
         ether('0')
@@ -116,8 +115,6 @@ contract('Aave', function([_, deployer, user]) {
       );
       const atokenUser = await this.atoken.balanceOf.call(user);
 
-      console.log('AToken balance: ' + atokenUser);
-      console.log('value: ' + value);
       expect(atokenUser).to.be.bignumber.eq(new BN(value));
       expect(await balanceUser.delta()).to.be.bignumber.eq(
         ether('0').sub(new BN(receipt.receipt.gasUsed))
@@ -131,6 +128,137 @@ contract('Aave', function([_, deployer, user]) {
       const data = abi.simpleEncode(
         'deposit(address,uint256)',
         '0x0000000000000000000000000000000000000000',
+        value
+      );
+      await expectRevert.unspecified(
+        this.proxy.execMock(to, data, { from: user, value: value })
+      );
+    });
+  });
+
+  describe('Redeem', function() {
+    it('aETH', async function() {
+      const value = ether('10');
+      const to = this.haave.address;
+      const data = abi.simpleEncode(
+        'redeem(address,uint256)',
+        AETHER,
+        value
+      );
+      await this.lendingPool.deposit(
+        ETH_TOKEN, 
+        value, 
+        0,
+        { from: user, value: value }
+      );
+
+      const aetherUserBefore = await this.aether.balanceOf.call(user);
+      console.log(`user eth before: ${await web3.eth.getBalance(user)}`);
+      console.log(`proxy eth before: ${await web3.eth.getBalance(this.proxy.address)}`);
+      console.log(`user aeth before: ${aetherUserBefore}`);
+      console.log(`proxy aeth before: ${await this.aether.balanceOf.call(this.proxy.address)}`);
+      
+      
+      await this.aether.transfer(this.proxy.address, value, { from: user });
+      await this.proxy.updateTokenMock(this.aether.address);
+      await balanceUser.get();
+
+      console.log(`user eth middle: ${await web3.eth.getBalance(user)}`);
+      console.log(`proxy eth middle: ${await web3.eth.getBalance(this.proxy.address)}`);
+      console.log(`user aeth middle: ${await this.aether.balanceOf.call(user)}`);
+      console.log(`proxy aeth middle: ${await this.aether.balanceOf.call(this.proxy.address)}`);
+      
+      const receipt = await this.proxy.execMock(
+        to, 
+        data, 
+        { from: user }
+      );
+      const aetherUserAfter = await this.aether.balanceOf.call(user);
+      console.log(`user eth after: ${await web3.eth.getBalance(user)}`);
+      console.log(`proxy eth after: ${await web3.eth.getBalance(this.proxy.address)}`);
+      console.log(`user aeth after: ${await this.aether.balanceOf.call(user)}`);
+      console.log(`proxy aeth after: ${await this.aether.balanceOf.call(this.proxy.address)}`);
+
+      const interestMax = value
+        .mul(new BN(1))
+        .div(new BN(10000));
+      expect(aetherUserAfter).to.be.bignumber.lt(
+        aetherUserBefore
+          .sub(new BN(value))
+          .add(new BN(interestMax))
+      );
+      expect(await balanceUser.delta()).to.be.bignumber.eq(
+        ether('0')
+          .add(new BN(value))
+          .sub(new BN(receipt.receipt.gasUsed))
+      );
+      profileGas(receipt);
+    });
+
+    it('aDAI', async function() {
+      const value = ether('999');
+      const to = this.haave.address;
+      const data = abi.simpleEncode(
+        'redeem(address,uint256)',
+        atokenAddress,
+        value
+      );
+
+      await this.token.transfer(user, value, { from: providerAddress });
+      await this.token.approve(this.lendingPoolCoreAddress, value, { from: user });
+      await this.lendingPool.deposit(this.token.address, value, 0, { from: user });
+      const atokenUserBefore = await this.atoken.balanceOf.call(user);
+      const tokenUserBefore = await this.token.balanceOf.call(user);
+      console.log(`user DAI before: ${await this.token.balanceOf.call(user)}`);
+      console.log(`proxy DAI before: ${await this.token.balanceOf.call(this.proxy.address)}`);
+      console.log(`user aDAI before: ${atokenUserBefore}`);
+      console.log(`proxy aDAI before: ${await this.atoken.balanceOf.call(this.proxy.address)}`);
+      
+      await this.atoken.transfer(this.proxy.address, value, { from: user });
+      await this.proxy.updateTokenMock(this.atoken.address);
+      await balanceUser.get();
+      console.log(`user DAI middle: ${await this.token.balanceOf.call(user)}`);
+      console.log(`proxy DAI middle: ${await this.token.balanceOf.call(this.proxy.address)}`);
+      console.log(`user aDAI middle: ${await this.atoken.balanceOf.call(user)}`);
+      console.log(`proxy aDAI middle: ${await this.atoken.balanceOf.call(this.proxy.address)}`);
+
+      const receipt = await this.proxy.execMock(
+        to, 
+        data, 
+        { from: user}
+      );
+      const atokenUserAfter = await this.atoken.balanceOf.call(user);
+      const tokenUserAfter = await this.token.balanceOf.call(user);
+      console.log(`user DAI after: ${await this.token.balanceOf.call(user)}`);
+      console.log(`proxy DAI after: ${await this.token.balanceOf.call(this.proxy.address)}`);
+      console.log(`user aDAI after: ${await this.atoken.balanceOf.call(user)}`);
+      console.log(`proxy aDAI after: ${await this.atoken.balanceOf.call(this.proxy.address)}`);
+
+      const interestMax = value
+        .mul(new BN(1))
+        .div(new BN(10000));
+      expect(atokenUserAfter).to.be.bignumber.lt(
+        atokenUserBefore
+          .sub(new BN(value))
+          .add(new BN(interestMax))
+      );
+      expect(tokenUserAfter).to.be.bignumber.eq(
+        tokenUserBefore
+          .add(new BN(value))
+      );
+      expect(await balanceUser.delta()).to.be.bignumber.eq(
+        ether('0')
+          .sub(new BN(receipt.receipt.gasUsed))
+      );
+      profileGas(receipt);
+    });
+
+    it('revert', async function() {
+      const value = ether('10');
+      const to = this.haave.address;
+      const data = abi.simpleEncode(
+        'redeem(address,uint256)',
+        AETHER,
         value
       );
       await expectRevert.unspecified(
