@@ -77,7 +77,7 @@ contract HAaveProtocol is HandlerBase, FlashLoanReceiverBase {
         if (underlyingAsset != ETHADDRESS)  _updateToken(underlyingAsset);
     }
 
-    function _getAToken(address _reserve) internal returns(address) {
+    function _getAToken(address _reserve) internal view returns(address) {
         ILendingPoolCore lendingPoolCore = ILendingPoolCore(
             ILendingPoolAddressesProvider(PROVIDER).getLendingPoolCore()
         );
