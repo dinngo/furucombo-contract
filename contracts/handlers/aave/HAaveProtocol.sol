@@ -81,6 +81,9 @@ contract HAaveProtocol is HandlerBase, FlashLoanReceiverBase {
         ILendingPoolCore lendingPoolCore = ILendingPoolCore(
             ILendingPoolAddressesProvider(PROVIDER).getLendingPoolCore()
         );
-        return lendingPoolCore.getReserveATokenAddress(_reserve);
+        address aToken = lendingPoolCore.getReserveATokenAddress(_reserve);
+        require(aToken != address(0), "aToken should not be zero address");
+
+        return aToken;
     }
 }
