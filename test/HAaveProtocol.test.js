@@ -85,10 +85,10 @@ contract('Aave', function([_, deployer, user]) {
       );
       const aetherUser = await this.aether.balanceOf.call(user);
 
-      expect(aetherUser).to.be.bignumber.eq(new BN(value));
+      expect(aetherUser).to.be.bignumber.eq(value);
       expect(await balanceUser.delta()).to.be.bignumber.eq(
         ether('0')
-          .sub(new BN(value))
+          .sub(value)
           .sub(new BN(receipt.receipt.gasUsed))
       );
       profileGas(receipt);
@@ -111,7 +111,7 @@ contract('Aave', function([_, deployer, user]) {
       const receipt = await this.proxy.execMock(
         to, 
         data, 
-        { from: user}
+        { from: user }
       );
       const atokenUser = await this.atoken.balanceOf.call(user);
 
@@ -122,12 +122,12 @@ contract('Aave', function([_, deployer, user]) {
       profileGas(receipt);
     });
 
-    it('revert', async function() {
+    it('revert: reserve should not be zero address', async function() {
       const value = ether('10');
       const to = this.haave.address;
       const data = abi.simpleEncode(
         'deposit(address,uint256)',
-        '0x0000000000000000000000000000000000000000',
+        constants.ZERO_ADDRESS,
         value
       );
       await expectRevert.unspecified(
@@ -169,12 +169,12 @@ contract('Aave', function([_, deployer, user]) {
         .div(new BN(10000));
       expect(aetherUserAfter).to.be.bignumber.lt(
         aetherUserBefore
-          .sub(new BN(value))
-          .add(new BN(interestMax))
+          .sub(value)
+          .add(interestMax)
       );
       expect(await balanceUser.delta()).to.be.bignumber.eq(
         ether('0')
-          .add(new BN(value))
+          .add(value)
           .sub(new BN(receipt.receipt.gasUsed))
       );
       profileGas(receipt);
@@ -212,12 +212,12 @@ contract('Aave', function([_, deployer, user]) {
         .div(new BN(10000));
       expect(atokenUserAfter).to.be.bignumber.lt(
         atokenUserBefore
-          .sub(new BN(value))
-          .add(new BN(interestMax))
+          .sub(value)
+          .add(interestMax)
       );
       expect(tokenUserAfter).to.be.bignumber.eq(
         tokenUserBefore
-          .add(new BN(value))
+          .add(value)
       );
       expect(await balanceUser.delta()).to.be.bignumber.eq(
         ether('0')
@@ -226,7 +226,7 @@ contract('Aave', function([_, deployer, user]) {
       profileGas(receipt);
     });
 
-    it('revert', async function() {
+    it('revert: redeem without sending token to proxy first', async function() {
       const value = ether('10');
       const to = this.haave.address;
       const data = abi.simpleEncode(
