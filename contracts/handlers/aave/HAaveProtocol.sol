@@ -62,6 +62,7 @@ contract HAaveProtocol is HandlerBase, FlashLoanReceiverBase {
             address lendingPoolCore = ILendingPoolAddressesProvider(PROVIDER).getLendingPoolCore();
             IERC20(_reserve).safeApprove(lendingPoolCore, _amount);
             lendingPool.deposit(_reserve, _amount, REFERRAL_CODE);
+            IERC20(_reserve).safeApprove(lendingPoolCore, 0);
         }
         
         address aToken = _getAToken(_reserve);
