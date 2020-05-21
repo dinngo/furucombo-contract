@@ -22,7 +22,7 @@ contract HMaker is HandlerBase {
         address daiJoin,
         bytes32 ilk,
         uint256 wadD
-    ) public payable returns (uint256 cdp) {
+    ) external payable returns (uint256 cdp) {
         IDSProxy proxy = IDSProxy(_getProxy(address(this)));
         cdp = uint256(
             proxy.execute.value(value)(
@@ -52,7 +52,7 @@ contract HMaker is HandlerBase {
         bytes32 ilk,
         uint256 wadC,
         uint256 wadD
-    ) public payable returns (uint256 cdp) {
+    ) external payable returns (uint256 cdp) {
         IDSProxy proxy = IDSProxy(_getProxy(address(this)));
         address token = IMakerGemJoin(gemJoin).gem();
         IERC20(token).safeApprove(address(proxy), wadC);
@@ -83,24 +83,9 @@ contract HMaker is HandlerBase {
 
     function postProcess() external payable {
         bytes4 sig = cache.getSig();
-        if (
-            sig ==
-            bytes4(
-                keccak256(
-                    bytes(
-                        "openLockETHAndDraw(uint256,address,address,bytes32,uint256)"
-                    )
-                )
-            ) ||
-            sig ==
-            bytes4(
-                keccak256(
-                    bytes(
-                        "openLockGemAndDraw(address,address,bytes32,uint256,uint256)"
-                    )
-                )
-            )
-        ) {
+        // selector of openLockETHAndDraw(uint256,address,address,bytes32,uint256)
+        // and openLockGemAndDraw(address,address,bytes32,uint256,uint256)
+        if (sig == 0x5481e4a4 || sig == 0x73af24e7) {
             _transferCdp(uint256(cache.get()));
             IERC20(DAI_TOKEN).safeTransfer(msg.sender, uint256(cache.get()));
         } else revert("Invalid post process");
