@@ -281,4 +281,90 @@ contract('Maker', function([_, deployer, user1, user2]) {
       });
     });
   });
+
+  describe('Deposit', function() {
+    let cdp;
+    let ilk;
+    let debt;
+    let lock;
+
+    describe('Lock Ether', function() {
+      let balanceUser;
+      before(async function() {
+        const userProxy = await this.dsregistry.proxies.call(user1);
+        cdp = await this.cdpmanager.last.call(userProxy);
+        expect(cdp).to.be.bignumber.not.eq(new BN('0'));
+      });
+
+      beforeEach(async function() {
+        balanceUser = await tracker(user1);
+        [ilk, debt, lock] = await getCdpInfo(cdp);
+      });
+
+      it('normal', async function() {
+        const to = this.hmaker.address;
+        const value = ether('1');
+        const data = abi.simpleEncode(
+          'safeLockETH(uint256,address,uint256)',
+          value,
+          MAKER_MCD_JOIN_ETH_A,
+          cdp
+        );
+        const receipt = await this.proxy.execMock(to, data, {
+          from: user1,
+          value: value,
+        });
+
+        const [ilkEnd, debtEnd, lockEnd] = await getCdpInfo(cdp);
+        expect(await balanceUser.delta()).to.be.bignumber.eq(
+          ether('0')
+            .sub(value)
+            .sub(new BN(receipt.receipt.gasUsed))
+        );
+        expect(lockEnd.sub(lock)).to.be.bignumber.eq(value);
+      });
+    });
+
+    describe('Lock Token', function() {
+      let balanceUser;
+      let tokenUser;
+      const tokenAddress = BAT_TOKEN;
+      const providerAddress = BAT_PROVIDER;
+
+      before(async function() {
+        const userProxy = await this.dsregistry.proxies.call(user2);
+        cdp = await this.cdpmanager.last.call(userProxy);
+        expect(cdp).to.be.bignumber.not.eq(new BN('0'));
+        this.token = await IToken.at(tokenAddress);
+      });
+
+      beforeEach(async function() {
+        balanceUser = await tracker(user1);
+        [ilk, debt, lock] = await getCdpInfo(cdp);
+        tokenUser = await this.token.balanceOf.call(user2);
+      });
+
+      it('normal', async function() {
+        const to = this.hmaker.address;
+        const wad = ether('100');
+        const data = abi.simpleEncode(
+          'safeLockGem(address,uint256,uint256)',
+          MAKER_MCD_JOIN_BAT_A,
+          cdp,
+          wad
+        );
+        await this.token.transfer(this.proxy.address, wad, {
+          from: providerAddress,
+        });
+        await this.proxy.updateTokenMock(this.token.address);
+        const receipt = await this.proxy.execMock(to, data, {
+          from: user2,
+          value: ether('1'),
+        });
+
+        const [ilkEnd, debtEnd, lockEnd] = await getCdpInfo(cdp);
+        expect(lockEnd.sub(lock)).to.be.bignumber.eq(wad);
+      });
+    });
+  });
 });
