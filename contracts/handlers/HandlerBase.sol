@@ -18,9 +18,7 @@ contract HandlerBase is Cache, Config {
         */
     }
 
-    function _updateNoop() internal {
-        cache.set(bytes32(uint256(HandlerType.Noop)));
-    }
+    function _updateNoop() internal {}
 
     function _updateToken(address token) internal {
         cache.setAddress(token);
@@ -32,5 +30,6 @@ contract HandlerBase is Cache, Config {
             cache.set(params[i - 1]);
         }
         cache.set(msg.sig);
+        cache.set(bytes32(uint256(HandlerType.Other)));
     }
 }

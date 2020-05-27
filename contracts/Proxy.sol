@@ -91,9 +91,11 @@ contract Proxy is Cache, Config {
     }
 
     function _setPostProcess(address _to) internal {
-        if (cache.peek() == bytes32(uint256(HandlerType.Noop))) cache.pop();
-        else if (cache.peek() == bytes32(uint256(HandlerType.Token))) return;
-        else cache.push(bytes20(_to));
+        if (cache.length == 0) return;
+        else if (cache.peek() == bytes32(uint256(HandlerType.Other))) {
+            cache.pop();
+            cache.push(bytes20(_to));
+        }
     }
 
     function _preProcess() internal isCacheEmpty {}
