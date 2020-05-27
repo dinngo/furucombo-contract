@@ -110,7 +110,6 @@ contract('Maker', function([_, deployer, user1, user2, user3, user4]) {
     await resetAccount(user2);
   });
 
-  /*
   describe('Open new cdp', function() {
     let daiUser1;
     let daiUser2;
@@ -387,7 +386,6 @@ contract('Maker', function([_, deployer, user1, user2, user3, user4]) {
       });
     });
   });
-*/
 
   describe('Withdraw', function() {
     describe('free ETH', function() {
@@ -437,6 +435,40 @@ contract('Maker', function([_, deployer, user1, user2, user3, user4]) {
         );
         expect(lockEnd.sub(lock)).to.be.bignumber.eq(ether('0').sub(wad));
       });
+
+      it('without cdp approval', async function() {
+        balanceUser = await tracker(user1);
+        const to = this.hmaker.address;
+        const wad = ether('1');
+        const data = abi.simpleEncode(
+          'freeETH(address,uint256,uint256)',
+          MAKER_MCD_JOIN_ETH_A,
+          cdp,
+          wad
+        );
+        await expectRevert.unspecified(
+          this.proxy.execMock(to, data, {
+            from: user1,
+          })
+        );
+      });
+
+      it('approved but triggered by unauthorized user', async function() {
+        await approveCdp(cdp, user1, this.dsproxy.address);
+        balanceUser = await tracker(user1);
+        const to = this.hmaker.address;
+        const wad = ether('1');
+        const data = abi.simpleEncode(
+          'freeETH(address,uint256,uint256)',
+          MAKER_MCD_JOIN_ETH_A,
+          cdp,
+          wad
+        );
+        await expectRevert(
+          this.proxy.execMock(to, data),
+          'Unauthorized sender of cdp'
+        );
+      });
     });
 
     describe('free token', function() {
@@ -473,7 +505,56 @@ contract('Maker', function([_, deployer, user1, user2, user3, user4]) {
         [ilk, debt, lock] = await getCdpInfo(cdp);
       });
 
-      it('normal', async function() {});
+      it('normal', async function() {
+        await approveCdp(cdp, user2, this.dsproxy.address);
+        const to = this.hmaker.address;
+        const wad = ether('100');
+        const data = abi.simpleEncode(
+          'freeGem(address,uint256,uint256)',
+          MAKER_MCD_JOIN_BAT_A,
+          cdp,
+          wad
+        );
+        const receipt = await this.proxy.execMock(to, data, {
+          from: user2,
+        });
+        const [ilkEnd, debtEnd, lockEnd] = await getCdpInfo(cdp);
+        const tokenUserEnd = await this.token.balanceOf.call(user2);
+        expect(tokenUserEnd.sub(tokenUser)).to.be.bignumber.eq(wad);
+        expect(lockEnd.sub(lock)).to.be.bignumber.eq(ether('0').sub(wad));
+      });
+
+      it('without cdp approval', async function() {
+        const to = this.hmaker.address;
+        const wad = ether('100');
+        const data = abi.simpleEncode(
+          'freeGem(address,uint256,uint256)',
+          MAKER_MCD_JOIN_BAT_A,
+          cdp,
+          wad
+        );
+        await expectRevert.unspecified(
+          this.proxy.execMock(to, data, {
+            from: user2,
+          })
+        );
+      });
+
+      it('approved but triggered by unauthorized user', async function() {
+        await approveCdp(cdp, user2, this.dsproxy.address);
+        const to = this.hmaker.address;
+        const wad = ether('100');
+        const data = abi.simpleEncode(
+          'freeGem(address,uint256,uint256)',
+          MAKER_MCD_JOIN_BAT_A,
+          cdp,
+          wad
+        );
+        await expectRevert(
+          this.proxy.execMock(to, data),
+          'Unauthorized sender of cdp'
+        );
+      });
     });
   });
 });

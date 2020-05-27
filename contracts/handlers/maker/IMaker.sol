@@ -18,9 +18,9 @@ interface IMakerManager {
     function enter(address, uint) external;
     function shift(uint, uint) external;
 
-    function count(address) external returns (uint256);
-    function first(address) external returns (uint256);
-    function last(address) external returns (uint256);
+    function count(address) external view returns (uint256);
+    function first(address) external view returns (uint256);
+    function last(address) external view returns (uint256);
 }
 
 interface IMakerVat {

@@ -16,6 +16,17 @@ contract HMaker is HandlerBase {
     address constant MCD_JUG = 0x19c0976f590D67707E62397C87829d896Dc0f1F1;
     address constant DAI_TOKEN = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
 
+    modifier cdpAllowed(uint256 cdp) {
+        IMakerManager manager = IMakerManager(CDP_MANAGER);
+        address owner = manager.owns(cdp);
+        require(
+            IDSProxyRegistry(PROXY_REGISTRY).proxies(msg.sender) == owner ||
+                manager.cdpCan(owner, cdp, msg.sender) == 1,
+            "Unauthorized sender of cdp"
+        );
+        _;
+    }
+
     function openLockETHAndDraw(
         uint256 value,
         address ethJoin,
@@ -128,7 +139,7 @@ contract HMaker is HandlerBase {
         address ethJoin,
         uint256 cdp,
         uint256 wad
-    ) external payable {
+    ) external payable cdpAllowed(cdp) {
         // Check msg.sender authority
         IDSProxy proxy = IDSProxy(_getProxy(address(this)));
         proxy.execute(
@@ -147,7 +158,7 @@ contract HMaker is HandlerBase {
         address gemJoin,
         uint256 cdp,
         uint256 wad
-    ) external payable {
+    ) external payable cdpAllowed(cdp) {
         // Check msg.sender authority
         IDSProxy proxy = IDSProxy(_getProxy(address(this)));
         address token = IMakerGemJoin(gemJoin).gem();
