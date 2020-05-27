@@ -98,9 +98,6 @@ contract HMaker is HandlerBase {
                 owner
             )
         );
-
-        // Update post process
-        _updateNoop();
     }
 
     function safeLockGem(
@@ -125,9 +122,6 @@ contract HMaker is HandlerBase {
             )
         );
         IERC20(token).safeApprove(address(proxy), 0);
-
-        // Update post process
-        _updateNoop();
     }
 
     function freeETH(
@@ -147,9 +141,6 @@ contract HMaker is HandlerBase {
                 wad
             )
         );
-
-        // Update post process
-        _updateNoop();
     }
 
     function freeGem(
