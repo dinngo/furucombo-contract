@@ -28,6 +28,6 @@ contract HandlerBase is Cache, Config {
             cache.set(params[i - 1]);
         }
         cache.set(msg.sig);
-        cache.set(bytes32(uint256(HandlerType.Other)));
+        cache.set(bytes32(uint256(HandlerType.Custom)));
     }
 }

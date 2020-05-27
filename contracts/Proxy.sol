@@ -92,7 +92,7 @@ contract Proxy is Cache, Config {
 
     function _setPostProcess(address _to) internal {
         if (cache.length == 0) return;
-        else if (cache.peek() == bytes32(uint256(HandlerType.Other))) {
+        else if (cache.peek() == bytes32(uint256(HandlerType.Custom))) {
             cache.pop();
             cache.push(bytes20(_to));
         }
