@@ -130,6 +130,51 @@ contract HMaker is HandlerBase {
         _updateNoop();
     }
 
+    function freeETH(
+        address ethJoin,
+        uint256 cdp,
+        uint256 wad
+    ) external payable {
+        // Check msg.sender authority
+        IDSProxy proxy = IDSProxy(_getProxy(address(this)));
+        proxy.execute(
+            PROXY_ACTIONS,
+            abi.encodeWithSignature(
+                "freeETH(address,address,uint256,uint256)",
+                CDP_MANAGER,
+                ethJoin,
+                cdp,
+                wad
+            )
+        );
+
+        // Update post process
+        _updateNoop();
+    }
+
+    function freeGem(
+        address gemJoin,
+        uint256 cdp,
+        uint256 wad
+    ) external payable {
+        // Check msg.sender authority
+        IDSProxy proxy = IDSProxy(_getProxy(address(this)));
+        address token = IMakerGemJoin(gemJoin).gem();
+        proxy.execute(
+            PROXY_ACTIONS,
+            abi.encodeWithSignature(
+                "freeGem(address,address,uint256,uint256)",
+                CDP_MANAGER,
+                gemJoin,
+                cdp,
+                wad
+            )
+        );
+
+        // Update post process
+        _updateToken(token);
+    }
+
     function postProcess() external payable {
         bytes4 sig = cache.getSig();
         // selector of openLockETHAndDraw(uint256,address,address,bytes32,uint256)
