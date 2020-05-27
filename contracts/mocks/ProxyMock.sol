@@ -15,12 +15,14 @@ contract ProxyMock is Proxy, GasProfiler {
     {
         _setBase();
         result = _exec(to, data);
+        _setPostProcess(to);
         _deltaGas("Gas");
         _postProcess();
         return result;
     }
 
     function updateTokenMock(address token) public {
-        tokens.push(token);
+        cache.setAddress(token);
+        cache.set(bytes32(uint256(HandlerType.Token)));
     }
 }

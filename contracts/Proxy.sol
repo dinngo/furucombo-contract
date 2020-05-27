@@ -3,24 +3,13 @@ pragma experimental ABIEncoderV2;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
+import "./interface/IRegistry.sol";
+import "./Cache.sol";
+import "./Config.sol";
 
 
-interface IRegistry {
-    function isValid(address handler) external view returns (bool result);
-
-    function getInfo(address handler) external view returns (bytes32 info);
-}
-
-
-contract Proxy {
+contract Proxy is Cache, Config {
     using Address for address;
-
-    address[] public tokens;
-
-    modifier isTokenEmpty() {
-        require(tokens.length == 0, "Token list not empty");
-        _;
-    }
 
     // keccak256 hash of "furucombo.handler.registry"
     bytes32 private constant HANDLER_REGISTRY = 0x6874162fd62902201ea0f4bf541086067b3b88bd802fac9e150fd2d1db584e19;
@@ -66,6 +55,7 @@ contract Proxy {
         );
         for (uint256 i = 0; i < tos.length; i++) {
             _exec(tos[i], datas[i]);
+            _setPostProcess(tos[i]);
         }
     }
 
@@ -100,16 +90,25 @@ contract Proxy {
         }
     }
 
-    function _preProcess() internal isTokenEmpty {}
+    function _setPostProcess(address _to) internal {
+        if (cache.length == 0) return;
+        else if (cache.peek() == bytes32(uint256(HandlerType.Custom))) {
+            cache.pop();
+            cache.push(bytes20(_to));
+        }
+    }
+
+    function _preProcess() internal isCacheEmpty {}
 
     function _postProcess() internal {
         // Token involved should be returned to user
-        while (tokens.length > 0) {
-            address token = tokens[tokens.length - 1];
-
-            uint256 amount = IERC20(token).balanceOf(address(this));
-            if (amount > 0) IERC20(token).transfer(msg.sender, amount);
-            tokens.pop();
+        while (cache.length > 0) {
+            address to = cache.getAddress();
+            if (to == address(0)) {
+                address token = cache.getAddress();
+                uint256 amount = IERC20(token).balanceOf(address(this));
+                if (amount > 0) IERC20(token).transfer(msg.sender, amount);
+            } else _exec(to, abi.encodeWithSelector(POSTPROCESS_SIG));
         }
 
         // Balance should also be returned to user
