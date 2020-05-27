@@ -16,9 +16,6 @@ contract HMock is HandlerBase {
 
     function drain(address target, uint256 v) external payable {
         IFaucet(target).drain.value(v)();
-
-        // Noop
-        _updateNoop();
     }
 
     function drainToken(
@@ -29,8 +26,5 @@ contract HMock is HandlerBase {
         IERC20(token).safeApprove(target, amount);
         IFaucet(target).drainToken(token, amount);
         IERC20(token).safeApprove(target, 0);
-
-        // Noop
-        _updateNoop();
     }
 }

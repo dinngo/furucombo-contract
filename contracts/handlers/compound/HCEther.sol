@@ -24,9 +24,6 @@ contract HCEther is HandlerBase {
         IERC20(CETHER).safeApprove(CETHER, redeemTokens);
         require(compound.redeem(redeemTokens) == 0, "compound redeem failed");
         IERC20(CETHER).safeApprove(CETHER, 0);
-
-        // Noop
-        _updateNoop();
     }
 
     function redeemUnderlying(uint256 redeemAmount) external payable {
@@ -40,8 +37,5 @@ contract HCEther is HandlerBase {
             "compound redeem underlying failed"
         );
         IERC20(CETHER).safeApprove(CETHER, 0);
-
-        // Noop
-        _updateNoop();
     }
 }

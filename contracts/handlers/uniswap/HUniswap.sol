@@ -85,9 +85,6 @@ contract HUniswap is HandlerBase {
         IERC20(token).safeApprove(address(uniswap), tokens_sold);
         eth_bought = uniswap.tokenToEthSwapInput(tokens_sold, min_eth, now);
         IERC20(token).safeApprove(address(uniswap), 0);
-
-        // Noop
-        _updateNoop();
     }
 
     function tokenToEthSwapOutput(
@@ -99,9 +96,6 @@ contract HUniswap is HandlerBase {
         IERC20(token).safeApprove(address(uniswap), max_tokens);
         tokens_sold = uniswap.tokenToEthSwapOutput(eth_bought, max_tokens, now);
         IERC20(token).safeApprove(address(uniswap), 0);
-
-        // Noop
-        _updateNoop();
     }
 
     function tokenToTokenSwapInput(

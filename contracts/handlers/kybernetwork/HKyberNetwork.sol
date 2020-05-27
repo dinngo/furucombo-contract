@@ -37,9 +37,6 @@ contract HKyberNetwork is HandlerBase {
         IERC20(token).safeApprove(address(kyber), tokenQty);
         destAmount = kyber.swapTokenToEther(IERC20(token), tokenQty, minRate);
         IERC20(token).safeApprove(address(kyber), 0);
-
-        // Noop
-        _updateNoop();
     }
 
     function swapTokenToToken(
