@@ -23,6 +23,12 @@
 //
 // const fs = require('fs');
 // const mnemonic = fs.readFileSync(".secret").toString().trim();
+const HDWalletProvider = require('@truffle/hdwallet-provider');
+const fs = require('fs');
+const key_beta = fs
+  .readFileSync('.secret_beta')
+  .toString()
+  .trim();
 
 module.exports = {
   networks: {
@@ -31,8 +37,19 @@ module.exports = {
       port: 8545,
       network_id: '*',
       gasPrice: 0x01,
-      gas: 5000000
-    }
+      gas: 5000000,
+    },
+    beta: {
+      provider: function() {
+        return new HDWalletProvider(
+          key_beta,
+          'https://hackathon-beta-geth.dinngo.co'
+        );
+      },
+      network_id: '*',
+      gasPrice: 0x01,
+      gas: 5000000,
+    },
   },
   compilers: {
     solc: {
@@ -40,9 +57,9 @@ module.exports = {
       settings: {
         optimizer: {
           enabled: true,
-          runs: 200
-        }
-      }
-    }
-  }
+          runs: 200,
+        },
+      },
+    },
+  },
 };
