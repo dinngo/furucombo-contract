@@ -8,6 +8,10 @@ import "./Cache.sol";
 import "./Config.sol";
 
 
+/**
+ * @title The entrance of Furucombo
+ * @author Ben Huang
+ */
 contract Proxy is Cache, Config {
     using Address for address;
 
@@ -21,9 +25,16 @@ contract Proxy is Cache, Config {
         }
     }
 
+    /**
+     * @notice Direct transfer from EOA should be reverted.
+     * @dev Callback function will be handled here.
+     */
     function() external payable {
         require(Address.isContract(msg.sender), "Not allowed from EOA");
 
+        // If triggered by a function call, caller should be registered in registry.
+        // The function call will then be forwarded to the location registered in
+        // registry.
         if (msg.data.length != 0) {
             require(_isValid(msg.sender), "Invalid caller");
 
@@ -34,6 +45,12 @@ contract Proxy is Cache, Config {
         }
     }
 
+    /**
+     * @notice Combo execution function. Including three phases: pre-process,
+     * exection and post-process.
+     * @param tos The handlers of combo.
+     * @param datas The combo datas.
+     */
     function batchExec(address[] memory tos, bytes[] memory datas)
         public
         payable
@@ -43,11 +60,21 @@ contract Proxy is Cache, Config {
         _postProcess();
     }
 
+    /**
+     * @notice The execution interface for callback function to be executed.
+     * @dev This function can only be called through the handler, which makes
+     * the caller become proxy itself.
+     */
     function execs(address[] memory tos, bytes[] memory datas) public payable {
         require(msg.sender == address(this), "Does not allow external calls");
         _execs(tos, datas);
     }
 
+    /**
+     * @notice The execution phase.
+     * @param tos The handlers of combo.
+     * @param datas The combo datas.
+     */
     function _execs(address[] memory tos, bytes[] memory datas) internal {
         require(
             tos.length == datas.length,
@@ -55,10 +82,16 @@ contract Proxy is Cache, Config {
         );
         for (uint256 i = 0; i < tos.length; i++) {
             _exec(tos[i], datas[i]);
+            // Setup the process to be triggered in the post-process phase
             _setPostProcess(tos[i]);
         }
     }
 
+    /**
+     * @notice The execution of a single cube.
+     * @param _to The handler of cube.
+     * @param _data The cube execution data.
+     */
     function _exec(address _to, bytes memory _data)
         internal
         returns (bytes memory result)
@@ -90,7 +123,14 @@ contract Proxy is Cache, Config {
         }
     }
 
+    /**
+     * @notice Setup the post-process.
+     * @param _to The handler of post-process.
+     */
     function _setPostProcess(address _to) internal {
+        // If the cache is empty, just skip
+        // If the top is a custom post-process, replace it with the handler
+        // address.
         if (cache.length == 0) return;
         else if (cache.peek() == bytes32(uint256(HandlerType.Custom))) {
             cache.pop();
@@ -98,10 +138,16 @@ contract Proxy is Cache, Config {
         }
     }
 
+    /// @notice The pre-process phase.
     function _preProcess() internal isCacheEmpty {}
 
+    /// @notice The post-process phase.
     function _postProcess() internal {
-        // Token involved should be returned to user
+        // If the top of cache is HandlerType.Token (which makes it being zero
+        // address when `cache.getAddress()`), get the token address and return
+        // to user.
+        // If the top of cache is an address, execute the handler with it and
+        // the post-process function selector
         while (cache.length > 0) {
             address to = cache.getAddress();
             if (to == address(0)) {
@@ -112,11 +158,11 @@ contract Proxy is Cache, Config {
         }
 
         // Balance should also be returned to user
-
         uint256 amount = address(this).balance;
         if (amount > 0) msg.sender.transfer(amount);
     }
 
+    /// @notice Get the registry contract address.
     function _getRegistry() internal view returns (address registry) {
         bytes32 slot = HANDLER_REGISTRY;
         assembly {
@@ -124,6 +170,7 @@ contract Proxy is Cache, Config {
         }
     }
 
+    /// @notice Check if the handler is valid in registry.
     function _isValid(address handler) internal view returns (bool result) {
         return IRegistry(_getRegistry()).isValid(handler);
     }
