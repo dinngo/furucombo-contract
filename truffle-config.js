@@ -25,10 +25,15 @@
 // const mnemonic = fs.readFileSync(".secret").toString().trim();
 const HDWalletProvider = require('@truffle/hdwallet-provider');
 const fs = require('fs');
-const key_beta = fs
-  .readFileSync('.secret_beta')
-  .toString()
-  .trim();
+
+try {
+  const key_beta = fs
+    .readFileSync('.secret_beta')
+    .toString()
+    .trim();
+} catch (err) {
+  console.log(err);
+}
 
 module.exports = {
   networks: {
