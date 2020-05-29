@@ -15,7 +15,7 @@ contract Registry is Ownable {
      * @param info Info string.
      * @dev Dapps that triggers callback function should also be registered.
      * In this case, registration is the Dapp address and the leading 20 bytes
-     * is the handler address.
+     * of info is the handler address.
      */
     function register(address registration, bytes32 info) external onlyOwner {
         require(registration != address(0), "zero address");
