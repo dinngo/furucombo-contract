@@ -28,7 +28,7 @@ const Proxy = artifacts.require('ProxyMock');
 const IToken = artifacts.require('IERC20');
 const IUniswapExchange = artifacts.require('IUniswapExchange');
 
-contract('Swap', function([_, deployer, user, someone]) {
+contract('Uniswap Swap', function([_, deployer, user, someone]) {
   before(async function() {
     this.registry = await Registry.new();
     this.huniswap = await HUniswap.new();
