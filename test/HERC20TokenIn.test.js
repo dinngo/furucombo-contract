@@ -19,6 +19,8 @@ const {
   DAI_PROVIDER,
   BAT_TOKEN,
   BAT_PROVIDER,
+  USDT_TOKEN,
+  USDT_PROVIDER,
 } = require('./utils/constants');
 const { resetAccount, profileGas } = require('./utils/utils');
 
@@ -26,6 +28,7 @@ const HERC20TokenIn = artifacts.require('HERC20TokenIn');
 const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('ProxyMock');
 const IToken = artifacts.require('IERC20');
+const IUsdt = artifacts.require('IERC20Usdt');
 
 contract('ERC20TokenIn', function([_, deployer, user, someone]) {
   const tokenAddresses = [DAI_TOKEN, BAT_TOKEN];
@@ -49,7 +52,9 @@ contract('ERC20TokenIn', function([_, deployer, user, someone]) {
   describe('single token', function() {
     before(async function() {
       this.token0 = await IToken.at(tokenAddresses[0]);
+      this.usdt = await IUsdt.at(USDT_TOKEN);
     });
+
     it('normal', async function() {
       const token = [this.token0.address];
       const value = [ether('100')];
@@ -72,6 +77,35 @@ contract('ERC20TokenIn', function([_, deployer, user, someone]) {
         value: value[0],
       });
       await expectEvent.inTransaction(receipt.tx, this.token0, 'Transfer', {
+        from: this.proxy.address,
+        to: user,
+        value: value[0],
+      });
+      profileGas(receipt);
+    });
+
+    it('USDT', async function() {
+      const token = [this.usdt.address];
+      const value = [new BN('1000000')];
+      const to = this.herc20tokenin.address;
+      const data = abi.simpleEncode(
+        'inject(address[],uint256[])',
+        token,
+        value
+      );
+      await this.usdt.transfer(user, value[0], {
+        from: USDT_PROVIDER,
+      });
+      await this.usdt.approve(this.proxy.address, value[0], { from: user });
+
+      const receipt = await this.proxy.execMock(to, data, { from: user });
+
+      await expectEvent.inTransaction(receipt.tx, this.usdt, 'Transfer', {
+        from: user,
+        to: this.proxy.address,
+        value: value[0],
+      });
+      await expectEvent.inTransaction(receipt.tx, this.usdt, 'Transfer', {
         from: this.proxy.address,
         to: user,
         value: value[0],
