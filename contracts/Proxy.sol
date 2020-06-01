@@ -1,7 +1,7 @@
 pragma solidity ^0.5.0;
 pragma experimental ABIEncoderV2;
 
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "./interface/IRegistry.sol";
 import "./Cache.sol";
@@ -14,6 +14,7 @@ import "./Config.sol";
  */
 contract Proxy is Cache, Config {
     using Address for address;
+    using SafeERC20 for IERC20;
 
     // keccak256 hash of "furucombo.handler.registry"
     bytes32 private constant HANDLER_REGISTRY = 0x6874162fd62902201ea0f4bf541086067b3b88bd802fac9e150fd2d1db584e19;
@@ -153,7 +154,7 @@ contract Proxy is Cache, Config {
             if (to == address(0)) {
                 address token = cache.getAddress();
                 uint256 amount = IERC20(token).balanceOf(address(this));
-                if (amount > 0) IERC20(token).transfer(msg.sender, amount);
+                if (amount > 0) IERC20(token).safeTransfer(msg.sender, amount);
             } else _exec(to, abi.encodeWithSelector(POSTPROCESS_SIG));
         }
 
