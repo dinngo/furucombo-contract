@@ -51,9 +51,8 @@ contract HMaker is HandlerBase {
         );
 
         // Update post process
-        bytes32[] memory params = new bytes32[](2);
+        bytes32[] memory params = new bytes32[](1);
         params[0] = bytes32(cdp);
-        params[1] = bytes32(wadD);
         _updatePostProcess(params);
     }
 
@@ -86,9 +85,8 @@ contract HMaker is HandlerBase {
         IERC20(token).safeApprove(address(proxy), 0);
 
         // Update post process
-        bytes32[] memory params = new bytes32[](2);
+        bytes32[] memory params = new bytes32[](1);
         params[0] = bytes32(cdp);
-        params[1] = bytes32(wadD);
         _updatePostProcess(params);
     }
 
@@ -183,7 +181,8 @@ contract HMaker is HandlerBase {
         // and openLockGemAndDraw(address,address,bytes32,uint256,uint256)
         if (sig == 0x5481e4a4 || sig == 0x73af24e7) {
             _transferCdp(uint256(cache.get()));
-            IERC20(DAI_TOKEN).safeTransfer(msg.sender, uint256(cache.get()));
+            uint256 amount = IERC20(DAI_TOKEN).balanceOf(address(this));
+            if (amount > 0) IERC20(DAI_TOKEN).safeTransfer(msg.sender, amount);
         } else revert("Invalid post process");
     }
 
