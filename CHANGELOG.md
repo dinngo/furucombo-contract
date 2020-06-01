@@ -13,6 +13,10 @@ All notable changes to this project will be documented in this file.
 
 - Change `address[] tokens` to `bytes32[] cache`.
 
+### Fixed
+
+- Fix USDT transfer failure.
+
 ## [0.3.0] - 2020-05-25
 
 ### Added
