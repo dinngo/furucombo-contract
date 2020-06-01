@@ -8,6 +8,9 @@ All notable changes to this project will be documented in this file.
 
 - Add cache handling mechanism.
 - Support customized handler post processor.
+- Support Maker create CDP.
+- Support Maker deposit.
+- Support Maker withdraw.
 
 ### Changed
 
