@@ -175,6 +175,29 @@ contract HMaker is HandlerBase {
         _updateToken(token);
     }
 
+    function draw(
+        address daiJoin,
+        uint256 cdp,
+        uint256 wad
+    ) external payable cdpAllowed(cdp) {
+        // Check msg.sender authority
+        IDSProxy proxy = IDSProxy(_getProxy(address(this)));
+        proxy.execute(
+            PROXY_ACTIONS,
+            abi.encodeWithSignature(
+                "draw(address,address,address,uint256,uint256)",
+                CDP_MANAGER,
+                MCD_JUG,
+                daiJoin,
+                cdp,
+                wad
+            )
+        );
+
+        // Update post process
+        _updateToken(DAI_TOKEN);
+    }
+
     function postProcess() external payable {
         bytes4 sig = cache.getSig();
         // selector of openLockETHAndDraw(uint256,address,address,bytes32,uint256)
