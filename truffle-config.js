@@ -26,8 +26,10 @@
 const HDWalletProvider = require('@truffle/hdwallet-provider');
 const fs = require('fs');
 
+let key_beta;
+
 try {
-  const key_beta = fs
+  key_beta = fs
     .readFileSync('.secret_beta')
     .toString()
     .trim();
