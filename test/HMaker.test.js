@@ -110,6 +110,7 @@ contract('Maker', function([_, deployer, user1, user2, user3, user4]) {
     await resetAccount(user2);
   });
 
+  /*
   describe('Open new cdp', function() {
     let daiUser1;
     let daiUser2;
@@ -141,10 +142,13 @@ contract('Maker', function([_, deployer, user1, user2, user3, user4]) {
             ilkEth,
             wadD
           );
+          console.log(to);
+          console.log(data.toString('hex'));
           const receipt = await this.proxy.execMock(to, data, {
             from: user3,
             value: ether('10'),
           });
+          console.log(receipt);
           expect(
             await this.cdpmanager.count.call(this.dsproxy.address)
           ).to.be.bignumber.eq(new BN('0'));
@@ -547,6 +551,174 @@ contract('Maker', function([_, deployer, user1, user2, user3, user4]) {
         const data = abi.simpleEncode(
           'freeGem(address,uint256,uint256)',
           MAKER_MCD_JOIN_BAT_A,
+          cdp,
+          wad
+        );
+        await expectRevert(
+          this.proxy.execMock(to, data),
+          'Unauthorized sender of cdp'
+        );
+      });
+    });
+  });
+  */
+
+  describe('Generate', function() {
+    describe('draw from ETH cdp', function() {
+      let cdp;
+      let ilk;
+      let debt;
+      let lock;
+      let daiUser;
+
+      beforeEach(async function() {
+        const etherAmount = ether('1');
+        const new1 = abi.simpleEncode(
+          'openLockETHAndDraw(address,address,address,address,bytes32,uint256)',
+          MAKER_CDP_MANAGER,
+          MAKER_MCD_JUG,
+          MAKER_MCD_JOIN_ETH_A,
+          MAKER_MCD_JOIN_DAI,
+          utils.padRight(utils.asciiToHex('ETH-A'), 64),
+          ether('0')
+        );
+        await this.user1proxy.execute(MAKER_PROXY_ACTIONS, new1, {
+          from: user1,
+          value: etherAmount,
+        });
+        cdp = await this.cdpmanager.last.call(this.user1proxy.address);
+        daiUser = await this.dai.balanceOf.call(user1);
+        [ilk, debt, lock] = await getCdpInfo(cdp);
+      });
+
+      it('normal', async function() {
+        await approveCdp(cdp, user1, this.dsproxy.address);
+        const to = this.hmaker.address;
+        const wad = ether('20');
+        const data = abi.simpleEncode(
+          'draw(address,uint256,uint256)',
+          MAKER_MCD_JOIN_DAI,
+          cdp,
+          wad
+        );
+        const receipt = await this.proxy.execMock(to, data, {
+          from: user1,
+        });
+        const [ilkEnd, debtEnd, lockEnd] = await getCdpInfo(cdp);
+        const daiUserEnd = await this.dai.balanceOf.call(user1);
+        expect(daiUserEnd.sub(daiUser)).to.be.bignumber.eq(wad);
+        expect(debtEnd.div(RAY)).to.be.bignumber.eq(wad);
+      });
+
+      it('without cdp approval', async function() {
+        const to = this.hmaker.address;
+        const wad = ether('20');
+        const data = abi.simpleEncode(
+          'draw(address,uint256,uint256)',
+          MAKER_MCD_JOIN_DAI,
+          cdp,
+          wad
+        );
+        await expectRevert.unspecified(
+          this.proxy.execMock(to, data, {
+            from: user1,
+          })
+        );
+      });
+
+      it('approved but triggered by unauthorized user', async function() {
+        await approveCdp(cdp, user1, this.dsproxy.address);
+        const to = this.hmaker.address;
+        const wad = ether('20');
+        const data = abi.simpleEncode(
+          'draw(address,uint256,uint256)',
+          MAKER_MCD_JOIN_DAI,
+          cdp,
+          wad
+        );
+        await expectRevert(
+          this.proxy.execMock(to, data),
+          'Unauthorized sender of cdp'
+        );
+      });
+    });
+
+    describe('draw from gem cdp', function() {
+      let cdp;
+      let ilk;
+      let debt;
+      let lock;
+      let daiUser;
+
+      beforeEach(async function() {
+        const tokenAmount = ether('1000');
+        const new2 = abi.simpleEncode(
+          'openLockGemAndDraw(address,address,address,address,bytes32,uint256,uint256,bool)',
+          MAKER_CDP_MANAGER,
+          MAKER_MCD_JUG,
+          MAKER_MCD_JOIN_BAT_A,
+          MAKER_MCD_JOIN_DAI,
+          utils.padRight(utils.asciiToHex('BAT-A'), 64),
+          tokenAmount,
+          ether('0'),
+          true
+        );
+        await this.token.transfer(user2, tokenAmount, {
+          from: providerAddress,
+        });
+        await this.token.approve(this.user2proxy.address, tokenAmount, {
+          from: user2,
+        });
+        await this.user2proxy.execute(MAKER_PROXY_ACTIONS, new2, {
+          from: user2,
+        });
+        cdp = await this.cdpmanager.last.call(this.user2proxy.address);
+        daiUser = await this.dai.balanceOf.call(user2);
+        [ilk, debt, lock] = await getCdpInfo(cdp);
+      });
+
+      it('normal', async function() {
+        await approveCdp(cdp, user2, this.dsproxy.address);
+        const to = this.hmaker.address;
+        const wad = ether('20');
+        const data = abi.simpleEncode(
+          'draw(address,uint256,uint256)',
+          MAKER_MCD_JOIN_DAI,
+          cdp,
+          wad
+        );
+        const receipt = await this.proxy.execMock(to, data, {
+          from: user2,
+        });
+        const [ilkEnd, debtEnd, lockEnd] = await getCdpInfo(cdp);
+        const daiUserEnd = await this.dai.balanceOf.call(user2);
+        expect(daiUserEnd.sub(daiUser)).to.be.bignumber.eq(wad);
+        expect(debtEnd.div(RAY)).to.be.bignumber.eq(wad);
+      });
+
+      it('without cdp approval', async function() {
+        const to = this.hmaker.address;
+        const wad = ether('20');
+        const data = abi.simpleEncode(
+          'draw(address,uint256,uint256)',
+          MAKER_MCD_JOIN_DAI,
+          cdp,
+          wad
+        );
+        await expectRevert.unspecified(
+          this.proxy.execMock(to, data, {
+            from: user2,
+          })
+        );
+      });
+
+      it('approved but triggered by unauthorized user', async function() {
+        await approveCdp(cdp, user2, this.dsproxy.address);
+        const to = this.hmaker.address;
+        const wad = ether('20');
+        const data = abi.simpleEncode(
+          'draw(address,uint256,uint256)',
+          MAKER_MCD_JOIN_DAI,
           cdp,
           wad
         );
