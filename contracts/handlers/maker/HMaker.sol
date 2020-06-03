@@ -198,6 +198,41 @@ contract HMaker is HandlerBase {
         _updateToken(DAI_TOKEN);
     }
 
+    function wipe(
+        address daiJoin,
+        uint256 cdp,
+        uint256 wad
+    ) external payable {
+        IDSProxy proxy = IDSProxy(_getProxy(address(this)));
+        IERC20(DAI_TOKEN).safeApprove(address(proxy), wad);
+        proxy.execute(
+            PROXY_ACTIONS,
+            abi.encodeWithSignature(
+                "wipe(address,address,uint256,uint256)",
+                CDP_MANAGER,
+                daiJoin,
+                cdp,
+                wad
+            )
+        );
+        IERC20(DAI_TOKEN).safeApprove(address(proxy), 0);
+    }
+
+    function wipeAll(address daiJoin, uint256 cdp) external payable {
+        IDSProxy proxy = IDSProxy(_getProxy(address(this)));
+        IERC20(DAI_TOKEN).safeApprove(address(proxy), uint256(-1));
+        proxy.execute(
+            PROXY_ACTIONS,
+            abi.encodeWithSignature(
+                "wipeAll(address,address,uint256)",
+                CDP_MANAGER,
+                daiJoin,
+                cdp
+            )
+        );
+        IERC20(DAI_TOKEN).safeApprove(address(proxy), 0);
+    }
+
     function postProcess() external payable {
         bytes4 sig = cache.getSig();
         // selector of openLockETHAndDraw(uint256,address,address,bytes32,uint256)
