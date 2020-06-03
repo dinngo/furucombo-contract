@@ -262,7 +262,6 @@ contract('Uniswap Swap', function([_, deployer, user, someone]) {
           from: providerAddress,
         });
         await this.proxy.updateTokenMock(this.token.address);
-        await this.proxy.updateTokenMock(this.token.address);
         await this.token.transfer(someone, value, { from: providerAddress });
         await this.token.approve(this.swap.address, value, {
           from: someone,
