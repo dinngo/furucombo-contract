@@ -160,6 +160,7 @@ contract('Maker', function([_, deployer, user1, user2, user3, user4]) {
           expect(
             (await this.dai.balanceOf.call(user3)).sub(daiUser)
           ).to.be.bignumber.eq(wadD);
+          profileGas(receipt);
         });
 
         it('User has proxy', async function() {
@@ -193,6 +194,7 @@ contract('Maker', function([_, deployer, user1, user2, user3, user4]) {
           expect(
             (await this.dai.balanceOf.call(user1)).sub(daiUser1)
           ).to.be.bignumber.eq(wadD);
+          profileGas(receipt);
         });
       });
     });
@@ -246,6 +248,7 @@ contract('Maker', function([_, deployer, user1, user2, user3, user4]) {
           expect(
             (await this.dai.balanceOf.call(user4)).sub(daiUser)
           ).to.be.bignumber.eq(wadD);
+          profileGas(receipt);
         });
 
         it('User has proxy', async function() {
@@ -283,6 +286,7 @@ contract('Maker', function([_, deployer, user1, user2, user3, user4]) {
           expect(
             (await this.dai.balanceOf.call(user2)).sub(daiUser2)
           ).to.be.bignumber.eq(wadD);
+          profileGas(receipt);
         });
       });
     });
@@ -344,6 +348,7 @@ contract('Maker', function([_, deployer, user1, user2, user3, user4]) {
             .sub(new BN(receipt.receipt.gasUsed))
         );
         expect(lockEnd.sub(lock)).to.be.bignumber.eq(value);
+        profileGas(receipt);
       });
     });
 
@@ -384,6 +389,7 @@ contract('Maker', function([_, deployer, user1, user2, user3, user4]) {
 
         const [ilkEnd, debtEnd, lockEnd] = await getCdpInfo(cdp);
         expect(lockEnd.sub(lock)).to.be.bignumber.eq(wad);
+        profileGas(receipt);
       });
     });
   });
@@ -435,6 +441,7 @@ contract('Maker', function([_, deployer, user1, user2, user3, user4]) {
           wad.sub(new BN(receipt.receipt.gasUsed))
         );
         expect(lockEnd.sub(lock)).to.be.bignumber.eq(ether('0').sub(wad));
+        profileGas(receipt);
       });
 
       it('without cdp approval', async function() {
@@ -523,6 +530,7 @@ contract('Maker', function([_, deployer, user1, user2, user3, user4]) {
         const tokenUserEnd = await this.token.balanceOf.call(user2);
         expect(tokenUserEnd.sub(tokenUser)).to.be.bignumber.eq(wad);
         expect(lockEnd.sub(lock)).to.be.bignumber.eq(ether('0').sub(wad));
+        profileGas(receipt);
       });
 
       it('without cdp approval', async function() {
@@ -604,6 +612,7 @@ contract('Maker', function([_, deployer, user1, user2, user3, user4]) {
         const daiUserEnd = await this.dai.balanceOf.call(user1);
         expect(daiUserEnd.sub(daiUser)).to.be.bignumber.eq(wad);
         expect(debtEnd.div(RAY)).to.be.bignumber.eq(wad);
+        profileGas(receipt);
       });
 
       it('without cdp approval', async function() {
@@ -690,6 +699,7 @@ contract('Maker', function([_, deployer, user1, user2, user3, user4]) {
         const daiUserEnd = await this.dai.balanceOf.call(user2);
         expect(daiUserEnd.sub(daiUser)).to.be.bignumber.eq(wad);
         expect(debtEnd.div(RAY)).to.be.bignumber.eq(wad);
+        profileGas(receipt);
       });
 
       it('without cdp approval', async function() {
@@ -777,6 +787,7 @@ contract('Maker', function([_, deployer, user1, user2, user3, user4]) {
         expect(debtEnd.sub(debt).div(RAY)).to.be.bignumber.not.lt(
           ether('0').sub(wad)
         );
+        profileGas(receipt);
       });
 
       it('wipeAll', async function() {
@@ -805,6 +816,7 @@ contract('Maker', function([_, deployer, user1, user2, user3, user4]) {
         expect(debtEnd.sub(debt).div(RAY)).to.be.bignumber.not.lt(
           ether('0').sub(ether('30'))
         );
+        profileGas(receipt);
       });
     });
 
@@ -865,6 +877,7 @@ contract('Maker', function([_, deployer, user1, user2, user3, user4]) {
         expect(debtEnd.sub(debt).div(RAY)).to.be.bignumber.not.lt(
           ether('0').sub(wad)
         );
+        profileGas(receipt);
       });
 
       it('wipeAll', async function() {
@@ -893,6 +906,7 @@ contract('Maker', function([_, deployer, user1, user2, user3, user4]) {
         expect(debtEnd.sub(debt).div(RAY)).to.be.bignumber.not.lt(
           ether('0').sub(ether('30'))
         );
+        profileGas(receipt);
       });
     });
   });
