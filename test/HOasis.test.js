@@ -536,14 +536,10 @@ contract('Oasis Swap', function([_, deployer, user, someone]) {
   });
 });
 
-function getBuyBuffer(num){
-  return num
-    .mul(new BN('98'))
-    .div(new BN('100'));
+function getBuyBuffer(num) {
+  return num.mul(new BN('98')).div(new BN('100'));
 }
 
-function getPayBuffer(num){
-  return num
-    .mul(new BN('102'))
-    .div(new BN('100'));
+function getPayBuffer(num) {
+  return num.mul(new BN('102')).div(new BN('100'));
 }
