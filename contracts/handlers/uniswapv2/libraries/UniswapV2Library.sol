@@ -1,8 +1,8 @@
 pragma solidity >=0.5.0;
 
-import "@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol";
+import "@openzeppelin/contracts/math/SafeMath.sol";
 
-import "./SafeMath.sol";
+import "../IUniswapV2Pair.sol";
 
 
 library UniswapV2Library {
