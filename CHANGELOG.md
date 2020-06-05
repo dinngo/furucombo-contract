@@ -11,6 +11,10 @@ All notable changes to this project will be documented in this file.
 - Support Maker create CDP.
 - Support Maker deposit.
 - Support Maker withdraw.
+- Support Oasis fixed input/output swap.
+    - Ether to token
+    - Token to ether
+    - Token to token
 
 ### Changed
 
