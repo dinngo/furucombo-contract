@@ -27,10 +27,8 @@ library UniswapV2Library {
         address tokenA,
         address tokenB
     ) internal pure returns (address pair) {
-        // 依照大小排序
         (address token0, address token1) = sortTokens(tokenA, tokenB);
 
-        // 利用encodePacked來呼叫function
         pair = address(
             uint256(
                 keccak256(

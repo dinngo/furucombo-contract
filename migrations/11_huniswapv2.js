@@ -10,6 +10,6 @@ module.exports = function(deployer) {
     })
     .then(function(instance) {
       registry = instance;
-      return registry.register(Handler.address, utils.asciiToHex('Uniswap'));
+      return registry.register(Handler.address, utils.asciiToHex('HUniswapV2'));
     });
 };
