@@ -3,10 +3,14 @@ pragma solidity ^0.5.0;
 
 library LibCache {
     function setAddress(bytes32[] storage _cache, address _input) internal {
-        _cache.push(bytes20(_input));
+        _cache.push(bytes32(uint256(uint160(_input))));
     }
 
     function set(bytes32[] storage _cache, bytes32 _input) internal {
+        _cache.push(_input);
+    }
+
+    function setHandlerType(bytes32[] storage _cache, bytes12 _input) internal {
         _cache.push(_input);
     }
 
@@ -14,7 +18,7 @@ library LibCache {
         internal
         returns (address ret)
     {
-        ret = address(bytes20(peek(_cache)));
+        ret = address(uint160(uint256(peek(_cache))));
         _cache.pop();
     }
 
