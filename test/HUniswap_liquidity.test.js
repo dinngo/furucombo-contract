@@ -26,7 +26,7 @@ const Proxy = artifacts.require('ProxyMock');
 const IToken = artifacts.require('IERC20');
 const IUniswapExchange = artifacts.require('IUniswapExchange');
 
-contract('Liquidity', function([_, deployer, user]) {
+contract('Uniswap Liquidity', function([_, deployer, user]) {
   const tokenAddress = DAI_TOKEN;
   const uniswapAddress = DAI_UNISWAP;
   const providerAddress = DAI_PROVIDER;
