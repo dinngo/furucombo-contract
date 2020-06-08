@@ -120,7 +120,7 @@ contract('Oasis Swap', function([_, deployer, user, someone]) {
           value,
           WETH_TOKEN,
           tokenAddress,
-          oasisAmount.add(ether('5'))
+          get110x(oasisAmount)
         );
         await expectRevert.unspecified(
           this.proxy.execMock(to, data, { from: user, value: value })
@@ -283,7 +283,7 @@ contract('Oasis Swap', function([_, deployer, user, someone]) {
           tokenAddress,
           value,
           WETH_TOKEN,
-          result.add(ether('0.1'))
+          get110x(result)
         );
 
         await expectRevert.unspecified(
@@ -455,7 +455,7 @@ contract('Oasis Swap', function([_, deployer, user, someone]) {
           token0Address,
           value,
           token1Address,
-          result.add(ether('0.1'))
+          get110x(result)
         );
 
         await expectRevert.unspecified(
@@ -542,4 +542,8 @@ function getBuyBuffer(num) {
 
 function getPayBuffer(num) {
   return num.mul(new BN('102')).div(new BN('100'));
+}
+
+function get110x(num) {
+  return num.mul(new BN('110')).div(new BN('100'));
 }
