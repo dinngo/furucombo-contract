@@ -78,7 +78,8 @@ contract('Oasis Swap', function([_, deployer, user, someone]) {
           tokenAddress,
           new BN('1')
         );
-        // TODO: should get exact amount using same function call
+        // TODO: get exact amount using same function call
+        // or find out why inaccuracy exists
         const oasisAmount = await this.otc.getBuyAmount.call(
           tokenAddress,
           WETH_TOKEN,
@@ -108,7 +109,8 @@ contract('Oasis Swap', function([_, deployer, user, someone]) {
       it('min amount too high', async function() {
         const value = ether('1');
         const to = this.hoasis.address;
-        // TODO: should get exact amount using same function call
+        // TODO: get exact amount using same function call
+        // or find out why inaccuracy exists
         const oasisAmount = await this.otc.getBuyAmount.call(
           tokenAddress,
           WETH_TOKEN,
@@ -147,7 +149,8 @@ contract('Oasis Swap', function([_, deployer, user, someone]) {
           buyAmt,
           WETH_TOKEN
         );
-        // TODO: should get exact amount using same function call
+        // TODO: get exact amount using same function call
+        // or find out why inaccuracy exists
         const oasisAmount = await this.otc.getPayAmount.call(
           WETH_TOKEN,
           tokenAddress,
@@ -235,7 +238,8 @@ contract('Oasis Swap', function([_, deployer, user, someone]) {
           from: someone,
         });
 
-        // TODO: should get exact amount using same function call
+        // TODO: get exact amount using same function call
+        // or find out why inaccuracy exists
         const result = await this.otc.getBuyAmount.call(
           WETH_TOKEN,
           tokenAddress,
@@ -271,7 +275,8 @@ contract('Oasis Swap', function([_, deployer, user, someone]) {
           from: someone,
         });
 
-        // TODO: should get exact amount using same function call
+        // TODO: get exact amount using same function call
+        // or find out why inaccuracy exists
         const result = await this.otc.getBuyAmount.call(
           WETH_TOKEN,
           tokenAddress,
@@ -313,7 +318,8 @@ contract('Oasis Swap', function([_, deployer, user, someone]) {
           from: someone,
         });
 
-        // TODO: should get exact amount using same function call
+        // TODO: get exact amount using same function call
+        // or find out why inaccuracy exists
         const result = await this.otc.getPayAmount.call(
           tokenAddress,
           WETH_TOKEN,
@@ -403,7 +409,8 @@ contract('Oasis Swap', function([_, deployer, user, someone]) {
           from: someone,
         });
 
-        // TODO: should get exact amount using same function call
+        // TODO: get exact amount using same function call
+        // or find out why inaccuracy exists
         const result = await this.otc.getBuyAmount.call(
           token1Address,
           token0Address,
@@ -443,7 +450,8 @@ contract('Oasis Swap', function([_, deployer, user, someone]) {
           from: someone,
         });
 
-        // TODO: should get exact amount using same function call
+        // TODO: get exact amount using same function call
+        // or find out why inaccuracy exists
         const result = await this.otc.getBuyAmount.call(
           token1Address,
           token0Address,
@@ -487,7 +495,8 @@ contract('Oasis Swap', function([_, deployer, user, someone]) {
           from: someone,
         });
 
-        // TODO: should get exact amount using same function call
+        // TODO: get exact amount using same function call
+        // or find out why inaccuracy exists
         const result = await this.otc.getPayAmount.call(
           token0Address,
           token1Address,
