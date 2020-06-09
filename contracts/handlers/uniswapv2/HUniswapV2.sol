@@ -23,10 +23,7 @@ contract HUniswapV2 is HandlerBase {
         IUniswapV2Router01 router = _getRouter();
 
         // Approve token
-        IERC20(token).safeApprove(
-            address(UNISWAPV2_ROUTER),
-            amountTokenDesired
-        );
+        IERC20(token).safeApprove(UNISWAPV2_ROUTER, amountTokenDesired);
 
         // Add liquidity ETH
         router.addLiquidityETH.value(value)(
@@ -39,7 +36,7 @@ contract HUniswapV2 is HandlerBase {
         );
 
         // Approve token 0
-        IERC20(token).safeApprove(address(UNISWAPV2_ROUTER), 0);
+        IERC20(token).safeApprove(UNISWAPV2_ROUTER, 0);
 
         // Update involved token
         address pair = UniswapV2Library.pairFor(
