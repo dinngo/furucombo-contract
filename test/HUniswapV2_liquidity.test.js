@@ -83,10 +83,19 @@ contract('UniswapV2 Liquidity', function([_, deployer, user]) {
         value: value,
       });
 
-      expect(await balanceUser.delta()).to.be.bignumber.lt(ether('0'));
-      expect(await this.token.balanceOf.call(user)).to.be.bignumber.lt(
-        tokenUser
+      // Check spent ether
+      expect(await balanceUser.delta()).to.be.bignumber.lt(
+        ether('0')
+          .sub(minEthAmount)
+          .sub(new BN(receipt.receipt.gasUsed))
       );
+
+      // Check spent token
+      expect(await this.token.balanceOf.call(user)).to.be.bignumber.lt(
+        tokenUser.sub(minDaiAmount)
+      );
+
+      // TODO: Find out the exact number of uniToken for testing
       expect(await this.uniToken.balanceOf.call(user)).to.be.bignumber.gt(
         uniTokenUser
       );
