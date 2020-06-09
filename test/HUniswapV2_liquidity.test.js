@@ -91,7 +91,7 @@ contract('UniswapV2 Liquidity', function([_, deployer, user]) {
       );
 
       // Check spent token
-      expect(await this.token.balanceOf.call(user)).to.be.bignumber.lt(
+      expect(await this.token.balanceOf.call(user)).to.be.bignumber.lte(
         tokenUser.sub(minDaiAmount)
       );
 
