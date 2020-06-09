@@ -20,7 +20,7 @@ contract HUniswapV2 is HandlerBase {
         uint256 amountETHMin
     ) external payable {
         // Get uniswapV2 router
-        IUniswapV2Router01 router = _getRouter();
+        IUniswapV2Router01 router = IUniswapV2Router01(UNISWAPV2_ROUTER);
 
         // Approve token
         IERC20(token).safeApprove(UNISWAPV2_ROUTER, amountTokenDesired);
@@ -45,9 +45,5 @@ contract HUniswapV2 is HandlerBase {
             router.WETH()
         );
         _updateToken(pair);
-    }
-
-    function _getRouter() internal pure returns (IUniswapV2Router01 router) {
-        router = IUniswapV2Router01(UNISWAPV2_ROUTER);
     }
 }

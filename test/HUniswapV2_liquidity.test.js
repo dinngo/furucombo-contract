@@ -64,7 +64,7 @@ contract('Liquidity', function([_, deployer, user]) {
     });
 
     it('normal', async function() {
-      const daiAmount = ether('0.0259');
+      const daiAmount = ether('0.002');
       const minDaiAmount = ether('0.000001');
       const minEthAmount = ether('0.000001');
       const value = ether('1');
