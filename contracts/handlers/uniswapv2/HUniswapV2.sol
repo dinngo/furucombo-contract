@@ -46,4 +46,44 @@ contract HUniswapV2 is HandlerBase {
         );
         _updateToken(pair);
     }
+
+    function addLiquidity(
+        address tokenA,
+        address tokenB,
+        uint256 amountADesired,
+        uint256 amountBDesired,
+        uint256 amountAMin,
+        uint256 amountBMin
+    ) external payable {
+        // Get uniswapV2 router
+        IUniswapV2Router02 router = IUniswapV2Router02(UNISWAPV2_ROUTER);
+
+        // Approve token
+        IERC20(tokenA).safeApprove(UNISWAPV2_ROUTER, amountADesired);
+        IERC20(tokenB).safeApprove(UNISWAPV2_ROUTER, amountBDesired);
+
+        // Add liquidity
+        router.addLiquidity(
+            tokenA,
+            tokenB,
+            amountADesired,
+            amountBDesired,
+            amountAMin,
+            amountBMin,
+            msg.sender,
+            now + 1
+        );
+
+        // Approve token 0
+        IERC20(tokenA).safeApprove(UNISWAPV2_ROUTER, 0);
+        IERC20(tokenB).safeApprove(UNISWAPV2_ROUTER, 0);
+
+        // Update involved token
+        address pair = UniswapV2Library.pairFor(
+            router.factory(),
+            tokenA,
+            tokenB
+        );
+        _updateToken(pair);
+    }
 }
