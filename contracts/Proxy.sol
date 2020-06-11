@@ -129,13 +129,11 @@ contract Proxy is Cache, Config {
      * @param _to The handler of post-process.
      */
     function _setPostProcess(address _to) internal {
-        // If the cache is empty, just skip
-        // If the top is a custom post-process, replace it with the handler
-        // address.
         if (cache.length == 0) return;
-        else if (cache.peek() == bytes32(uint256(HandlerType.Custom))) {
+        else if (cache.peek() == bytes32(bytes12(uint96(HandlerType.Custom)))) {
             cache.pop();
-            cache.push(bytes20(_to));
+            cache.setAddress(_to);
+            cache.setHandlerType(uint256(HandlerType.Custom));
         }
     }
 
@@ -150,12 +148,14 @@ contract Proxy is Cache, Config {
         // If the top of cache is an address, execute the handler with it and
         // the post-process function selector
         while (cache.length > 0) {
-            address to = cache.getAddress();
-            if (to == address(0)) {
-                address token = cache.getAddress();
-                uint256 amount = IERC20(token).balanceOf(address(this));
-                if (amount > 0) IERC20(token).safeTransfer(msg.sender, amount);
-            } else _exec(to, abi.encodeWithSelector(POSTPROCESS_SIG));
+            address addr = cache.getAddress();
+            if (addr == address(0)) {
+                addr = cache.getAddress();
+                _exec(addr, abi.encodeWithSelector(POSTPROCESS_SIG));
+            } else {
+                uint256 amount = IERC20(addr).balanceOf(address(this));
+                if (amount > 0) IERC20(addr).safeTransfer(msg.sender, amount);
+            }
         }
 
         // Balance should also be returned to user

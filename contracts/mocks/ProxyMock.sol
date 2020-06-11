@@ -23,6 +23,5 @@ contract ProxyMock is Proxy, GasProfiler {
 
     function updateTokenMock(address token) public {
         cache.setAddress(token);
-        cache.set(bytes32(uint256(HandlerType.Token)));
     }
 }

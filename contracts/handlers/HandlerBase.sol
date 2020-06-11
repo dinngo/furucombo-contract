@@ -20,7 +20,8 @@ contract HandlerBase is Cache, Config {
 
     function _updateToken(address token) internal {
         cache.setAddress(token);
-        cache.set(bytes32(uint256(HandlerType.Token)));
+        // Ignore token type to fit old handlers
+        // cache.setHandlerType(uint256(HandlerType.Token));
     }
 
     function _updatePostProcess(bytes32[] memory params) internal {
@@ -28,6 +29,6 @@ contract HandlerBase is Cache, Config {
             cache.set(params[i - 1]);
         }
         cache.set(msg.sig);
-        cache.set(bytes32(uint256(HandlerType.Custom)));
+        cache.setHandlerType(uint256(HandlerType.Custom));
     }
 }
