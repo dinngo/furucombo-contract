@@ -10,8 +10,9 @@ library LibCache {
         _cache.push(_input);
     }
 
-    function setHandlerType(bytes32[] storage _cache, bytes12 _input) internal {
-        _cache.push(_input);
+    function setHandlerType(bytes32[] storage _cache, uint256 _input) internal {
+        require(_input < uint96(-1), "Invalid Handler Type");
+        _cache.push(bytes12(uint96(_input)));
     }
 
     function getAddress(bytes32[] storage _cache)
