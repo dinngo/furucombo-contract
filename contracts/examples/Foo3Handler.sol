@@ -21,7 +21,7 @@ contract Foo3Handler is HandlerBase {
 
         // Update post process
         bytes32[] memory params = new bytes32[](1);
-        params[0] = bytes20(foo);
+        params[0] = bytes32(uint256(uint160(foo)));
         _updatePostProcess(params);
     }
 
@@ -31,7 +31,7 @@ contract Foo3Handler is HandlerBase {
 
         // Update post process
         bytes32[] memory params = new bytes32[](1);
-        params[0] = bytes20(foo);
+        params[0] = bytes32(uint256(uint160(foo)));
         _updatePostProcess(params);
     }
 
