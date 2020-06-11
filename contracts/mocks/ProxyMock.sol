@@ -13,6 +13,7 @@ contract ProxyMock is Proxy, GasProfiler {
         payable
         returns (bytes memory result)
     {
+        cache.setSender(msg.sender);
         _setBase();
         result = _exec(to, data);
         _setPostProcess(to);

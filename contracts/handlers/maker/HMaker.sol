@@ -19,9 +19,10 @@ contract HMaker is HandlerBase {
     modifier cdpAllowed(uint256 cdp) {
         IMakerManager manager = IMakerManager(CDP_MANAGER);
         address owner = manager.owns(cdp);
+        address sender = cache.getSender();
         require(
-            IDSProxyRegistry(PROXY_REGISTRY).proxies(msg.sender) == owner ||
-                manager.cdpCan(owner, cdp, msg.sender) == 1,
+            IDSProxyRegistry(PROXY_REGISTRY).proxies(sender) == owner ||
+                manager.cdpCan(owner, cdp, sender) == 1,
             "Unauthorized sender of cdp"
         );
         _;
@@ -98,7 +99,7 @@ contract HMaker is HandlerBase {
         uint256 cdp
     ) external payable {
         IDSProxy proxy = IDSProxy(_getProxy(address(this)));
-        address owner = _getProxy(msg.sender);
+        address owner = _getProxy(cache.getSender());
         proxy.execute.value(value)(
             PROXY_ACTIONS,
             abi.encodeWithSelector(
@@ -118,7 +119,7 @@ contract HMaker is HandlerBase {
         uint256 wad
     ) external payable {
         IDSProxy proxy = IDSProxy(_getProxy(address(this)));
-        address owner = _getProxy(msg.sender);
+        address owner = _getProxy(cache.getSender());
         address token = IMakerGemJoin(gemJoin).gem();
         IERC20(token).safeApprove(address(proxy), wad);
         proxy.execute(
@@ -249,7 +250,8 @@ contract HMaker is HandlerBase {
         if (sig == 0x5481e4a4 || sig == 0x73af24e7) {
             _transferCdp(uint256(cache.get()));
             uint256 amount = IERC20(DAI_TOKEN).balanceOf(address(this));
-            if (amount > 0) IERC20(DAI_TOKEN).safeTransfer(msg.sender, amount);
+            if (amount > 0)
+                IERC20(DAI_TOKEN).safeTransfer(cache.getSender(), amount);
         } else revert("Invalid post process");
     }
 
@@ -267,7 +269,7 @@ contract HMaker is HandlerBase {
                 PROXY_REGISTRY,
                 CDP_MANAGER,
                 cdp,
-                msg.sender
+                cache.getSender()
             )
         );
     }

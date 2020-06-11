@@ -129,7 +129,10 @@ contract Proxy is Cache, Config {
      * @param _to The handler of post-process.
      */
     function _setPostProcess(address _to) internal {
-        if (cache.length == 0) return;
+        // If the cache is empty, just skip
+        // If the top is a custom post-process, replace it with the handler
+        // address.
+        if (cache.length == 1) return;
         else if (cache.peek() == bytes32(bytes12(uint96(HandlerType.Custom)))) {
             cache.pop();
             cache.setAddress(_to);
@@ -138,16 +141,18 @@ contract Proxy is Cache, Config {
     }
 
     /// @notice The pre-process phase.
-    function _preProcess() internal isCacheEmpty {}
+    function _preProcess() internal isCacheEmpty {
+        // Set the sender on the top of cache.
+        cache.setSender(msg.sender);
+    }
 
     /// @notice The post-process phase.
     function _postProcess() internal {
-        // If the top of cache is HandlerType.Token (which makes it being zero
-        // address when `cache.getAddress()`), get the token address and return
-        // to user.
-        // If the top of cache is an address, execute the handler with it and
-        // the post-process function selector
-        while (cache.length > 0) {
+        // If the top of cache is HandlerType.Custom (which makes it being zero
+        // address when `cache.getAddress()`), get the handler address and execute
+        // the handler with it and the post-process function selector.
+        // If not, use it as token address and send the token back to user.
+        while (cache.length > 1) {
             address addr = cache.getAddress();
             if (addr == address(0)) {
                 addr = cache.getAddress();
@@ -161,6 +166,9 @@ contract Proxy is Cache, Config {
         // Balance should also be returned to user
         uint256 amount = address(this).balance;
         if (amount > 0) msg.sender.transfer(amount);
+
+        // Pop the msg.sender
+        cache.pop();
     }
 
     /// @notice Get the registry contract address.
