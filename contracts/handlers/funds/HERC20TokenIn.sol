@@ -18,7 +18,7 @@ contract HERC20TokenIn is HandlerBase {
         );
         for (uint256 i = 0; i < tokens.length; i++) {
             IERC20(tokens[i]).safeTransferFrom(
-                msg.sender,
+                cache.getSender(),
                 address(this),
                 amounts[i]
             );

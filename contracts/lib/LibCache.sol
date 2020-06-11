@@ -15,6 +15,11 @@ library LibCache {
         _cache.push(bytes12(uint96(_input)));
     }
 
+    function setSender(bytes32[] storage _cache, address _input) internal {
+        require(_cache.length == 0, "cache not empty");
+        setAddress(_cache, _input);
+    }
+
     function getAddress(bytes32[] storage _cache)
         internal
         returns (address ret)
@@ -38,6 +43,15 @@ library LibCache {
         view
         returns (bytes32 ret)
     {
+        require(_cache.length > 0, "cache empty");
         ret = _cache[_cache.length - 1];
+    }
+
+    function getSender(bytes32[] storage _cache)
+        internal
+        returns (address ret)
+    {
+        require(_cache.length > 0, "cache empty");
+        ret = address(uint160(uint256(_cache[0])));
     }
 }
