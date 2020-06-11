@@ -43,6 +43,7 @@ library LibCache {
         view
         returns (bytes32 ret)
     {
+        require(_cache.length > 0, "cache empty");
         ret = _cache[_cache.length - 1];
     }
 

@@ -132,6 +132,7 @@ contract Proxy is Cache, Config {
         // If the cache is empty, just skip
         // If the top is a custom post-process, replace it with the handler
         // address.
+        require(cache.length > 0, "cache empty");
         if (cache.length == 1) return;
         else if (cache.peek() == bytes32(bytes12(uint96(HandlerType.Custom)))) {
             cache.pop();
