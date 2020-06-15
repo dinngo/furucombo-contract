@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+### Fixed
+
+- Fixed error handling on custom handler followed by noop.
+
+### Deprecated
+
+- Unintuitive post-process handling in `_setPostProcess()`.
+
 ## [0.4.0] 2020-06-12
 
 ### Added
