@@ -136,7 +136,8 @@ contract Proxy is Cache, Config {
         if (cache.length == 1) return;
         else if (cache.peek() == bytes32(bytes12(uint96(HandlerType.Custom)))) {
             cache.pop();
-            cache.setAddress(_to);
+            // Check if the handler is already set.
+            if (bytes4(cache.peek()) != 0x00000000) cache.setAddress(_to);
             cache.setHandlerType(uint256(HandlerType.Custom));
         }
     }
