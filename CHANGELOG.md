@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+## [0.4.1] - 2020-06-16
+
 ### Fixed
 
 - Fixed error handling on custom handler followed by noop.
