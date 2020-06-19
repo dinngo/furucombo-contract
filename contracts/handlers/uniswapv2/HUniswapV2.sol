@@ -1,4 +1,4 @@
-// pragma solidity ^0.5.0;
+pragma solidity ^0.5.0;
 
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 
@@ -18,7 +18,15 @@ contract HUniswapV2 is HandlerBase {
         uint256 amountTokenDesired,
         uint256 amountTokenMin,
         uint256 amountETHMin
-    ) external payable {
+    )
+        external
+        payable
+        returns (
+            uint256 amountToken,
+            uint256 amountETH,
+            uint256 liquidity
+        )
+    {
         // Get uniswapV2 router
         IUniswapV2Router02 router = IUniswapV2Router02(UNISWAPV2_ROUTER);
 
@@ -26,12 +34,14 @@ contract HUniswapV2 is HandlerBase {
         IERC20(token).safeApprove(UNISWAPV2_ROUTER, amountTokenDesired);
 
         // Add liquidity ETH
-        router.addLiquidityETH.value(value)(
+        (amountToken, amountETH, liquidity) = router.addLiquidityETH.value(
+            value
+        )(
             token,
             amountTokenDesired,
             amountTokenMin,
             amountETHMin,
-            msg.sender,
+            address(this),
             now + 1
         );
 
@@ -54,7 +64,15 @@ contract HUniswapV2 is HandlerBase {
         uint256 amountBDesired,
         uint256 amountAMin,
         uint256 amountBMin
-    ) external payable {
+    )
+        external
+        payable
+        returns (
+            uint256 amountA,
+            uint256 amountB,
+            uint256 liquidity
+        )
+    {
         // Get uniswapV2 router
         IUniswapV2Router02 router = IUniswapV2Router02(UNISWAPV2_ROUTER);
 
@@ -63,14 +81,14 @@ contract HUniswapV2 is HandlerBase {
         IERC20(tokenB).safeApprove(UNISWAPV2_ROUTER, amountBDesired);
 
         // Add liquidity
-        router.addLiquidity(
+        (amountA, amountB, liquidity) = router.addLiquidity(
             tokenA,
             tokenB,
             amountADesired,
             amountBDesired,
             amountAMin,
             amountBMin,
-            msg.sender,
+            address(this),
             now + 1
         );
 
@@ -110,7 +128,7 @@ contract HUniswapV2 is HandlerBase {
             liquidity,
             amountTokenMin,
             amountETHMin,
-            msg.sender,
+            address(this),
             now + 1
         );
 
@@ -146,7 +164,7 @@ contract HUniswapV2 is HandlerBase {
             liquidity,
             amountAMin,
             amountBMin,
-            msg.sender,
+            address(this),
             now + 1
         );
 
