@@ -1,4 +1,4 @@
-pragma solidity ^0.5.0;
+// pragma solidity ^0.5.0;
 
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 
@@ -105,7 +105,7 @@ contract HUniswapV2 is HandlerBase {
         IERC20(pair).safeApprove(UNISWAPV2_ROUTER, liquidity);
 
         // Add liquidity ETH
-        (amountToken, amountETH) = router.removeLiquidityETH.value(value)(
+        (amountToken, amountETH) = router.removeLiquidityETH(
             token,
             liquidity,
             amountTokenMin,
@@ -119,5 +119,42 @@ contract HUniswapV2 is HandlerBase {
 
         // Update involved token
         _updateToken(token);
+    }
+
+    function removeLiquidity(
+        address tokenA,
+        address tokenB,
+        uint256 liquidity,
+        uint256 amountAMin,
+        uint256 amountBMin
+    ) external payable returns (uint256 amountA, uint256 amountB) {
+        // Get uniswapV2 router
+        IUniswapV2Router02 router = IUniswapV2Router02(UNISWAPV2_ROUTER);
+        address pair = UniswapV2Library.pairFor(
+            router.factory(),
+            tokenA,
+            tokenB
+        );
+
+        // Approve token
+        IERC20(pair).safeApprove(UNISWAPV2_ROUTER, liquidity);
+
+        // Add liquidity ETH
+        (amountA, amountB) = router.removeLiquidity(
+            tokenA,
+            tokenB,
+            liquidity,
+            amountAMin,
+            amountBMin,
+            msg.sender,
+            now + 1
+        );
+
+        // Approve token 0
+        IERC20(pair).safeApprove(UNISWAPV2_ROUTER, liquidity);
+
+        // Update involved token
+        _updateToken(tokenA);
+        _updateToken(tokenB);
     }
 }

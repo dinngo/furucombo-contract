@@ -184,7 +184,7 @@ contract('UniswapV2 Liquidity', function([_, deployer, user]) {
         from: tokenAProviderAddress,
       });
 
-      await this.tokenA.approve(this.router, ether('1000'), {
+      await this.tokenA.approve(this.router.address, ether('1000'), {
         from: user,
       });
       deadline = (await latest()).add(new BN('100'));
@@ -202,40 +202,149 @@ contract('UniswapV2 Liquidity', function([_, deployer, user]) {
         }
       );
       tokenAUser = await this.tokenA.balanceOf.call(user);
-      uniTokenAUser = await this.uniTokenETH.balanceOf.call(user);
+      uniTokenUser = await this.uniTokenETH.balanceOf.call(user);
     });
 
     it('normal', async function() {
-      const value = uniTokenAUser;
+      // Get simulation result
+      await this.uniTokenETH.approve(this.router.address, uniTokenUser, {
+        from: user,
+      });
+      const result = await this.router.removeLiquidityETH.call(
+        this.tokenA.address,
+        uniTokenUser,
+        new BN('1'),
+        new BN('1'),
+        user,
+        deadline,
+        { from: user }
+      );
+
+      // Send uniToken to proxy and prepare handler data
+      await this.uniTokenETH.transfer(this.proxy.address, uniTokenUser, {
+        from: user,
+      });
+      await balanceUser.get();
+      const value = uniTokenUser;
       const to = this.huniswapv2.address;
       const data = abi.simpleEncode(
         'removeLiquidityETH(address,uint256,uint256,uint256):(uint256,uint256)',
-        tokenAddress,
+        tokenAAddress,
         value,
         new BN('1'),
         new BN('1')
       );
-      await this.swap.approve(this.swap.address, uniTokenAUser, {
+
+      // Add TokenA to cache for send back to user and execute handler
+      await this.proxy.updateTokenMock(this.tokenA.address);
+      const receipt = await this.proxy.execMock(to, data, { from: user });
+
+      // Result Verification
+      // Verify Token A
+      expect(await this.tokenA.balanceOf.call(user)).to.be.bignumber.eq(
+        tokenAUser.add(result['0'])
+      );
+
+      // Verify ETH
+      expect(await balanceUser.delta()).to.be.bignumber.eq(
+        result['1'].sub(new BN(receipt.receipt.gasUsed))
+      );
+      profileGas(receipt);
+    });
+  });
+
+  describe('Remove Token', function() {
+    let deadline;
+
+    beforeEach(async function() {
+      await this.tokenA.transfer(user, ether('100'), {
+        from: tokenAProviderAddress,
+      });
+
+      await this.tokenB.transfer(user, ether('100'), {
+        from: tokenBProviderAddress,
+      });
+
+      await this.tokenA.approve(this.router.address, ether('1000'), {
         from: user,
       });
-      const result = await this.swap.removeLiquidity.call(
+      await this.tokenB.approve(this.router.address, ether('1000'), {
+        from: user,
+      });
+      deadline = (await latest()).add(new BN('100'));
+
+      await this.router.addLiquidity(
+        this.tokenA.address,
+        this.tokenB.address,
+        ether('100'),
+        ether('100'),
+        new BN('1'),
+        new BN('1'),
+        user,
+        deadline,
+        {
+          from: user,
+        }
+      );
+      tokenAUser = await this.tokenA.balanceOf.call(user);
+      tokenBUser = await this.tokenB.balanceOf.call(user);
+      uniTokenUser = await this.uniTokenToken.balanceOf.call(user);
+      console.log(uniTokenUser);
+    });
+
+    it('normal', async function() {
+      // Get simulation result
+      await this.uniTokenToken.approve(this.router.address, uniTokenUser, {
+        from: user,
+      });
+      const result = await this.router.removeLiquidity.call(
+        this.tokenA.address,
+        this.tokenB.address,
         uniTokenUser,
         new BN('1'),
         new BN('1'),
+        user,
         deadline,
         { from: user }
       );
-      await this.swap.transfer(this.proxy.address, uniTokenUser, {
+      // Send uniToken to proxy and prepare handler data
+      await this.uniTokenToken.transfer(this.proxy.address, uniTokenUser, {
         from: user,
       });
-      await this.proxy.updateTokenMock(this.swap.address);
-      await balanceUser.get();
-      const receipt = await this.proxy.execMock(to, data, { from: user });
-      expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
-        tokenUser.add(result['1'])
+      await balanceUser.get(); // Get user eth balance now
+
+      const value = uniTokenUser;
+      const to = this.huniswapv2.address;
+      const data = abi.simpleEncode(
+        'removeLiquidity(address,address,uint256,uint256,uint256):(uint256,uint256)',
+        tokenAAddress,
+        tokenBAddress,
+        value,
+        new BN('1'),
+        new BN('1')
       );
+
+      // Add tokens to cache for send back to user and execute handler
+      await this.proxy.updateTokenMock(this.tokenA.address);
+      await this.proxy.updateTokenMock(this.tokenB.address);
+      const receipt = await this.proxy.execMock(to, data, { from: user });
+
+      // Result verification
+      // Verify TokenA and Token B
+      expect(await this.tokenA.balanceOf.call(user)).to.be.bignumber.eq(
+        tokenAUser.add(result['0'])
+      );
+      expect(await this.tokenB.balanceOf.call(user)).to.be.bignumber.eq(
+        tokenBUser.add(result['1'])
+      );
+
+      // Verify UniToken
+      expect(await this.uniTokenToken.balanceOf.call(user)).to.be.bignumber.lt(
+        uniTokenUser
+      );
+      // Verify ETH
       expect(await balanceUser.delta()).to.be.bignumber.eq(
-        result['0'].sub(new BN(receipt.receipt.gasUsed))
+        new BN(-1).mul(new BN(receipt.receipt.gasUsed))
       );
       profileGas(receipt);
     });
