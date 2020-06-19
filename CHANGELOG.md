@@ -28,7 +28,9 @@ All notable changes to this project will be documented in this file.
 - Support Oasis fixed input/output eth to token swap.
 - Support Oasis fixed input/output token to eth swap.
 - Support Oasis fixed input/output token to token swap.
-- Support UniswapV2 add liquidity eth.
+- Support UniswapV2 add eth/token liquidity .
+- Support UniswapV2 remove eth/token liquidity.
+
 
 ### Changed
 
