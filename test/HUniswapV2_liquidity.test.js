@@ -358,7 +358,7 @@ contract('UniswapV2 Liquidity', function([_, deployer, user]) {
           from: user,
         }
       );
-      await this.proxy.updateTokenMock(this.tokenA.address);
+      await this.proxy.updateTokenMock(this.uniTokenToken.address);
 
       const value = uniTokenUserAmount;
       const to = this.huniswapv2.address;
