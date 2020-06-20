@@ -133,7 +133,7 @@ contract HUniswapV2 is HandlerBase {
         );
 
         // Approve token 0
-        IERC20(pair).safeApprove(UNISWAPV2_ROUTER, liquidity);
+        IERC20(pair).safeApprove(UNISWAPV2_ROUTER, 0);
 
         // Update involved token
         _updateToken(token);
@@ -169,7 +169,7 @@ contract HUniswapV2 is HandlerBase {
         );
 
         // Approve token 0
-        IERC20(pair).safeApprove(UNISWAPV2_ROUTER, liquidity);
+        IERC20(pair).safeApprove(UNISWAPV2_ROUTER, 0);
 
         // Update involved token
         _updateToken(tokenA);

@@ -20,7 +20,7 @@ const {
   ETH_PROVIDER,
   UNISWAPV2_ETH_DAI,
   UNISWAPV2_BAT_DAI,
-  UNISWAPV2_RouterV2,
+  UNISWAPV2_ROUTER02,
 } = require('./utils/constants');
 const { resetAccount, profileGas } = require('./utils/utils');
 
@@ -37,7 +37,7 @@ contract('UniswapV2 Liquidity', function([_, deployer, user]) {
   const tokenBProviderAddress = BAT_PROVIDER;
   const uniswapV2ETHDAIAddress = UNISWAPV2_ETH_DAI;
   const uniswapV2BATDAIAddress = UNISWAPV2_BAT_DAI;
-  const uniswapV2RouterAddress = UNISWAPV2_RouterV2;
+  const uniswapV2RouterAddress = UNISWAPV2_ROUTER02;
 
   let balanceUser;
   let tokenUser;
@@ -69,6 +69,7 @@ contract('UniswapV2 Liquidity', function([_, deployer, user]) {
     await resetAccount(_);
     await resetAccount(user);
     balanceUser = await tracker(user);
+    balanceProxy = await tracker(this.proxy.address);
     tokenAUserAmount = await this.tokenA.balanceOf.call(user);
     tokenBUserAmount = await this.tokenB.balanceOf.call(user);
     uniTokenETHUserAmount = await this.uniTokenETH.balanceOf.call(user);
@@ -93,7 +94,7 @@ contract('UniswapV2 Liquidity', function([_, deployer, user]) {
       const value = ether('1');
       const to = this.huniswapv2.address;
       const data = abi.simpleEncode(
-        'addLiquidityETH(uint256,address,uint256,uint256,uint256)',
+        'addLiquidityETH(uint256,address,uint256,uint256,uint256):(uint256,uint256,uint256)',
         value,
         tokenAAddress,
         tokenAmount,
@@ -125,6 +126,7 @@ contract('UniswapV2 Liquidity', function([_, deployer, user]) {
       expect(
         await this.tokenA.balanceOf.call(this.proxy.address)
       ).to.be.bignumber.eq(ether('0'));
+      expect(await balanceProxy.get()).to.be.bignumber.eq(ether('0'));
 
       // TODO: Find out the exact number of uniToken for testing
       // Verify spent ether
@@ -160,7 +162,7 @@ contract('UniswapV2 Liquidity', function([_, deployer, user]) {
       const minTokenBAmount = ether('0.000001');
       const to = this.huniswapv2.address;
       const data = abi.simpleEncode(
-        'addLiquidity(address,address,uint256,uint256,uint256,uint256)',
+        'addLiquidity(address,address,uint256,uint256,uint256,uint256):(uint256,uint256,uint256)',
         tokenAAddress,
         tokenBAddress,
         tokenAAmount,
@@ -174,8 +176,7 @@ contract('UniswapV2 Liquidity', function([_, deployer, user]) {
         from: user,
       });
 
-      // Result Verification
-      // Verify spent tokens
+      // Verify user tokens
       expect(await this.tokenA.balanceOf.call(user)).to.be.bignumber.lte(
         tokenAUserAmount.sub(minTokenAAmount)
       );
@@ -187,10 +188,10 @@ contract('UniswapV2 Liquidity', function([_, deployer, user]) {
       expect(
         await this.tokenA.balanceOf.call(this.proxy.address)
       ).to.be.bignumber.eq(ether('0'));
-
       expect(
         await this.tokenB.balanceOf.call(this.proxy.address)
       ).to.be.bignumber.eq(ether('0'));
+      expect(await balanceProxy.get()).to.be.bignumber.eq(ether('0'));
 
       // TODO: Find out the exact number of uniToken for testing
       // Verify spent ether
@@ -207,10 +208,6 @@ contract('UniswapV2 Liquidity', function([_, deployer, user]) {
     let deadline;
 
     beforeEach(async function() {
-      // await this.tokenA.transfer(user, ether('100'), {
-      //   from: tokenAProviderAddress,
-      // });
-
       // Add liquidity for getting uniToken before remove liquidity
       await this.tokenA.approve(this.router.address, ether('1000'), {
         from: user,
@@ -229,7 +226,7 @@ contract('UniswapV2 Liquidity', function([_, deployer, user]) {
         }
       );
 
-      // Get user tokenA/uniToken  balance and
+      // Get user tokenA/uniToken balance
       tokenAUserAmount = await this.tokenA.balanceOf.call(user);
       uniTokenUserAmount = await this.uniTokenETH.balanceOf.call(user);
     });
@@ -253,6 +250,8 @@ contract('UniswapV2 Liquidity', function([_, deployer, user]) {
       await this.uniTokenETH.transfer(this.proxy.address, uniTokenUserAmount, {
         from: user,
       });
+      await this.proxy.updateTokenMock(this.uniTokenETH.address);
+
       const value = uniTokenUserAmount;
       const to = this.huniswapv2.address;
       const data = abi.simpleEncode(
@@ -263,30 +262,33 @@ contract('UniswapV2 Liquidity', function([_, deployer, user]) {
         new BN('1')
       );
 
-      // Add TokenA to cache for send back to user and execute handler
+      // Execute handler
       await balanceUser.get();
-      await this.proxy.updateTokenMock(this.tokenA.address);
       const receipt = await this.proxy.execMock(to, data, { from: user });
 
-      // Result Verification
-      // Verify Token A
+      // Verify User Token
       expect(await this.tokenA.balanceOf.call(user)).to.be.bignumber.eq(
-        tokenAUserAmount.add(result['0'])
+        tokenAUserAmount.add(result[0])
+      );
+      expect(await this.uniTokenETH.balanceOf.call(user)).to.be.bignumber.eq(
+        ether('0')
       );
 
       // Verify proxy token should be zero
       expect(
         await this.uniTokenETH.balanceOf.call(this.proxy.address)
       ).to.be.bignumber.eq(ether('0'));
-
       expect(
-        await this.tokenB.balanceOf.call(this.proxy.address)
+        await this.tokenA.balanceOf.call(this.proxy.address)
       ).to.be.bignumber.eq(ether('0'));
+      expect(await balanceProxy.get()).to.be.bignumber.eq(ether('0'));
 
-      // Verify ETH
+      // Verify spent ETH
       expect(await balanceUser.delta()).to.be.bignumber.eq(
-        result['1'].sub(new BN(receipt.receipt.gasUsed))
+        result[1].sub(new BN(receipt.receipt.gasUsed))
       );
+
+      // Gas profile
       profileGas(receipt);
     });
   });
@@ -356,6 +358,7 @@ contract('UniswapV2 Liquidity', function([_, deployer, user]) {
           from: user,
         }
       );
+      await this.proxy.updateTokenMock(this.tokenA.address);
 
       const value = uniTokenUserAmount;
       const to = this.huniswapv2.address;
@@ -368,36 +371,39 @@ contract('UniswapV2 Liquidity', function([_, deployer, user]) {
         new BN('1')
       );
 
-      // Add tokens to cache for send back to user and execute handler
+      // Execute handler
       await balanceUser.get();
-      await this.proxy.updateTokenMock(this.tokenA.address);
-      await this.proxy.updateTokenMock(this.tokenB.address);
       const receipt = await this.proxy.execMock(to, data, { from: user });
 
-      // Result verification
-      // Verify TokenA and Token B
+      // Verify user token
       expect(await this.tokenA.balanceOf.call(user)).to.be.bignumber.eq(
-        tokenAUserAmount.add(result['0'])
+        tokenAUserAmount.add(result[0])
       );
       expect(await this.tokenB.balanceOf.call(user)).to.be.bignumber.eq(
-        tokenBUserAmount.add(result['1'])
+        tokenBUserAmount.add(result[1])
       );
-
-      // Verify UniToken
-      expect(await this.uniTokenToken.balanceOf.call(user)).to.be.bignumber.lt(
-        uniTokenUserAmount
+      expect(await this.uniTokenToken.balanceOf.call(user)).to.be.bignumber.eq(
+        ether('0')
       );
 
       // Verify proxy token should be zero
       expect(
         await this.uniTokenToken.balanceOf.call(this.proxy.address)
       ).to.be.bignumber.eq(ether('0'));
+      expect(
+        await this.tokenA.balanceOf.call(this.proxy.address)
+      ).to.be.bignumber.eq(ether('0'));
+      expect(
+        await this.tokenB.balanceOf.call(this.proxy.address)
+      ).to.be.bignumber.eq(ether('0'));
+      expect(await balanceProxy.get()).to.be.bignumber.eq(ether('0'));
 
-      // Verify ETH
+      // Verify spent ETH
       expect(await balanceUser.delta()).to.be.bignumber.eq(
         ether('0').sub(new BN(receipt.receipt.gasUsed))
-        // new BN(-1).mul(new BN(receipt.receipt.gasUsed))
       );
+
+      // Gas profile
       profileGas(receipt);
     });
   });
