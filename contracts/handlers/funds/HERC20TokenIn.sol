@@ -16,9 +16,10 @@ contract HERC20TokenIn is HandlerBase {
             tokens.length == amounts.length,
             "token and amount does not match"
         );
+        address sender = cache.getSender();
         for (uint256 i = 0; i < tokens.length; i++) {
             IERC20(tokens[i]).safeTransferFrom(
-                cache.getSender(),
+                sender,
                 address(this),
                 amounts[i]
             );
