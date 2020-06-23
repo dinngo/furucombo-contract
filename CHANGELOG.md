@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+### Added
+
+- Support UniswapV2 add eth/token liquidity .
+- Support UniswapV2 remove eth/token liquidity.
+- Support Compound claim COMP token.
+
 ## [0.4.1] - 2020-06-16
 
 ### Fixed
@@ -28,9 +34,6 @@ All notable changes to this project will be documented in this file.
 - Support Oasis fixed input/output eth to token swap.
 - Support Oasis fixed input/output token to eth swap.
 - Support Oasis fixed input/output token to token swap.
-- Support UniswapV2 add eth/token liquidity .
-- Support UniswapV2 remove eth/token liquidity.
-
 
 ### Changed
 

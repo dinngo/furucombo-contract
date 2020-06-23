@@ -129,7 +129,7 @@ contract Proxy is Cache, Config {
      * @param _to The handler of post-process.
      */
     function _setPostProcess(address _to) internal {
-        // If the cache is empty, just skip
+        // If the cache length equals 1, just skip
         // If the top is a custom post-process, replace it with the handler
         // address.
         require(cache.length > 0, "cache empty");
