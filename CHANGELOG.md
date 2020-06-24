@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+## [0.5.0] - 2020-06-23
+
 ### Added
 
 - Support UniswapV2 add eth/token liquidity .
