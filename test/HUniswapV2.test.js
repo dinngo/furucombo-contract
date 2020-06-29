@@ -82,8 +82,16 @@ contract('UniswapV2 Swap', function([_, deployer, user, someone]) {
           path,
           { from: someone }
         );
-        console.log(`result[0]: ${web3.utils.fromWei(web3.utils.hexToNumberString(result[0]))}`);
-        console.log(`result[1]: ${web3.utils.fromWei(web3.utils.hexToNumberString(result[1]))}`);
+        console.log(
+          `result[0]: ${web3.utils.fromWei(
+            web3.utils.hexToNumberString(result[0])
+          )}`
+        );
+        console.log(
+          `result[1]: ${web3.utils.fromWei(
+            web3.utils.hexToNumberString(result[1])
+          )}`
+        );
 
         const receipt = await this.proxy.execMock(to, data, {
           from: user,
@@ -208,7 +216,7 @@ contract('UniswapV2 Swap', function([_, deployer, user, someone]) {
         await expectRevert(
           this.proxy.execMock(to, data, {
             from: user,
-            value:  value,
+            value: value,
           }),
           'UniswapV2Router: EXCESSIVE_INPUT_AMOUNT.'
         );
@@ -228,7 +236,7 @@ contract('UniswapV2 Swap', function([_, deployer, user, someone]) {
         await expectRevert(
           this.proxy.execMock(to, data, {
             from: user,
-            value:  value,
+            value: value,
           }),
           'UniswapV2Router: INVALID_PATH'
         );
@@ -277,8 +285,16 @@ contract('UniswapV2 Swap', function([_, deployer, user, someone]) {
           path,
           { from: someone }
         );
-        console.log(`result[0]: ${web3.utils.fromWei(web3.utils.hexToNumberString(result[0]))}`);
-        console.log(`result[1]: ${web3.utils.fromWei(web3.utils.hexToNumberString(result[1]))}`);
+        console.log(
+          `result[0]: ${web3.utils.fromWei(
+            web3.utils.hexToNumberString(result[0])
+          )}`
+        );
+        console.log(
+          `result[1]: ${web3.utils.fromWei(
+            web3.utils.hexToNumberString(result[1])
+          )}`
+        );
         const receipt = await this.proxy.execMock(to, data, { from: user });
 
         expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
@@ -348,8 +364,16 @@ contract('UniswapV2 Swap', function([_, deployer, user, someone]) {
           path,
           { from: someone }
         );
-        console.log(`result[0]: ${web3.utils.fromWei(web3.utils.hexToNumberString(result[0]))}`);
-        console.log(`result[1]: ${web3.utils.fromWei(web3.utils.hexToNumberString(result[1]))}`);
+        console.log(
+          `result[0]: ${web3.utils.fromWei(
+            web3.utils.hexToNumberString(result[0])
+          )}`
+        );
+        console.log(
+          `result[1]: ${web3.utils.fromWei(
+            web3.utils.hexToNumberString(result[1])
+          )}`
+        );
         const receipt = await this.proxy.execMock(to, data, {
           from: user,
         });
@@ -411,9 +435,21 @@ contract('UniswapV2 Swap', function([_, deployer, user, someone]) {
           path,
           { from: someone }
         );
-        console.log(`result[0]: ${web3.utils.fromWei(web3.utils.hexToNumberString(result[0]))}`);
-        console.log(`result[1]: ${web3.utils.fromWei(web3.utils.hexToNumberString(result[1]))}`);
-        console.log(`result[2]: ${web3.utils.fromWei(web3.utils.hexToNumberString(result[2]))}`);
+        console.log(
+          `result[0]: ${web3.utils.fromWei(
+            web3.utils.hexToNumberString(result[0])
+          )}`
+        );
+        console.log(
+          `result[1]: ${web3.utils.fromWei(
+            web3.utils.hexToNumberString(result[1])
+          )}`
+        );
+        console.log(
+          `result[2]: ${web3.utils.fromWei(
+            web3.utils.hexToNumberString(result[2])
+          )}`
+        );
         const receipt = await this.proxy.execMock(to, data, { from: user });
 
         expect(await this.token0.balanceOf.call(user)).to.be.bignumber.eq(
@@ -428,7 +464,7 @@ contract('UniswapV2 Swap', function([_, deployer, user, someone]) {
         expect(await this.token1.balanceOf.call(user)).to.be.bignumber.eq(
           token1User.add(result[result.length - 1])
         );
-        
+
         profileGas(receipt);
       });
 
@@ -463,7 +499,7 @@ contract('UniswapV2 Swap', function([_, deployer, user, someone]) {
           'swapTokensForExactTokens(uint256,uint256,address[]):(uint256[])',
           buyAmt,
           value,
-          path,
+          path
         );
         await this.token0.transfer(this.proxy.address, value, {
           from: providerAddress,
@@ -479,9 +515,21 @@ contract('UniswapV2 Swap', function([_, deployer, user, someone]) {
           path,
           { from: someone }
         );
-        console.log(`result[0]: ${web3.utils.fromWei(web3.utils.hexToNumberString(result[0]))}`);
-        console.log(`result[1]: ${web3.utils.fromWei(web3.utils.hexToNumberString(result[1]))}`);
-        console.log(`result[2]: ${web3.utils.fromWei(web3.utils.hexToNumberString(result[2]))}`);
+        console.log(
+          `result[0]: ${web3.utils.fromWei(
+            web3.utils.hexToNumberString(result[0])
+          )}`
+        );
+        console.log(
+          `result[1]: ${web3.utils.fromWei(
+            web3.utils.hexToNumberString(result[1])
+          )}`
+        );
+        console.log(
+          `result[2]: ${web3.utils.fromWei(
+            web3.utils.hexToNumberString(result[2])
+          )}`
+        );
         const receipt = await this.proxy.execMock(to, data, {
           from: user,
         });
@@ -509,7 +557,7 @@ contract('UniswapV2 Swap', function([_, deployer, user, someone]) {
           'swapTokensForExactTokens(uint256,uint256,address[]):(uint256[])',
           buyAmt,
           value,
-          path,
+          path
         );
         await this.token0.transfer(this.proxy.address, value, {
           from: providerAddress,
