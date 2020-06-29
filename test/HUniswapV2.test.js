@@ -82,17 +82,6 @@ contract('UniswapV2 Swap', function([_, deployer, user, someone]) {
           path,
           { from: someone }
         );
-        console.log(
-          `result[0]: ${web3.utils.fromWei(
-            web3.utils.hexToNumberString(result[0])
-          )}`
-        );
-        console.log(
-          `result[1]: ${web3.utils.fromWei(
-            web3.utils.hexToNumberString(result[1])
-          )}`
-        );
-
         const receipt = await this.proxy.execMock(to, data, {
           from: user,
           value: value,
@@ -142,7 +131,7 @@ contract('UniswapV2 Swap', function([_, deployer, user, someone]) {
         expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
       });
 
-      it('incorrect path', async function() {
+      it('invalid path', async function() {
         const value = ether('1');
         const to = this.huniswapv2.address;
         const path = [tokenAddress, WETH_TOKEN];
@@ -218,11 +207,11 @@ contract('UniswapV2 Swap', function([_, deployer, user, someone]) {
             from: user,
             value: value,
           }),
-          'UniswapV2Router: EXCESSIVE_INPUT_AMOUNT.'
+          'UniswapV2Router: EXCESSIVE_INPUT_AMOUNT'
         );
       });
 
-      it('incorrect path', async function() {
+      it('invalid path', async function() {
         const value = ether('1');
         const buyAmt = ether('100');
         const to = this.huniswapv2.address;
@@ -285,16 +274,6 @@ contract('UniswapV2 Swap', function([_, deployer, user, someone]) {
           path,
           { from: someone }
         );
-        console.log(
-          `result[0]: ${web3.utils.fromWei(
-            web3.utils.hexToNumberString(result[0])
-          )}`
-        );
-        console.log(
-          `result[1]: ${web3.utils.fromWei(
-            web3.utils.hexToNumberString(result[1])
-          )}`
-        );
         const receipt = await this.proxy.execMock(to, data, { from: user });
 
         expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
@@ -338,6 +317,27 @@ contract('UniswapV2 Swap', function([_, deployer, user, someone]) {
           'UniswapV2Router: INSUFFICIENT_OUTPUT_AMOUNT'
         );
       });
+
+      it('invalid path', async function() {
+        const value = ether('100');
+        const to = this.huniswapv2.address;
+        const path = [tokenAddress, WETH_TOKEN, tokenAddress];
+        const data = abi.simpleEncode(
+          'swapExactTokensForETH(uint256,uint256,address[]):(uint256[])',
+          value,
+          new BN('1'),
+          path
+        );
+        await this.token.transfer(this.proxy.address, value, {
+          from: providerAddress,
+        });
+        await this.proxy.updateTokenMock(this.token.address);
+        await expectRevert(
+          this.proxy.execMock(to, data, { from: user }),
+          'UniswapV2Router: INVALID_PATH'
+        );
+
+      });
     });
 
     describe('Exact output', function() {
@@ -364,16 +364,6 @@ contract('UniswapV2 Swap', function([_, deployer, user, someone]) {
           path,
           { from: someone }
         );
-        console.log(
-          `result[0]: ${web3.utils.fromWei(
-            web3.utils.hexToNumberString(result[0])
-          )}`
-        );
-        console.log(
-          `result[1]: ${web3.utils.fromWei(
-            web3.utils.hexToNumberString(result[1])
-          )}`
-        );
         const receipt = await this.proxy.execMock(to, data, {
           from: user,
         });
@@ -388,6 +378,50 @@ contract('UniswapV2 Swap', function([_, deployer, user, someone]) {
           buyAmt.sub(new BN(receipt.receipt.gasUsed))
         );
         profileGas(receipt);
+      });
+
+      it('insufficient input token', async function() {
+        const value = ether('1');
+        const buyAmt = ether('100');
+        const to = this.huniswapv2.address;
+        const path = [tokenAddress, WETH_TOKEN];
+        const data = abi.simpleEncode(
+          'swapTokensForExactETH(uint256,uint256,address[]):(uint256[])',
+          buyAmt,
+          value,
+          path
+        );
+        await this.token.transfer(this.proxy.address, value, {
+          from: providerAddress,
+        });
+        await this.proxy.updateTokenMock(this.token.address);
+
+        await expectRevert(
+          this.proxy.execMock(to, data, { from: user }),
+          'UniswapV2Router: EXCESSIVE_INPUT_AMOUNT.'
+        );
+      });
+
+      it('invalid path', async function() {
+        const value = ether('1000');
+        const buyAmt = ether('0.1');
+        const to = this.huniswapv2.address;
+        const path = [tokenAddress, WETH_TOKEN, tokenAddress];
+        const data = abi.simpleEncode(
+          'swapTokensForExactETH(uint256,uint256,address[]):(uint256[])',
+          buyAmt,
+          value,
+          path
+        );
+        await this.token.transfer(this.proxy.address, value, {
+          from: providerAddress,
+        });
+        await this.proxy.updateTokenMock(this.token.address);
+
+        await expectRevert(
+          this.proxy.execMock(to, data, { from: user }),
+          'UniswapV2Router: INVALID_PATH'
+        );
       });
     });
   });
@@ -435,21 +469,6 @@ contract('UniswapV2 Swap', function([_, deployer, user, someone]) {
           path,
           { from: someone }
         );
-        console.log(
-          `result[0]: ${web3.utils.fromWei(
-            web3.utils.hexToNumberString(result[0])
-          )}`
-        );
-        console.log(
-          `result[1]: ${web3.utils.fromWei(
-            web3.utils.hexToNumberString(result[1])
-          )}`
-        );
-        console.log(
-          `result[2]: ${web3.utils.fromWei(
-            web3.utils.hexToNumberString(result[2])
-          )}`
-        );
         const receipt = await this.proxy.execMock(to, data, { from: user });
 
         expect(await this.token0.balanceOf.call(user)).to.be.bignumber.eq(
@@ -466,6 +485,36 @@ contract('UniswapV2 Swap', function([_, deployer, user, someone]) {
         );
 
         profileGas(receipt);
+      });
+
+      it('min output too high', async function() {
+        const value = ether('100');
+        const to = this.huniswapv2.address;
+        const path = [token0Address, WETH_TOKEN, token1Address];
+        await this.token0.transfer(this.proxy.address, value, {
+          from: providerAddress,
+        });
+        await this.proxy.updateTokenMock(this.token0.address);
+        await this.token0.transfer(someone, value, {
+          from: providerAddress,
+        });
+
+        const result = await this.uniswapLib.getAmountsOut.call(
+          UNISWAPV2_FACTORY,
+          value,
+          path,
+          { from: someone }
+        );
+        const data = abi.simpleEncode(
+          'swapExactTokensForTokens(uint256,uint256,address[]):(uint256[])',
+          value,
+          result[result.length - 1].add(ether('10')),
+          path
+        );
+        await expectRevert(
+          this.proxy.execMock(to, data, { from: user }),
+          'UniswapV2Router: INSUFFICIENT_OUTPUT_AMOUNT'
+        );
       });
 
       it('identical addresses', async function() {
@@ -515,21 +564,6 @@ contract('UniswapV2 Swap', function([_, deployer, user, someone]) {
           path,
           { from: someone }
         );
-        console.log(
-          `result[0]: ${web3.utils.fromWei(
-            web3.utils.hexToNumberString(result[0])
-          )}`
-        );
-        console.log(
-          `result[1]: ${web3.utils.fromWei(
-            web3.utils.hexToNumberString(result[1])
-          )}`
-        );
-        console.log(
-          `result[2]: ${web3.utils.fromWei(
-            web3.utils.hexToNumberString(result[2])
-          )}`
-        );
         const receipt = await this.proxy.execMock(to, data, {
           from: user,
         });
@@ -566,6 +600,27 @@ contract('UniswapV2 Swap', function([_, deployer, user, someone]) {
         await expectRevert(
           this.proxy.execMock(to, data, { from: user }),
           'UniswapV2Router: EXCESSIVE_INPUT_AMOUNT'
+        );
+      });
+
+      it('identical addresses', async function() {
+        const value = ether('100');
+        const buyAmt = ether('1');
+        const to = this.huniswapv2.address;
+        const path = [token0Address, WETH_TOKEN, WETH_TOKEN, token1Address];
+        const data = abi.simpleEncode(
+          'swapTokensForExactTokens(uint256,uint256,address[]):(uint256[])',
+          buyAmt,
+          value,
+          path
+        );
+        await this.token0.transfer(this.proxy.address, value, {
+          from: providerAddress,
+        });
+        await this.proxy.updateTokenMock(this.token0.address);
+        await expectRevert(
+          this.proxy.execMock(to, data, { from: user }),
+          'UniswapV2Library: IDENTICAL_ADDRESSES'
         );
       });
     });
