@@ -336,7 +336,6 @@ contract('UniswapV2 Swap', function([_, deployer, user, someone]) {
           this.proxy.execMock(to, data, { from: user }),
           'UniswapV2Router: INVALID_PATH'
         );
-
       });
     });
 
