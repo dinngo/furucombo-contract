@@ -778,6 +778,7 @@ contract('Maker', function([_, deployer, user1, user2, user3, user4]) {
           from: user1,
         });
         await this.proxy.updateTokenMock(this.dai.address);
+        [ilk, debt, lock] = await getCdpInfo(cdp);
         const receipt = await this.proxy.execMock(to, data, {
           from: user1,
         });
@@ -805,15 +806,16 @@ contract('Maker', function([_, deployer, user1, user2, user3, user4]) {
           from: user1,
         });
         await this.proxy.updateTokenMock(this.dai.address);
+        [ilk, debt, lock] = await getCdpInfo(cdp);
         const receipt = await this.proxy.execMock(to, data, {
           from: user1,
         });
         const [ilkEnd, debtEnd, lockEnd] = await getCdpInfo(cdp);
         const daiUserEnd = await this.dai.balanceOf.call(user1);
-        expect(daiUserEnd.sub(daiUser)).to.be.bignumber.eq(
-          ether('0').sub(ether('30'))
+        expect(daiUserEnd.sub(daiUser)).to.be.bignumber.lte(
+          debtEnd.sub(debt).div(RAY)
         );
-        expect(debtEnd.sub(debt).div(RAY)).to.be.bignumber.not.lt(
+        expect(debtEnd.sub(debt).div(RAY)).to.be.bignumber.gte(
           ether('0').sub(ether('30'))
         );
         profileGas(receipt);
@@ -868,6 +870,7 @@ contract('Maker', function([_, deployer, user1, user2, user3, user4]) {
           from: user2,
         });
         await this.proxy.updateTokenMock(this.dai.address);
+        [ilk, debt, lock] = await getCdpInfo(cdp);
         const receipt = await this.proxy.execMock(to, data, {
           from: user2,
         });
@@ -895,15 +898,16 @@ contract('Maker', function([_, deployer, user1, user2, user3, user4]) {
           from: user2,
         });
         await this.proxy.updateTokenMock(this.dai.address);
+        [ilk, debt, lock] = await getCdpInfo(cdp);
         const receipt = await this.proxy.execMock(to, data, {
           from: user2,
         });
         const [ilkEnd, debtEnd, lockEnd] = await getCdpInfo(cdp);
         const daiUserEnd = await this.dai.balanceOf.call(user2);
-        expect(daiUserEnd.sub(daiUser)).to.be.bignumber.eq(
-          ether('0').sub(ether('30'))
+        expect(daiUserEnd.sub(daiUser)).to.be.bignumber.lte(
+          debtEnd.sub(debt).div(RAY)
         );
-        expect(debtEnd.sub(debt).div(RAY)).to.be.bignumber.not.lt(
+        expect(debtEnd.sub(debt).div(RAY)).to.be.bignumber.gte(
           ether('0').sub(ether('30'))
         );
         profileGas(receipt);
