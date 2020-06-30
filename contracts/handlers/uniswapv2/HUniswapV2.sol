@@ -105,6 +105,77 @@ contract HUniswapV2 is HandlerBase {
         _updateToken(pair);
     }
 
+    function removeLiquidityETH(
+        address token,
+        uint256 liquidity,
+        uint256 amountTokenMin,
+        uint256 amountETHMin
+    ) external payable returns (uint256 amountToken, uint256 amountETH) {
+        // Get uniswapV2 router
+        IUniswapV2Router02 router = IUniswapV2Router02(UNISWAPV2_ROUTER);
+        address pair = UniswapV2Library.pairFor(
+            router.factory(),
+            token,
+            router.WETH()
+        );
+
+        // Approve token
+        IERC20(pair).safeApprove(UNISWAPV2_ROUTER, liquidity);
+
+        // Add liquidity ETH
+        (amountToken, amountETH) = router.removeLiquidityETH(
+            token,
+            liquidity,
+            amountTokenMin,
+            amountETHMin,
+            address(this),
+            now + 1
+        );
+
+        // Approve token 0
+        IERC20(pair).safeApprove(UNISWAPV2_ROUTER, 0);
+
+        // Update involved token
+        _updateToken(token);
+    }
+
+    function removeLiquidity(
+        address tokenA,
+        address tokenB,
+        uint256 liquidity,
+        uint256 amountAMin,
+        uint256 amountBMin
+    ) external payable returns (uint256 amountA, uint256 amountB) {
+        // Get uniswapV2 router
+        IUniswapV2Router02 router = IUniswapV2Router02(UNISWAPV2_ROUTER);
+        address pair = UniswapV2Library.pairFor(
+            router.factory(),
+            tokenA,
+            tokenB
+        );
+
+        // Approve token
+        IERC20(pair).safeApprove(UNISWAPV2_ROUTER, liquidity);
+
+        // Add liquidity ETH
+        (amountA, amountB) = router.removeLiquidity(
+            tokenA,
+            tokenB,
+            liquidity,
+            amountAMin,
+            amountBMin,
+            address(this),
+            now + 1
+        );
+
+        // Approve token 0
+        IERC20(pair).safeApprove(UNISWAPV2_ROUTER, 0);
+
+        // Update involved token
+        _updateToken(tokenA);
+        _updateToken(tokenB);
+    }
+
     function swapExactETHForTokens(
         uint256 value,
         uint256 amountOutMin,
@@ -257,74 +328,4 @@ contract HUniswapV2 is HandlerBase {
         _updateToken(tokenOut);
     }
 
-    function removeLiquidityETH(
-        address token,
-        uint256 liquidity,
-        uint256 amountTokenMin,
-        uint256 amountETHMin
-    ) external payable returns (uint256 amountToken, uint256 amountETH) {
-        // Get uniswapV2 router
-        IUniswapV2Router02 router = IUniswapV2Router02(UNISWAPV2_ROUTER);
-        address pair = UniswapV2Library.pairFor(
-            router.factory(),
-            token,
-            router.WETH()
-        );
-
-        // Approve token
-        IERC20(pair).safeApprove(UNISWAPV2_ROUTER, liquidity);
-
-        // Add liquidity ETH
-        (amountToken, amountETH) = router.removeLiquidityETH(
-            token,
-            liquidity,
-            amountTokenMin,
-            amountETHMin,
-            address(this),
-            now + 1
-        );
-
-        // Approve token 0
-        IERC20(pair).safeApprove(UNISWAPV2_ROUTER, 0);
-
-        // Update involved token
-        _updateToken(token);
-    }
-
-    function removeLiquidity(
-        address tokenA,
-        address tokenB,
-        uint256 liquidity,
-        uint256 amountAMin,
-        uint256 amountBMin
-    ) external payable returns (uint256 amountA, uint256 amountB) {
-        // Get uniswapV2 router
-        IUniswapV2Router02 router = IUniswapV2Router02(UNISWAPV2_ROUTER);
-        address pair = UniswapV2Library.pairFor(
-            router.factory(),
-            tokenA,
-            tokenB
-        );
-
-        // Approve token
-        IERC20(pair).safeApprove(UNISWAPV2_ROUTER, liquidity);
-
-        // Add liquidity ETH
-        (amountA, amountB) = router.removeLiquidity(
-            tokenA,
-            tokenB,
-            liquidity,
-            amountAMin,
-            amountBMin,
-            address(this),
-            now + 1
-        );
-
-        // Approve token 0
-        IERC20(pair).safeApprove(UNISWAPV2_ROUTER, 0);
-
-        // Update involved token
-        _updateToken(tokenA);
-        _updateToken(tokenB);
-    }
 }
