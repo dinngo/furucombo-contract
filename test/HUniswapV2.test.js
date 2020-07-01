@@ -19,7 +19,6 @@ const {
   BAT_TOKEN,
   WETH_TOKEN,
   UNISWAPV2_ROUTER02,
-  UNISWAPV2_FACTORY,
 } = require('./utils/constants');
 const { resetAccount, profileGas } = require('./utils/utils');
 
@@ -28,7 +27,6 @@ const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('ProxyMock');
 const IToken = artifacts.require('IERC20');
 const IUniswapV2Router = artifacts.require('IUniswapV2Router02');
-const UniswapV2LibraryMock = artifacts.require('UniswapV2LibraryMock');
 
 contract('UniswapV2 Swap', function([_, deployer, user, someone]) {
   before(async function() {
@@ -38,7 +36,6 @@ contract('UniswapV2 Swap', function([_, deployer, user, someone]) {
       this.huniswapv2.address,
       utils.asciiToHex('UniswapV2')
     );
-    this.uniswapLib = await UniswapV2LibraryMock.new();
     this.router = await IUniswapV2Router.at(UNISWAPV2_ROUTER02);
   });
 
@@ -76,12 +73,9 @@ contract('UniswapV2 Swap', function([_, deployer, user, someone]) {
           new BN('1'),
           path
         );
-        const result = await this.uniswapLib.getAmountsOut.call(
-          UNISWAPV2_FACTORY,
-          value,
-          path,
-          { from: someone }
-        );
+        const result = await this.router.getAmountsOut.call(value, path, {
+          from: user,
+        });
         const receipt = await this.proxy.execMock(to, data, {
           from: user,
           value: value,
@@ -105,12 +99,9 @@ contract('UniswapV2 Swap', function([_, deployer, user, someone]) {
         const value = ether('1');
         const to = this.huniswapv2.address;
         const path = [WETH_TOKEN, tokenAddress];
-        const result = await this.uniswapLib.getAmountsOut.call(
-          UNISWAPV2_FACTORY,
-          value,
-          path,
-          { from: someone }
-        );
+        const result = await this.router.getAmountsOut.call(value, path, {
+          from: user,
+        });
         const data = abi.simpleEncode(
           'swapExactETHForTokens(uint256,uint256,address[]):(uint256[])',
           value,
@@ -160,12 +151,9 @@ contract('UniswapV2 Swap', function([_, deployer, user, someone]) {
           buyAmt,
           path
         );
-        const result = await this.uniswapLib.getAmountsIn.call(
-          UNISWAPV2_FACTORY,
-          buyAmt,
-          path,
-          { from: someone }
-        );
+        const result = await this.router.getAmountsIn.call(buyAmt, path, {
+          from: user,
+        });
         const receipt = await this.proxy.execMock(to, data, {
           from: user,
           value: value,
@@ -189,12 +177,9 @@ contract('UniswapV2 Swap', function([_, deployer, user, someone]) {
         const buyAmt = ether('100');
         const to = this.huniswapv2.address;
         const path = [WETH_TOKEN, tokenAddress];
-        const result = await this.uniswapLib.getAmountsIn.call(
-          UNISWAPV2_FACTORY,
-          buyAmt,
-          path,
-          { from: someone }
-        );
+        const result = await this.router.getAmountsIn.call(buyAmt, path, {
+          from: user,
+        });
         const value = result[0].sub(ether('0.01'));
         const data = abi.simpleEncode(
           'swapETHForExactTokens(uint256,uint256,address[]):(uint256[])',
@@ -268,12 +253,9 @@ contract('UniswapV2 Swap', function([_, deployer, user, someone]) {
         await this.proxy.updateTokenMock(this.token.address);
         await this.token.transfer(someone, value, { from: providerAddress });
 
-        const result = await this.uniswapLib.getAmountsOut.call(
-          UNISWAPV2_FACTORY,
-          value,
-          path,
-          { from: someone }
-        );
+        const result = await this.router.getAmountsOut.call(value, path, {
+          from: someone,
+        });
         const receipt = await this.proxy.execMock(to, data, { from: user });
 
         expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
@@ -300,12 +282,9 @@ contract('UniswapV2 Swap', function([_, deployer, user, someone]) {
         });
         await this.proxy.updateTokenMock(this.token.address);
         await this.token.transfer(someone, value, { from: providerAddress });
-        const result = await this.uniswapLib.getAmountsOut.call(
-          UNISWAPV2_FACTORY,
-          value,
-          path,
-          { from: someone }
-        );
+        const result = await this.router.getAmountsOut.call(value, path, {
+          from: someone,
+        });
         const data = abi.simpleEncode(
           'swapExactTokensForETH(uint256,uint256,address[]):(uint256[])',
           value,
@@ -357,12 +336,9 @@ contract('UniswapV2 Swap', function([_, deployer, user, someone]) {
         await this.proxy.updateTokenMock(this.token.address);
         await this.token.transfer(someone, value, { from: providerAddress });
 
-        const result = await this.uniswapLib.getAmountsIn.call(
-          UNISWAPV2_FACTORY,
-          buyAmt,
-          path,
-          { from: someone }
-        );
+        const result = await this.router.getAmountsIn.call(buyAmt, path, {
+          from: someone,
+        });
         const receipt = await this.proxy.execMock(to, data, {
           from: user,
         });
@@ -462,12 +438,9 @@ contract('UniswapV2 Swap', function([_, deployer, user, someone]) {
           from: providerAddress,
         });
 
-        const result = await this.uniswapLib.getAmountsOut.call(
-          UNISWAPV2_FACTORY,
-          value,
-          path,
-          { from: someone }
-        );
+        const result = await this.router.getAmountsOut.call(value, path, {
+          from: someone,
+        });
         const receipt = await this.proxy.execMock(to, data, { from: user });
 
         expect(await this.token0.balanceOf.call(user)).to.be.bignumber.eq(
@@ -498,12 +471,9 @@ contract('UniswapV2 Swap', function([_, deployer, user, someone]) {
           from: providerAddress,
         });
 
-        const result = await this.uniswapLib.getAmountsOut.call(
-          UNISWAPV2_FACTORY,
-          value,
-          path,
-          { from: someone }
-        );
+        const result = await this.router.getAmountsOut.call(value, path, {
+          from: someone,
+        });
         const data = abi.simpleEncode(
           'swapExactTokensForTokens(uint256,uint256,address[]):(uint256[])',
           value,
@@ -557,12 +527,9 @@ contract('UniswapV2 Swap', function([_, deployer, user, someone]) {
           from: providerAddress,
         });
 
-        const result = await this.uniswapLib.getAmountsIn.call(
-          UNISWAPV2_FACTORY,
-          buyAmt,
-          path,
-          { from: someone }
-        );
+        const result = await this.router.getAmountsIn.call(buyAmt, path, {
+          from: someone,
+        });
         const receipt = await this.proxy.execMock(to, data, {
           from: user,
         });
