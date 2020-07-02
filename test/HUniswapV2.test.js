@@ -42,7 +42,7 @@ contract('UniswapV2 Swap', function([_, deployer, user, someone]) {
   beforeEach(async function() {
     await resetAccount(_);
     await resetAccount(user);
-    this.proxy = await Proxy.new(this.registry.address, { from: deployer });
+    this.proxy = await Proxy.new(this.registry.address);
   });
 
   describe('Ether to Token', function() {
