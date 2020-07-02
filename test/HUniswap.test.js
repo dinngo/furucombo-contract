@@ -352,7 +352,7 @@ contract('Uniswap Swap', function([_, deployer, user, someone]) {
           await this.token0.balanceOf.call(this.proxy.address)
         ).to.be.bignumber.eq(ether('0'));
         expect(await this.token1.balanceOf.call(user)).to.be.bignumber.eq(
-          result
+          token1User.add(result)
         );
         profileGas(receipt);
       });
