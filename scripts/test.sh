@@ -32,6 +32,13 @@ start_ganache() {
     ganache_pid=$!
 }
 
+kill_and_restart_ganache() {
+    cleanup
+    echo "Starting new ganache instance"
+    start_ganache
+}
+
+
 if ganache_running; then
     echo "Using existing ganache instance"
 else
@@ -40,5 +47,16 @@ else
 fi
 
 truffle version
+# truffle compile
 
-node_modules/.bin/truffle test "$@"
+
+scripts=$(find -HL ./test/* -regex "^.*.except.js$")
+echo "$scripts"
+
+for script in $scripts
+do
+    node_modules/.bin/truffle test "$script" "$@"
+done
+
+# node_modules/.bin/truffle test ./test/HUniswapV2.test.except.js
+node_modules/.bin/truffle test ./test/*.test.js "$@"
