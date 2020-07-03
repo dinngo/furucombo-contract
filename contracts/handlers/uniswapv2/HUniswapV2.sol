@@ -175,4 +175,157 @@ contract HUniswapV2 is HandlerBase {
         _updateToken(tokenA);
         _updateToken(tokenB);
     }
+
+    function swapExactETHForTokens(
+        uint256 value,
+        uint256 amountOutMin,
+        address[] calldata path
+    ) external payable returns (uint256[] memory amounts) {
+        require(path.length >= 2, "invalid path");
+        address tokenOut = path[path.length - 1];
+
+        // Get uniswapV2 router
+        IUniswapV2Router02 router = IUniswapV2Router02(UNISWAPV2_ROUTER);
+
+        amounts = router.swapExactETHForTokens.value(value)(
+            amountOutMin,
+            path,
+            address(this),
+            now + 1
+        );
+
+        _updateToken(tokenOut);
+    }
+
+    function swapETHForExactTokens(
+        uint256 value,
+        uint256 amountOut,
+        address[] calldata path
+    ) external payable returns (uint256[] memory amounts) {
+        require(path.length >= 2, "invalid path");
+        address tokenOut = path[path.length - 1];
+
+        // Get uniswapV2 router
+        IUniswapV2Router02 router = IUniswapV2Router02(UNISWAPV2_ROUTER);
+
+        amounts = router.swapETHForExactTokens.value(value)(
+            amountOut,
+            path,
+            address(this),
+            now + 1
+        );
+
+        _updateToken(tokenOut);
+    }
+
+    function swapExactTokensForETH(
+        uint256 amountIn,
+        uint256 amountOutMin,
+        address[] calldata path
+    ) external payable returns (uint256[] memory amounts) {
+        require(path.length >= 2, "invalid path");
+        address tokenIn = path[0];
+
+        // Get uniswapV2 router
+        IUniswapV2Router02 router = IUniswapV2Router02(UNISWAPV2_ROUTER);
+
+        // Approve token
+        IERC20(tokenIn).safeApprove(UNISWAPV2_ROUTER, amountIn);
+
+        amounts = router.swapExactTokensForETH(
+            amountIn,
+            amountOutMin,
+            path,
+            address(this),
+            now + 1
+        );
+
+        // Approve token 0
+        IERC20(tokenIn).safeApprove(UNISWAPV2_ROUTER, 0);
+    }
+
+    function swapTokensForExactETH(
+        uint256 amountOut,
+        uint256 amountInMax,
+        address[] calldata path
+    ) external payable returns (uint256[] memory amounts) {
+        require(path.length >= 2, "invalid path");
+        address tokenIn = path[0];
+
+        // Get uniswapV2 router
+        IUniswapV2Router02 router = IUniswapV2Router02(UNISWAPV2_ROUTER);
+
+        // Approve token
+        IERC20(tokenIn).safeApprove(UNISWAPV2_ROUTER, amountInMax);
+
+        amounts = router.swapTokensForExactETH(
+            amountOut,
+            amountInMax,
+            path,
+            address(this),
+            now + 1
+        );
+
+        // Approve token 0
+        IERC20(tokenIn).safeApprove(UNISWAPV2_ROUTER, 0);
+    }
+
+    function swapExactTokensForTokens(
+        uint256 amountIn,
+        uint256 amountOutMin,
+        address[] calldata path
+    ) external payable returns (uint256[] memory amounts) {
+        require(path.length >= 2, "invalid path");
+        address tokenIn = path[0];
+        address tokenOut = path[path.length - 1];
+
+        // Get uniswapV2 router
+        IUniswapV2Router02 router = IUniswapV2Router02(UNISWAPV2_ROUTER);
+
+        // Approve token
+        IERC20(tokenIn).safeApprove(UNISWAPV2_ROUTER, amountIn);
+
+        amounts = router.swapExactTokensForTokens(
+            amountIn,
+            amountOutMin,
+            path,
+            address(this),
+            now + 1
+        );
+
+        // Approve token 0
+        IERC20(tokenIn).safeApprove(UNISWAPV2_ROUTER, 0);
+
+        _updateToken(tokenOut);
+    }
+
+    function swapTokensForExactTokens(
+        uint256 amountOut,
+        uint256 amountInMax,
+        address[] calldata path
+    ) external payable returns (uint256[] memory amounts) {
+        require(path.length >= 2, "invalid path");
+        address tokenIn = path[0];
+        address tokenOut = path[path.length - 1];
+
+        // Get uniswapV2 router
+        IUniswapV2Router02 router = IUniswapV2Router02(UNISWAPV2_ROUTER);
+
+        // Approve token
+        IERC20(tokenIn).safeApprove(UNISWAPV2_ROUTER, amountInMax);
+
+        amounts = router.swapTokensForExactTokens(
+            amountOut,
+            amountInMax,
+            path,
+            address(this),
+            now + 1
+        );
+
+        // Approve token 0
+        IERC20(tokenIn).safeApprove(UNISWAPV2_ROUTER, 0);
+
+        _updateToken(tokenOut);
+    }
+
 }

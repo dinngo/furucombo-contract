@@ -41,4 +41,13 @@ fi
 
 truffle version
 
-node_modules/.bin/truffle test "$@"
+# Filter out test files with suffix `.except.js` and execute with `truffle test` seperately
+scripts=$(find -HL ./test/* -regex "^.*.except.js$")
+echo "$scripts"
+for script in $scripts
+do
+    node_modules/.bin/truffle test "$script" "$@"
+done
+
+# Execute rest test files with suffix `.test.js` with single `truffle test`
+node_modules/.bin/truffle test ./test/*.test.js "$@"
