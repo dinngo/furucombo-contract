@@ -4,9 +4,11 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+### Added
 - Support UniswapV2 fixed input/output eth to token swap.
 - Support UniswapV2 fixed input/output token to eth swap.
 - Support UniswapV2 fixed input/output token to token swap.
+- Apply solhint.
 
 ## [0.5.0] - 2020-06-23
 
