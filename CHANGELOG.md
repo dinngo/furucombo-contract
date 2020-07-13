@@ -4,7 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+## [0.6.0] - 2020-07-13
+
 ### Added
+
 - Support UniswapV2 fixed input/output eth to token swap.
 - Support UniswapV2 fixed input/output token to eth swap.
 - Support UniswapV2 fixed input/output token to token swap.
