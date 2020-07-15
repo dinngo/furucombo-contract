@@ -69,7 +69,10 @@ contract('Funds', function([_, deployer, user, someone]) {
       });
       await this.token0.approve(this.proxy.address, value[0], { from: user });
 
-      const receipt = await this.proxy.execMock(to, data, { from: user });
+      const receipt = await this.proxy.execMock(to, data, {
+        from: user,
+        value: ether('0.1'),
+      });
 
       await expectEvent.inTransaction(receipt.tx, this.token0, 'Transfer', {
         from: user,
@@ -98,7 +101,10 @@ contract('Funds', function([_, deployer, user, someone]) {
       });
       await this.usdt.approve(this.proxy.address, value[0], { from: user });
 
-      const receipt = await this.proxy.execMock(to, data, { from: user });
+      const receipt = await this.proxy.execMock(to, data, {
+        from: user,
+        value: ether('0.1'),
+      });
 
       await expectEvent.inTransaction(receipt.tx, this.usdt, 'Transfer', {
         from: user,
@@ -173,83 +179,126 @@ contract('Funds', function([_, deployer, user, someone]) {
       this.usdt = await IUsdt.at(USDT_TOKEN);
     });
 
-    it('token', async function() {
-      const token = this.token.address;
-      const providerAddress = providerAddresses[0];
-      const value = ether('100');
-      const receiver = someone;
-      const to = this.hfunds.address;
-      const data = abi.simpleEncode(
-        'send(address,uint256,address)',
-        token,
-        value,
-        receiver
-      );
-      await this.token.transfer(this.proxy.address, value, {
-        from: providerAddress,
-      });
-      await this.proxy.updateTokenMock(this.token.address);
-      const tokenSomeone = await this.token.balanceOf.call(someone);
-      const receipt = await this.proxy.execMock(to, data, {
-        from: user,
-        value: ether('0.1'),
+    describe('token', function() {
+      it('normal', async function() {
+        const token = this.token.address;
+        const providerAddress = providerAddresses[0];
+        const value = ether('100');
+        const receiver = someone;
+        const to = this.hfunds.address;
+        const data = abi.simpleEncode(
+          'send(address,uint256,address)',
+          token,
+          value,
+          receiver
+        );
+        await this.token.transfer(this.proxy.address, value, {
+          from: providerAddress,
+        });
+        await this.proxy.updateTokenMock(this.token.address);
+        const tokenSomeone = await this.token.balanceOf.call(someone);
+        const receipt = await this.proxy.execMock(to, data, {
+          from: user,
+          value: ether('0.1'),
+        });
+
+        await expectEvent.inTransaction(receipt.tx, this.token, 'Transfer', {
+          from: this.proxy.address,
+          to: someone,
+          value: value,
+        });
+        const tokenSomeoneEnd = await this.token.balanceOf.call(someone);
+        expect(tokenSomeoneEnd.sub(tokenSomeone)).to.be.bignumber.eq(value);
+        profileGas(receipt);
       });
 
-      await expectEvent.inTransaction(receipt.tx, this.token, 'Transfer', {
-        from: this.proxy.address,
-        to: someone,
-        value: value,
+      it('USDT', async function() {
+        const token = this.usdt.address;
+        const providerAddress = USDT_PROVIDER;
+        const value = new BN('1000000');
+        const receiver = someone;
+        const to = this.hfunds.address;
+        const data = abi.simpleEncode(
+          'send(address,uint256,address)',
+          token,
+          value,
+          receiver
+        );
+        await this.usdt.transfer(this.proxy.address, value, {
+          from: providerAddress,
+        });
+        await this.proxy.updateTokenMock(this.token.address);
+
+        const tokenSomeone = await this.usdt.balanceOf.call(someone);
+        const receipt = await this.proxy.execMock(to, data, {
+          from: user,
+          value: ether('0.1'),
+        });
+
+        await expectEvent.inTransaction(receipt.tx, this.usdt, 'Transfer', {
+          from: this.proxy.address,
+          to: someone,
+          value: value,
+        });
+        const tokenSomeoneEnd = await this.usdt.balanceOf.call(someone);
+        expect(tokenSomeoneEnd.sub(tokenSomeone)).to.be.bignumber.eq(value);
+        profileGas(receipt);
       });
-      const tokenSomeoneEnd = await this.token.balanceOf.call(someone);
-      expect(tokenSomeoneEnd.sub(tokenSomeone)).to.be.bignumber.eq(value);
-      profileGas(receipt);
+
+      it('insufficient token', async function() {
+        const token = this.token.address;
+        const providerAddress = providerAddresses[0];
+        const value = ether('100');
+        const receiver = someone;
+        const to = this.hfunds.address;
+        const data = abi.simpleEncode(
+          'send(address,uint256,address)',
+          token,
+          value,
+          receiver
+        );
+        await this.token.transfer(this.proxy.address, value.sub(ether('1')), {
+          from: providerAddress,
+        });
+        await this.proxy.updateTokenMock(this.token.address);
+        const tokenSomeone = await this.token.balanceOf.call(someone);
+        await expectRevert.unspecified(
+          this.proxy.execMock(to, data, {
+            from: user,
+            value: ether('0.1'),
+          })
+        );
+      });
     });
 
-    it('USDT', async function() {
-      const token = this.usdt.address;
-      const providerAddress = USDT_PROVIDER;
-      const value = new BN('1000000');
-      const receiver = someone;
-      const to = this.hfunds.address;
-      const data = abi.simpleEncode(
-        'send(address,uint256,address)',
-        token,
-        value,
-        receiver
-      );
-      await this.usdt.transfer(this.proxy.address, value, {
-        from: providerAddress,
-      });
-      await this.proxy.updateTokenMock(this.token.address);
-
-      const tokenSomeone = await this.usdt.balanceOf.call(someone);
-      const receipt = await this.proxy.execMock(to, data, {
-        from: user,
-        value: ether('0.1'),
+    describe('Ether', async function() {
+      it('normal', async function() {
+        const value = ether('1');
+        const receiver = someone;
+        const to = this.hfunds.address;
+        const data = abi.simpleEncode('send(uint256,address)', value, receiver);
+        let balanceSomeone = await tracker(someone);
+        const receipt = await this.proxy.execMock(to, data, {
+          from: user,
+          value: value,
+        });
+        expect(await balanceSomeone.delta()).to.be.bignumber.eq(value);
+        profileGas(receipt);
       });
 
-      await expectEvent.inTransaction(receipt.tx, this.usdt, 'Transfer', {
-        from: this.proxy.address,
-        to: someone,
-        value: value,
+      it('insufficient ether', async function() {
+        const value = ether('1');
+        const receiver = someone;
+        const to = this.hfunds.address;
+        const data = abi.simpleEncode('send(uint256,address)', value, receiver);
+        let balanceSomeone = await tracker(someone);
+        await expectRevert.unspecified(
+          this.proxy.execMock(to, data, {
+            from: user,
+            value: value.sub(ether('0.1')),
+          })
+        );
       });
-      const tokenSomeoneEnd = await this.usdt.balanceOf.call(someone);
-      expect(tokenSomeoneEnd.sub(tokenSomeone)).to.be.bignumber.eq(value);
-      profileGas(receipt);
-    });
-
-    it('Ether', async function() {
-      const value = ether('1');
-      const receiver = someone;
-      const to = this.hfunds.address;
-      const data = abi.simpleEncode('send(uint256,address)', value, receiver);
-      let balanceSomeone = await tracker(someone);
-      const receipt = await this.proxy.execMock(to, data, {
-        from: user,
-        value: value,
-      });
-      expect(await balanceSomeone.delta()).to.be.bignumber.eq(value);
-      profileGas(receipt);
     });
   });
 });
