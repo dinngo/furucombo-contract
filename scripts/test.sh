@@ -24,9 +24,11 @@ start_ganache() {
     MKR_PROVIDER="0x2c4bd064b998838076fa341a83d007fc2fa50957"
     BAT_PROVIDER="0x2e642b8d59b45a1d8c5aef716a84ff44ea665914"
     USDT_PROVIDER="0x7b8c69a0f660cd43ef67948976daae77bc6a019b"
+    SUSD_PROVIDER="0x49BE88F0fcC3A8393a59d3688480d7D253C37D2A"
+    WBTC_PROVIDER="0x4d2f5cfba55ae412221182d8475bc85799a5644b"
 
     # node_modules/.bin/ganache-cli --gasLimit 0xfffffffffff -m "$TEST_MNEMONIC_PHRASE" > /dev/null &
-    node_modules/.bin/ganache-cli --gasLimit 0xfffffffffff --debug -f $ETH_MAINNET_NODE -m "$TEST_MNEMONIC_PHRASE" -u "$ETHER_PROVIDER" -u "$DAI_PROVIDER" -u "$MKR_PROVIDER" -u "$BAT_PROVIDER" -u "$USDT_PROVIDER" > /dev/null &
+    node_modules/.bin/ganache-cli --gasLimit 0xfffffffffff --debug -f $ETH_MAINNET_NODE -m "$TEST_MNEMONIC_PHRASE" -u "$ETHER_PROVIDER" -u "$DAI_PROVIDER" -u "$MKR_PROVIDER" -u "$BAT_PROVIDER" -u "$USDT_PROVIDER" -u "$SUSD_PROVIDER" -u "$WBTC_PROVIDER" > /dev/null &
 
 
     ganache_pid=$!
