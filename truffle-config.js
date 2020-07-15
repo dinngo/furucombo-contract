@@ -50,7 +50,7 @@ module.exports = {
       provider: function() {
         return new HDWalletProvider(
           key_beta,
-          'https://hackathon-beta-geth.dinngo.co'
+          'https://geth-beta.furucombo.app'
         );
       },
       network_id: '*',
