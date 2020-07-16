@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+### Added
+
+- Add token and ether sending function in `HFunds`.
+
+### Changed
+
+- Wrap `HERC20TokenIn` to `HFunds`.
+
+### Deprecated
+
+- Unused `HERC20TokenIn`.
+
 ## [0.6.0] - 2020-07-13
 
 ### Added

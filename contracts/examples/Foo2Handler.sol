@@ -17,7 +17,7 @@ interface IFoo2Factory {
 
 contract Foo2Handler is HandlerBase {
     function getFooFactory() public pure returns (address target) {
-        return 0x4D2D24899c0B115a1fce8637FCa610Fe02f1909e;
+        return 0xaB7D1E16d471065629431aeABED38880170876f2;
     }
 
     function getFoo(uint256 index) public view returns (address target) {

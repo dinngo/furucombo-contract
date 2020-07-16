@@ -18,7 +18,7 @@ ganache_running() {
 }
 
 start_ganache() {
-    TEST_MNEMONIC_PHRASE="candy maple cake sugar pudding cream honey rich smooth crumble sweet treat"
+    TEST_MNEMONIC_PHRASE="dice shove sheriff police boss indoor hospital vivid tenant method game matter"
     ETHER_PROVIDER="0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
     DAI_PROVIDER="0x2a1530C4C41db0B0b2bB646CB5Eb1A67b7158667"
     MKR_PROVIDER="0x2c4bd064b998838076fa341a83d007fc2fa50957"
