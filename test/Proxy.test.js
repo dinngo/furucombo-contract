@@ -43,7 +43,7 @@ contract('Proxy', function([_, deployer, user1]) {
     before(async function() {
       this.fooFactory = await FooFactory.new({ from: deployer });
       expect(this.fooFactory.address).to.be.eq(
-        '0xb9A219631Aed55eBC3D998f17C3840B7eC39C0cc'
+        '0xFdd454EA7BF7ca88C1B7a824c3FB0951Fb8a1318'
       );
       await this.fooFactory.createFoo();
       await this.fooFactory.createFoo();
@@ -99,7 +99,7 @@ contract('Proxy', function([_, deployer, user1]) {
     before(async function() {
       this.fooFactory = await Foo2Factory.new({ from: deployer });
       expect(this.fooFactory.address).to.be.eq(
-        '0x4D2D24899c0B115a1fce8637FCa610Fe02f1909e'
+        '0xaB7D1E16d471065629431aeABED38880170876f2'
       );
       await this.fooFactory.createFoo();
       await this.fooFactory.createFoo();
