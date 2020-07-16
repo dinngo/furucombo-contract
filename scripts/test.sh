@@ -42,7 +42,7 @@ fi
 truffle version
 
 # Filter out test files with suffix `.except.js` and execute with `truffle test` seperately
-scripts=$(find -HL ./test/* -regex "^.*.except.js$")
+scripts=$(find -H -L ./test/* -regex "^.*.except.js$")
 echo "$scripts"
 for script in $scripts
 do
