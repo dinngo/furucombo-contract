@@ -44,6 +44,7 @@ contract('Curve Swap', function([_, deployer, user]) {
     this.proxy = await Proxy.new(this.registry.address);
   });
 
+  // Test Curve exchangeUnderlying handler through y pool
   describe('Swap USDT to DAI', function() {
     const token0Address = USDT_TOKEN;
     const token1Address = DAI_TOKEN;
@@ -82,6 +83,7 @@ contract('Curve Swap', function([_, deployer, user]) {
         await this.proxy.updateTokenMock(this.token0.address);
         const receipt = await this.proxy.execMock(this.hcurve.address, data, {
           from: user,
+          value: ether('1'), // Ensure handler can correctly deal with ether
         });
         expect(
           await this.token0.balanceOf.call(this.proxy.address)
@@ -105,6 +107,7 @@ contract('Curve Swap', function([_, deployer, user]) {
     });
   });
 
+  // Test Curve exchange handler through sBTC pool
   describe('Swap WBTC to renBTC', function() {
     const token0Address = WBTC_TOKEN;
     const token1Address = RENBTC_TOKEN;
@@ -143,6 +146,7 @@ contract('Curve Swap', function([_, deployer, user]) {
         await this.proxy.updateTokenMock(this.token0.address);
         const receipt = await this.proxy.execMock(this.hcurve.address, data, {
           from: user,
+          value: ether('1'), // Ensure handler can correctly deal with ether
         });
         expect(
           await this.token0.balanceOf.call(this.proxy.address)
@@ -166,6 +170,7 @@ contract('Curve Swap', function([_, deployer, user]) {
     });
   });
 
+  // Test OneSplit swap handler
   describe('Swap sUSD to TUSD', function() {
     const token0Address = SUSD_TOKEN;
     const token1Address = TUSD_TOKEN;
@@ -211,10 +216,10 @@ contract('Curve Swap', function([_, deployer, user]) {
         await this.token0.transfer(this.proxy.address, value, {
           from: providerAddress,
         });
-        proxyb = await this.token0.balanceOf.call(this.proxy.address);
         await this.proxy.updateTokenMock(this.token0.address);
         const receipt = await this.proxy.execMock(this.hcurve.address, data, {
           from: user,
+          value: ether('1'), // Ensure handler can correctly deal with ether
         });
         expect(
           await this.token0.balanceOf.call(this.proxy.address)
@@ -225,10 +230,12 @@ contract('Curve Swap', function([_, deployer, user]) {
         expect(await this.token0.balanceOf.call(user)).to.be.bignumber.eq(
           token0User
         );
-        // oneSplit use sUSD and y pools in this case, give 1*10^18 tolerance
+        // oneSplit use sUSD and y pools in this case, give 10% tolerance
         // for sUSD/TUSD.
         expect(await this.token1.balanceOf.call(user)).to.be.bignumber.gte(
-          token1User.add(answer.returnAmount).sub(ether('1'))
+          token1User
+            .add(answer.returnAmount)
+            .sub(answer.returnAmount.div(new BN('10')))
         );
         expect(await this.token1.balanceOf.call(user)).to.be.bignumber.lte(
           token1User.add(answer.returnAmount)
