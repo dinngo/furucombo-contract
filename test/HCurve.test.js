@@ -45,7 +45,7 @@ contract('Curve Swap', function([_, deployer, user]) {
   });
 
   // Test Curve exchangeUnderlying handler through y pool
-  describe('Swap USDT to DAI', function() {
+  describe('Swap USDT to DAI by exchangeUnderlying', function() {
     const token0Address = USDT_TOKEN;
     const token1Address = DAI_TOKEN;
     const providerAddress = USDT_PROVIDER;
@@ -108,7 +108,7 @@ contract('Curve Swap', function([_, deployer, user]) {
   });
 
   // Test Curve exchange handler through sBTC pool
-  describe('Swap WBTC to renBTC', function() {
+  describe('Swap WBTC to renBTC by exchange', function() {
     const token0Address = WBTC_TOKEN;
     const token1Address = RENBTC_TOKEN;
     const providerAddress = WBTC_PROVIDER;
@@ -171,7 +171,7 @@ contract('Curve Swap', function([_, deployer, user]) {
   });
 
   // Test OneSplit swap handler
-  describe('Swap sUSD to TUSD', function() {
+  describe('Swap sUSD to TUSD by OneSplit', function() {
     const token0Address = SUSD_TOKEN;
     const token1Address = TUSD_TOKEN;
     const providerAddress = SUSD_PROVIDER;
