@@ -16,8 +16,8 @@ const { ZERO_ADDRESS } = constants;
 const { expect } = require('chai');
 
 const {
-  BAT_TOKEN,
-  BAT_PROVIDER,
+  KNC_TOKEN,
+  KNC_PROVIDER,
   DAI_TOKEN,
   DAI_PROVIDER,
   MAKER_CDP_MANAGER,
@@ -30,6 +30,7 @@ const {
   MAKER_MCD_JOIN_BAT_A,
   MAKER_MCD_JOIN_USDC_A,
   MAKER_MCD_JOIN_WBTC_A,
+  MAKER_MCD_JOIN_KNC_A,
   MAKER_MCD_JOIN_DAI,
 } = require('./utils/constants');
 const { resetAccount, profileGas } = require('./utils/utils');
@@ -75,8 +76,8 @@ async function approveCdp(cdp, owner, user) {
 }
 
 contract('Maker', function([_, deployer, user1, user2, user3, user4]) {
-  const tokenAddress = BAT_TOKEN;
-  const providerAddress = BAT_PROVIDER;
+  const tokenAddress = KNC_TOKEN;
+  const providerAddress = KNC_PROVIDER;
 
   before(async function() {
     this.registry = await Registry.new();
@@ -200,8 +201,8 @@ contract('Maker', function([_, deployer, user1, user2, user3, user4]) {
     });
 
     describe('Lock Token', function() {
-      const tokenAddress = BAT_TOKEN;
-      const providerAddress = BAT_PROVIDER;
+      const tokenAddress = KNC_TOKEN;
+      const providerAddress = KNC_PROVIDER;
 
       before(async function() {});
 
@@ -215,14 +216,14 @@ contract('Maker', function([_, deployer, user1, user2, user3, user4]) {
           expect(await this.dsregistry.proxies.call(user4)).eq(ZERO_ADDRESS);
 
           const to = this.hmaker.address;
-          const ilkBat = utils.padRight(utils.asciiToHex('BAT-A'), 64);
+          const ilkKnc = utils.padRight(utils.asciiToHex('KNC-A'), 64);
           const wadC = ether('200');
           const wadD = ether('20');
           const data = abi.simpleEncode(
             'openLockGemAndDraw(address,address,bytes32,uint256,uint256)',
-            MAKER_MCD_JOIN_BAT_A,
+            MAKER_MCD_JOIN_KNC_A,
             MAKER_MCD_JOIN_DAI,
-            ilkBat,
+            ilkKnc,
             wadC,
             wadD
           );
@@ -242,7 +243,7 @@ contract('Maker', function([_, deployer, user1, user2, user3, user4]) {
 
           const [ilk, debt, lock] = await getCdpInfo(cdp);
 
-          expect(ilk).eq(ilkBat);
+          expect(ilk).eq(ilkKnc);
           expect(debt).to.be.bignumber.gte(wadD.mul(RAY));
           expect(lock).to.be.bignumber.eq(wadC);
           expect(
@@ -253,14 +254,14 @@ contract('Maker', function([_, deployer, user1, user2, user3, user4]) {
 
         it('User has proxy', async function() {
           const to = this.hmaker.address;
-          const ilkBat = utils.padRight(utils.asciiToHex('BAT-A'), 64);
+          const ilkKnc = utils.padRight(utils.asciiToHex('KNC-A'), 64);
           const wadC = ether('200');
           const wadD = ether('20');
           const data = abi.simpleEncode(
             'openLockGemAndDraw(address,address,bytes32,uint256,uint256)',
-            MAKER_MCD_JOIN_BAT_A,
+            MAKER_MCD_JOIN_KNC_A,
             MAKER_MCD_JOIN_DAI,
-            ilkBat,
+            ilkKnc,
             wadC,
             wadD
           );
@@ -280,7 +281,7 @@ contract('Maker', function([_, deployer, user1, user2, user3, user4]) {
 
           const [ilk, debt, lock] = await getCdpInfo(cdp);
 
-          expect(ilk).eq(ilkBat);
+          expect(ilk).eq(ilkKnc);
           expect(debt).to.be.bignumber.gte(wadD.mul(RAY));
           expect(lock).to.be.bignumber.eq(wadC);
           expect(
@@ -308,7 +309,7 @@ contract('Maker', function([_, deployer, user1, user2, user3, user4]) {
       const new2 = abi.simpleEncode(
         'open(address,bytes32,address)',
         MAKER_CDP_MANAGER,
-        utils.padRight(utils.asciiToHex('BAT-A'), 64),
+        utils.padRight(utils.asciiToHex('KNC-A'), 64),
         this.user2proxy.address
       );
       await this.user1proxy.execute(MAKER_PROXY_ACTIONS, new1, { from: user1 });
@@ -355,8 +356,8 @@ contract('Maker', function([_, deployer, user1, user2, user3, user4]) {
     describe('Lock Token', function() {
       let balanceUser;
       let tokenUser;
-      const tokenAddress = BAT_TOKEN;
-      const providerAddress = BAT_PROVIDER;
+      const tokenAddress = KNC_TOKEN;
+      const providerAddress = KNC_PROVIDER;
 
       before(async function() {
         cdp = await this.cdpmanager.last.call(this.user2proxy.address);
@@ -374,7 +375,7 @@ contract('Maker', function([_, deployer, user1, user2, user3, user4]) {
         const wad = ether('100');
         const data = abi.simpleEncode(
           'safeLockGem(address,uint256,uint256)',
-          MAKER_MCD_JOIN_BAT_A,
+          MAKER_MCD_JOIN_KNC_A,
           cdp,
           wad
         );
@@ -492,9 +493,9 @@ contract('Maker', function([_, deployer, user1, user2, user3, user4]) {
           'openLockGemAndDraw(address,address,address,address,bytes32,uint256,uint256,bool)',
           MAKER_CDP_MANAGER,
           MAKER_MCD_JUG,
-          MAKER_MCD_JOIN_BAT_A,
+          MAKER_MCD_JOIN_KNC_A,
           MAKER_MCD_JOIN_DAI,
-          utils.padRight(utils.asciiToHex('BAT-A'), 64),
+          utils.padRight(utils.asciiToHex('KNC-A'), 64),
           tokenAmount,
           ether('0'),
           true
@@ -519,7 +520,7 @@ contract('Maker', function([_, deployer, user1, user2, user3, user4]) {
         const wad = ether('100');
         const data = abi.simpleEncode(
           'freeGem(address,uint256,uint256)',
-          MAKER_MCD_JOIN_BAT_A,
+          MAKER_MCD_JOIN_KNC_A,
           cdp,
           wad
         );
@@ -538,7 +539,7 @@ contract('Maker', function([_, deployer, user1, user2, user3, user4]) {
         const wad = ether('100');
         const data = abi.simpleEncode(
           'freeGem(address,uint256,uint256)',
-          MAKER_MCD_JOIN_BAT_A,
+          MAKER_MCD_JOIN_KNC_A,
           cdp,
           wad
         );
@@ -555,7 +556,7 @@ contract('Maker', function([_, deployer, user1, user2, user3, user4]) {
         const wad = ether('100');
         const data = abi.simpleEncode(
           'freeGem(address,uint256,uint256)',
-          MAKER_MCD_JOIN_BAT_A,
+          MAKER_MCD_JOIN_KNC_A,
           cdp,
           wad
         );
@@ -661,9 +662,9 @@ contract('Maker', function([_, deployer, user1, user2, user3, user4]) {
           'openLockGemAndDraw(address,address,address,address,bytes32,uint256,uint256,bool)',
           MAKER_CDP_MANAGER,
           MAKER_MCD_JUG,
-          MAKER_MCD_JOIN_BAT_A,
+          MAKER_MCD_JOIN_KNC_A,
           MAKER_MCD_JOIN_DAI,
-          utils.padRight(utils.asciiToHex('BAT-A'), 64),
+          utils.padRight(utils.asciiToHex('KNC-A'), 64),
           tokenAmount,
           ether('0'),
           true
@@ -834,9 +835,9 @@ contract('Maker', function([_, deployer, user1, user2, user3, user4]) {
           'openLockGemAndDraw(address,address,address,address,bytes32,uint256,uint256,bool)',
           MAKER_CDP_MANAGER,
           MAKER_MCD_JUG,
-          MAKER_MCD_JOIN_BAT_A,
+          MAKER_MCD_JOIN_KNC_A,
           MAKER_MCD_JOIN_DAI,
-          utils.padRight(utils.asciiToHex('BAT-A'), 64),
+          utils.padRight(utils.asciiToHex('KNC-A'), 64),
           tokenAmount,
           daiAmount,
           true
