@@ -7,6 +7,8 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 - Add token and ether sending function in `HFunds`.
+- Support Curve swap through curve pools in `HCurve`.
+- Support Curve swap through OneSplit aggregator in `HCurve`.
 
 ### Changed
 
