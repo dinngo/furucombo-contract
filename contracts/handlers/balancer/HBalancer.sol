@@ -10,8 +10,8 @@ import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 contract HBalancer is HandlerBase {
     using SafeERC20 for IERC20;
 
-    address constant BACTIONS = 0xde4A25A0b9589689945d842c5ba0CF4f0D4eB3ac;
-    address constant PROXY_REGISTRY = 0x4678f0a6958e4D2Bc4F1BAF7Bc52E8F3564f3fE4;
+    address public constant BACTIONS = 0xde4A25A0b9589689945d842c5ba0CF4f0D4eB3ac;
+    address public constant PROXY_REGISTRY = 0x4678f0a6958e4D2Bc4F1BAF7Bc52E8F3564f3fE4;
 
     function joinswapExternAmountIn(
         address pool,
@@ -21,8 +21,9 @@ contract HBalancer is HandlerBase {
     ) external payable {
         // Get furucombo DSProxy
         IDSProxy proxy = IDSProxy(_getProxy(address(this)));
-        IERC20(tokenIn).safeApprove(address(proxy), tokenAmountIn);
 
+        // Execute "joinswapExternAmountIn" by using DSProxy
+        IERC20(tokenIn).safeApprove(address(proxy), tokenAmountIn);
         proxy.execute(
             BACTIONS,
             abi.encodeWithSelector(
@@ -45,10 +46,8 @@ contract HBalancer is HandlerBase {
         uint256 poolAmountOut,
         uint256[] calldata maxAmountsIn
     ) external payable {
-        // Get balancer pool
-        IBPool BPool = IBPool(pool);
-
         // Get all tokens of pool
+        IBPool BPool = IBPool(pool);
         address[] memory tokens = BPool.getFinalTokens();
         require(
             tokens.length == maxAmountsIn.length,
@@ -58,11 +57,12 @@ contract HBalancer is HandlerBase {
         // Get furucombo DSProxy
         IDSProxy proxy = IDSProxy(_getProxy(address(this)));
 
-        // approve all erc20 token to Proxy
+        // Approve all erc20 token to Proxy
         for (uint256 i = 0; i < tokens.length; i++) {
             IERC20(tokens[i]).safeApprove(address(proxy), maxAmountsIn[i]);
         }
 
+        // Execute "joinPool" by using DSProxy
         proxy.execute(
             BACTIONS,
             abi.encodeWithSelector(
@@ -73,7 +73,8 @@ contract HBalancer is HandlerBase {
                 maxAmountsIn
             )
         );
-        // approve all erc20 token 0
+
+        // Reset approval of tokens to 0
         for (uint256 i = 0; i < tokens.length; i++) {
             IERC20(tokens[i]).safeApprove(address(proxy), 0);
         }
@@ -88,10 +89,10 @@ contract HBalancer is HandlerBase {
         uint256 poolAmountIn,
         uint256 minAmountOut
     ) external payable returns (uint256 tokenAmountOut) {
-        // Get balancer pool
+        // Get pool of balancer
         IBPool BPool = IBPool(pool);
 
-        // Call balancer pool function exitswapPoolAmountIn
+        // Call exitswapPoolAmountIn function of balancer pool
         tokenAmountOut = BPool.exitswapPoolAmountIn(
             tokenOut,
             poolAmountIn,
@@ -107,17 +108,15 @@ contract HBalancer is HandlerBase {
         uint256 poolAmountIn,
         uint256[] calldata minAmountsOut
     ) external payable {
-        // Get balancer pool
-        IBPool BPool = IBPool(pool);
-
         // Get all tokens of pool
+        IBPool BPool = IBPool(pool);
         address[] memory tokens = BPool.getFinalTokens();
         require(
             minAmountsOut.length == tokens.length,
             "token and amount does not match"
         );
 
-        // Call balancer pool function exitPool
+        // Call exitPool function of balancer pool
         BPool.exitPool(poolAmountIn, minAmountsOut);
 
         // Update post process

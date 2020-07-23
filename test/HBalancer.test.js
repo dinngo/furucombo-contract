@@ -36,13 +36,11 @@ contract('Balancer', function([_, deployer, user]) {
   const tokenAAddress = WETH_TOKEN;
   const tokenBAddress = MKR_TOKEN;
   const tokenCAddress = DAI_TOKEN;
-
   const tokenAProviderAddress = WETH_PROVIDER;
   const tokenBProviderAddress = MKR_PROVIDER;
   const tokenCProviderAddress = DAI_PROVIDER;
   const balancerPoolAddress = BALANCER_WETH_MKR_DAI;
 
-  let balanceUser;
   let tokenAUserAmount;
   let tokenBUserAmount;
   let tokenCUserAmount;
@@ -52,18 +50,18 @@ contract('Balancer', function([_, deployer, user]) {
     // Deploy proxy and handler
     this.registry = await Registry.new();
     this.proxy = await Proxy.new(this.registry.address);
-    this.hBalancer = await HBalancer.new();
+    this.HBalancer = await HBalancer.new();
     await this.registry.register(
-      this.hBalancer.address,
+      this.HBalancer.address,
       utils.asciiToHex('Balancer')
     );
     this.BPool = await IBPool.at(balancerPoolAddress);
 
     // Create DSProxy of proxy
-    this.dsregistry = await IDSProxyRegistry.at(MAKER_PROXY_REGISTRY);
-    await this.dsregistry.build(this.proxy.address);
-    this.dsproxy = await IDSProxy.at(
-      await this.dsregistry.proxies.call(this.proxy.address)
+    this.DSRegistry = await IDSProxyRegistry.at(MAKER_PROXY_REGISTRY);
+    await this.DSRegistry.build(this.proxy.address);
+    this.DSProxy = await IDSProxy.at(
+      await this.DSRegistry.proxies.call(this.proxy.address)
     );
 
     // Setup and transfer token to user
@@ -85,7 +83,6 @@ contract('Balancer', function([_, deployer, user]) {
   beforeEach(async function() {
     await resetAccount(_);
     await resetAccount(user);
-    balanceUser = await tracker(user);
     balanceProxy = await tracker(this.proxy.address);
     tokenAUserAmount = await this.tokenA.balanceOf.call(user);
     tokenBUserAmount = await this.tokenB.balanceOf.call(user);
@@ -95,13 +92,13 @@ contract('Balancer', function([_, deployer, user]) {
     );
   });
 
-  describe('Liqudiity ', function() {
-    describe('Add Liqudiity Single Assert', function() {
+  describe('Liquidity ', function() {
+    describe('Add Liquidity Single Assert', function() {
       it('normal', async function() {
         // Prepare handler data
         const tokenAAmount = ether('1');
         const minTokenAAmount = new BN('1');
-        const to = this.hBalancer.address;
+        const to = this.HBalancer.address;
         const data = abi.simpleEncode(
           'joinswapExternAmountIn(address,address,uint256,uint256)',
           balancerPoolAddress,
@@ -154,7 +151,7 @@ contract('Balancer', function([_, deployer, user]) {
       });
     });
 
-    describe('Add Liqudiity All Asserts', function() {
+    describe('Add Liquidity All Asserts', function() {
       it('normal', async function() {
         // Get BPool Information
         const poolTokenABalance = await this.BPool.getBalance.call(
@@ -169,21 +166,21 @@ contract('Balancer', function([_, deployer, user]) {
         const poolTotalSupply = await this.BPool.totalSupply.call();
 
         // Prepare handler data
-        const to = this.hBalancer.address;
+        const to = this.HBalancer.address;
         const poolAmountPercent = new BN('1000'); // poolAmountPercent is 0.1%
-        const poolAmountOut = poolTotalSupply.divRound(poolAmountPercent);
+        const poolAmountOut = poolTotalSupply.divRound(poolAmountPercent); // Excepted receive pool token amount
 
-        // Get excepted token amount output
+        // Calculate excepted token input amount
         const ratio = getRatio(poolAmountOut, poolTotalSupply);
-        const maxTokenAAmount = getExceptedTokenAmountOut(
+        const maxTokenAAmount = calcExceptedTokenAmount(
           ratio,
           poolTokenABalance
         );
-        const maxTokenBAmount = getExceptedTokenAmountOut(
+        const maxTokenBAmount = calcExceptedTokenAmount(
           ratio,
           poolTokenBBalance
         );
-        const maxTokenCAmount = getExceptedTokenAmountOut(
+        const maxTokenCAmount = calcExceptedTokenAmount(
           ratio,
           poolTokenCBalance
         );
@@ -201,7 +198,7 @@ contract('Balancer', function([_, deployer, user]) {
           maxAmountsIn
         );
 
-        // Send tokens to proxy
+        // Send tokens from user to proxy
         await this.tokenA.transfer(this.proxy.address, maxTokenAAmount, {
           from: user,
         });
@@ -252,32 +249,10 @@ contract('Balancer', function([_, deployer, user]) {
       });
 
       it('Amounts not match', async function() {
-        // Get BPool Information
-        const poolTokenABalance = await this.BPool.getBalance.call(
-          tokenAAddress
-        );
-        const poolTokenBBalance = await this.BPool.getBalance.call(
-          tokenBAddress
-        );
-        const poolTotalSupply = await this.BPool.totalSupply.call();
-
         // Prepare handler data
-        const to = this.hBalancer.address;
-        const poolAmountPercent = new BN('1000'); // poolAmountPercent is 0.1%
-        const poolAmountOut = poolTotalSupply.divRound(poolAmountPercent);
-
-        // Get excepted token amount output
-        const ratio = getRatio(poolAmountOut, poolTotalSupply);
-        const maxTokenAAmount = getExceptedTokenAmountOut(
-          ratio,
-          poolTokenABalance
-        );
-        const maxTokenBAmount = getExceptedTokenAmountOut(
-          ratio,
-          poolTokenBBalance
-        );
-
-        const maxAmountsIn = [maxTokenAAmount, maxTokenBAmount];
+        const to = this.HBalancer.address;
+        const poolAmountOut = new BN('100000');
+        const maxAmountsIn = [new BN('100'), new BN('100')];
 
         // Encode handler data
         const data = abi.simpleEncode(
@@ -287,16 +262,6 @@ contract('Balancer', function([_, deployer, user]) {
           maxAmountsIn
         );
 
-        // Send tokens to proxy
-        await this.tokenA.transfer(this.proxy.address, maxTokenAAmount, {
-          from: user,
-        });
-        await this.tokenB.transfer(this.proxy.address, maxTokenBAmount, {
-          from: user,
-        });
-        await this.proxy.updateTokenMock(this.tokenA.address);
-        await this.proxy.updateTokenMock(this.tokenB.address);
-
         // Execute handler
         await expectRevert(
           this.proxy.execMock(to, data, {
@@ -305,15 +270,12 @@ contract('Balancer', function([_, deployer, user]) {
           }),
           'token and amount does not match'
         );
-
-        // Gas profile
-        profileGas(receipt);
       });
     });
 
-    describe('Remove Liqudiity Single Assert', function() {
+    describe('Remove Liquidity Single Assert', function() {
       beforeEach(async function() {
-        // Add liquidity
+        // Add liquidity before removing liquidity
         const tokenAAmount = ether('1');
         await this.tokenA.approve(this.BPool.address, tokenAAmount, {
           from: user,
@@ -325,6 +287,7 @@ contract('Balancer', function([_, deployer, user]) {
           { from: user }
         );
 
+        // Update token amount
         balancerPoolTokenUserAmount = await this.balancerPoolToken.balanceOf.call(
           user
         );
@@ -335,7 +298,7 @@ contract('Balancer', function([_, deployer, user]) {
         // Prepare handler data
         const poolAmountIn = balancerPoolTokenUserAmount.divRound(new BN('10'));
         const minTokenAAmount = ether('0');
-        const to = this.hBalancer.address;
+        const to = this.HBalancer.address;
         const data = abi.simpleEncode(
           'exitswapPoolAmountIn(address,address,uint256,uint256)',
           balancerPoolAddress,
@@ -390,9 +353,9 @@ contract('Balancer', function([_, deployer, user]) {
       });
     });
 
-    describe('Remove Liqudiity All Asserts', function() {
+    describe('Remove Liquidity All Asserts', function() {
       beforeEach(async function() {
-        // Add liquidity
+        // Add liquidity before removing liquidity
         const tokenAAmount = ether('10');
         await this.tokenA.approve(this.BPool.address, tokenAAmount, {
           from: user,
@@ -431,7 +394,7 @@ contract('Balancer', function([_, deployer, user]) {
           poolAmountPercent
         );
         const minAmountsOut = [ether('0'), ether('0'), ether('0')];
-        const to = this.hBalancer.address;
+        const to = this.HBalancer.address;
         const data = abi.simpleEncode(
           'exitPool(address,uint256,uint256[])',
           balancerPoolAddress,
@@ -455,17 +418,17 @@ contract('Balancer', function([_, deployer, user]) {
           value: ether('0.1'),
         });
 
-        // Calc excepted token out
+        // Calculate excepted token output amount
         const ratio = getRatio(poolAmountIn, poolTotalSupply);
-        const exceptedTokenAAmountOut = getExceptedTokenAmountOut(
+        const exceptedTokenAAmountOut = calcExceptedTokenAmount(
           ratio,
           poolTokenABalance
         );
-        const exceptedTokenBAmountOut = getExceptedTokenAmountOut(
+        const exceptedTokenBAmountOut = calcExceptedTokenAmount(
           ratio,
           poolTokenBBalance
         );
-        const exceptedTokenCAmountOut = getExceptedTokenAmountOut(
+        const exceptedTokenCAmountOut = calcExceptedTokenAmount(
           ratio,
           poolTokenCBalance
         );
@@ -510,23 +473,13 @@ contract('Balancer', function([_, deployer, user]) {
           poolAmountPercent
         );
         const minAmountsOut = [ether('0'), ether('0')];
-        const to = this.hBalancer.address;
+        const to = this.HBalancer.address;
         const data = abi.simpleEncode(
           'exitPool(address,uint256,uint256[])',
           balancerPoolAddress,
           poolAmountIn,
           minAmountsOut
         );
-
-        // Send tokens to proxy
-        await this.balancerPoolToken.transfer(
-          this.proxy.address,
-          poolAmountIn,
-          {
-            from: user,
-          }
-        );
-        await this.proxy.updateTokenMock(this.tokenA.address);
 
         // Execute handler
         await expectRevert(
@@ -536,9 +489,6 @@ contract('Balancer', function([_, deployer, user]) {
           }),
           'token and amount does not match'
         );
-
-        // Gas profile
-        profileGas(receipt);
       });
     });
   });
@@ -553,7 +503,7 @@ function getRatio(poolAmountIn, totalSupply) {
   return ratio;
 }
 
-function getExceptedTokenAmountOut(ratio, poolTokenBalance) {
+function calcExceptedTokenAmount(ratio, poolTokenBalance) {
   const BONE = ether('1');
   return ratio
     .mul(poolTokenBalance)
