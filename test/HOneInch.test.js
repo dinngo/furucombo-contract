@@ -48,88 +48,88 @@ contract('OneInch Swap', function([_, deployer, user, someone]) {
     this.proxy = await Proxy.new(this.registry.address);
   });
 
-  describe('Ether to Token', function() {
-    const tokenAddress = DAI_TOKEN;
+  // describe('Ether to Token', function() {
+  //   const tokenAddress = DAI_TOKEN;
 
-    let balanceUser;
-    let balanceProxy;
-    let tokenUser;
+  //   let balanceUser;
+  //   let balanceProxy;
+  //   let tokenUser;
 
-    before(async function() {
-      this.token = await IToken.at(tokenAddress);
-    });
+  //   before(async function() {
+  //     this.token = await IToken.at(tokenAddress);
+  //   });
 
-    beforeEach(async function() {
-      balanceUser = await tracker(user);
-      balanceProxy = await tracker(this.proxy.address);
-      tokenUser = await this.token.balanceOf.call(user);
-    });
+  //   beforeEach(async function() {
+  //     balanceUser = await tracker(user);
+  //     balanceProxy = await tracker(this.proxy.address);
+  //     tokenUser = await this.token.balanceOf.call(user);
+  //   });
 
-    describe('Exact input', function() {
-      it('normal', async function() {
+  //   describe('Exact input', function() {
+  //     it('normal', async function() {
 
-        const value = ether('1');
-        const to = this.honeinch.address;
+  //       const value = ether('1');
+  //       const to = this.honeinch.address;
 
-        const quoteReq = queryString.stringifyUrl({
-          url: "https://api.1inch.exchange/v1.1/quote",
-          query: {
-            fromTokenAddress: ETH_TOKEN,
-            toTokenAddress: this.token.address,
-            amount: value,
-          },
-        });
-        const swapReq = queryString.stringifyUrl({
-          url: "https://api.1inch.exchange/v1.1/swap",
-          query: {
-            // fromTokenAddress: ETH_TOKEN,
-            // toTokenAddress: this.token.address,
-            fromTokenSymbol: "ETH",
-            toTokenSymbol: "DAI",
-            amount: value,
-            slippage: 1,
-            disableEstimate: true,
-            fromAddress: user,
-          },
-        });
-        console.log(`swapReq: ${swapReq}`);
+  //       const quoteReq = queryString.stringifyUrl({
+  //         url: "https://api.1inch.exchange/v1.1/quote",
+  //         query: {
+  //           fromTokenAddress: ETH_TOKEN,
+  //           toTokenAddress: this.token.address,
+  //           amount: value,
+  //         },
+  //       });
+  //       const swapReq = queryString.stringifyUrl({
+  //         url: "https://api.1inch.exchange/v1.1/swap",
+  //         query: {
+  //           // fromTokenAddress: ETH_TOKEN,
+  //           // toTokenAddress: this.token.address,
+  //           fromTokenSymbol: "ETH",
+  //           toTokenSymbol: "DAI",
+  //           amount: value,
+  //           slippage: 1,
+  //           disableEstimate: true,
+  //           fromAddress: user,
+  //         },
+  //       });
+  //       console.log(`swapReq: ${swapReq}`);
         
-        const quoteReponse = await fetch(quoteReq);
-        const quoteData = await quoteReponse.json();
-        const quote = quoteData.toTokenAmount;
-        console.log(`quote = ${quote}`);
+  //       const quoteReponse = await fetch(quoteReq);
+  //       const quoteData = await quoteReponse.json();
+  //       const quote = quoteData.toTokenAmount;
+  //       console.log(`quote = ${quote}`);
         
-        const swapReponse = await fetch(swapReq);
-        const swapData = await swapReponse.json();
-        const data = swapData.data;
-        console.log(`swapData = ${JSON.stringify(swapData)}`);
-        console.log(`proxy address = ${JSON.stringify(this.proxy.address)}`);
-        console.log(`honeinch address = ${JSON.stringify(this.honeinch.address)}`);
+  //       const swapReponse = await fetch(swapReq);
+  //       const swapData = await swapReponse.json();
+  //       const data = swapData.data;
+  //       console.log(`swapData = ${JSON.stringify(swapData)}`);
+  //       console.log(`proxy address = ${JSON.stringify(this.proxy.address)}`);
+  //       console.log(`honeinch address = ${JSON.stringify(this.honeinch.address)}`);
 
-        const receipt = await this.proxy.execMock(to, data, { from: user, value: value });
-        const bal = await this.token.balanceOf.call(user);
-        console.log(`bat balance: ${web3.utils.fromWei(bal)}`);
+  //       const receipt = await this.proxy.execMock(to, data, { from: user, value: value });
+  //       const bal = await this.token.balanceOf.call(user);
+  //       console.log(`bat balance: ${web3.utils.fromWei(bal)}`);
 
-        expect(await this.token.balanceOf.call(user)).to.be.bignumber.gte(
-          tokenUser.add(mulPercent(quote, 98))
-        );
-        expect(
-          await this.token.balanceOf.call(this.proxy.address)
-        ).to.be.bignumber.eq(ether('0'));
-        expect(
-          await balanceProxy.get()
-        ).to.be.bignumber.eq(ether('0'));
-        expect(await balanceUser.delta()).to.be.bignumber.eq(
-          ether('0')
-            .sub(value)
-            .sub(new BN(receipt.receipt.gasUsed))
-        );
+  //       expect(await this.token.balanceOf.call(user)).to.be.bignumber.gte(
+  //         tokenUser.add(mulPercent(quote, 98))
+  //       );
+  //       expect(
+  //         await this.token.balanceOf.call(this.proxy.address)
+  //       ).to.be.bignumber.eq(ether('0'));
+  //       expect(
+  //         await balanceProxy.get()
+  //       ).to.be.bignumber.eq(ether('0'));
+  //       expect(await balanceUser.delta()).to.be.bignumber.eq(
+  //         ether('0')
+  //           .sub(value)
+  //           .sub(new BN(receipt.receipt.gasUsed))
+  //       );
 
-        profileGas(receipt);
-      });
-    });
+  //       profileGas(receipt);
+  //     });
+  //   });
 
-  });
+  // });
 
   // describe('Token to Ether', function() {
   //   const tokenAddress = DAI_TOKEN;
@@ -454,6 +454,93 @@ contract('OneInch Swap', function([_, deployer, user, someone]) {
   //   });
 
   // });
+
+  describe('Token to Ether', function() {
+    const tokenAddress = DAI_TOKEN;
+    const providerAddress = DAI_PROVIDER;
+
+    let balanceUser;
+    let balanceProxy;
+    let tokenUser;
+
+    before(async function() {
+      this.token = await IToken.at(tokenAddress);
+    });
+
+    beforeEach(async function() {
+      balanceUser = await tracker(user);
+      balanceProxy = await tracker(this.proxy.address);
+      tokenUser = await this.token.balanceOf.call(user);
+    });
+
+    describe('Exact input', function() {
+      it('normal', async function() {
+
+        const value = ether('100');
+        const to = this.honeinch.address;
+
+        const quoteReq = queryString.stringifyUrl({
+          url: "https://api.1inch.exchange/v1.1/quote",
+          query: {
+            fromTokenAddress: this.token.address,
+            toTokenAddress: ETH_TOKEN,
+            amount: value,
+          },
+        });
+        const swapReq = queryString.stringifyUrl({
+          url: "https://api.1inch.exchange/v1.1/swap",
+          query: {
+            // fromTokenAddress: ETH_TOKEN,
+            // toTokenAddress: this.token.address,
+            fromTokenSymbol: "DAI",
+            toTokenSymbol: "ETH",
+            amount: value,
+            slippage: 1,
+            disableEstimate: true,
+            fromAddress: providerAddress,
+          },
+        });
+        console.log(`swapReq: ${swapReq}`);
+        
+        const quoteReponse = await fetch(quoteReq);
+        const quoteData = await quoteReponse.json();
+        const quote = quoteData.toTokenAmount;
+        console.log(`quote = ${quote}`);
+
+        await this.token.transfer(this.proxy.address, value, {
+          from: providerAddress
+        });
+        await this.proxy.updateTokenMock(this.token.address);
+        
+        const swapReponse = await fetch(swapReq);
+        const swapData = await swapReponse.json();
+        const data = swapData.data;
+        console.log(`swapData = ${JSON.stringify(swapData)}`);
+        console.log(`proxy address = ${JSON.stringify(this.proxy.address)}`);
+        console.log(`honeinch address = ${JSON.stringify(this.honeinch.address)}`);
+
+        const receipt = await this.proxy.execMock(to, data, { from: user });
+
+        expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
+          tokenUser
+        );
+        expect(
+          await this.token.balanceOf.call(this.proxy.address)
+        ).to.be.bignumber.eq(ether('0'));
+        expect(
+          await balanceProxy.get()
+        ).to.be.bignumber.eq(ether('0'));
+        expect(await balanceUser.delta()).to.be.bignumber.gte(
+          ether('0')
+            .add(mulPercent(quote, 98))
+            .sub(new BN(receipt.receipt.gasUsed))
+        );
+
+        profileGas(receipt);
+      });
+    });
+
+  });
   
 });
 
