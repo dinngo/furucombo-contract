@@ -57,7 +57,7 @@ contract('Balancer', function([_, deployer, user]) {
       this.hBalancer.address,
       utils.asciiToHex('Balancer')
     );
-    this.iBPool = await IBPool.at(balancerPoolAddress);
+    this.BPool = await IBPool.at(balancerPoolAddress);
 
     // Create DSProxy of proxy
     this.dsregistry = await IDSProxyRegistry.at(MAKER_PROXY_REGISTRY);
@@ -97,20 +97,10 @@ contract('Balancer', function([_, deployer, user]) {
 
   describe('Liqudiity ', function() {
     describe('Add Liqudiity Single Assert', function() {
-      beforeEach(async function() {
-        // Send tokens to proxy
-        await this.tokenA.transfer(this.proxy.address, ether('100'), {
-          from: user,
-        });
-
-        // Add tokens to cache for return user after handler execution
-        await this.proxy.updateTokenMock(this.tokenA.address);
-      });
-
       it('normal', async function() {
         // Prepare handler data
         const tokenAAmount = ether('1');
-        const minTokenAAmount = ether('0.000000000000000001');
+        const minTokenAAmount = new BN('1');
         const to = this.hBalancer.address;
         const data = abi.simpleEncode(
           'joinswapExternAmountIn(address,address,uint256,uint256)',
@@ -121,19 +111,26 @@ contract('Balancer', function([_, deployer, user]) {
         );
 
         // Simulate Balancer contract behavior
-        await this.tokenA.approve(this.iBPool.address, tokenAAmount, {
+        await this.tokenA.approve(this.BPool.address, tokenAAmount, {
           from: user,
         });
-        const exceptedPoolAmountOut = await this.iBPool.joinswapExternAmountIn.call(
+        const exceptedPoolAmountOut = await this.BPool.joinswapExternAmountIn.call(
           tokenAAddress,
           tokenAAmount,
           minTokenAAmount,
           { from: user }
         );
 
+        // Send tokens to proxy
+        await this.tokenA.transfer(this.proxy.address, tokenAAmount, {
+          from: user,
+        });
+        await this.proxy.updateTokenMock(this.tokenA.address);
+
         // Execute handler
         const receipt = await this.proxy.execMock(to, data, {
           from: user,
+          value: ether('0.1'),
         });
 
         // Verify proxy balance should be zero
@@ -158,62 +155,70 @@ contract('Balancer', function([_, deployer, user]) {
     });
 
     describe('Add Liqudiity All Asserts', function() {
-      beforeEach(async function() {
-        // Send tokens to proxy
-        await this.tokenA.transfer(this.proxy.address, ether('100'), {
-          from: user,
-        });
-        await this.tokenB.transfer(this.proxy.address, ether('100'), {
-          from: user,
-        });
-        await this.tokenC.transfer(this.proxy.address, ether('100'), {
-          from: user,
-        });
-
-        // Add tokens to cache for return user after handler execution
-        await this.proxy.updateTokenMock(this.tokenA.address);
-        await this.proxy.updateTokenMock(this.tokenB.address);
-        await this.proxy.updateTokenMock(this.tokenC.address);
-      });
-
       it('normal', async function() {
         // Get BPool Information
-        const poolTokenABalance = await this.iBPool.getBalance.call(
+        const poolTokenABalance = await this.BPool.getBalance.call(
           tokenAAddress
         );
-        const poolTokenBBalance = await this.iBPool.getBalance.call(
+        const poolTokenBBalance = await this.BPool.getBalance.call(
           tokenBAddress
         );
-        const poolTokenCBalance = await this.iBPool.getBalance.call(
+        const poolTokenCBalance = await this.BPool.getBalance.call(
           tokenCAddress
         );
-        const poolTotalSupply = await this.iBPool.totalSupply.call();
+        const poolTotalSupply = await this.BPool.totalSupply.call();
 
         // Prepare handler data
         const to = this.hBalancer.address;
-        const tokens = [tokenAAddress, tokenBAddress, tokenCAddress];
-        const ratio = new BN('1000'); // ratio is 0.1%
-        const poolAmountOut = poolTotalSupply.divRound(ratio);
-        const maxTokenAAmount = poolTokenABalance.divRound(ratio);
-        const maxTokenBAmount = poolTokenBBalance.divRound(ratio);
-        const maxTokenCAmount = poolTokenCBalance.divRound(ratio);
+        const poolAmountPercent = new BN('1000'); // poolAmountPercent is 0.1%
+        const poolAmountOut = poolTotalSupply.divRound(poolAmountPercent);
+
+        // Get excepted token amount output
+        const ratio = getRatio(poolAmountOut, poolTotalSupply);
+        const maxTokenAAmount = getExceptedTokenAmountOut(
+          ratio,
+          poolTokenABalance
+        );
+        const maxTokenBAmount = getExceptedTokenAmountOut(
+          ratio,
+          poolTokenBBalance
+        );
+        const maxTokenCAmount = getExceptedTokenAmountOut(
+          ratio,
+          poolTokenCBalance
+        );
         const maxAmountsIn = [
           maxTokenAAmount,
           maxTokenBAmount,
           maxTokenCAmount,
         ];
 
+        // Encode handler data
         const data = abi.simpleEncode(
-          'joinPool(address[],address,uint256,uint256[])',
-          tokens,
+          'joinPool(address,uint256,uint256[])',
           balancerPoolAddress,
           poolAmountOut,
           maxAmountsIn
         );
 
+        // Send tokens to proxy
+        await this.tokenA.transfer(this.proxy.address, maxTokenAAmount, {
+          from: user,
+        });
+        await this.tokenB.transfer(this.proxy.address, maxTokenBAmount, {
+          from: user,
+        });
+        await this.tokenC.transfer(this.proxy.address, maxTokenCAmount, {
+          from: user,
+        });
+        await this.proxy.updateTokenMock(this.tokenA.address);
+        await this.proxy.updateTokenMock(this.tokenB.address);
+        await this.proxy.updateTokenMock(this.tokenC.address);
+
         // Execute handler
         const receipt = await this.proxy.execMock(to, data, {
           from: user,
+          value: ether('0.1'),
         });
 
         // Verify proxy balance should be zero
@@ -245,6 +250,313 @@ contract('Balancer', function([_, deployer, user]) {
         // Gas profile
         profileGas(receipt);
       });
+
+      it('Amounts not match', async function() {
+        // Get BPool Information
+        const poolTokenABalance = await this.BPool.getBalance.call(
+          tokenAAddress
+        );
+        const poolTokenBBalance = await this.BPool.getBalance.call(
+          tokenBAddress
+        );
+        const poolTotalSupply = await this.BPool.totalSupply.call();
+
+        // Prepare handler data
+        const to = this.hBalancer.address;
+        const poolAmountPercent = new BN('1000'); // poolAmountPercent is 0.1%
+        const poolAmountOut = poolTotalSupply.divRound(poolAmountPercent);
+
+        // Get excepted token amount output
+        const ratio = getRatio(poolAmountOut, poolTotalSupply);
+        const maxTokenAAmount = getExceptedTokenAmountOut(
+          ratio,
+          poolTokenABalance
+        );
+        const maxTokenBAmount = getExceptedTokenAmountOut(
+          ratio,
+          poolTokenBBalance
+        );
+
+        const maxAmountsIn = [maxTokenAAmount, maxTokenBAmount];
+
+        // Encode handler data
+        const data = abi.simpleEncode(
+          'joinPool(address,uint256,uint256[])',
+          balancerPoolAddress,
+          poolAmountOut,
+          maxAmountsIn
+        );
+
+        // Send tokens to proxy
+        await this.tokenA.transfer(this.proxy.address, maxTokenAAmount, {
+          from: user,
+        });
+        await this.tokenB.transfer(this.proxy.address, maxTokenBAmount, {
+          from: user,
+        });
+        await this.proxy.updateTokenMock(this.tokenA.address);
+        await this.proxy.updateTokenMock(this.tokenB.address);
+
+        // Execute handler
+        await expectRevert(
+          this.proxy.execMock(to, data, {
+            from: user,
+            value: ether('0.1'),
+          }),
+          'token and amount does not match'
+        );
+
+        // Gas profile
+        profileGas(receipt);
+      });
+    });
+
+    describe('Remove Liqudiity Single Assert', function() {
+      beforeEach(async function() {
+        // Add liquidity
+        const tokenAAmount = ether('1');
+        await this.tokenA.approve(this.BPool.address, tokenAAmount, {
+          from: user,
+        });
+        await this.BPool.joinswapExternAmountIn(
+          tokenAAddress,
+          tokenAAmount,
+          new BN('1'),
+          { from: user }
+        );
+
+        balancerPoolTokenUserAmount = await this.balancerPoolToken.balanceOf.call(
+          user
+        );
+        tokenAUserAmount = await this.tokenA.balanceOf.call(user);
+      });
+
+      it('normal', async function() {
+        // Prepare handler data
+        const poolAmountIn = balancerPoolTokenUserAmount.divRound(new BN('10'));
+        const minTokenAAmount = ether('0');
+        const to = this.hBalancer.address;
+        const data = abi.simpleEncode(
+          'exitswapPoolAmountIn(address,address,uint256,uint256)',
+          balancerPoolAddress,
+          tokenAAddress,
+          poolAmountIn,
+          minTokenAAmount
+        );
+
+        // Simulate Balancer contract behavior
+        const exceptedTokenAmountOut = await this.BPool.exitswapPoolAmountIn.call(
+          tokenAAddress,
+          poolAmountIn,
+          minTokenAAmount,
+          { from: user }
+        );
+
+        // Send token to proxy
+        await this.balancerPoolToken.transfer(
+          this.proxy.address,
+          poolAmountIn,
+          {
+            from: user,
+          }
+        );
+        await this.proxy.updateTokenMock(this.tokenA.address);
+
+        // Execute handler
+        const receipt = await this.proxy.execMock(to, data, {
+          from: user,
+          value: ether('0.1'),
+        });
+
+        // Verify proxy balance should be zero
+        expect(await balanceProxy.get()).to.be.bignumber.eq(ether('0'));
+        expect(
+          await this.tokenA.balanceOf.call(this.proxy.address)
+        ).to.be.bignumber.eq(ether('0'));
+        expect(
+          await this.balancerPoolToken.balanceOf.call(this.proxy.address)
+        ).to.be.bignumber.eq(ether('0'));
+
+        // Verify user balance
+        expect(await this.tokenA.balanceOf.call(user)).to.be.bignumber.eq(
+          tokenAUserAmount.add(exceptedTokenAmountOut)
+        );
+        expect(
+          await this.balancerPoolToken.balanceOf.call(user)
+        ).to.be.bignumber.eq(balancerPoolTokenUserAmount.sub(poolAmountIn));
+
+        // Gas profile
+        profileGas(receipt);
+      });
+    });
+
+    describe('Remove Liqudiity All Asserts', function() {
+      beforeEach(async function() {
+        // Add liquidity
+        const tokenAAmount = ether('10');
+        await this.tokenA.approve(this.BPool.address, tokenAAmount, {
+          from: user,
+        });
+        await this.BPool.joinswapExternAmountIn(
+          tokenAAddress,
+          tokenAAmount,
+          new BN('1'),
+          { from: user }
+        );
+
+        balancerPoolTokenUserAmount = await this.balancerPoolToken.balanceOf.call(
+          user
+        );
+        tokenAUserAmount = await this.tokenA.balanceOf.call(user);
+        tokenBUserAmount = await this.tokenB.balanceOf.call(user);
+        tokenCUserAmount = await this.tokenC.balanceOf.call(user);
+      });
+
+      it('normal', async function() {
+        // Get BPool Information
+        const poolTokenABalance = await this.BPool.getBalance.call(
+          tokenAAddress
+        );
+        const poolTokenBBalance = await this.BPool.getBalance.call(
+          tokenBAddress
+        );
+        const poolTokenCBalance = await this.BPool.getBalance.call(
+          tokenCAddress
+        );
+        const poolTotalSupply = await this.BPool.totalSupply.call();
+
+        // Prepare handler data
+        const poolAmountPercent = new BN('100'); // poolAmountPercent is 1%
+        const poolAmountIn = balancerPoolTokenUserAmount.divRound(
+          poolAmountPercent
+        );
+        const minAmountsOut = [ether('0'), ether('0'), ether('0')];
+        const to = this.hBalancer.address;
+        const data = abi.simpleEncode(
+          'exitPool(address,uint256,uint256[])',
+          balancerPoolAddress,
+          poolAmountIn,
+          minAmountsOut
+        );
+
+        // Send tokens to proxy
+        await this.balancerPoolToken.transfer(
+          this.proxy.address,
+          poolAmountIn,
+          {
+            from: user,
+          }
+        );
+        await this.proxy.updateTokenMock(this.tokenA.address);
+
+        // Execute handler
+        const receipt = await this.proxy.execMock(to, data, {
+          from: user,
+          value: ether('0.1'),
+        });
+
+        // Calc excepted token out
+        const ratio = getRatio(poolAmountIn, poolTotalSupply);
+        const exceptedTokenAAmountOut = getExceptedTokenAmountOut(
+          ratio,
+          poolTokenABalance
+        );
+        const exceptedTokenBAmountOut = getExceptedTokenAmountOut(
+          ratio,
+          poolTokenBBalance
+        );
+        const exceptedTokenCAmountOut = getExceptedTokenAmountOut(
+          ratio,
+          poolTokenCBalance
+        );
+
+        // Verify proxy balance should be zero
+        expect(await balanceProxy.get()).to.be.bignumber.eq(ether('0'));
+        expect(
+          await this.tokenA.balanceOf.call(this.proxy.address)
+        ).to.be.bignumber.eq(ether('0'));
+        expect(
+          await this.tokenB.balanceOf.call(this.proxy.address)
+        ).to.be.bignumber.eq(ether('0'));
+        expect(
+          await this.tokenC.balanceOf.call(this.proxy.address)
+        ).to.be.bignumber.eq(ether('0'));
+        expect(
+          await this.balancerPoolToken.balanceOf.call(this.proxy.address)
+        ).to.be.bignumber.eq(ether('0'));
+
+        // Verify user token balance
+        expect(await this.tokenA.balanceOf.call(user)).to.be.bignumber.eq(
+          tokenAUserAmount.add(exceptedTokenAAmountOut)
+        );
+        expect(await this.tokenB.balanceOf.call(user)).to.be.bignumber.eq(
+          tokenBUserAmount.add(exceptedTokenBAmountOut)
+        );
+        expect(await this.tokenC.balanceOf.call(user)).to.be.bignumber.eq(
+          tokenCUserAmount.add(exceptedTokenCAmountOut)
+        );
+        expect(
+          await this.balancerPoolToken.balanceOf.call(user)
+        ).to.be.bignumber.eq(balancerPoolTokenUserAmount.sub(poolAmountIn));
+
+        // Gas profile
+        profileGas(receipt);
+      });
+
+      it('Amounts not match', async function() {
+        // Prepare handler data
+        const poolAmountPercent = new BN('100'); // poolAmountPercent is 1%
+        const poolAmountIn = balancerPoolTokenUserAmount.divRound(
+          poolAmountPercent
+        );
+        const minAmountsOut = [ether('0'), ether('0')];
+        const to = this.hBalancer.address;
+        const data = abi.simpleEncode(
+          'exitPool(address,uint256,uint256[])',
+          balancerPoolAddress,
+          poolAmountIn,
+          minAmountsOut
+        );
+
+        // Send tokens to proxy
+        await this.balancerPoolToken.transfer(
+          this.proxy.address,
+          poolAmountIn,
+          {
+            from: user,
+          }
+        );
+        await this.proxy.updateTokenMock(this.tokenA.address);
+
+        // Execute handler
+        await expectRevert(
+          this.proxy.execMock(to, data, {
+            from: user,
+            value: ether('0.1'),
+          }),
+          'token and amount does not match'
+        );
+
+        // Gas profile
+        profileGas(receipt);
+      });
     });
   });
 });
+
+function getRatio(poolAmountIn, totalSupply) {
+  const BONE = ether('1');
+  var ratio = poolAmountIn
+    .mul(BONE)
+    .add(totalSupply.div(new BN('2')))
+    .div(totalSupply);
+  return ratio;
+}
+
+function getExceptedTokenAmountOut(ratio, poolTokenBalance) {
+  const BONE = ether('1');
+  return ratio
+    .mul(poolTokenBalance)
+    .add(BONE.div(new BN('2')))
+    .div(BONE);
+}

@@ -1,6 +1,7 @@
 pragma solidity ^0.5.0;
 
 import "./IDSProxy.sol";
+import "./IBPool.sol";
 import "../HandlerBase.sol";
 
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
@@ -40,11 +41,20 @@ contract HBalancer is HandlerBase {
     }
 
     function joinPool(
-        address[] calldata tokens,
         address pool,
         uint256 poolAmountOut,
         uint256[] calldata maxAmountsIn
     ) external payable {
+        // Get balancer pool
+        IBPool BPool = IBPool(pool);
+
+        // Get all tokens of pool
+        address[] memory tokens = BPool.getFinalTokens();
+        require(
+            tokens.length == maxAmountsIn.length,
+            "token and amount does not match"
+        );
+
         // Get furucombo DSProxy
         IDSProxy proxy = IDSProxy(_getProxy(address(this)));
 
@@ -70,6 +80,50 @@ contract HBalancer is HandlerBase {
 
         // Update post process
         _updateToken(pool);
+    }
+
+    function exitswapPoolAmountIn(
+        address pool,
+        address tokenOut,
+        uint256 poolAmountIn,
+        uint256 minAmountOut
+    ) external payable returns (uint256 tokenAmountOut) {
+        // Get balancer pool
+        IBPool BPool = IBPool(pool);
+
+        // Call balancer pool function exitswapPoolAmountIn
+        tokenAmountOut = BPool.exitswapPoolAmountIn(
+            tokenOut,
+            poolAmountIn,
+            minAmountOut
+        );
+
+        // Update post process
+        _updateToken(tokenOut);
+    }
+
+    function exitPool(
+        address pool,
+        uint256 poolAmountIn,
+        uint256[] calldata minAmountsOut
+    ) external payable {
+        // Get balancer pool
+        IBPool BPool = IBPool(pool);
+
+        // Get all tokens of pool
+        address[] memory tokens = BPool.getFinalTokens();
+        require(
+            minAmountsOut.length == tokens.length,
+            "token and amount does not match"
+        );
+
+        // Call balancer pool function exitPool
+        BPool.exitPool(poolAmountIn, minAmountsOut);
+
+        // Update post process
+        for (uint256 i = 0; i < tokens.length; i++) {
+            _updateToken(tokens[i]);
+        }
     }
 
     function _getProxy(address user) internal returns (address) {
