@@ -39,7 +39,6 @@ contract('CEther', function([_, deployer, user]) {
 
   before(async function() {
     this.registry = await Registry.new();
-    this.proxy = await Proxy.new(this.registry.address);
     this.hcether = await HCEther.new();
     await this.registry.register(
       this.hcether.address,
@@ -49,6 +48,7 @@ contract('CEther', function([_, deployer, user]) {
   });
 
   beforeEach(async function() {
+    this.proxy = await Proxy.new(this.registry.address);
     await resetAccount(_);
     await resetAccount(user);
     balanceUser = await tracker(user);
@@ -62,13 +62,17 @@ contract('CEther', function([_, deployer, user]) {
       const data = abi.simpleEncode('mint(uint256)', value);
       const rate = await this.cether.exchangeRateStored.call();
       const result = value.mul(ether('1')).div(rate);
+      const cetherUser = await this.cether.balanceOf.call(user);
       const receipt = await this.proxy.execMock(to, data, {
         from: user,
         value: ether('0.1'),
       });
-      const cetherUser = await this.cether.balanceOf.call(user);
+      const cetherUserEnd = await this.cether.balanceOf.call(user);
       expect(
-        cetherUser.mul(new BN('1000')).divRound(result)
+        cetherUserEnd
+          .sub(cetherUser)
+          .mul(new BN('1000'))
+          .divRound(result)
       ).to.be.bignumber.eq(new BN('1000'));
       expect(await balanceUser.delta()).to.be.bignumber.eq(
         ether('0')
