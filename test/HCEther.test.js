@@ -9,12 +9,19 @@ const {
 } = require('@openzeppelin/test-helpers');
 const { tracker } = balance;
 const { latest } = time;
+const { MAX_UINT256 } = constants;
 const abi = require('ethereumjs-abi');
 const utils = web3.utils;
 
 const { expect } = require('chai');
 
-const { CETHER } = require('./utils/constants');
+const {
+  CETHER,
+  CDAI,
+  DAI_TOKEN,
+  DAI_PROVIDER,
+  COMPOUND_COMPTROLLER,
+} = require('./utils/constants');
 const { resetAccount, profileGas } = require('./utils/utils');
 
 const HCEther = artifacts.require('HCEther');
@@ -22,6 +29,8 @@ const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('ProxyMock');
 const IToken = artifacts.require('IERC20');
 const ICEther = artifacts.require('ICEther');
+const ICToken = artifacts.require('ICToken');
+const IComptroller = artifacts.require('IComptroller');
 
 contract('CEther', function([_, deployer, user]) {
   let balanceUser;
@@ -163,6 +172,54 @@ contract('CEther', function([_, deployer, user]) {
           value: ether('0.1'),
         }),
         'compound redeem underlying failed'
+      );
+    });
+  });
+
+  describe('Repay Borrow Behalf', function() {
+    before(async function() {
+      this.comptroller = await IComptroller.at(COMPOUND_COMPTROLLER);
+      this.cdai = await ICToken.at(CDAI);
+      await this.comptroller.enterMarkets([CDAI]);
+      this.dai = await IToken.at(DAI_TOKEN);
+    });
+    beforeEach(async function() {
+      await this.dai.transfer(user, ether('300'), { from: DAI_PROVIDER });
+      await this.dai.approve(this.cdai.address, ether('300'), { from: user });
+      await this.cdai.mint(ether('300'), { from: user });
+      await this.cether.borrow(ether('0.1'), { from: user });
+    });
+
+    it('normal', async function() {
+      const value = ether('0.2');
+      const to = this.hcether.address;
+      const data = abi.simpleEncode(
+        'repayBorrowBehalf(uint256,address)',
+        value,
+        user
+      );
+      const receipt = await this.proxy.execMock(to, data, {
+        from: user,
+        value: value,
+      });
+      expect(
+        await this.cether.borrowBalanceCurrent.call(user)
+      ).to.be.bignumber.eq(ether('0'));
+    });
+
+    it('insufficient ether', async function() {
+      const value = ether('0.2');
+      const to = this.hcether.address;
+      const data = abi.simpleEncode(
+        'repayBorrowBehalf(uint256,address)',
+        value,
+        user
+      );
+      await expectRevert.unspecified(
+        this.proxy.execMock(to, data, {
+          from: user,
+          value: ether('0.1'),
+        })
       );
     });
   });

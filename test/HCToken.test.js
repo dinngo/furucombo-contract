@@ -8,20 +8,29 @@ const {
   time,
 } = require('@openzeppelin/test-helpers');
 const { tracker } = balance;
+const { MAX_UINT256 } = constants;
 const { latest } = time;
 const abi = require('ethereumjs-abi');
 const utils = web3.utils;
 
 const { expect } = require('chai');
 
-const { CDAI, DAI_TOKEN, DAI_PROVIDER } = require('./utils/constants');
+const {
+  CDAI,
+  CETHER,
+  DAI_TOKEN,
+  DAI_PROVIDER,
+  COMPOUND_COMPTROLLER,
+} = require('./utils/constants');
 const { resetAccount, profileGas } = require('./utils/utils');
 
 const HCToken = artifacts.require('HCToken');
 const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('ProxyMock');
 const IToken = artifacts.require('IERC20');
+const ICEther = artifacts.require('ICEther');
 const ICToken = artifacts.require('ICToken');
+const IComptroller = artifacts.require('IComptroller');
 
 contract('CToken', function([_, deployer, user]) {
   const ctokenAddress = CDAI;
@@ -209,6 +218,61 @@ contract('CToken', function([_, deployer, user]) {
           value: ether('0.1'),
         }),
         'compound redeem underlying failed'
+      );
+    });
+  });
+
+  describe('Repay Borrow Behalf', function() {
+    before(async function() {
+      this.comptroller = await IComptroller.at(COMPOUND_COMPTROLLER);
+      this.cether = await await ICEther.at(CETHER);
+      await this.comptroller.enterMarkets([CETHER]);
+    });
+    beforeEach(async function() {
+      await this.cether.mint({ from: user, value: ether('1') });
+      await this.ctoken.borrow(ether('1'), { from: user });
+    });
+
+    it('normal', async function() {
+      const value = MAX_UINT256;
+      const to = this.hctoken.address;
+      const data = abi.simpleEncode(
+        'repayBorrowBehalf(address,address,uint256)',
+        this.ctoken.address,
+        user,
+        value
+      );
+      await this.token.transfer(this.proxy.address, ether('10'), {
+        from: providerAddress,
+      });
+      await this.proxy.updateTokenMock(this.token.address);
+      const receipt = await this.proxy.execMock(to, data, {
+        from: user,
+        value: ether('0.1'),
+      });
+      expect(
+        await this.ctoken.borrowBalanceCurrent.call(user)
+      ).to.be.bignumber.eq(ether('0'));
+    });
+
+    it('insufficient token', async function() {
+      const value = MAX_UINT256;
+      const to = this.hctoken.address;
+      const data = abi.simpleEncode(
+        'repayBorrowBehalf(address,address,uint256)',
+        this.ctoken.address,
+        user,
+        value
+      );
+      await this.token.transfer(this.proxy.address, ether('0.8'), {
+        from: providerAddress,
+      });
+      await this.proxy.updateTokenMock(this.token.address);
+      await expectRevert.unspecified(
+        this.proxy.execMock(to, data, {
+          from: user,
+          value: ether('0.1'),
+        })
       );
     });
   });
