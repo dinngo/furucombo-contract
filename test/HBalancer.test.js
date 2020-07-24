@@ -93,28 +93,28 @@ contract('Balancer', function([_, deployer, user]) {
   });
 
   describe('Liquidity ', function() {
-    describe('Add Liquidity Single Assert', function() {
+    describe('Add Liquidity Single Asset', function() {
       it('normal', async function() {
         // Prepare handler data
         const tokenAAmount = ether('1');
-        const minTokenAAmount = new BN('1');
+        const minPoolAmountOut = new BN('1');
         const to = this.HBalancer.address;
         const data = abi.simpleEncode(
           'joinswapExternAmountIn(address,address,uint256,uint256)',
           balancerPoolAddress,
           tokenAAddress,
           tokenAAmount,
-          minTokenAAmount
+          minPoolAmountOut
         );
 
         // Simulate Balancer contract behavior
         await this.tokenA.approve(this.BPool.address, tokenAAmount, {
           from: user,
         });
-        const exceptedPoolAmountOut = await this.BPool.joinswapExternAmountIn.call(
+        const expectedPoolAmountOut = await this.BPool.joinswapExternAmountIn.call(
           tokenAAddress,
           tokenAAmount,
-          minTokenAAmount,
+          minPoolAmountOut,
           { from: user }
         );
 
@@ -137,13 +137,13 @@ contract('Balancer', function([_, deployer, user]) {
         ).to.be.bignumber.eq(ether('0'));
 
         // Verify user balance
-        expect(await this.tokenA.balanceOf.call(user)).to.be.bignumber.lte(
-          tokenAUserAmount.sub(minTokenAAmount)
+        expect(await this.tokenA.balanceOf.call(user)).to.be.bignumber.eq(
+          tokenAUserAmount.sub(tokenAAmount)
         );
         expect(
           await this.balancerPoolToken.balanceOf.call(user)
         ).to.be.bignumber.eq(
-          balancerPoolTokenUserAmount.add(exceptedPoolAmountOut)
+          balancerPoolTokenUserAmount.add(expectedPoolAmountOut)
         );
 
         // Gas profile
@@ -151,7 +151,7 @@ contract('Balancer', function([_, deployer, user]) {
       });
     });
 
-    describe('Add Liquidity All Asserts', function() {
+    describe('Add Liquidity All Assets', function() {
       it('normal', async function() {
         // Get BPool Information
         const poolTokenABalance = await this.BPool.getBalance.call(
@@ -168,19 +168,19 @@ contract('Balancer', function([_, deployer, user]) {
         // Prepare handler data
         const to = this.HBalancer.address;
         const poolAmountPercent = new BN('1000'); // poolAmountPercent is 0.1%
-        const poolAmountOut = poolTotalSupply.divRound(poolAmountPercent); // Excepted receive pool token amount
+        const poolAmountOut = poolTotalSupply.divRound(poolAmountPercent); // Expected receive pool token amount
 
-        // Calculate excepted token input amount
+        // Calculate expected token input amount
         const ratio = getRatio(poolAmountOut, poolTotalSupply);
-        const maxTokenAAmount = calcExceptedTokenAmount(
+        const maxTokenAAmount = calcExpectedTokenAmount(
           ratio,
           poolTokenABalance
         );
-        const maxTokenBAmount = calcExceptedTokenAmount(
+        const maxTokenBAmount = calcExpectedTokenAmount(
           ratio,
           poolTokenBBalance
         );
-        const maxTokenCAmount = calcExceptedTokenAmount(
+        const maxTokenCAmount = calcExpectedTokenAmount(
           ratio,
           poolTokenCBalance
         );
@@ -273,7 +273,7 @@ contract('Balancer', function([_, deployer, user]) {
       });
     });
 
-    describe('Remove Liquidity Single Assert', function() {
+    describe('Remove Liquidity Single Asset', function() {
       beforeEach(async function() {
         // Add liquidity before removing liquidity
         const tokenAAmount = ether('1');
@@ -308,7 +308,7 @@ contract('Balancer', function([_, deployer, user]) {
         );
 
         // Simulate Balancer contract behavior
-        const exceptedTokenAmountOut = await this.BPool.exitswapPoolAmountIn.call(
+        const expectedTokenAmountOut = await this.BPool.exitswapPoolAmountIn.call(
           tokenAAddress,
           poolAmountIn,
           minTokenAAmount,
@@ -342,7 +342,7 @@ contract('Balancer', function([_, deployer, user]) {
 
         // Verify user balance
         expect(await this.tokenA.balanceOf.call(user)).to.be.bignumber.eq(
-          tokenAUserAmount.add(exceptedTokenAmountOut)
+          tokenAUserAmount.add(expectedTokenAmountOut)
         );
         expect(
           await this.balancerPoolToken.balanceOf.call(user)
@@ -353,7 +353,7 @@ contract('Balancer', function([_, deployer, user]) {
       });
     });
 
-    describe('Remove Liquidity All Asserts', function() {
+    describe('Remove Liquidity All Assets', function() {
       beforeEach(async function() {
         // Add liquidity before removing liquidity
         const tokenAAmount = ether('10');
@@ -418,17 +418,17 @@ contract('Balancer', function([_, deployer, user]) {
           value: ether('0.1'),
         });
 
-        // Calculate excepted token output amount
+        // Calculate expected token output amount
         const ratio = getRatio(poolAmountIn, poolTotalSupply);
-        const exceptedTokenAAmountOut = calcExceptedTokenAmount(
+        const expectedTokenAAmountOut = calcExpectedTokenAmount(
           ratio,
           poolTokenABalance
         );
-        const exceptedTokenBAmountOut = calcExceptedTokenAmount(
+        const expectedTokenBAmountOut = calcExpectedTokenAmount(
           ratio,
           poolTokenBBalance
         );
-        const exceptedTokenCAmountOut = calcExceptedTokenAmount(
+        const expectedTokenCAmountOut = calcExpectedTokenAmount(
           ratio,
           poolTokenCBalance
         );
@@ -450,13 +450,13 @@ contract('Balancer', function([_, deployer, user]) {
 
         // Verify user token balance
         expect(await this.tokenA.balanceOf.call(user)).to.be.bignumber.eq(
-          tokenAUserAmount.add(exceptedTokenAAmountOut)
+          tokenAUserAmount.add(expectedTokenAAmountOut)
         );
         expect(await this.tokenB.balanceOf.call(user)).to.be.bignumber.eq(
-          tokenBUserAmount.add(exceptedTokenBAmountOut)
+          tokenBUserAmount.add(expectedTokenBAmountOut)
         );
         expect(await this.tokenC.balanceOf.call(user)).to.be.bignumber.eq(
-          tokenCUserAmount.add(exceptedTokenCAmountOut)
+          tokenCUserAmount.add(expectedTokenCAmountOut)
         );
         expect(
           await this.balancerPoolToken.balanceOf.call(user)
@@ -503,7 +503,7 @@ function getRatio(poolAmountIn, totalSupply) {
   return ratio;
 }
 
-function calcExceptedTokenAmount(ratio, poolTokenBalance) {
+function calcExpectedTokenAmount(ratio, poolTokenBalance) {
   const BONE = ether('1');
   return ratio
     .mul(poolTokenBalance)
