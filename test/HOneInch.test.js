@@ -17,8 +17,12 @@ const {
   DAI_TOKEN,
   DAI_PROVIDER,
   DAI_SYMBOL,
+  USDC_TOKEN,
+  USDC_SYMBOL,
   ZRX_TOKEN,
   ZRX_SYMBOL,
+  KNC_TOKEN,
+  KNC_SYMBOL,
 } = require('./utils/constants');
 const { resetAccount, profileGas } = require('./utils/utils');
 const fetch = require('node-fetch');
@@ -253,8 +257,8 @@ contract('OneInch Swap', function([_, deployer, user, someone]) {
   describe('Token to Token', function() {
     const token0Address = DAI_TOKEN;
     const token0Symbol = DAI_SYMBOL;
-    const token1Address = ZRX_TOKEN;
-    const token1Symbol = ZRX_SYMBOL;
+    const token1Address = KNC_TOKEN;
+    const token1Symbol = KNC_SYMBOL;
     const providerAddress = DAI_PROVIDER;
 
     let token0User;
