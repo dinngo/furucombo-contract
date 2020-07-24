@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 - Add token and ether sending function in `HFunds`.
 - Support Balancer add liquidity single assert/all asserts function in `HBalancer`.
 - Support Balancer remove liquidity single assert/all asserts function in `HBalancer`.
+- Support Compound repay function in `HCEther` and `HCToken`.
 
 ### Changed
 
