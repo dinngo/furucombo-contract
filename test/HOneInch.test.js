@@ -77,8 +77,6 @@ contract('OneInch Swap', function([_, deployer, user, someone]) {
         const swapReq = queryString.stringifyUrl({
           url: "https://api.1inch.exchange/v1.1/swapQuote",
           query: {
-            // fromTokenAddress: ETH_TOKEN,
-            // toTokenAddress: this.token.address,
             fromTokenSymbol: "ETH",
             toTokenSymbol: tokenSymbol,
             amount: value,
@@ -93,14 +91,7 @@ contract('OneInch Swap', function([_, deployer, user, someone]) {
         const swapData = await swapReponse.json();
         const data = swapData.data;
         const quote = swapData.toTokenAmount;
-        console.log(`quote = ${quote}`);
-        console.log(`swapData = ${JSON.stringify(swapData)}`);
-        console.log(`proxy address = ${JSON.stringify(this.proxy.address)}`);
-        console.log(`honeinch address = ${JSON.stringify(this.honeinch.address)}`);
-
         const receipt = await this.proxy.execMock(to, data, { from: user, value: value });
-        const bal = await this.token.balanceOf.call(user);
-        console.log(`bat balance: ${web3.utils.fromWei(bal)}`);
 
         expect(await this.token.balanceOf.call(user)).to.be.bignumber.gte(
           tokenUser.add(mulPercent(quote, 100 - slippage))
@@ -129,8 +120,6 @@ contract('OneInch Swap', function([_, deployer, user, someone]) {
         const swapReq = queryString.stringifyUrl({
           url: "https://api.1inch.exchange/v1.1/swapQuote",
           query: {
-            // fromTokenAddress: ETH_TOKEN,
-            // toTokenAddress: this.token.address,
             fromTokenSymbol: "ETH",
             toTokenSymbol: tokenSymbol,
             amount: value,
@@ -140,20 +129,12 @@ contract('OneInch Swap', function([_, deployer, user, someone]) {
             disabledExchangesList: "0x Relays",
           },
         });
-        console.log(`swapReq: ${swapReq}`);
         
         const swapReponse = await fetch(swapReq);
         const swapData = await swapReponse.json();
         const data = swapData.data;
         const quote = swapData.toTokenAmount;
-        console.log(`quote = ${quote}`);
-        console.log(`swapData = ${JSON.stringify(swapData)}`);
-        console.log(`proxy address = ${JSON.stringify(this.proxy.address)}`);
-        console.log(`honeinch address = ${JSON.stringify(this.honeinch.address)}`);
-
         const receipt = await this.proxy.execMock(to, data, { from: user, value: value.add(ether('1')) });
-        const bal = await this.token.balanceOf.call(user);
-        console.log(`bat balance: ${web3.utils.fromWei(bal)}`);
 
         expect(await this.token.balanceOf.call(user)).to.be.bignumber.gte(
           tokenUser.add(mulPercent(quote, 100 - slippage))
@@ -215,7 +196,6 @@ contract('OneInch Swap', function([_, deployer, user, someone]) {
             disabledExchangesList: "0x Relays",
           },
         });
-        console.log(`swapReq: ${swapReq}`);
 
         await this.token.transfer(this.proxy.address, value, {
           from: providerAddress
@@ -226,11 +206,6 @@ contract('OneInch Swap', function([_, deployer, user, someone]) {
         const swapData = await swapReponse.json();
         const data = swapData.data;
         const quote = swapData.toTokenAmount;
-        console.log(`quote = ${quote}`);
-        console.log(`swapData = ${JSON.stringify(swapData)}`);
-        console.log(`proxy address = ${JSON.stringify(this.proxy.address)}`);
-        console.log(`honeinch address = ${JSON.stringify(this.honeinch.address)}`);
-
         const receipt = await this.proxy.execMock(to, data, { from: user, value: ether('0.1') });
 
         expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
@@ -293,8 +268,6 @@ contract('OneInch Swap', function([_, deployer, user, someone]) {
             disabledExchangesList: "0x Relays",
           },
         });
-        console.log(`swapReq: ${swapReq}`);
-        
 
         await this.token0.transfer(this.proxy.address, value, {
           from: providerAddress
@@ -305,11 +278,6 @@ contract('OneInch Swap', function([_, deployer, user, someone]) {
         const swapData = await swapReponse.json();
         const data = swapData.data;
         const quote = swapData.toTokenAmount;
-        console.log(`quote = ${quote}`);
-        console.log(`swapData = ${JSON.stringify(swapData)}`);
-        console.log(`proxy address = ${JSON.stringify(this.proxy.address)}`);
-        console.log(`honeinch address = ${JSON.stringify(this.honeinch.address)}`);
-
         const receipt = await this.proxy.execMock(to, data, { from: user, value: ether('0.1') });
 
         expect(await this.token0.balanceOf.call(user)).to.be.bignumber.eq(
