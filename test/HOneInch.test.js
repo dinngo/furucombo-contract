@@ -17,15 +17,8 @@ const {
   DAI_TOKEN,
   DAI_PROVIDER,
   DAI_SYMBOL,
-  BAT_TOKEN,
   ZRX_TOKEN,
   ZRX_SYMBOL,
-  USDT_TOKEN,
-  USDT_PROVIDER,
-  ETH_TOKEN,
-  WETH_TOKEN,
-  ONEINCH_PROXY,
-  ONEINCH_TOKEN_SPENDER,
 } = require('./utils/constants');
 const { resetAccount, profileGas } = require('./utils/utils');
 const fetch = require('node-fetch');
@@ -35,7 +28,6 @@ const HOneInch = artifacts.require('HOneInch');
 const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('ProxyMock');
 const IToken = artifacts.require('IERC20');
-const IOneInchExchange = artifacts.require('IOneInchExchange');
 
 contract('OneInch Swap', function([_, deployer, user, someone]) {
   before(async function() {
@@ -92,7 +84,6 @@ contract('OneInch Swap', function([_, deployer, user, someone]) {
             disabledExchangesList: "0x Relays",
           },
         });
-        console.log(`swapReq: ${swapReq}`);
         
         const swapReponse = await fetch(swapReq);
         const swapData = await swapReponse.json();
