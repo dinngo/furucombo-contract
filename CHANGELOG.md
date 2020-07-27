@@ -7,8 +7,6 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 - Add token and ether sending function in `HFunds`.
-- Support Curve swap through curve pools in `HCurve`.
-- Support Curve swap through OneSplit aggregator in `HCurve`.
 
 ### Changed
 
@@ -17,6 +15,13 @@ All notable changes to this project will be documented in this file.
 ### Deprecated
 
 - Unused `HERC20TokenIn`.
+
+## [0.7.0] - 2020-07-27
+
+### Added
+
+- Support Curve swap through curve pools in `HCurve`.
+- Support Curve swap through OneSplit aggregator in `HCurve`.
 
 ## [0.6.0] - 2020-07-13
 
