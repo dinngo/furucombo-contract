@@ -7,6 +7,8 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 - Add token and ether sending function in `HFunds`.
+- Support Balancer add liquidity single assert/all asserts function in `HBalancer`.
+- Support Balancer remove liquidity single assert/all asserts function in `HBalancer`.
 
 ### Changed
 
