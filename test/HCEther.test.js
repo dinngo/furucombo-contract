@@ -222,7 +222,7 @@ contract('CEther', function([_, deployer, user]) {
       await expectRevert.unspecified(
         this.proxy.execMock(to, data, {
           from: user,
-          value: ether('0.1'),
+          value: ether('0.09'),
         })
       );
     });
