@@ -51,6 +51,23 @@ contract HCToken is HandlerBase {
         _updateToken(token);
     }
 
+    function repayBorrowBehalf(
+        address cToken,
+        address borrower,
+        uint256 repayAmount
+    ) external payable {
+        ICToken compound = ICToken(cToken);
+        address token = _getToken(cToken);
+        uint256 debt = compound.borrowBalanceCurrent(borrower);
+        if (repayAmount < debt) debt = repayAmount;
+        IERC20(token).safeApprove(cToken, debt);
+        require(
+            compound.repayBorrowBehalf(borrower, debt) == 0,
+            "compound repay failed"
+        );
+        IERC20(token).safeApprove(cToken, 0);
+    }
+
     function _getToken(address token) internal view returns (address result) {
         return ICToken(token).underlying();
     }
