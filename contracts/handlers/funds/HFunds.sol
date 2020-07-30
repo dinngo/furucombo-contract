@@ -29,7 +29,7 @@ contract HFunds is HandlerBase {
         }
     }
 
-    function send(
+    function sendToken(
         address token,
         uint256 amount,
         address receiver
