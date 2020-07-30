@@ -187,7 +187,7 @@ contract('Funds', function([_, deployer, user, someone]) {
         const receiver = someone;
         const to = this.hfunds.address;
         const data = abi.simpleEncode(
-          'send(address,uint256,address)',
+          'sendToken(address,uint256,address)',
           token,
           value,
           receiver
@@ -219,7 +219,7 @@ contract('Funds', function([_, deployer, user, someone]) {
         const receiver = someone;
         const to = this.hfunds.address;
         const data = abi.simpleEncode(
-          'send(address,uint256,address)',
+          'sendToken(address,uint256,address)',
           token,
           value,
           receiver
@@ -252,7 +252,7 @@ contract('Funds', function([_, deployer, user, someone]) {
         const receiver = someone;
         const to = this.hfunds.address;
         const data = abi.simpleEncode(
-          'send(address,uint256,address)',
+          'sendToken(address,uint256,address)',
           token,
           value,
           receiver
