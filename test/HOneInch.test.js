@@ -87,8 +87,8 @@ contract('OneInch Swap', function([_, deployer, user, someone]) {
           },
         });
         
-        const swapReponse = await fetch(swapReq);
-        const swapData = await swapReponse.json();
+        const swapResponse = await fetch(swapReq);
+        const swapData = await swapResponse.json();
         const data = swapData.data;
         const quote = swapData.toTokenAmount;
         const receipt = await this.proxy.execMock(to, data, { from: user, value: value });
@@ -111,7 +111,7 @@ contract('OneInch Swap', function([_, deployer, user, someone]) {
         profileGas(receipt);
       });
 
-      it('msg.value gretter than input ether amount', async function() {
+      it('msg.value greater than input ether amount', async function() {
 
         const value = ether('1');
         const to = this.honeinch.address;
@@ -130,8 +130,8 @@ contract('OneInch Swap', function([_, deployer, user, someone]) {
           },
         });
         
-        const swapReponse = await fetch(swapReq);
-        const swapData = await swapReponse.json();
+        const swapResponse = await fetch(swapReq);
+        const swapData = await swapResponse.json();
         const data = swapData.data;
         const quote = swapData.toTokenAmount;
         const receipt = await this.proxy.execMock(to, data, { from: user, value: value.add(ether('1')) });
@@ -202,8 +202,8 @@ contract('OneInch Swap', function([_, deployer, user, someone]) {
         });
         await this.proxy.updateTokenMock(this.token.address);
         
-        const swapReponse = await fetch(swapReq);
-        const swapData = await swapReponse.json();
+        const swapResponse = await fetch(swapReq);
+        const swapData = await swapResponse.json();
         const data = swapData.data;
         const quote = swapData.toTokenAmount;
         const receipt = await this.proxy.execMock(to, data, { from: user, value: ether('0.1') });
@@ -274,8 +274,8 @@ contract('OneInch Swap', function([_, deployer, user, someone]) {
         });
         await this.proxy.updateTokenMock(this.token0.address);
         
-        const swapReponse = await fetch(swapReq);
-        const swapData = await swapReponse.json();
+        const swapResponse = await fetch(swapReq);
+        const swapData = await swapResponse.json();
         const data = swapData.data;
         const quote = swapData.toTokenAmount;
         const receipt = await this.proxy.execMock(to, data, { from: user, value: ether('0.1') });
