@@ -10,6 +10,9 @@ All notable changes to this project will be documented in this file.
 - Support Balancer add liquidity single assert/all asserts function in `HBalancer`.
 - Support Balancer remove liquidity single assert/all asserts function in `HBalancer`.
 - Support Compound repay function in `HCEther` and `HCToken`.
+- Support OneInch fixed input eth to token swap.
+- Support OneInch fixed input token to eth swap.
+- Support OneInch fixed input token to token swap.
 
 ### Changed
 

@@ -17,6 +17,7 @@ const {
   DAI_TOKEN,
   DAI_PROVIDER,
   BAT_TOKEN,
+  USDC_TOKEN,
   ETH_PROVIDER,
   WETH_TOKEN,
   OASIS_DIRECT_PROXY,
@@ -31,6 +32,7 @@ const IToken = artifacts.require('IERC20');
 const IOasisDirectProxy = artifacts.require('IOasisDirectProxy');
 const IMakerOtc = artifacts.require('IMakerOtc');
 
+// (if tests keep being reverted, check if there are enough liquidity for the tokens)
 contract('Oasis Swap', function([_, deployer, user, someone]) {
   before(async function() {
     this.registry = await Registry.new();
@@ -369,7 +371,7 @@ contract('Oasis Swap', function([_, deployer, user, someone]) {
 
   describe('Token to Token', function() {
     const token0Address = DAI_TOKEN;
-    const token1Address = BAT_TOKEN;
+    const token1Address = USDC_TOKEN;
     const oasisAddress = OASIS_DIRECT_PROXY;
     const providerAddress = DAI_PROVIDER;
 
@@ -475,7 +477,7 @@ contract('Oasis Swap', function([_, deployer, user, someone]) {
     describe('Exact output', function() {
       it('normal', async function() {
         const value = ether('100');
-        const buyAmt = ether('10');
+        const buyAmt = new BN('10').mul(new BN(1000000));
         const to = this.hoasis.address;
         const data = abi.simpleEncode(
           'buyAllAmount(address,uint256,address,uint256):(uint256)',
