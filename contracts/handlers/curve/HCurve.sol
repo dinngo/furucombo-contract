@@ -109,10 +109,7 @@ contract HCurve is HandlerBase {
             uint256[2] memory amts = [amounts[0], amounts[1]];
             curveSwap.add_liquidity(amts, minMintAmount);
         } else {
-            require(
-                amounts.length < 2 || amounts.length > 4,
-                "invalid amount array size"
-            );
+            revert("invalid amount array size");
         }
 
         // Reset zero amount for approval
@@ -162,10 +159,7 @@ contract HCurve is HandlerBase {
             uint256[2] memory amts = [uamounts[0], uamounts[1]];
             curveDeposit.add_liquidity(amts, minMintAmount);
         } else {
-            require(
-                uamounts.length < 2 || uamounts.length > 4,
-                "invalid amount array size"
-            );
+            revert("invalid uamount array size");
         }
 
         // Reset zero amount for approval
