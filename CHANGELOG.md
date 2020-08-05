@@ -13,6 +13,8 @@ All notable changes to this project will be documented in this file.
 - Support OneInch fixed input eth to token swap.
 - Support OneInch fixed input token to eth swap.
 - Support OneInch fixed input token to token swap.
+- Support Curve add liquidity in `HCurve`.
+- Support Curve remove liquidity one coin in `HCurve`.
 
 ### Changed
 
