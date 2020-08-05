@@ -313,6 +313,9 @@ contract('Curve', function([_, deployer, user]) {
         expect(
           await this.token1.balanceOf.call(this.proxy.address)
         ).to.be.bignumber.eq(ether('0'));
+        expect(
+          await this.poolToken.balanceOf.call(this.proxy.address)
+        ).to.be.bignumber.eq(ether('0'));
 
         // Check user balance
         expect(await this.token0.balanceOf.call(user)).to.be.bignumber.eq(
@@ -341,6 +344,7 @@ contract('Curve', function([_, deployer, user]) {
         await this.poolToken.transfer(this.proxy.address, poolTokenUser, {
           from: user,
         });
+        await this.proxy.updateTokenMock(this.poolToken.address);
         const minAmount = new BN('1');
         const data = abi.simpleEncode(
           'removeLiquidityOneCoin(address,address,uint256,int128,uint256)',
@@ -354,6 +358,15 @@ contract('Curve', function([_, deployer, user]) {
           from: user,
           value: ether('1'),
         });
+
+        // Check proxy balance
+        expect(
+          await this.token1.balanceOf.call(this.proxy.address)
+        ).to.be.bignumber.eq(ether('0'));
+        expect(
+          await this.poolToken.balanceOf.call(this.proxy.address)
+        ).to.be.bignumber.eq(ether('0'));
+
         // amount should be >= answer * 1.001 and <= answer * 0.998 which is
         // referenced from tests in curve contract.
         expect(await this.token1.balanceOf.call(user)).to.be.bignumber.gte(
@@ -460,6 +473,9 @@ contract('Curve', function([_, deployer, user]) {
         expect(
           await this.token1.balanceOf.call(this.proxy.address)
         ).to.be.bignumber.eq(ether('0'));
+        expect(
+          await this.poolToken.balanceOf.call(this.proxy.address)
+        ).to.be.bignumber.eq(ether('0'));
 
         // Check user balance
         expect(await this.token0.balanceOf.call(user)).to.be.bignumber.eq(
@@ -488,6 +504,7 @@ contract('Curve', function([_, deployer, user]) {
         await this.poolToken.transfer(this.proxy.address, poolTokenUser, {
           from: user,
         });
+        await this.proxy.updateTokenMock(this.poolToken.address);
         const minUamount = new BN('1');
         const data = abi.simpleEncode(
           'removeLiquidityOneCoinZap(address,uint256,int128,uint256)',
@@ -500,6 +517,15 @@ contract('Curve', function([_, deployer, user]) {
           from: user,
           value: ether('1'),
         });
+
+        // Check proxy balance
+        expect(
+          await this.token1.balanceOf.call(this.proxy.address)
+        ).to.be.bignumber.eq(ether('0'));
+        expect(
+          await this.poolToken.balanceOf.call(this.proxy.address)
+        ).to.be.bignumber.eq(ether('0'));
+
         // amount should be >= answer * 1.001 and <= answer * 0.999 which is
         // referenced from tests in curve contract.
         expect(await this.token1.balanceOf.call(user)).to.be.bignumber.gte(
