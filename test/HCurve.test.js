@@ -285,10 +285,10 @@ contract('Curve', function([_, deployer, user]) {
         ](amounts, true);
 
         // Execute handler
-        this.token0.transfer(this.proxy.address, token0Amount, {
+        await this.token0.transfer(this.proxy.address, token0Amount, {
           from: provider0Address,
         });
-        this.token1.transfer(this.proxy.address, token1Amount, {
+        await this.token1.transfer(this.proxy.address, token1Amount, {
           from: provider1Address,
         });
         await this.proxy.updateTokenMock(this.token0.address);
@@ -367,7 +367,7 @@ contract('Curve', function([_, deployer, user]) {
           await this.poolToken.balanceOf.call(this.proxy.address)
         ).to.be.bignumber.eq(ether('0'));
 
-        // amount should be >= answer * 1.001 and <= answer * 0.998 which is
+        // amount should be <= answer * 1.001 and >= answer * 0.998 which is
         // referenced from tests in curve contract.
         expect(await this.token1.balanceOf.call(user)).to.be.bignumber.gte(
           token1UserBefore.add(answer.mul(new BN('998')).div(new BN('1000')))
@@ -412,10 +412,10 @@ contract('Curve', function([_, deployer, user]) {
         const token1Amount = new BN('1000000000');
 
         // Get yToken amounts equivalent to underlying token inputs
-        this.token0.transfer(user, token0Amount, {
+        await this.token0.transfer(user, token0Amount, {
           from: provider0Address,
         });
-        this.token1.transfer(user, token1Amount, {
+        await this.token1.transfer(user, token1Amount, {
           from: provider1Address,
         });
         await this.token0.approve(this.ytoken0.address, token0Amount, {
@@ -445,10 +445,10 @@ contract('Curve', function([_, deployer, user]) {
         );
 
         // Execute handler
-        this.token0.transfer(this.proxy.address, token0Amount, {
+        await this.token0.transfer(this.proxy.address, token0Amount, {
           from: provider0Address,
         });
-        this.token1.transfer(this.proxy.address, token1Amount, {
+        await this.token1.transfer(this.proxy.address, token1Amount, {
           from: provider1Address,
         });
         await this.proxy.updateTokenMock(this.token0.address);
@@ -526,7 +526,7 @@ contract('Curve', function([_, deployer, user]) {
           await this.poolToken.balanceOf.call(this.proxy.address)
         ).to.be.bignumber.eq(ether('0'));
 
-        // amount should be >= answer * 1.001 and <= answer * 0.999 which is
+        // amount should be <= answer * 1.001 and >= answer * 0.999 which is
         // referenced from tests in curve contract.
         expect(await this.token1.balanceOf.call(user)).to.be.bignumber.gte(
           token1UserBefore.add(answer.mul(new BN('999')).div(new BN('1000')))
