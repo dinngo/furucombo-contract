@@ -27,6 +27,7 @@ contract('Weth', function([_, deployer, user, someone]) {
   const tokenProviderAddress = WETH_PROVIDER;
 
   before(async function() {
+    this.token = await IToken.at(tokenAddress);
     this.registry = await Registry.new();
     this.proxy = await Proxy.new(this.registry.address);
     this.hWeth = await HWeth.new();
@@ -40,7 +41,6 @@ contract('Weth', function([_, deployer, user, someone]) {
 
   describe('deposit', function() {
     beforeEach(async function() {
-      this.token = await IToken.at(tokenAddress);
       tokenUserAmount = await this.token.balanceOf.call(user);
       balanceProxy = await tracker(this.proxy.address);
       balanceUser = await tracker(user);
@@ -82,7 +82,6 @@ contract('Weth', function([_, deployer, user, someone]) {
   describe('withdraw', function() {
     beforeEach(async function() {
       this.token = await IToken.at(tokenAddress);
-      tokenUserAmount = await this.token.balanceOf.call(user);
       tokenUserAmount = await this.token.balanceOf.call(user);
       balanceProxy = await tracker(this.proxy.address);
       balanceUser = await tracker(user);
