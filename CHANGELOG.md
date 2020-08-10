@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+## [0.8.0] - 2020-08-10
+
 ### Added
 
 - Add token and ether sending function in `HFunds`.
