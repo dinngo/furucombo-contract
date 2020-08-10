@@ -20,6 +20,7 @@ All notable changes to this project will be documented in this file.
 - Support OneInch fixed input eth to token swap.
 - Support OneInch fixed input token to eth swap.
 - Support OneInch fixed input token to token swap.
+- Support WETH deposit and withdraw function in `HWeth`.
 
 ### Changed
 

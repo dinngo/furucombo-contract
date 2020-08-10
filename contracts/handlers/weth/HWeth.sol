@@ -6,13 +6,10 @@ import "./IWETH9.sol";
 
 
 contract HWeth is HandlerBase {
-    using SafeERC20 for IERC20;
-
     address payable public constant WETH = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
 
     function deposit(uint256 value) external payable {
-        WETH.call.value(value)();
-
+        IWETH9(WETH).deposit.value(value)();
         _updateToken(WETH);
     }
 
