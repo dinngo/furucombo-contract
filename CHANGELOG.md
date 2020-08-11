@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 
 - Support Curve add liquidity in `HCurve`.
 - Support Curve remove liquidity one coin in `HCurve`.
+- Support WETH deposit and withdraw function in `HWeth`.
 
 ## [0.8.0] - 2020-08-10
 
