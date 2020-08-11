@@ -20,19 +20,33 @@ const { resetAccount, profileGas } = require('./utils/utils');
 
 const Proxy = artifacts.require('ProxyMock');
 const Registry = artifacts.require('Registry');
-const HMinter = artifacts.require('HMinter');
+const HCurveDao = artifacts.require('HCurveDao');
 const IMinter = artifacts.require('IMinter');
 const ILiquidityGuage = artifacts.require('ILiquidityGuage');
 const IToken = artifacts.require('IERC20');
 
-contract('Curve Minter', function([_, deployer, user1, user2]) {
+contract('Curve DAO', function([_, deployer, user1, user2]) {
+  // Wait for the gaude to be ready
+  const token0Address = ZERO_ADDRESS;
+  const token1Address = ZERO_ADDRESS;
+  const token0Provider = ZERO_ADDRESS;
+  const token1Provider = ZERO_ADDRESS;
+  const gauge0Address = ZERO_ADDRESS;
+  const gauge1Address = ZERO_ADDRESS;
+  const gauge0amount = ether('1');
+  const gauge1amount = ether('1');
+
   before(async function() {
     this.registry = await Registry.new();
-    this.hminter = await HMinter.new();
+    this.hminter = await HCurveDao.new();
     await this.registry.register(
       this.hminter.address,
-      utils.asciiToHex('HMinter')
+      utils.asciiToHex('HCurveDao')
     );
+    this.token0 = await IToken.at(token0Address);
+    this.token1 = await IToken.at(token1Address);
+    this.gauge0 = await ILiquidityGuage.at(gauge0Address);
+    this.gauge1 = await ILiquidityGuage.at(gauge1Address);
   });
 
   beforeEach(async function() {
@@ -41,24 +55,29 @@ contract('Curve Minter', function([_, deployer, user1, user2]) {
     this.proxy = await Proxy.new(this.registry.address);
   });
 
-  describe('Claim CRV', function() {
-    // Wait for the gaude to be ready
-    const token0Address = ZERO_ADDRESS;
-    const token1Address = ZERO_ADDRESS;
-    const token0Provider = ZERO_ADDRESS;
-    const token1Provider = ZERO_ADDRESS;
-    const gauge0Address = ZERO_ADDRESS;
-    const gauge1Address = ZERO_ADDRESS;
-    const gauge0amount = ether('1');
-    const gauge1amount = ether('1');
+  describe('Deposit lp token to gauge', function() {
+    it('normal', async function() {
+      await this.token0.transfer(this.proxy.address, gauge0Amount, {
+        from: providerAddress,
+      });
+      const to = this.HCurveDao.address;
+      const data = abi.simpleEncode(
+        'deposit(address,uint256)',
+        this.gauge0.address,
+        gauge0Amount
+      );
+      await this.gauge0.set_approve_deposit(this.proxy.address, true, {
+        from: user1,
+      });
 
-    before(async function() {
-      this.token0 = await IToken.at(token0Address);
-      this.token1 = await IToken.at(token1Address);
-      this.gauge0 = await ILiquidityGuage.at(gauge0Address);
-      this.gauge1 = await ILiquidityGuage.at(gauge1Address);
+      const receipt = await this.proxy.execMock(to, data, {
+        from: user1,
+        value: ether('0.1'),
+      });
     });
+  });
 
+  describe('Claim CRV', function() {
     describe('from single gauge', function() {
       beforeEach(async function() {
         await this.token0.transfer(user1, gauge0Amount, {
@@ -77,7 +96,7 @@ contract('Curve Minter', function([_, deployer, user1, user2]) {
         await this.minter.toggle_approve_mint(this.proxy.address, {
           from: user1,
         });
-        const to = this.HMinter.address;
+        const to = this.HCurveDao.address;
         const data = abi.simpleEncode(
           'mint_for(address,address)',
           this.gauge0.address,
@@ -115,7 +134,7 @@ contract('Curve Minter', function([_, deployer, user1, user2]) {
         await this.minter.toggle_approve_mint(this.proxy.address, {
           from: user2,
         });
-        const to = this.HMinter.address;
+        const to = this.HCurveDao.address;
         const data = abi.simpleEncode(
           'mint_for_many(address[],address)',
           [this.gauge0.address, this.gauge1.address],
