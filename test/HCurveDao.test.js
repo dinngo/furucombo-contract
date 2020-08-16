@@ -169,6 +169,7 @@ contract('Curve DAO', function([_, deployer, user1, user2]) {
         });
         await this.gauge0.deposit(gauge0Amount, user2, { from: user2 });
         await this.gauge1.deposit(gauge1Amount, user2, { from: user2 });
+        await increase(duration.days('30'));
         crvUser2 = await this.crv.balanceOf.call(user2);
       });
 
