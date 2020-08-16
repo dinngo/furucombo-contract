@@ -115,8 +115,8 @@ contract('Curve DAO', function([_, deployer, user1, user2]) {
 
       afterEach(async function() {
         const rest0 = await this.gauge0.balanceOf.call(user1);
-        await this.minter.mint(this.gauge0.address, { from: user1 });
         await this.gauge0.withdraw(rest0, { from: user1 });
+        await this.minter.mint(this.gauge0.address, { from: user1 });
         await this.token0.approve(this.gauge0.address, ether('0'), {
           from: user1,
         });
@@ -172,10 +172,10 @@ contract('Curve DAO', function([_, deployer, user1, user2]) {
       afterEach(async function() {
         const rest0 = await this.gauge0.balanceOf.call(user2);
         const rest1 = await this.gauge0.balanceOf.call(user2);
-        await this.minter.mint(this.gauge0.address, { from: user2 });
-        await this.minter.mint(this.gauge1.address, { from: user2 });
         await this.gauge0.withdraw(rest0, { from: user2 });
         await this.gauge1.withdraw(rest1, { from: user2 });
+        await this.minter.mint(this.gauge0.address, { from: user2 });
+        await this.minter.mint(this.gauge1.address, { from: user2 });
         await this.token0.approve(this.gauge0.address, ether('0'), {
           from: user2,
         });
