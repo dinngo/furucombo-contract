@@ -101,6 +101,8 @@ contract('Curve DAO', function([_, deployer, user1, user2]) {
   });
 
   describe('Claim CRV', function() {
+    let crvUser1;
+    let crvUser2;
     describe('from single gauge', function() {
       beforeEach(async function() {
         await this.token0.transfer(user1, gauge0Amount, {
@@ -111,6 +113,7 @@ contract('Curve DAO', function([_, deployer, user1, user2]) {
         });
         await this.gauge0.deposit(gauge0Amount, user1, { from: user1 });
         await increase(duration.days('30'));
+        crvUser1 = await this.crv.balanceOf.call(user1);
       });
 
       afterEach(async function() {
@@ -134,9 +137,8 @@ contract('Curve DAO', function([_, deployer, user1, user2]) {
           value: ether('0.1'),
         });
 
-        expect(await this.crv.balanceOf.call(user1)).to.be.bignumber.gte(
-          claimableToken
-        );
+        const crvUser1End = await this.crv.balanceOf.call(user1);
+        expect(crvUser1End.sub(crvUser1)).to.be.bignumber.gte(claimableToken);
       });
 
       it('without approval', async function() {
@@ -167,6 +169,7 @@ contract('Curve DAO', function([_, deployer, user1, user2]) {
         });
         await this.gauge0.deposit(gauge0Amount, user2, { from: user2 });
         await this.gauge1.deposit(gauge1Amount, user2, { from: user2 });
+        crvUser2 = await this.crv.balanceOf.call(user2);
       });
 
       afterEach(async function() {
@@ -200,7 +203,8 @@ contract('Curve DAO', function([_, deployer, user1, user2]) {
           value: ether('0.1'),
         });
 
-        expect(await this.crv.balanceOf.call(user2)).to.be.bignumber.gte(
+        const crvUser2End = await this.crv.balanceOf(user2);
+        expect(crvUser2End.sub(crvUser2)).to.be.bignumber.gte(
           claimableToken0.add(claimableToken1)
         );
       });
