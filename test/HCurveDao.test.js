@@ -79,6 +79,7 @@ contract('Curve DAO', function([_, deployer, user1, user2]) {
       expect(depositUser1End.sub(depositUser1)).to.be.bignumber.eq(
         gauge0Amount
       );
+      profileGas(receipt);
     });
 
     it('without approval', async function() {
@@ -139,6 +140,7 @@ contract('Curve DAO', function([_, deployer, user1, user2]) {
 
         const crvUser1End = await this.crv.balanceOf.call(user1);
         expect(crvUser1End.sub(crvUser1)).to.be.bignumber.gte(claimableToken);
+        profileGas(receipt);
       });
 
       it('without approval', async function() {
@@ -208,6 +210,7 @@ contract('Curve DAO', function([_, deployer, user1, user2]) {
         expect(crvUser2End.sub(crvUser2)).to.be.bignumber.gte(
           claimableToken0.add(claimableToken1)
         );
+        profileGas(receipt);
       });
 
       it('without approval', async function() {
