@@ -34,7 +34,7 @@ try {
     .toString()
     .trim();
 } catch (err) {
-  console.log(err);
+  console.log('No available .secret_beta');
 }
 
 module.exports = {
