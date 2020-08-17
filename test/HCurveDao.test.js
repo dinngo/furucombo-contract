@@ -79,6 +79,9 @@ contract('Curve DAO', function([_, deployer, user1, user2]) {
       expect(depositUser1End.sub(depositUser1)).to.be.bignumber.eq(
         gauge0Amount
       );
+      expect(
+        await this.token0.balanceOf.call(this.proxy.address)
+      ).to.be.bignumber.eq(ether('0'));
       profileGas(receipt);
     });
 
@@ -140,6 +143,12 @@ contract('Curve DAO', function([_, deployer, user1, user2]) {
 
         const crvUser1End = await this.crv.balanceOf.call(user1);
         expect(crvUser1End.sub(crvUser1)).to.be.bignumber.gte(claimableToken);
+        expect(
+          await this.token0.balanceOf.call(this.proxy.address)
+        ).to.be.bignumber.eq(ether('0'));
+        expect(
+          await this.crv.balanceOf.call(this.proxy.address)
+        ).to.be.bignumber.eq(ether('0'));
         profileGas(receipt);
       });
 
@@ -210,6 +219,15 @@ contract('Curve DAO', function([_, deployer, user1, user2]) {
         expect(crvUser2End.sub(crvUser2)).to.be.bignumber.gte(
           claimableToken0.add(claimableToken1)
         );
+        expect(
+          await this.token0.balanceOf.call(this.proxy.address)
+        ).to.be.bignumber.eq(ether('0'));
+        expect(
+          await this.token1.balanceOf.call(this.proxy.address)
+        ).to.be.bignumber.eq(ether('0'));
+        expect(
+          await this.crv.balanceOf.call(this.proxy.address)
+        ).to.be.bignumber.eq(ether('0'));
         profileGas(receipt);
       });
 
