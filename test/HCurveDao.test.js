@@ -204,7 +204,7 @@ contract('Curve DAO', function([_, deployer, user1, user2]) {
           from: user2,
         });
         const to = this.hcurvedao.address;
-        const data = abi.simpleEncode('mint_many(address[])', [
+        const data = abi.simpleEncode('mintMany(address[])', [
           this.gauge0.address,
           this.gauge1.address,
         ]);
@@ -233,7 +233,7 @@ contract('Curve DAO', function([_, deployer, user1, user2]) {
 
       it('without approval', async function() {
         const to = this.hcurvedao.address;
-        const data = abi.simpleEncode('mint_many(address[])', [
+        const data = abi.simpleEncode('mintMany(address[])', [
           this.gauge0.address,
           this.gauge1.address,
         ]);

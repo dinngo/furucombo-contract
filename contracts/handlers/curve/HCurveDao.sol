@@ -25,7 +25,7 @@ contract HCurveDao is HandlerBase {
         _updateToken(CRV_TOKEN);
     }
 
-    function mint_many(address[] calldata gauge_addrs) external payable {
+    function mintMany(address[] calldata gauge_addrs) external payable {
         IMinter minter = IMinter(CURVE_MINTER);
         address user = cache.getSender();
         require(
