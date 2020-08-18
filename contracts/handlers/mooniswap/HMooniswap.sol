@@ -17,7 +17,6 @@ contract HMooniswap is HandlerBase {
         uint256[] calldata amounts,
         uint256[] calldata minAmounts
     ) external payable returns (uint256 fairSupply) {
-        require(tokens[0] != tokens[1], "tokens can not be the same");
         require(tokens[0] < tokens[1], "wrong tokens order");
         require(amounts.length == tokens.length, "wrong amounts length");
 

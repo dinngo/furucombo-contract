@@ -226,10 +226,9 @@ contract('Mooniswap', function([_, deployer, user, someone]) {
     it('deposit the same tokens', async function() {
       // Prepare handler data
       const value = ether('0.1');
-      const tokenBAmount = ether('100');
       const to = this.HMooniswap.address;
       const tokens = [constants.ZERO_ADDRESS, constants.ZERO_ADDRESS];
-      const amounts = [value, tokenBAmount];
+      const amounts = [value, value];
       const minAmounts = [new BN('1'), new BN('1')];
       const data = abi.simpleEncode(
         'deposit(address[2],uint256[],uint256[])',
@@ -240,8 +239,11 @@ contract('Mooniswap', function([_, deployer, user, someone]) {
 
       // Execute handler
       await expectRevert(
-        this.proxy.execMock(to, data, { from: user, value: value }),
-        'tokens can not be the same'
+        this.proxy.execMock(to, data, {
+          from: user,
+          value: amounts[0].add(amounts[1]),
+        }),
+        'wrong tokens order'
       );
     });
 
@@ -273,7 +275,7 @@ contract('Mooniswap', function([_, deployer, user, someone]) {
       const tokenBAmount = ether('100');
       const to = this.HMooniswap.address;
       const tokens = [this.tokenB.address, constants.ZERO_ADDRESS];
-      const amounts = [value, new BN('1'), tokenBAmount];
+      const amounts = [tokenBAmount, value];
       const minAmounts = [new BN('1'), new BN('1')];
       const data = abi.simpleEncode(
         'deposit(address[2],uint256[],uint256[])',
@@ -284,7 +286,10 @@ contract('Mooniswap', function([_, deployer, user, someone]) {
 
       // Execute handler
       await expectRevert(
-        this.proxy.execMock(to, data, { from: user, value: value }),
+        this.proxy.execMock(to, data, {
+          from: user,
+          value: value,
+        }),
         'wrong tokens order'
       );
     });
@@ -399,7 +404,7 @@ contract('Mooniswap', function([_, deployer, user, someone]) {
       await this.MoonPoolBToken.transfer(this.proxy.address, amount, {
         from: user,
       });
-      await this.proxy.updateTokenMock(moonPoolAAddress);
+      await this.proxy.updateTokenMock(moonPoolBAddress);
 
       // Execute handler
       balanceUser.get();
