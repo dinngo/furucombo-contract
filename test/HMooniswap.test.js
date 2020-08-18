@@ -94,7 +94,7 @@ contract('Mooniswap', function([_, deployer, user, someone]) {
       const amounts = [value, tokenBAmount];
       const minAmounts = [new BN('1'), new BN('1')];
       const data = abi.simpleEncode(
-        'deposit(address[],uint256[],uint256[])',
+        'deposit(address[2],uint256[],uint256[])',
         tokens,
         amounts,
         minAmounts
@@ -157,7 +157,7 @@ contract('Mooniswap', function([_, deployer, user, someone]) {
       const amounts = [tokenAAmount, tokenBAmount];
       const minAmounts = [new BN('1'), new BN('1')];
       const data = abi.simpleEncode(
-        'deposit(address[],uint256[],uint256[])',
+        'deposit(address[2],uint256[],uint256[])',
         tokens,
         amounts,
         minAmounts
@@ -221,6 +221,50 @@ contract('Mooniswap', function([_, deployer, user, someone]) {
       );
 
       profileGas(receipt);
+    });
+
+    it('deposit the same tokens', async function() {
+      // Prepare handler data
+      const value = ether('0.1');
+      const tokenBAmount = ether('100');
+      const to = this.HMooniswap.address;
+      const tokens = [constants.ZERO_ADDRESS, constants.ZERO_ADDRESS];
+      const amounts = [value, tokenBAmount];
+      const minAmounts = [new BN('1'), new BN('1')];
+      const data = abi.simpleEncode(
+        'deposit(address[2],uint256[],uint256[])',
+        tokens,
+        amounts,
+        minAmounts
+      );
+
+      // Execute handler
+      await expectRevert(
+        this.proxy.execMock(to, data, { from: user, value: value }),
+        'tokens can not be the same'
+      );
+    });
+
+    it('deposit wrong tokens length', async function() {
+      // Prepare handler data
+      const value = ether('0.1');
+      const tokenBAmount = ether('100');
+      const to = this.HMooniswap.address;
+      const tokens = [constants.ZERO_ADDRESS, this.tokenB.address];
+      const amounts = [value, tokenBAmount, new BN('1')];
+      const minAmounts = [new BN('1'), new BN('1'), new BN('1')];
+      const data = abi.simpleEncode(
+        'deposit(address[2],uint256[],uint256[])',
+        tokens,
+        amounts,
+        minAmounts
+      );
+
+      // Execute handler
+      await expectRevert(
+        this.proxy.execMock(to, data, { from: user, value: value }),
+        'wrong amounts length'
+      );
     });
   });
 
