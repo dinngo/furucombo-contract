@@ -18,6 +18,7 @@ contract HMooniswap is HandlerBase {
         uint256[] calldata minAmounts
     ) external payable returns (uint256 fairSupply) {
         require(tokens[0] != tokens[1], "tokens can not be the same");
+        require(tokens[0] < tokens[1], "wrong tokens order");
         require(amounts.length == tokens.length, "wrong amounts length");
 
         IMooniFactory factory = IMooniFactory(MooniFactory);
@@ -25,24 +26,23 @@ contract HMooniswap is HandlerBase {
 
         // Approve token
         uint256 value = 0;
-        for (uint256 i = 0; i < tokens.length; i++) {
-            if (tokens[i] == address(0)) {
-                value = value + amounts[i];
-            } else {
-                IERC20(tokens[i]).safeApprove(address(mooniswap), amounts[i]);
-            }
+        if (tokens[0] == address(0)) {
+            value = amounts[0];
+        } else {
+            IERC20(tokens[0]).safeApprove(address(mooniswap), amounts[0]);
         }
+        IERC20(tokens[1]).safeApprove(address(mooniswap), amounts[1]);
 
         // Add liquidity
         fairSupply = mooniswap.deposit.value(value)(amounts, minAmounts);
 
         // Approve token 0
-        for (uint256 i = 0; i < tokens.length; i++) {
-            if (tokens[i] != address(0)) {
-                IERC20(tokens[i]).safeApprove(address(mooniswap), 0);
-            }
+        if (tokens[0] != address(0)) {
+            IERC20(tokens[0]).safeApprove(address(mooniswap), 0);
         }
+        IERC20(tokens[1]).safeApprove(address(mooniswap), 0);
 
+        // Update involved token
         _updateToken(address(mooniswap));
     }
 

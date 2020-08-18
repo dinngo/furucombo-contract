@@ -141,7 +141,7 @@ contract('Mooniswap', function([_, deployer, user, someone]) {
       );
       expect(await balanceUser.delta()).to.be.bignumber.lte(
         ether('0')
-          .sub(minAmounts[1])
+          .sub(minAmounts[0])
           .sub(new BN(receipt.receipt.gasUsed))
       );
 
@@ -264,6 +264,28 @@ contract('Mooniswap', function([_, deployer, user, someone]) {
       await expectRevert(
         this.proxy.execMock(to, data, { from: user, value: value }),
         'wrong amounts length'
+      );
+    });
+
+    it('deposit wrong tokens order', async function() {
+      // Prepare handler data
+      const value = ether('0.1');
+      const tokenBAmount = ether('100');
+      const to = this.HMooniswap.address;
+      const tokens = [this.tokenB.address, constants.ZERO_ADDRESS];
+      const amounts = [value, new BN('1'), tokenBAmount];
+      const minAmounts = [new BN('1'), new BN('1')];
+      const data = abi.simpleEncode(
+        'deposit(address[2],uint256[],uint256[])',
+        tokens,
+        amounts,
+        minAmounts
+      );
+
+      // Execute handler
+      await expectRevert(
+        this.proxy.execMock(to, data, { from: user, value: value }),
+        'wrong tokens order'
       );
     });
   });
