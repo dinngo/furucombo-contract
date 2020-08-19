@@ -45,7 +45,6 @@ contract('Mooniswap', function([_, deployer, user]) {
 
   before(async function() {
     this.registry = await Registry.new();
-    this.proxy = await Proxy.new(this.registry.address);
     this.hmooniswap = await HMooniswap.new();
     await this.registry.register(
       this.hmooniswap.address,
