@@ -747,7 +747,7 @@ contract('Maker', function([_, deployer, user1, user2, user3, user4]) {
 
       beforeEach(async function() {
         const etherAmount = ether('1');
-        const daiAmount = ether('30');
+        const daiAmount = ether('100');
         const new1 = abi.simpleEncode(
           'openLockETHAndDraw(address,address,address,address,bytes32,uint256)',
           MAKER_CDP_MANAGER,
@@ -830,7 +830,7 @@ contract('Maker', function([_, deployer, user1, user2, user3, user4]) {
 
       beforeEach(async function() {
         const tokenAmount = ether('1000');
-        const daiAmount = ether('30');
+        const daiAmount = ether('100');
         const new2 = abi.simpleEncode(
           'openLockGemAndDraw(address,address,address,address,bytes32,uint256,uint256,bool)',
           MAKER_CDP_MANAGER,

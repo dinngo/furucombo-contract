@@ -156,7 +156,7 @@ contract('Mooniswap', function([_, deployer, user]) {
       const amounts = [tokenAAmount, tokenBAmount];
       const minAmounts = [new BN('1'), new BN('1')];
       const data = abi.simpleEncode(
-        'deposit(address[2],uint256[],uint256[])',
+        'deposit(address[2],uint256[],uint256[]):(uint256)',
         tokens,
         amounts,
         minAmounts
@@ -230,7 +230,7 @@ contract('Mooniswap', function([_, deployer, user]) {
       const amounts = [value, value];
       const minAmounts = [new BN('1'), new BN('1')];
       const data = abi.simpleEncode(
-        'deposit(address[2],uint256[],uint256[])',
+        'deposit(address[2],uint256[],uint256[]):(uint256)',
         tokens,
         amounts,
         minAmounts
@@ -255,7 +255,7 @@ contract('Mooniswap', function([_, deployer, user]) {
       const amounts = [value, tokenBAmount, new BN('1')];
       const minAmounts = [new BN('1'), new BN('1'), new BN('1')];
       const data = abi.simpleEncode(
-        'deposit(address[2],uint256[],uint256[])',
+        'deposit(address[2],uint256[],uint256[]):(uint256)',
         tokens,
         amounts,
         minAmounts
@@ -277,7 +277,7 @@ contract('Mooniswap', function([_, deployer, user]) {
       const amounts = [tokenBAmount, value];
       const minAmounts = [new BN('1'), new BN('1')];
       const data = abi.simpleEncode(
-        'deposit(address[2],uint256[],uint256[])',
+        'deposit(address[2],uint256[],uint256[]):(uint256)',
         tokens,
         amounts,
         minAmounts
