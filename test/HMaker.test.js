@@ -134,7 +134,7 @@ contract('Maker', function([_, deployer, user1, user2, user3, user4]) {
           const to = this.hmaker.address;
           const value = ether('1');
           const ilkEth = utils.padRight(utils.asciiToHex('ETH-A'), 64);
-          const wadD = ether('20');
+          const wadD = ether('100');
           const data = abi.simpleEncode(
             'openLockETHAndDraw(uint256,address,address,bytes32,uint256)',
             value,
@@ -168,7 +168,7 @@ contract('Maker', function([_, deployer, user1, user2, user3, user4]) {
           const to = this.hmaker.address;
           const value = ether('1');
           const ilkEth = utils.padRight(utils.asciiToHex('ETH-A'), 64);
-          const wadD = ether('20');
+          const wadD = ether('100');
           const data = abi.simpleEncode(
             'openLockETHAndDraw(uint256,address,address,bytes32,uint256)',
             value,
@@ -218,7 +218,7 @@ contract('Maker', function([_, deployer, user1, user2, user3, user4]) {
           const to = this.hmaker.address;
           const ilkKnc = utils.padRight(utils.asciiToHex('KNC-A'), 64);
           const wadC = ether('200');
-          const wadD = ether('20');
+          const wadD = ether('100');
           const data = abi.simpleEncode(
             'openLockGemAndDraw(address,address,bytes32,uint256,uint256)',
             MAKER_MCD_JOIN_KNC_A,
@@ -256,7 +256,7 @@ contract('Maker', function([_, deployer, user1, user2, user3, user4]) {
           const to = this.hmaker.address;
           const ilkKnc = utils.padRight(utils.asciiToHex('KNC-A'), 64);
           const wadC = ether('200');
-          const wadD = ether('20');
+          const wadD = ether('100');
           const data = abi.simpleEncode(
             'openLockGemAndDraw(address,address,bytes32,uint256,uint256)',
             MAKER_MCD_JOIN_KNC_A,
@@ -599,7 +599,7 @@ contract('Maker', function([_, deployer, user1, user2, user3, user4]) {
       it('normal', async function() {
         await approveCdp(cdp, user1, this.dsproxy.address);
         const to = this.hmaker.address;
-        const wad = ether('20');
+        const wad = ether('100');
         const data = abi.simpleEncode(
           'draw(address,uint256,uint256)',
           MAKER_MCD_JOIN_DAI,
@@ -618,7 +618,7 @@ contract('Maker', function([_, deployer, user1, user2, user3, user4]) {
 
       it('without cdp approval', async function() {
         const to = this.hmaker.address;
-        const wad = ether('20');
+        const wad = ether('100');
         const data = abi.simpleEncode(
           'draw(address,uint256,uint256)',
           MAKER_MCD_JOIN_DAI,
@@ -635,7 +635,7 @@ contract('Maker', function([_, deployer, user1, user2, user3, user4]) {
       it('approved but triggered by unauthorized user', async function() {
         await approveCdp(cdp, user1, this.dsproxy.address);
         const to = this.hmaker.address;
-        const wad = ether('20');
+        const wad = ether('100');
         const data = abi.simpleEncode(
           'draw(address,uint256,uint256)',
           MAKER_MCD_JOIN_DAI,
@@ -686,7 +686,7 @@ contract('Maker', function([_, deployer, user1, user2, user3, user4]) {
       it('normal', async function() {
         await approveCdp(cdp, user2, this.dsproxy.address);
         const to = this.hmaker.address;
-        const wad = ether('20');
+        const wad = ether('100');
         const data = abi.simpleEncode(
           'draw(address,uint256,uint256)',
           MAKER_MCD_JOIN_DAI,
@@ -705,7 +705,7 @@ contract('Maker', function([_, deployer, user1, user2, user3, user4]) {
 
       it('without cdp approval', async function() {
         const to = this.hmaker.address;
-        const wad = ether('20');
+        const wad = ether('100');
         const data = abi.simpleEncode(
           'draw(address,uint256,uint256)',
           MAKER_MCD_JOIN_DAI,
@@ -722,7 +722,7 @@ contract('Maker', function([_, deployer, user1, user2, user3, user4]) {
       it('approved but triggered by unauthorized user', async function() {
         await approveCdp(cdp, user2, this.dsproxy.address);
         const to = this.hmaker.address;
-        const wad = ether('20');
+        const wad = ether('100');
         const data = abi.simpleEncode(
           'draw(address,uint256,uint256)',
           MAKER_MCD_JOIN_DAI,
@@ -747,7 +747,7 @@ contract('Maker', function([_, deployer, user1, user2, user3, user4]) {
 
       beforeEach(async function() {
         const etherAmount = ether('1');
-        const daiAmount = ether('30');
+        const daiAmount = ether('110');
         const new1 = abi.simpleEncode(
           'openLockETHAndDraw(address,address,address,address,bytes32,uint256)',
           MAKER_CDP_MANAGER,
@@ -803,7 +803,7 @@ contract('Maker', function([_, deployer, user1, user2, user3, user4]) {
           from: DAI_PROVIDER,
         });
         daiUser = await this.dai.balanceOf.call(user1);
-        await this.dai.transfer(this.proxy.address, ether('40'), {
+        await this.dai.transfer(this.proxy.address, ether('120'), {
           from: user1,
         });
         await this.proxy.updateTokenMock(this.dai.address);
@@ -830,7 +830,7 @@ contract('Maker', function([_, deployer, user1, user2, user3, user4]) {
 
       beforeEach(async function() {
         const tokenAmount = ether('1000');
-        const daiAmount = ether('30');
+        const daiAmount = ether('110');
         const new2 = abi.simpleEncode(
           'openLockGemAndDraw(address,address,address,address,bytes32,uint256,uint256,bool)',
           MAKER_CDP_MANAGER,
@@ -893,7 +893,7 @@ contract('Maker', function([_, deployer, user1, user2, user3, user4]) {
           from: DAI_PROVIDER,
         });
         daiUser = await this.dai.balanceOf.call(user2);
-        await this.dai.transfer(this.proxy.address, ether('40'), {
+        await this.dai.transfer(this.proxy.address, ether('120'), {
           from: user2,
         });
         await this.proxy.updateTokenMock(this.dai.address);
