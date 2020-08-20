@@ -143,7 +143,7 @@ contract('Maker', function([_, deployer, user]) {
           const to1 = this.hmaker.address;
           const value1 = ether('1');
           const ilkEth = utils.padRight(utils.asciiToHex('ETH-A'), 64);
-          const wadD = ether('20');
+          const wadD = ether('100');
           const data1 = abi.simpleEncode(
             'openLockETHAndDraw(uint256,address,address,bytes32,uint256)',
             value1,
@@ -152,7 +152,7 @@ contract('Maker', function([_, deployer, user]) {
             ilkEth,
             wadD
           );
-          const value2 = ether('20');
+          const value2 = ether('100');
           const to2 = this.huniswap.address;
           const data2 = abi.simpleEncode(
             'tokenToEthSwapInput(address,uint256,uint256):(uint256)',
