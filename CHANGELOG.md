@@ -6,6 +6,8 @@ All notable changes to this project will be documented in this file.
 
 ## [0.9.0] - 2020-08-21
 
+- Support Mooniswap deposit/withdraw liquidity function in `HMooniswap`.
+
 ### Added
 
 - Support Curve add liquidity in `HCurve`.
@@ -13,7 +15,6 @@ All notable changes to this project will be documented in this file.
 - Support WETH deposit and withdraw function in `HWeth`.
 - Support Curve deposit to gauges in `HCurveDao`.
 - Support Curve mint and mint_many CRV in `HCurveDao`.
-- Support Mooniswap deposit/withdraw liquidity function in `HMooniswap`.
 
 ## [0.8.0] - 2020-08-10
 
