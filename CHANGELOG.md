@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+## [0.9.0] - 2020-08-21
+
 ### Added
 
 - Support Curve add liquidity in `HCurve`.
