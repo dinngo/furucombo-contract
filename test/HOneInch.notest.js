@@ -24,7 +24,7 @@ const {
   KNC_TOKEN,
   KNC_SYMBOL,
 } = require('./utils/constants');
-const { resetAccount, profileGas } = require('./utils/utils');
+const { resetAccount, profileGas, evm_snapshot, evm_revert_and_snapshot } = require('./utils/utils');
 const fetch = require('node-fetch');
 const queryString = require('query-string');
 
@@ -34,6 +34,8 @@ const Proxy = artifacts.require('ProxyMock');
 const IToken = artifacts.require('IERC20');
 
 contract('OneInch Swap', function([_, deployer, user, someone]) {
+  let id;
+  
   before(async function() {
     this.registry = await Registry.new();
     this.honeinch = await HOneInch.new();
@@ -41,9 +43,11 @@ contract('OneInch Swap', function([_, deployer, user, someone]) {
       this.honeinch.address,
       utils.asciiToHex('OneInch')
     );
+    id = await evm_snapshot();
   });
 
   beforeEach(async function() {
+    id = await evm_revert_and_snapshot(id);
     await resetAccount(_);
     await resetAccount(user);
     this.proxy = await Proxy.new(this.registry.address);
