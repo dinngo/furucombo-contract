@@ -31,10 +31,10 @@ function profileGas(receipt) {
 }
 
 async function evm_snapshot(host = 'http://localhost:8545') {
-  const body = {"id":1337,"jsonrpc":"2.0","method":"evm_snapshot","params":[]};
+  const body = { id: 1337, jsonrpc: '2.0', method: 'evm_snapshot', params: [] };
   const response = await fetch(host, {
     method: 'post',
-    body:    JSON.stringify(body),
+    body: JSON.stringify(body),
     headers: { 'Content-Type': 'application/json' },
   });
   const data = await response.json();
@@ -43,19 +43,17 @@ async function evm_snapshot(host = 'http://localhost:8545') {
 }
 
 async function evm_revert(id = 1, host = 'http://localhost:8545') {
-  const body = {"id":1337,"jsonrpc":"2.0","method":"evm_revert","params":[id]};
+  const body = { id: 1337, jsonrpc: '2.0', method: 'evm_revert', params: [id] };
   await fetch(host, {
     method: 'post',
-    body:    JSON.stringify(body),
+    body: JSON.stringify(body),
     headers: { 'Content-Type': 'application/json' },
   });
 }
 
 async function evm_revert_and_snapshot(id = 1, host = 'http://localhost:8545') {
-  console.log(`>>>>>>>>>> revert id = ${id}`);
   await evm_revert(id, host);
   const new_id = await evm_snapshot(host);
-  console.log(`>>>>>>>>>> new id = ${new_id}`);
   return new_id;
 }
 

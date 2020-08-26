@@ -24,7 +24,12 @@ const {
   KNC_TOKEN,
   KNC_SYMBOL,
 } = require('./utils/constants');
-const { resetAccount, profileGas, evm_snapshot, evm_revert_and_snapshot } = require('./utils/utils');
+const {
+  resetAccount,
+  profileGas,
+  evm_snapshot,
+  evm_revert_and_snapshot,
+} = require('./utils/utils');
 const fetch = require('node-fetch');
 const queryString = require('query-string');
 
@@ -35,7 +40,7 @@ const IToken = artifacts.require('IERC20');
 
 contract('OneInch Swap', function([_, deployer, user, someone]) {
   let id;
-  
+
   before(async function() {
     this.registry = await Registry.new();
     this.honeinch = await HOneInch.new();
