@@ -86,13 +86,12 @@ contract('OneInch Swap', function([_, deployer, user, someone]) {
             slippage: slippage,
             disableEstimate: true,
             fromAddress: user,
-            disabledExchangesList: '0x Relays,Mooniswap',
+            disabledExchangesList: '0x Relays',
           },
         });
 
         const swapResponse = await fetch(swapReq);
         const swapData = await swapResponse.json();
-        console.log(`${JSON.stringify(swapData)}`);
         const data = swapData.data;
         const quote = swapData.toTokenAmount;
         const receipt = await this.proxy.execMock(to, data, {
@@ -131,13 +130,12 @@ contract('OneInch Swap', function([_, deployer, user, someone]) {
             slippage: slippage,
             disableEstimate: true,
             fromAddress: user,
-            disabledExchangesList: '0x Relays,Mooniswap',
+            disabledExchangesList: '0x Relays',
           },
         });
 
         const swapResponse = await fetch(swapReq);
         const swapData = await swapResponse.json();
-        console.log(`${JSON.stringify(swapData)}`);
         const data = swapData.data;
         const quote = swapData.toTokenAmount;
         const receipt = await this.proxy.execMock(to, data, {
@@ -198,7 +196,7 @@ contract('OneInch Swap', function([_, deployer, user, someone]) {
             slippage: slippage,
             disableEstimate: true,
             fromAddress: providerAddress,
-            disabledExchangesList: '0x Relays,Mooniswap,Uniswap V2',
+            disabledExchangesList: '0x Relays',
           },
         });
 
@@ -209,7 +207,6 @@ contract('OneInch Swap', function([_, deployer, user, someone]) {
 
         const swapResponse = await fetch(swapReq);
         const swapData = await swapResponse.json();
-        console.log(`${JSON.stringify(swapData)}`);
         const data = swapData.data;
         const quote = swapData.toTokenAmount;
         const receipt = await this.proxy.execMock(to, data, {
@@ -271,7 +268,7 @@ contract('OneInch Swap', function([_, deployer, user, someone]) {
             slippage: slippage,
             disableEstimate: true,
             fromAddress: providerAddress,
-            disabledExchangesList: '0x Relays,Mooniswap,Uniswap V2',
+            disabledExchangesList: '0x Relays',
           },
         });
 
@@ -282,7 +279,6 @@ contract('OneInch Swap', function([_, deployer, user, someone]) {
 
         const swapResponse = await fetch(swapReq);
         const swapData = await swapResponse.json();
-        console.log(`${JSON.stringify(swapData)}`);
         const data = swapData.data;
         const quote = swapData.toTokenAmount;
         const receipt = await this.proxy.execMock(to, data, {
