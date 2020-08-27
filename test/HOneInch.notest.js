@@ -91,7 +91,7 @@ contract('OneInch Swap', function([_, deployer, user, someone]) {
             slippage: slippage,
             disableEstimate: true,
             fromAddress: user,
-            disabledExchangesList: '0x Relays',
+            disabledExchangesList: '0x Relays,Mooniswap,Uniswap V2',
           },
         });
 
@@ -135,7 +135,7 @@ contract('OneInch Swap', function([_, deployer, user, someone]) {
             slippage: slippage,
             disableEstimate: true,
             fromAddress: user,
-            disabledExchangesList: '0x Relays',
+            disabledExchangesList: '0x Relays,Mooniswap,Uniswap V2',
           },
         });
 
@@ -201,7 +201,7 @@ contract('OneInch Swap', function([_, deployer, user, someone]) {
             slippage: slippage,
             disableEstimate: true,
             fromAddress: providerAddress,
-            disabledExchangesList: '0x Relays',
+            disabledExchangesList: '0x Relays,Mooniswap,Uniswap V2',
           },
         });
 
@@ -273,7 +273,7 @@ contract('OneInch Swap', function([_, deployer, user, someone]) {
             slippage: slippage,
             disableEstimate: true,
             fromAddress: providerAddress,
-            disabledExchangesList: '0x Relays',
+            disabledExchangesList: '0x Relays,Mooniswap,Uniswap V2',
           },
         });
 
