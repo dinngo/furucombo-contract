@@ -27,8 +27,8 @@ const {
 const {
   resetAccount,
   profileGas,
-  evm_snapshot,
-  evm_revert_and_snapshot,
+  evmSnapshot,
+  evmRevertAndSnapshot,
 } = require('./utils/utils');
 const fetch = require('node-fetch');
 const queryString = require('query-string');
@@ -48,11 +48,11 @@ contract('OneInch Swap', function([_, deployer, user, someone]) {
       this.honeinch.address,
       utils.asciiToHex('OneInch')
     );
-    id = await evm_snapshot();
+    id = await evmSnapshot();
   });
 
   beforeEach(async function() {
-    id = await evm_revert_and_snapshot(id);
+    id = await evmRevertAndSnapshot(id);
     await resetAccount(_);
     await resetAccount(user);
     this.proxy = await Proxy.new(this.registry.address);

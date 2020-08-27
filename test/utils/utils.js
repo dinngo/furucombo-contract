@@ -30,7 +30,7 @@ function profileGas(receipt) {
   });
 }
 
-async function evm_snapshot(host = 'http://localhost:8545') {
+async function evmSnapshot(host = 'http://localhost:8545') {
   const body = { id: 1337, jsonrpc: '2.0', method: 'evm_snapshot', params: [] };
   const response = await fetch(host, {
     method: 'post',
@@ -42,7 +42,7 @@ async function evm_snapshot(host = 'http://localhost:8545') {
   return data.result;
 }
 
-async function evm_revert(id = 1, host = 'http://localhost:8545') {
+async function evmRevert(id = 1, host = 'http://localhost:8545') {
   const body = { id: 1337, jsonrpc: '2.0', method: 'evm_revert', params: [id] };
   await fetch(host, {
     method: 'post',
@@ -51,16 +51,16 @@ async function evm_revert(id = 1, host = 'http://localhost:8545') {
   });
 }
 
-async function evm_revert_and_snapshot(id = 1, host = 'http://localhost:8545') {
-  await evm_revert(id, host);
-  const new_id = await evm_snapshot(host);
+async function evmRevertAndSnapshot(id = 1, host = 'http://localhost:8545') {
+  await evmRevert(id, host);
+  const new_id = await evmSnapshot(host);
   return new_id;
 }
 
 module.exports = {
   resetAccount,
   profileGas,
-  evm_snapshot,
-  evm_revert,
-  evm_revert_and_snapshot,
+  evmSnapshot,
+  evmRevert,
+  evmRevertAndSnapshot,
 };
