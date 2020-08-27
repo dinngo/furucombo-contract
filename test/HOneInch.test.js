@@ -24,7 +24,12 @@ const {
   KNC_TOKEN,
   KNC_SYMBOL,
 } = require('./utils/constants');
-const { resetAccount, profileGas } = require('./utils/utils');
+const {
+  resetAccount,
+  profileGas,
+  evmSnapshot,
+  evmRevertAndSnapshot,
+} = require('./utils/utils');
 const fetch = require('node-fetch');
 const queryString = require('query-string');
 
@@ -34,6 +39,8 @@ const Proxy = artifacts.require('ProxyMock');
 const IToken = artifacts.require('IERC20');
 
 contract('OneInch Swap', function([_, deployer, user, someone]) {
+  let id;
+
   before(async function() {
     this.registry = await Registry.new();
     this.honeinch = await HOneInch.new();
@@ -41,9 +48,11 @@ contract('OneInch Swap', function([_, deployer, user, someone]) {
       this.honeinch.address,
       utils.asciiToHex('OneInch')
     );
+    id = await evmSnapshot();
   });
 
   beforeEach(async function() {
+    id = await evmRevertAndSnapshot(id);
     await resetAccount(_);
     await resetAccount(user);
     this.proxy = await Proxy.new(this.registry.address);
@@ -71,7 +80,7 @@ contract('OneInch Swap', function([_, deployer, user, someone]) {
       it('normal', async function() {
         const value = ether('1');
         const to = this.honeinch.address;
-        const slippage = 99;
+        const slippage = 3;
 
         const swapReq = queryString.stringifyUrl({
           url: 'https://api.1inch.exchange/v1.1/swapQuote',
@@ -82,7 +91,7 @@ contract('OneInch Swap', function([_, deployer, user, someone]) {
             slippage: slippage,
             disableEstimate: true,
             fromAddress: user,
-            disabledExchangesList: '0x Relays',
+            disabledExchangesList: '0x Relays,Mooniswap,Uniswap V2',
           },
         });
 
@@ -96,7 +105,8 @@ contract('OneInch Swap', function([_, deployer, user, someone]) {
         });
 
         expect(await this.token.balanceOf.call(user)).to.be.bignumber.gte(
-          tokenUser.add(mulPercent(quote, 100 - slippage))
+          // sub 1 more percent to tolerate the slippage calculation difference with 1inch
+          tokenUser.add(mulPercent(quote, 100 - slippage - 1))
         );
         expect(
           await this.token.balanceOf.call(this.proxy.address)
@@ -114,7 +124,7 @@ contract('OneInch Swap', function([_, deployer, user, someone]) {
       it('msg.value greater than input ether amount', async function() {
         const value = ether('1');
         const to = this.honeinch.address;
-        const slippage = 99;
+        const slippage = 3;
 
         const swapReq = queryString.stringifyUrl({
           url: 'https://api.1inch.exchange/v1.1/swapQuote',
@@ -125,7 +135,7 @@ contract('OneInch Swap', function([_, deployer, user, someone]) {
             slippage: slippage,
             disableEstimate: true,
             fromAddress: user,
-            disabledExchangesList: '0x Relays',
+            disabledExchangesList: '0x Relays,Mooniswap,Uniswap V2',
           },
         });
 
@@ -139,7 +149,8 @@ contract('OneInch Swap', function([_, deployer, user, someone]) {
         });
 
         expect(await this.token.balanceOf.call(user)).to.be.bignumber.gte(
-          tokenUser.add(mulPercent(quote, 100 - slippage))
+          // sub 1 more percent to tolerate the slippage calculation difference with 1inch
+          tokenUser.add(mulPercent(quote, 100 - slippage - 1))
         );
         expect(
           await this.token.balanceOf.call(this.proxy.address)
@@ -177,9 +188,9 @@ contract('OneInch Swap', function([_, deployer, user, someone]) {
 
     describe('Exact input', function() {
       it('normal', async function() {
-        const value = ether('100');
+        const value = ether('50');
         const to = this.honeinch.address;
-        const slippage = 99;
+        const slippage = 3;
 
         const swapReq = queryString.stringifyUrl({
           url: 'https://api.1inch.exchange/v1.1/swapQuote',
@@ -190,7 +201,7 @@ contract('OneInch Swap', function([_, deployer, user, someone]) {
             slippage: slippage,
             disableEstimate: true,
             fromAddress: providerAddress,
-            disabledExchangesList: '0x Relays',
+            disabledExchangesList: '0x Relays,Mooniswap,Uniswap V2',
           },
         });
 
@@ -217,7 +228,8 @@ contract('OneInch Swap', function([_, deployer, user, someone]) {
         expect(await balanceProxy.get()).to.be.bignumber.eq(ether('0'));
         expect(await balanceUser.delta()).to.be.bignumber.gte(
           ether('0')
-            .add(mulPercent(quote, 100 - slippage))
+            // sub 1 more percent to tolerate the slippage calculation difference with 1inch
+            .add(mulPercent(quote, 100 - slippage - 1))
             .sub(new BN(receipt.receipt.gasUsed))
         );
 
@@ -229,8 +241,8 @@ contract('OneInch Swap', function([_, deployer, user, someone]) {
   describe('Token to Token', function() {
     const token0Address = DAI_TOKEN;
     const token0Symbol = DAI_SYMBOL;
-    const token1Address = KNC_TOKEN;
-    const token1Symbol = KNC_SYMBOL;
+    const token1Address = USDC_TOKEN;
+    const token1Symbol = USDC_SYMBOL;
     const providerAddress = DAI_PROVIDER;
 
     let token0User;
@@ -248,9 +260,9 @@ contract('OneInch Swap', function([_, deployer, user, someone]) {
 
     describe('Exact input', function() {
       it('normal', async function() {
-        const value = ether('10');
+        const value = ether('50');
         const to = this.honeinch.address;
-        const slippage = 99;
+        const slippage = 3;
 
         const swapReq = queryString.stringifyUrl({
           url: 'https://api.1inch.exchange/v1.1/swapQuote',
@@ -261,7 +273,7 @@ contract('OneInch Swap', function([_, deployer, user, someone]) {
             slippage: slippage,
             disableEstimate: true,
             fromAddress: providerAddress,
-            disabledExchangesList: '0x Relays',
+            disabledExchangesList: '0x Relays,Mooniswap,Uniswap V2',
           },
         });
 
@@ -289,7 +301,8 @@ contract('OneInch Swap', function([_, deployer, user, someone]) {
           await this.token1.balanceOf.call(this.proxy.address)
         ).to.be.bignumber.eq(ether('0'));
         expect(await this.token1.balanceOf.call(user)).to.be.bignumber.gte(
-          token1User.add(mulPercent(quote, 100 - slippage))
+          // sub 1 more percent to tolerate the slippage calculation difference with 1inch
+          token1User.add(mulPercent(quote, 100 - slippage - 1))
         );
 
         profileGas(receipt);
