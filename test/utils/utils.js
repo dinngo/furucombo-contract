@@ -38,11 +38,21 @@ async function evmSnapshot(host = 'http://localhost:8545') {
     headers: { 'Content-Type': 'application/json' },
   });
   const data = await response.json();
-  // return the snapshot id
-  return data.result;
+  if(data != null && data.result != null) {
+    // return the snapshot id
+    return data.result;
+  }
+  // snapshot failed
+  console.log(`evmSnapshot failed`);
+  return -1;
 }
 
 async function evmRevert(id = 1, host = 'http://localhost:8545') {
+  // ganache snapshot id must >= 1
+  if(id < 1) {
+    console.log(`evmRevert failed: unacceptable snapshot id`);
+    return -1;
+  } 
   const body = { id: 1337, jsonrpc: '2.0', method: 'evm_revert', params: [id] };
   await fetch(host, {
     method: 'post',
@@ -52,6 +62,11 @@ async function evmRevert(id = 1, host = 'http://localhost:8545') {
 }
 
 async function evmRevertAndSnapshot(id = 1, host = 'http://localhost:8545') {
+  // ganache snapshot id must >= 1
+  if(id < 1) {
+    console.log(`evmRevertAndSnapshot failed: unacceptable snapshot id`);
+    return -1;
+  } 
   await evmRevert(id, host);
   const new_id = await evmSnapshot(host);
   return new_id;
