@@ -38,7 +38,7 @@ const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('ProxyMock');
 const IToken = artifacts.require('IERC20');
 
-contract('OneInch Swap', function([_, deployer, user, someone]) {
+contract('OneInch Swap', function([_, user]) {
   let id;
 
   before(async function() {
@@ -48,14 +48,12 @@ contract('OneInch Swap', function([_, deployer, user, someone]) {
       this.honeinch.address,
       utils.asciiToHex('OneInch')
     );
+    this.proxy = await Proxy.new(this.registry.address);
     id = await evmSnapshot();
   });
 
   beforeEach(async function() {
     id = await evmRevertAndSnapshot(id);
-    await resetAccount(_);
-    await resetAccount(user);
-    this.proxy = await Proxy.new(this.registry.address);
   });
 
   describe('Ether to Token', function() {
