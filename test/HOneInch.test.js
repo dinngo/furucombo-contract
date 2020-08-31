@@ -24,12 +24,7 @@ const {
   KNC_TOKEN,
   KNC_SYMBOL,
 } = require('./utils/constants');
-const {
-  resetAccount,
-  profileGas,
-  evmSnapshot,
-  evmRevert,
-} = require('./utils/utils');
+const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
 const fetch = require('node-fetch');
 const queryString = require('query-string');
 

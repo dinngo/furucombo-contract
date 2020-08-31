@@ -22,7 +22,7 @@ const {
   DAI_PROVIDER,
   COMPOUND_COMPTROLLER,
 } = require('./utils/constants');
-const { resetAccount, profileGas } = require('./utils/utils');
+const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
 
 const HCEther = artifacts.require('HCEther');
 const Registry = artifacts.require('Registry');
@@ -32,7 +32,8 @@ const ICEther = artifacts.require('ICEther');
 const ICToken = artifacts.require('ICToken');
 const IComptroller = artifacts.require('IComptroller');
 
-contract('CEther', function([_, deployer, user]) {
+contract('CEther', function([_, user]) {
+  let id;
   let balanceUser;
   let balanceProxy;
   let cetherUser;
@@ -45,14 +46,17 @@ contract('CEther', function([_, deployer, user]) {
       utils.asciiToHex('CEther')
     );
     this.cether = await ICEther.at(CETHER);
+    this.proxy = await Proxy.new(this.registry.address);
   });
 
   beforeEach(async function() {
-    this.proxy = await Proxy.new(this.registry.address);
-    await resetAccount(_);
-    await resetAccount(user);
+    id = await evmSnapshot();
     balanceUser = await tracker(user);
     balanceProxy = await tracker(this.proxy.address);
+  });
+
+  afterEach(async function() {
+    await evmRevert(id);
   });
 
   describe('Mint', function() {
@@ -184,7 +188,7 @@ contract('CEther', function([_, deployer, user]) {
     before(async function() {
       this.comptroller = await IComptroller.at(COMPOUND_COMPTROLLER);
       this.cdai = await ICToken.at(CDAI);
-      await this.comptroller.enterMarkets([CDAI]);
+      await this.comptroller.enterMarkets([CDAI], { from: user });
       this.dai = await IToken.at(DAI_TOKEN);
     });
     beforeEach(async function() {

@@ -22,7 +22,7 @@ const {
   BALANCER_WETH_MKR_DAI,
   MAKER_PROXY_REGISTRY,
 } = require('./utils/constants');
-const { resetAccount, profileGas } = require('./utils/utils');
+const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
 
 const HBalancer = artifacts.require('HBalancer');
 const Registry = artifacts.require('Registry');
@@ -32,7 +32,7 @@ const IDSProxy = artifacts.require('IDSProxy');
 const IDSProxyRegistry = artifacts.require('IDSProxyRegistry');
 const IBPool = artifacts.require('IBPool');
 
-contract('Balancer', function([_, deployer, user]) {
+contract('Balancer', function([_, user]) {
   const tokenAAddress = WETH_TOKEN;
   const tokenBAddress = MKR_TOKEN;
   const tokenCAddress = DAI_TOKEN;
@@ -41,6 +41,7 @@ contract('Balancer', function([_, deployer, user]) {
   const tokenCProviderAddress = DAI_PROVIDER;
   const balancerPoolAddress = BALANCER_WETH_MKR_DAI;
 
+  let id;
   let tokenAUserAmount;
   let tokenBUserAmount;
   let tokenCUserAmount;
@@ -81,8 +82,8 @@ contract('Balancer', function([_, deployer, user]) {
   });
 
   beforeEach(async function() {
-    await resetAccount(_);
-    await resetAccount(user);
+    id = await evmSnapshot();
+    balanceUser = await tracker(user);
     balanceProxy = await tracker(this.proxy.address);
     tokenAUserAmount = await this.tokenA.balanceOf.call(user);
     tokenBUserAmount = await this.tokenB.balanceOf.call(user);
@@ -90,6 +91,10 @@ contract('Balancer', function([_, deployer, user]) {
     balancerPoolTokenUserAmount = await this.balancerPoolToken.balanceOf.call(
       user
     );
+  });
+
+  afterEach(async function() {
+    await evmRevert(id);
   });
 
   describe('Liquidity ', function() {

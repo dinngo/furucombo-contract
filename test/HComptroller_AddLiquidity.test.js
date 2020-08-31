@@ -22,9 +22,9 @@ const {
   UNISWAPV2_ETH_COMP,
   UNISWAPV2_ROUTER02,
 } = require('./utils/constants');
-const { resetAccount, profileGas } = require('./utils/utils');
+const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
 
-const HERC20TokenIn = artifacts.require('HERC20TokenIn');
+const HFunds = artifacts.require('HFunds');
 const HComptroller = artifacts.require('HComptroller');
 const HUniswapV2 = artifacts.require('HUniswapV2');
 const Registry = artifacts.require('Registry');
@@ -72,6 +72,7 @@ contract('Claim Comp and add liquidity', function([
 ]) {
   const tokenAddresses = [COMP_TOKEN];
   const values = [new BN('10000')];
+  let id;
   let balanceUser;
   let balanceProxy;
   let compUser;
@@ -90,8 +91,7 @@ contract('Claim Comp and add liquidity', function([
   });
 
   beforeEach(async function() {
-    await resetAccount(_);
-    await resetAccount(user);
+    id = await evmSnapshot();
     balanceUser = await tracker(user);
     balanceProxy = await tracker(this.proxy.address);
     await this.cether.mint({
@@ -102,12 +102,16 @@ contract('Claim Comp and add liquidity', function([
     compUser = await this.comp.balanceOf.call(user);
   });
 
+  afterEach(async function() {
+    await evmRevert(id);
+  });
+
   describe('UniswapV2 Liquidity', function() {
     const uniswapV2RouterAddress = UNISWAPV2_ROUTER02;
     before(async function() {
-      this.herc20tokenin = await HERC20TokenIn.new();
+      this.hfunds = await HFunds.new();
       await this.registry.register(
-        this.herc20tokenin.address,
+        this.hfunds.address,
         utils.asciiToHex('ERC20In')
       );
       this.huniswapv2 = await HUniswapV2.new();
@@ -125,7 +129,7 @@ contract('Claim Comp and add liquidity', function([
       });
       const to = [
         this.hcomptroller.address,
-        this.herc20tokenin.address,
+        this.hfunds.address,
         this.huniswapv2.address,
       ];
       const data = [

@@ -23,7 +23,7 @@ const {
   MOONISWAP_ETH_DAI,
   MOONISWAP_YFI_DAI,
 } = require('./utils/constants');
-const { resetAccount, profileGas } = require('./utils/utils');
+const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
 
 const HMooniswap = artifacts.require('HMooniswap');
 const Registry = artifacts.require('Registry');
@@ -31,7 +31,8 @@ const Proxy = artifacts.require('ProxyMock');
 const IToken = artifacts.require('IERC20');
 const IMoonPool = artifacts.require('IMooniswap');
 
-contract('Mooniswap', function([_, deployer, user]) {
+contract('Mooniswap', function([_, user]) {
+  let id;
   const tokenAAddress = YFI_TOKEN;
   const tokenBAddress = DAI_TOKEN;
   const tokenAProviderAddress = YFI_PROVIDER;
@@ -50,6 +51,7 @@ contract('Mooniswap', function([_, deployer, user]) {
       this.hmooniswap.address,
       utils.asciiToHex('Mooniswap')
     );
+    this.proxy = await Proxy.new(this.registry.address);
 
     // Setup and transfer token to user
     this.tokenA = await IToken.at(tokenAAddress);
@@ -62,16 +64,17 @@ contract('Mooniswap', function([_, deployer, user]) {
     await this.tokenA.transfer(user, ether('1000'), {
       from: tokenAProviderAddress,
     });
-
     await this.tokenB.transfer(user, ether('1000'), {
       from: tokenBProviderAddress,
     });
   });
 
   beforeEach(async function() {
-    await resetAccount(_);
-    await resetAccount(user);
-    this.proxy = await Proxy.new(this.registry.address);
+    id = await evmSnapshot();
+  });
+
+  afterEach(async function() {
+    await evmRevert(id);
   });
 
   describe('deposit', function() {

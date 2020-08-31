@@ -22,7 +22,7 @@ const {
   USDT_TOKEN,
   USDT_PROVIDER,
 } = require('./utils/constants');
-const { resetAccount, profileGas } = require('./utils/utils');
+const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
 
 const HERC20TokenIn = artifacts.require('OldHERC20TokenIn');
 const Registry = artifacts.require('Registry');
@@ -30,9 +30,10 @@ const Proxy = artifacts.require('ProxyMock');
 const IToken = artifacts.require('IERC20');
 const IUsdt = artifacts.require('IERC20Usdt');
 
-contract('Old ERC20TokenIn', function([_, deployer, user, someone]) {
+contract('Old ERC20TokenIn', function([_, user]) {
   const tokenAddresses = [DAI_TOKEN, BAT_TOKEN];
   const providerAddresses = [DAI_PROVIDER, BAT_PROVIDER];
+  let id;
 
   before(async function() {
     this.registry = await Registry.new();
@@ -45,8 +46,11 @@ contract('Old ERC20TokenIn', function([_, deployer, user, someone]) {
   });
 
   beforeEach(async function() {
-    await resetAccount(_);
-    await resetAccount(user);
+    id = await evmSnapshot();
+  });
+
+  afterEach(async function() {
+    await evmRevert(id);
   });
 
   describe('single token', function() {

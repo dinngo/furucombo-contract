@@ -20,7 +20,7 @@ const {
   BAT_TOKEN,
   ETH_PROVIDER,
 } = require('./utils/constants');
-const { resetAccount, profileGas } = require('./utils/utils');
+const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
 
 const HUniswap = artifacts.require('HUniswap');
 const Registry = artifacts.require('Registry');
@@ -28,7 +28,8 @@ const Proxy = artifacts.require('ProxyMock');
 const IToken = artifacts.require('IERC20');
 const IUniswapExchange = artifacts.require('IUniswapExchange');
 
-contract('Uniswap Swap', function([_, deployer, user, someone]) {
+contract('Uniswap Swap', function([_, user, someone]) {
+  let id;
   before(async function() {
     this.registry = await Registry.new();
     this.huniswap = await HUniswap.new();
@@ -36,12 +37,15 @@ contract('Uniswap Swap', function([_, deployer, user, someone]) {
       this.huniswap.address,
       utils.asciiToHex('Uniswap')
     );
+    this.proxy = await Proxy.new(this.registry.address);
   });
 
   beforeEach(async function() {
-    await resetAccount(_);
-    await resetAccount(user);
-    this.proxy = await Proxy.new(this.registry.address, { from: deployer });
+    id = await evmSnapshot();
+  });
+
+  afterEach(async function() {
+    await evmRevert(id);
   });
 
   describe('Ether to Token', function() {

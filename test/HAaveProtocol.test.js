@@ -24,7 +24,7 @@ const {
   AETHER,
   ADAI,
 } = require('./utils/constants');
-const { resetAccount, profileGas } = require('./utils/utils');
+const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
 
 const HAave = artifacts.require('HAaveProtocol');
 const Registry = artifacts.require('Registry');
@@ -34,11 +34,12 @@ const IAToken = artifacts.require('IAToken');
 const ILendingPool = artifacts.require('ILendingPool');
 const IProvider = artifacts.require('ILendingPoolAddressesProvider');
 
-contract('Aave', function([_, deployer, user]) {
+contract('Aave', function([_, user]) {
   const atokenAddress = ADAI;
   const tokenAddress = DAI_TOKEN;
   const providerAddress = DAI_PROVIDER;
 
+  let id;
   let balanceUser;
   let balanceProxy;
   let aetherUser;
@@ -63,10 +64,12 @@ contract('Aave', function([_, deployer, user]) {
   });
 
   beforeEach(async function() {
-    await resetAccount(_);
-    await resetAccount(user);
+    id = await evmSnapshot();
     balanceUser = await tracker(user);
-    balanceProxy = await tracker(this.proxy.address);
+  });
+
+  afterEach(async function() {
+    await evmRevert(id);
   });
 
   describe('Deposit', function() {

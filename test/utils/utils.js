@@ -2,23 +2,6 @@ const { BN, ether } = require('@openzeppelin/test-helpers');
 const fetch = require('node-fetch');
 const { ETH_PROVIDER } = require('./constants');
 
-async function resetAccount(account) {
-  const d = ether('100').sub(new BN(await web3.eth.getBalance(account)));
-  if (d.isZero()) return;
-  else if (d.isNeg())
-    await web3.eth.sendTransaction({
-      from: account,
-      to: ETH_PROVIDER,
-      value: d.neg(),
-    });
-  else
-    await web3.eth.sendTransaction({
-      from: ETH_PROVIDER,
-      to: account,
-      value: d,
-    });
-}
-
 function profileGas(receipt) {
   receipt.logs.forEach(element => {
     if (element.event === 'DeltaGas')
@@ -84,7 +67,6 @@ async function evmRevertAndSnapshot(id = 1, host = 'http://localhost:8545') {
 }
 
 module.exports = {
-  resetAccount,
   profileGas,
   evmSnapshot,
   evmRevert,

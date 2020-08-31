@@ -22,7 +22,7 @@ const {
   UNISWAPV2_BAT_DAI,
   UNISWAPV2_ROUTER02,
 } = require('./utils/constants');
-const { resetAccount, profileGas } = require('./utils/utils');
+const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
 
 const HUniswapV2 = artifacts.require('HUniswapV2');
 const Registry = artifacts.require('Registry');
@@ -30,7 +30,8 @@ const Proxy = artifacts.require('ProxyMock');
 const IToken = artifacts.require('IERC20');
 const UniswapV2Router02 = artifacts.require('IUniswapV2Router02');
 
-contract('UniswapV2 Liquidity', function([_, deployer, user]) {
+contract('UniswapV2 Liquidity', function([_, user]) {
+  let id;
   const tokenAAddress = DAI_TOKEN;
   const tokenBAddress = BAT_TOKEN;
   const tokenAProviderAddress = DAI_PROVIDER;
@@ -66,14 +67,17 @@ contract('UniswapV2 Liquidity', function([_, deployer, user]) {
   });
 
   beforeEach(async function() {
-    await resetAccount(_);
-    await resetAccount(user);
+    id = await evmSnapshot();
     balanceUser = await tracker(user);
     balanceProxy = await tracker(this.proxy.address);
     tokenAUserAmount = await this.tokenA.balanceOf.call(user);
     tokenBUserAmount = await this.tokenB.balanceOf.call(user);
     uniTokenETHUserAmount = await this.uniTokenETH.balanceOf.call(user);
     uniTokenTokenUserAmount = await this.uniTokenToken.balanceOf.call(user);
+  });
+
+  afterEach(async function() {
+    await evmRevert(id);
   });
 
   describe('Add ETH', function() {

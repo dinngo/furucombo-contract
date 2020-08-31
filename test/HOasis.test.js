@@ -23,7 +23,7 @@ const {
   OASIS_DIRECT_PROXY,
   MAKER_OTC,
 } = require('./utils/constants');
-const { resetAccount, profileGas } = require('./utils/utils');
+const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
 
 const HOasis = artifacts.require('HOasis');
 const Registry = artifacts.require('Registry');
@@ -33,9 +33,11 @@ const IOasisDirectProxy = artifacts.require('IOasisDirectProxy');
 const IMakerOtc = artifacts.require('IMakerOtc');
 
 // (if tests keep being reverted, check if there are enough liquidity for the tokens)
-contract('Oasis Swap', function([_, deployer, user, someone]) {
+contract('Oasis Swap', function([_, user, someone]) {
+  let id;
   before(async function() {
     this.registry = await Registry.new();
+    this.proxy = await Proxy.new(this.registry.address);
     this.hoasis = await HOasis.new();
     await this.registry.register(
       this.hoasis.address,
@@ -45,9 +47,11 @@ contract('Oasis Swap', function([_, deployer, user, someone]) {
   });
 
   beforeEach(async function() {
-    await resetAccount(_);
-    await resetAccount(user);
-    this.proxy = await Proxy.new(this.registry.address, { from: deployer });
+    id = await evmSnapshot();
+  });
+
+  afterEach(async function() {
+    await evmRevert(id);
   });
 
   describe('Ether to Token', function() {

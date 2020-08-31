@@ -30,7 +30,7 @@ const {
   MAKER_MCD_JOIN_ETH_A,
   MAKER_MCD_JOIN_DAI,
 } = require('./utils/constants');
-const { resetAccount } = require('./utils/utils');
+const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
 
 const HAave = artifacts.require('HAaveProtocol');
 const HMaker = artifacts.require('HMaker');
@@ -77,7 +77,8 @@ async function approveCdp(cdp, owner, user) {
   await proxy.execute(MAKER_PROXY_ACTIONS, data, { from: owner });
 }
 
-contract('Aave flashloan', function([_, deployer, user]) {
+contract('Aave flashloan', function([_, user]) {
+  let id;
   let balanceUser;
   let balanceProxy;
 
@@ -113,10 +114,13 @@ contract('Aave flashloan', function([_, deployer, user]) {
   });
 
   beforeEach(async function() {
-    await resetAccount(_);
-    await resetAccount(user);
+    id = await evmSnapshot();
     balanceUser = await tracker(user);
     balanceProxy = await tracker(this.proxy.address);
+  });
+
+  afterEach(async function() {
+    await evmRevert(id);
   });
 
   describe('Maker', function() {

@@ -23,7 +23,7 @@ const {
   BAT_TOKEN,
   AAVEPROTOCOL_PROVIDER,
 } = require('./utils/constants');
-const { resetAccount } = require('./utils/utils');
+const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
 
 const HAave = artifacts.require('HAaveProtocol');
 const HMock = artifacts.require('HMock');
@@ -35,7 +35,8 @@ const ILendingPool = artifacts.require('ILendingPool');
 const IProvider = artifacts.require('ILendingPoolAddressesProvider');
 const IUniswapExchange = artifacts.require('IUniswapExchange');
 
-contract('Aave flashloan', function([_, deployer, user]) {
+contract('Aave flashloan', function([_, user]) {
+  let id;
   let balanceUser;
 
   before(async function() {
@@ -56,9 +57,12 @@ contract('Aave flashloan', function([_, deployer, user]) {
   });
 
   beforeEach(async function() {
-    await resetAccount(_);
-    await resetAccount(user);
+    id = await evmSnapshot();
     balanceUser = await tracker(user);
+  });
+
+  afterEach(async function() {
+    await evmRevert(id);
   });
 
   describe('Swap and Add liquidity', function() {
@@ -66,7 +70,7 @@ contract('Aave flashloan', function([_, deployer, user]) {
     const uniswapAddress = DAI_UNISWAP;
 
     before(async function() {
-      this.huniswap = await HUniswap.new({ from: deployer });
+      this.huniswap = await HUniswap.new();
       await this.registry.register(
         this.huniswap.address,
         utils.asciiToHex('Uniswap')

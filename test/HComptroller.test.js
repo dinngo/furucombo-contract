@@ -20,7 +20,7 @@ const {
   COMPOUND_COMPTROLLER,
   COMPOUND_LENS,
 } = require('./utils/constants');
-const { resetAccount, profileGas } = require('./utils/utils');
+const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
 
 const HComptroller = artifacts.require('HComptroller');
 const Registry = artifacts.require('Registry');
@@ -60,7 +60,8 @@ async function getEstimatedComp(account) {
   return d['3'];
 }
 
-contract('Comptroller', function([_, deployer, user, someone]) {
+contract('Comptroller', function([_, user, someone]) {
+  let id;
   let balanceUser;
   let balanceProxy;
   let compUser;
@@ -79,10 +80,13 @@ contract('Comptroller', function([_, deployer, user, someone]) {
   });
 
   beforeEach(async function() {
-    await resetAccount(_);
-    await resetAccount(user);
+    id = await evmSnapshot();
     balanceUser = await tracker(user);
     balanceProxy = await tracker(this.proxy.address);
+  });
+
+  afterEach(async function() {
+    await evmRevert(id);
   });
 
   describe('Claim COMP', function() {

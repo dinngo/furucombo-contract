@@ -20,7 +20,7 @@ const {
   DAI_PROVIDER,
   KYBERNETWORK_PROXY,
 } = require('./utils/constants');
-const { resetAccount, profileGas } = require('./utils/utils');
+const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
 
 const HKyberNetwork = artifacts.require('HKyberNetwork');
 const Registry = artifacts.require('Registry');
@@ -28,7 +28,8 @@ const Proxy = artifacts.require('ProxyMock');
 const IToken = artifacts.require('IERC20');
 const IKyberNetworkProxy = artifacts.require('IKyberNetworkProxy');
 
-contract('KyberNetwork Swap', function([_, deployer, user, someone]) {
+contract('KyberNetwork Swap', function([_, user]) {
+  let id;
   const tokenAddress = DAI_TOKEN;
   const providerAddress = DAI_PROVIDER;
 
@@ -49,11 +50,14 @@ contract('KyberNetwork Swap', function([_, deployer, user, someone]) {
   });
 
   beforeEach(async function() {
-    await resetAccount(_);
-    await resetAccount(user);
+    id = await evmSnapshot();
     balanceUser = await tracker(user);
     balanceProxy = await tracker(this.proxy.address);
     tokenUser = await this.token.balanceOf.call(user);
+  });
+
+  afterEach(async function() {
+    await evmRevert(id);
   });
 
   describe('Ether to Token', function() {

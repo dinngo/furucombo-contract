@@ -15,7 +15,7 @@ const utils = web3.utils;
 const { expect } = require('chai');
 
 const { DAI_TOKEN, DAI_UNISWAP, CDAI } = require('./utils/constants');
-const { resetAccount } = require('./utils/utils');
+const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
 
 const HUniswap = artifacts.require('HUniswap');
 const HCToken = artifacts.require('HCToken');
@@ -25,10 +25,11 @@ const IToken = artifacts.require('IERC20');
 const ICToken = artifacts.require('ICToken');
 const IUniswapExchange = artifacts.require('IUniswapExchange');
 
-contract('SwapIntegration', function([_, deployer, user1]) {
+contract('SwapIntegration', function([_, user]) {
   const tokenAddress = DAI_TOKEN;
 
-  let balanceUser1;
+  let id;
+  let balanceUser;
   let balanceProxy;
 
   before(async function() {
@@ -37,17 +38,20 @@ contract('SwapIntegration', function([_, deployer, user1]) {
   });
 
   beforeEach(async function() {
-    await resetAccount(_);
-    await resetAccount(user1);
-    balanceUser1 = await tracker(user1);
+    id = await evmSnapshot();
+    balanceUser = await tracker(user);
     balanceProxy = await tracker(this.proxy.address);
+  });
+
+  afterEach(async function() {
+    await evmRevert(id);
   });
 
   describe('Uniswap Swap', function() {
     const uniswapAddress = DAI_UNISWAP;
 
     before(async function() {
-      this.huniswap = await HUniswap.new({ from: deployer });
+      this.huniswap = await HUniswap.new();
       await this.registry.register(
         this.huniswap.address,
         utils.asciiToHex('Uniswap')
@@ -63,7 +67,7 @@ contract('SwapIntegration', function([_, deployer, user1]) {
         const maxToken = await this.swap.ethToTokenSwapInput.call(
           new BN('1'),
           deadline,
-          { from: user1, value: value[0] }
+          { from: user, value: value[0] }
         );
         const to = [this.huniswap.address, this.huniswap.address];
         const data = [
@@ -81,62 +85,62 @@ contract('SwapIntegration', function([_, deployer, user1]) {
           ),
         ];
         const receipt = await this.proxy.batchExec(to, data, {
-          from: user1,
+          from: user,
           value: ether('1'),
         });
-        expect(await balanceUser1.delta()).to.be.bignumber.eq(
+        expect(await balanceUser.delta()).to.be.bignumber.eq(
           ether('0')
             .sub(value[0])
             .sub(value[1])
             .sub(new BN(receipt.receipt.gasUsed))
         );
-        expect(await this.swap.balanceOf.call(user1)).to.be.bignumber.gt(
+        expect(await this.swap.balanceOf.call(user)).to.be.bignumber.gt(
           ether('0')
         );
       });
     });
 
-    /* Needs to deal with the re-enter issue
-        describe('Compound Token Lending', function () {
-            const ctokenAddress = CDAI;
+    describe('Compound Token Lending', function() {
+      const ctokenAddress = CDAI;
 
-            before(async function () {
-                this.hctoken = await HCToken.new();
-                await this.registry.register(this.hctoken.address, utils.asciiToHex("CToken"));
-                this.ctoken = await ICToken.at(ctokenAddress);
-            });
+      before(async function() {
+        this.hctoken = await HCToken.new();
+        await this.registry.register(
+          this.hctoken.address,
+          utils.asciiToHex('CToken')
+        );
+        this.ctoken = await ICToken.at(ctokenAddress);
+      });
 
-            it('normal', async function () {
-                let value = [
-                    ether('0.1'),
-                    ether('0'),
-                ];
-                const deadline = (await latest()).add(new BN('100'));
-                value[1] = await this.swap.ethToTokenSwapInput.call(
-                    new BN('1'),
-                    deadline,
-                    { from: user1, value: value[0] }
-                );
-                const to = [
-                    this.huniswap.address,
-                    this.hctoken.address,
-                ];
-                const data = [
-                    abi.simpleEncode(
-                        'ethToTokenSwapInput(uint256,address,uint256):(uint256)',
-                        value[0],
-                        tokenAddress,
-                        new BN('1')
-                    ),
-                    abi.simpleEncode('mint(address,uint256)', ctokenAddress, value[1]),
-                ];
-                const rate = await this.ctoken.exchangeRateStored.call();
-                const result = value[1].mul(ether('1')).div(rate);
-                const receipt = await this.proxy.batchExec(to, data, { from: user1, value: ether('1') });
-                const ctokenUser1 = await this.ctoken.balanceOf.call(user1);
-                expect(ctokenUser1.mul(new BN('1000')).divRound(result)).to.be.bignumber.eq(new BN('1000'));
-            });
+      it('normal', async function() {
+        let value = [ether('0.1'), ether('0')];
+        const deadline = (await latest()).add(new BN('100'));
+        value[1] = await this.swap.ethToTokenSwapInput.call(
+          new BN('1'),
+          deadline,
+          { from: user, value: value[0] }
+        );
+        const to = [this.huniswap.address, this.hctoken.address];
+        const data = [
+          abi.simpleEncode(
+            'ethToTokenSwapInput(uint256,address,uint256):(uint256)',
+            value[0],
+            tokenAddress,
+            new BN('1')
+          ),
+          abi.simpleEncode('mint(address,uint256)', ctokenAddress, value[1]),
+        ];
+        const rate = await this.ctoken.exchangeRateStored.call();
+        const result = value[1].mul(ether('1')).div(rate);
+        const receipt = await this.proxy.batchExec(to, data, {
+          from: user,
+          value: ether('1'),
         });
-*/
+        const ctokenUser = await this.ctoken.balanceOf.call(user);
+        expect(
+          ctokenUser.mul(new BN('1000')).divRound(result)
+        ).to.be.bignumber.eq(new BN('1000'));
+      });
+    });
   });
 });

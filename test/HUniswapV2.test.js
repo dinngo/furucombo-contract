@@ -20,7 +20,7 @@ const {
   WETH_TOKEN,
   UNISWAPV2_ROUTER02,
 } = require('./utils/constants');
-const { evmSnapshot, evmRevert, profileGas } = require('./utils/utils');
+const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
 
 const HUniswapV2 = artifacts.require('HUniswapV2');
 const Registry = artifacts.require('Registry');
@@ -28,7 +28,7 @@ const Proxy = artifacts.require('ProxyMock');
 const IToken = artifacts.require('IERC20');
 const IUniswapV2Router = artifacts.require('IUniswapV2Router02');
 
-contract('UniswapV2 Swap', function([_, deployer, user, someone]) {
+contract('UniswapV2 Swap', function([_, user, someone]) {
   let id;
 
   before(async function() {
