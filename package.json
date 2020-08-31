@@ -26,14 +26,14 @@
     "chai-bignumber": "^3.0.0",
     "ethereumjs-abi": "^0.6.8",
     "ethereumjs-util": "^6.2.0",
-    "ganache-cli": "^6.9.1",
+    "ganache-cli": "^6.10.2-forking.0",
     "husky": "^4.2.5",
     "node-fetch": "^2.6.0",
     "prettier": "^1.19.1",
     "prettier-plugin-solidity": "^1.0.0-alpha.49",
     "query-string": "^6.13.1",
     "solhint": "^3.0.0",
-    "truffle": "^5.1.16",
+    "truffle": "^5.1.42",
     "web3-provider-engine": "^15.0.12"
   },
   "dependencies": {
