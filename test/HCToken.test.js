@@ -34,25 +34,25 @@ const IComptroller = artifacts.require('IComptroller');
 
 contract('CToken', function([_, user]) {
   let id;
-  const ctokenAddress = CDAI;
+  const cTokenAddress = CDAI;
   const tokenAddress = DAI_TOKEN;
   const providerAddress = DAI_PROVIDER;
 
   let balanceUser;
   let balanceProxy;
   let tokenUser;
-  let ctokenUser;
+  let cTokenUser;
 
   before(async function() {
     this.registry = await Registry.new();
     this.proxy = await Proxy.new(this.registry.address);
-    this.hctoken = await HCToken.new();
+    this.hCToken = await HCToken.new();
     await this.registry.register(
-      this.hctoken.address,
+      this.hCToken.address,
       utils.asciiToHex('CToken')
     );
     this.token = await IToken.at(tokenAddress);
-    this.ctoken = await ICToken.at(ctokenAddress);
+    this.cToken = await ICToken.at(cTokenAddress);
   });
 
   beforeEach(async function() {
@@ -68,10 +68,10 @@ contract('CToken', function([_, user]) {
   describe('Mint', function() {
     it('normal', async function() {
       const value = ether('10');
-      const to = this.hctoken.address;
+      const to = this.hCToken.address;
       const data = abi.simpleEncode(
         'mint(address,uint256)',
-        ctokenAddress,
+        cTokenAddress,
         value
       );
       await this.token.transfer(this.proxy.address, value, {
@@ -79,12 +79,12 @@ contract('CToken', function([_, user]) {
       });
       await this.proxy.updateTokenMock(this.token.address);
 
-      const rate = await this.ctoken.exchangeRateStored.call();
+      const rate = await this.cToken.exchangeRateStored.call();
       const result = value.mul(ether('1')).div(rate);
       const receipt = await this.proxy.execMock(to, data, { from: user });
-      ctokenUser = await this.ctoken.balanceOf.call(user);
+      cTokenUser = await this.cToken.balanceOf.call(user);
       expect(
-        ctokenUser.mul(new BN('1000')).divRound(result)
+        cTokenUser.mul(new BN('1000')).divRound(result)
       ).to.be.bignumber.eq(new BN('1000'));
       expect(await balanceUser.delta()).to.be.bignumber.eq(
         ether('0').sub(new BN(receipt.receipt.gasUsed))
@@ -94,10 +94,10 @@ contract('CToken', function([_, user]) {
 
     it('revert', async function() {
       const value = ether('10');
-      const to = this.hctoken.address;
+      const to = this.hCToken.address;
       const data = abi.simpleEncode(
         'mint(address,uint256)',
-        ctokenAddress,
+        cTokenAddress,
         value
       );
       await this.proxy.updateTokenMock(this.token.address);
@@ -111,30 +111,30 @@ contract('CToken', function([_, user]) {
   describe('Redeem', function() {
     beforeEach(async function() {
       await this.token.transfer(user, ether('1'), { from: providerAddress });
-      await this.token.approve(this.ctoken.address, ether('1'), { from: user });
-      await this.ctoken.mint(ether('1'), { from: user });
+      await this.token.approve(this.cToken.address, ether('1'), { from: user });
+      await this.cToken.mint(ether('1'), { from: user });
       tokenUser = await this.token.balanceOf.call(user);
-      ctokenUser = await this.ctoken.balanceOf.call(user);
+      cTokenUser = await this.cToken.balanceOf.call(user);
     });
 
     it('normal', async function() {
-      const value = ctokenUser;
-      const to = this.hctoken.address;
+      const value = cTokenUser;
+      const to = this.hCToken.address;
       const data = abi.simpleEncode(
         'redeem(address,uint256)',
-        this.ctoken.address,
+        this.cToken.address,
         value
       );
-      const rate = await this.ctoken.exchangeRateStored.call();
+      const rate = await this.cToken.exchangeRateStored.call();
       const result = value.mul(rate).div(ether('1'));
-      await this.ctoken.transfer(this.proxy.address, value, { from: user });
-      await this.proxy.updateTokenMock(this.ctoken.address);
-      ctokenUser = await this.ctoken.balanceOf.call(user);
+      await this.cToken.transfer(this.proxy.address, value, { from: user });
+      await this.proxy.updateTokenMock(this.cToken.address);
+      cTokenUser = await this.cToken.balanceOf.call(user);
       const receipt = await this.proxy.execMock(to, data, {
         from: user,
         value: ether('0.1'),
       });
-      expect(await this.ctoken.balanceOf.call(user)).to.be.bignumber.eq(
+      expect(await this.cToken.balanceOf.call(user)).to.be.bignumber.eq(
         ether('0')
       );
       expect(
@@ -147,14 +147,14 @@ contract('CToken', function([_, user]) {
     });
 
     it('revert', async function() {
-      const value = ctokenUser;
-      const to = this.hctoken.address;
+      const value = cTokenUser;
+      const to = this.hCToken.address;
       const data = abi.simpleEncode(
         'redeem(address,uint256)',
-        this.ctoken.address,
+        this.cToken.address,
         value
       );
-      await this.proxy.updateTokenMock(this.ctoken.address);
+      await this.proxy.updateTokenMock(this.cToken.address);
       await expectRevert.unspecified(
         this.proxy.execMock(to, data, {
           from: user,
@@ -168,29 +168,29 @@ contract('CToken', function([_, user]) {
   describe('Redeem Underlying', function() {
     beforeEach(async function() {
       await this.token.transfer(user, ether('100'), { from: providerAddress });
-      await this.token.approve(this.ctoken.address, ether('100'), {
+      await this.token.approve(this.cToken.address, ether('100'), {
         from: user,
       });
-      await this.ctoken.mint(ether('100'), { from: user });
+      await this.cToken.mint(ether('100'), { from: user });
       tokenUser = await this.token.balanceOf.call(user);
-      ctokenUser = await this.ctoken.balanceOf.call(user);
+      cTokenUser = await this.cToken.balanceOf.call(user);
     });
 
     it('normal', async function() {
       const value = ether('100');
-      const to = this.hctoken.address;
+      const to = this.hCToken.address;
       const data = abi.simpleEncode(
         'redeemUnderlying(address,uint256)',
-        this.ctoken.address,
+        this.cToken.address,
         value
       );
-      const rate = await this.ctoken.exchangeRateStored.call();
+      const rate = await this.cToken.exchangeRateStored.call();
       const result = value.mul(ether('1')).div(rate);
-      await this.ctoken.transfer(this.proxy.address, ctokenUser, {
+      await this.cToken.transfer(this.proxy.address, cTokenUser, {
         from: user,
       });
-      await this.proxy.updateTokenMock(this.ctoken.address);
-      ctokenUser = await this.ctoken.balanceOf.call(user);
+      await this.proxy.updateTokenMock(this.cToken.address);
+      cTokenUser = await this.cToken.balanceOf.call(user);
       const receipt = await this.proxy.execMock(to, data, {
         from: user,
         value: ether('0.1'),
@@ -200,7 +200,7 @@ contract('CToken', function([_, user]) {
       ).to.be.bignumber.eq(value);
       /* Fix this
       expect(
-        (await this.ctoken.balanceOf.call(user)).sub(ctokenUser.sub(result))
+        (await this.cToken.balanceOf.call(user)).sub(cTokenUser.sub(result))
       ).to.be.bignumber.lt(new BN('1000'));
       */
       profileGas(receipt);
@@ -208,14 +208,14 @@ contract('CToken', function([_, user]) {
 
     it('revert', async function() {
       const value = ether('100');
-      const to = this.hctoken.address;
+      const to = this.hCToken.address;
       const data = abi.simpleEncode(
         'redeemUnderlying(address,uint256)',
-        this.ctoken.address,
+        this.cToken.address,
         value
       );
-      await this.proxy.updateTokenMock(this.ctoken.address);
-      // ctokenUser = await this.ctoken.balanceOf.call(user);
+      await this.proxy.updateTokenMock(this.cToken.address);
+      // cTokenUser = await this.cToken.balanceOf.call(user);
       await expectRevert.unspecified(
         this.proxy.execMock(to, data, {
           from: user,
@@ -234,15 +234,15 @@ contract('CToken', function([_, user]) {
     });
     beforeEach(async function() {
       await this.cether.mint({ from: user, value: ether('1') });
-      await this.ctoken.borrow(ether('1'), { from: user });
+      await this.cToken.borrow(ether('1'), { from: user });
     });
 
     it('normal', async function() {
       const value = MAX_UINT256;
-      const to = this.hctoken.address;
+      const to = this.hCToken.address;
       const data = abi.simpleEncode(
         'repayBorrowBehalf(address,address,uint256)',
-        this.ctoken.address,
+        this.cToken.address,
         user,
         value
       );
@@ -255,16 +255,16 @@ contract('CToken', function([_, user]) {
         value: ether('0.1'),
       });
       expect(
-        await this.ctoken.borrowBalanceCurrent.call(user)
+        await this.cToken.borrowBalanceCurrent.call(user)
       ).to.be.bignumber.eq(ether('0'));
     });
 
     it('insufficient token', async function() {
       const value = MAX_UINT256;
-      const to = this.hctoken.address;
+      const to = this.hCToken.address;
       const data = abi.simpleEncode(
         'repayBorrowBehalf(address,address,uint256)',
-        this.ctoken.address,
+        this.cToken.address,
         user,
         value
       );

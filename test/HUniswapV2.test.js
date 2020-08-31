@@ -33,9 +33,9 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
 
   before(async function() {
     this.registry = await Registry.new();
-    this.huniswapv2 = await HUniswapV2.new();
+    this.hUniswapV2 = await HUniswapV2.new();
     await this.registry.register(
-      this.huniswapv2.address,
+      this.hUniswapV2.address,
       utils.asciiToHex('UniswapV2')
     );
     this.router = await IUniswapV2Router.at(UNISWAPV2_ROUTER02);
@@ -70,7 +70,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
     describe('Exact input', function() {
       it('normal', async function() {
         const value = ether('1');
-        const to = this.huniswapv2.address;
+        const to = this.hUniswapV2.address;
         const path = [WETH_TOKEN, tokenAddress];
         const data = abi.simpleEncode(
           'swapExactETHForTokens(uint256,uint256,address[]):(uint256[])',
@@ -102,7 +102,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
 
       it('min amount too high', async function() {
         const value = ether('1');
-        const to = this.huniswapv2.address;
+        const to = this.hUniswapV2.address;
         const path = [WETH_TOKEN, tokenAddress];
         const result = await this.router.getAmountsOut.call(value, path, {
           from: user,
@@ -129,7 +129,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
 
       it('invalid path', async function() {
         const value = ether('1');
-        const to = this.huniswapv2.address;
+        const to = this.hUniswapV2.address;
         const path = [tokenAddress, WETH_TOKEN];
         const data = abi.simpleEncode(
           'swapExactETHForTokens(uint256,uint256,address[]):(uint256[])',
@@ -148,7 +148,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
       it('normal', async function() {
         const value = ether('1');
         const buyAmt = ether('100');
-        const to = this.huniswapv2.address;
+        const to = this.hUniswapV2.address;
         const path = [WETH_TOKEN, tokenAddress];
         const data = abi.simpleEncode(
           'swapETHForExactTokens(uint256,uint256,address[]):(uint256[])',
@@ -180,7 +180,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
 
       it('insufficient ether', async function() {
         const buyAmt = ether('100');
-        const to = this.huniswapv2.address;
+        const to = this.hUniswapV2.address;
         const path = [WETH_TOKEN, tokenAddress];
         const result = await this.router.getAmountsIn.call(buyAmt, path, {
           from: user,
@@ -204,7 +204,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
       it('invalid path', async function() {
         const value = ether('1');
         const buyAmt = ether('100');
-        const to = this.huniswapv2.address;
+        const to = this.hUniswapV2.address;
         const path = [tokenAddress, WETH_TOKEN];
         const data = abi.simpleEncode(
           'swapETHForExactTokens(uint256,uint256,address[]):(uint256[])',
@@ -244,7 +244,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
     describe('Exact input', function() {
       it('normal', async function() {
         const value = ether('100');
-        const to = this.huniswapv2.address;
+        const to = this.hUniswapV2.address;
         const path = [tokenAddress, WETH_TOKEN];
         const data = abi.simpleEncode(
           'swapExactTokensForETH(uint256,uint256,address[]):(uint256[])',
@@ -280,7 +280,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
 
       it('min output too high', async function() {
         const value = ether('100');
-        const to = this.huniswapv2.address;
+        const to = this.hUniswapV2.address;
         const path = [tokenAddress, WETH_TOKEN];
         await this.token.transfer(this.proxy.address, value, {
           from: providerAddress,
@@ -304,7 +304,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
 
       it('invalid path', async function() {
         const value = ether('100');
-        const to = this.huniswapv2.address;
+        const to = this.hUniswapV2.address;
         const path = [tokenAddress, WETH_TOKEN, tokenAddress];
         const data = abi.simpleEncode(
           'swapExactTokensForETH(uint256,uint256,address[]):(uint256[])',
@@ -327,7 +327,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
       it('normal', async function() {
         const value = ether('1000');
         const buyAmt = ether('0.1');
-        const to = this.huniswapv2.address;
+        const to = this.hUniswapV2.address;
         const path = [tokenAddress, WETH_TOKEN];
         const data = abi.simpleEncode(
           'swapTokensForExactETH(uint256,uint256,address[]):(uint256[])',
@@ -363,7 +363,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
       it('insufficient input token', async function() {
         const value = ether('1');
         const buyAmt = ether('100');
-        const to = this.huniswapv2.address;
+        const to = this.hUniswapV2.address;
         const path = [tokenAddress, WETH_TOKEN];
         const data = abi.simpleEncode(
           'swapTokensForExactETH(uint256,uint256,address[]):(uint256[])',
@@ -385,7 +385,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
       it('invalid path', async function() {
         const value = ether('1000');
         const buyAmt = ether('0.1');
-        const to = this.huniswapv2.address;
+        const to = this.hUniswapV2.address;
         const path = [tokenAddress, WETH_TOKEN, tokenAddress];
         const data = abi.simpleEncode(
           'swapTokensForExactETH(uint256,uint256,address[]):(uint256[])',
@@ -427,7 +427,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
     describe('Exact input', function() {
       it('normal', async function() {
         const value = ether('100');
-        const to = this.huniswapv2.address;
+        const to = this.hUniswapV2.address;
         const path = [token0Address, WETH_TOKEN, token1Address];
         const data = abi.simpleEncode(
           'swapExactTokensForTokens(uint256,uint256,address[]):(uint256[])',
@@ -466,7 +466,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
 
       it('min output too high', async function() {
         const value = ether('100');
-        const to = this.huniswapv2.address;
+        const to = this.hUniswapV2.address;
         const path = [token0Address, WETH_TOKEN, token1Address];
         await this.token0.transfer(this.proxy.address, value, {
           from: providerAddress,
@@ -493,7 +493,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
 
       it('identical addresses', async function() {
         const value = ether('100');
-        const to = this.huniswapv2.address;
+        const to = this.hUniswapV2.address;
         const path = [token0Address, token0Address, token1Address];
         const data = abi.simpleEncode(
           'swapExactTokensForTokens(uint256,uint256,address[]):(uint256[])',
@@ -516,7 +516,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
       it('normal', async function() {
         const value = ether('100');
         const buyAmt = ether('1');
-        const to = this.huniswapv2.address;
+        const to = this.hUniswapV2.address;
         const path = [token0Address, WETH_TOKEN, token1Address];
         const data = abi.simpleEncode(
           'swapTokensForExactTokens(uint256,uint256,address[]):(uint256[])',
@@ -556,7 +556,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
       it('excessive input amount', async function() {
         const value = ether('1');
         const buyAmt = ether('1000');
-        const to = this.huniswapv2.address;
+        const to = this.hUniswapV2.address;
         const path = [token0Address, WETH_TOKEN, token1Address];
         const data = abi.simpleEncode(
           'swapTokensForExactTokens(uint256,uint256,address[]):(uint256[])',
@@ -577,7 +577,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
       it('identical addresses', async function() {
         const value = ether('100');
         const buyAmt = ether('1');
-        const to = this.huniswapv2.address;
+        const to = this.hUniswapV2.address;
         const path = [token0Address, WETH_TOKEN, WETH_TOKEN, token1Address];
         const data = abi.simpleEncode(
           'swapTokensForExactTokens(uint256,uint256,address[]):(uint256[])',

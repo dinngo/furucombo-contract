@@ -38,9 +38,9 @@ contract('Old ERC20TokenIn', function([_, user]) {
   before(async function() {
     this.registry = await Registry.new();
     this.proxy = await Proxy.new(this.registry.address);
-    this.herc20tokenin = await HERC20TokenIn.new();
+    this.hERC20TokenIn = await HERC20TokenIn.new();
     await this.registry.register(
-      this.herc20tokenin.address,
+      this.hERC20TokenIn.address,
       utils.asciiToHex('ERC20In')
     );
   });
@@ -62,7 +62,7 @@ contract('Old ERC20TokenIn', function([_, user]) {
     it('normal', async function() {
       const token = [this.token0.address];
       const value = [ether('100')];
-      const to = this.herc20tokenin.address;
+      const to = this.hERC20TokenIn.address;
       const data = abi.simpleEncode(
         'inject(address[],uint256[])',
         token,
@@ -91,7 +91,7 @@ contract('Old ERC20TokenIn', function([_, user]) {
     it('USDT', async function() {
       const token = [this.usdt.address];
       const value = [new BN('1000000')];
-      const to = this.herc20tokenin.address;
+      const to = this.hERC20TokenIn.address;
       const data = abi.simpleEncode(
         'inject(address[],uint256[])',
         token,
@@ -126,7 +126,7 @@ contract('Old ERC20TokenIn', function([_, user]) {
     it('normal', async function() {
       const token = [this.token0.address, this.token1.address];
       const value = [ether('100'), ether('100')];
-      const to = this.herc20tokenin.address;
+      const to = this.hERC20TokenIn.address;
       const data = abi.simpleEncode(
         'inject(address[],uint256[])',
         token,

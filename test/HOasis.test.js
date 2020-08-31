@@ -38,9 +38,9 @@ contract('Oasis Swap', function([_, user, someone]) {
   before(async function() {
     this.registry = await Registry.new();
     this.proxy = await Proxy.new(this.registry.address);
-    this.hoasis = await HOasis.new();
+    this.hOasis = await HOasis.new();
     await this.registry.register(
-      this.hoasis.address,
+      this.hOasis.address,
       utils.asciiToHex('Oasis')
     );
     this.otc = await IMakerOtc.at(MAKER_OTC);
@@ -76,7 +76,7 @@ contract('Oasis Swap', function([_, user, someone]) {
     describe('Exact input', function() {
       it('normal', async function() {
         const value = ether('1');
-        const to = this.hoasis.address;
+        const to = this.hOasis.address;
         const data = abi.simpleEncode(
           'sellAllAmountPayEth(uint256,address,address,uint256):(uint256)',
           value,
@@ -114,7 +114,7 @@ contract('Oasis Swap', function([_, user, someone]) {
 
       it('min amount too high', async function() {
         const value = ether('1');
-        const to = this.hoasis.address;
+        const to = this.hOasis.address;
         // TODO: get exact amount using same function call
         // or find out why inaccuracy exists
         const oasisAmount = await this.otc.getBuyAmount.call(
@@ -147,7 +147,7 @@ contract('Oasis Swap', function([_, user, someone]) {
       it('normal', async function() {
         const value = ether('1');
         const buyAmt = ether('100');
-        const to = this.hoasis.address;
+        const to = this.hOasis.address;
         const data = abi.simpleEncode(
           'buyAllAmountPayEth(uint256,address,uint256,address):(uint256)',
           value,
@@ -186,7 +186,7 @@ contract('Oasis Swap', function([_, user, someone]) {
       it('insufficient ether', async function() {
         const value = ether('0.001');
         const buyAmt = ether('100');
-        const to = this.hoasis.address;
+        const to = this.hOasis.address;
         const data = abi.simpleEncode(
           'buyAllAmountPayEth(uint256,address,uint256,address):(uint256)',
           value,
@@ -227,7 +227,7 @@ contract('Oasis Swap', function([_, user, someone]) {
     describe('Exact input', function() {
       it('normal', async function() {
         const value = ether('100');
-        const to = this.hoasis.address;
+        const to = this.hOasis.address;
         const data = abi.simpleEncode(
           'sellAllAmountBuyEth(address,uint256,address,uint256):(uint256)',
           tokenAddress,
@@ -270,7 +270,7 @@ contract('Oasis Swap', function([_, user, someone]) {
 
       it('min amount too high', async function() {
         const value = ether('100');
-        const to = this.hoasis.address;
+        const to = this.hOasis.address;
 
         await this.token.transfer(this.proxy.address, value, {
           from: providerAddress,
@@ -307,7 +307,7 @@ contract('Oasis Swap', function([_, user, someone]) {
       it('normal', async function() {
         const value = ether('100');
         const buyAmt = ether('0.1');
-        const to = this.hoasis.address;
+        const to = this.hOasis.address;
         const data = abi.simpleEncode(
           'buyAllAmountBuyEth(address,uint256,address,uint256):(uint256)',
           WETH_TOKEN,
@@ -352,7 +352,7 @@ contract('Oasis Swap', function([_, user, someone]) {
       it('insufficient token input', async function() {
         const value = new BN('100');
         const buyAmt = ether('1');
-        const to = this.hoasis.address;
+        const to = this.hOasis.address;
         const data = abi.simpleEncode(
           'buyAllAmountBuyEth(address,uint256,address,uint256):(uint256)',
           WETH_TOKEN,
@@ -396,7 +396,7 @@ contract('Oasis Swap', function([_, user, someone]) {
     describe('Exact input', function() {
       it('normal', async function() {
         const value = ether('100');
-        const to = this.hoasis.address;
+        const to = this.hOasis.address;
         const data = abi.simpleEncode(
           'sellAllAmount(address,uint256,address,uint256):(uint256)',
           token0Address,
@@ -443,7 +443,7 @@ contract('Oasis Swap', function([_, user, someone]) {
 
       it('min amount too high', async function() {
         const value = ether('100');
-        const to = this.hoasis.address;
+        const to = this.hOasis.address;
 
         await this.token0.transfer(this.proxy.address, value, {
           from: providerAddress,
@@ -482,7 +482,7 @@ contract('Oasis Swap', function([_, user, someone]) {
       it('normal', async function() {
         const value = ether('100');
         const buyAmt = new BN('10').mul(new BN(1000000));
-        const to = this.hoasis.address;
+        const to = this.hOasis.address;
         const data = abi.simpleEncode(
           'buyAllAmount(address,uint256,address,uint256):(uint256)',
           token1Address,
@@ -530,7 +530,7 @@ contract('Oasis Swap', function([_, user, someone]) {
       it('insufficient token0 input', async function() {
         const value = ether('0.1');
         const buyAmt = ether('100');
-        const to = this.hoasis.address;
+        const to = this.hOasis.address;
         const data = abi.simpleEncode(
           'buyAllAmount(address,uint256,address,uint256):(uint256)',
           token1Address,

@@ -69,12 +69,12 @@ contract('Comptroller', function([_, user, someone]) {
   before(async function() {
     this.registry = await Registry.new();
     this.proxy = await Proxy.new(this.registry.address);
-    this.hcomptroller = await HComptroller.new();
+    this.hComptroller = await HComptroller.new();
     await this.registry.register(
-      this.hcomptroller.address,
+      this.hComptroller.address,
       utils.asciiToHex('Comptroller')
     );
-    this.cether = await ICEther.at(CETHER);
+    this.cEther = await ICEther.at(CETHER);
     this.comp = await IToken.at(COMP_TOKEN);
     this.comptroller = await IComptroller.at(COMPOUND_COMPTROLLER);
   });
@@ -95,7 +95,7 @@ contract('Comptroller', function([_, user, someone]) {
     });
 
     beforeEach(async function() {
-      await this.cether.mint({
+      await this.cEther.mint({
         from: user,
         value: ether('10'),
       });
@@ -105,7 +105,7 @@ contract('Comptroller', function([_, user, someone]) {
 
     describe('Owner claim', function() {
       it('normal', async function() {
-        const to = this.hcomptroller.address;
+        const to = this.hComptroller.address;
         const data = abi.simpleEncode('claimComp()');
         const result = await getEstimatedComp(user);
         const receipt = await this.proxy.execMock(to, data, {
@@ -121,7 +121,7 @@ contract('Comptroller', function([_, user, someone]) {
 
     describe('Others claim', function() {
       it('normal', async function() {
-        const to = this.hcomptroller.address;
+        const to = this.hComptroller.address;
         const data = abi.simpleEncode('claimComp(address)', user);
         const result = await getEstimatedComp(user);
         const receipt = await this.proxy.execMock(to, data, {

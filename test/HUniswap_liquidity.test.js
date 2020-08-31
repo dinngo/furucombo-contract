@@ -39,9 +39,9 @@ contract('Uniswap Liquidity', function([_, user]) {
   before(async function() {
     this.registry = await Registry.new();
     this.proxy = await Proxy.new(this.registry.address);
-    this.huniswap = await HUniswap.new();
+    this.hUniswap = await HUniswap.new();
     await this.registry.register(
-      this.huniswap.address,
+      this.hUniswap.address,
       utils.asciiToHex('Uniswap')
     );
     this.token = await IToken.at(tokenAddress);
@@ -70,7 +70,7 @@ contract('Uniswap Liquidity', function([_, user]) {
 
     it('normal', async function() {
       const value = ether('0.1');
-      const to = this.huniswap.address;
+      const to = this.hUniswap.address;
       const data = abi.simpleEncode(
         'addLiquidity(uint256,address,uint256):(uint256)',
         value,
@@ -119,7 +119,7 @@ contract('Uniswap Liquidity', function([_, user]) {
 
     it('normal', async function() {
       const value = uniTokenUser;
-      const to = this.huniswap.address;
+      const to = this.hUniswap.address;
       const data = abi.simpleEncode(
         'removeLiquidity(address,uint256,uint256,uint256):(uint256,uint256)',
         tokenAddress,

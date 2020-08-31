@@ -43,17 +43,17 @@ contract('Aave flashloan', function([_, user]) {
   before(async function() {
     this.registry = await Registry.new();
     this.proxy = await Proxy.new(this.registry.address);
-    this.haave = await HAave.new();
-    this.hmock = await HMock.new();
+    this.hAave = await HAave.new();
+    this.hMock = await HMock.new();
     await this.registry.register(
-      this.haave.address,
+      this.hAave.address,
       utils.asciiToHex('Aave Protocol')
     );
-    await this.registry.register(this.hmock.address, utils.asciiToHex('Mock'));
+    await this.registry.register(this.hMock.address, utils.asciiToHex('Mock'));
     this.provider = await IProvider.at(AAVEPROTOCOL_PROVIDER);
     const lendingPoolAddress = await this.provider.getLendingPool.call();
     this.lendingPool = await ILendingPool.at(lendingPoolAddress);
-    await this.registry.register(lendingPoolAddress, this.haave.address);
+    await this.registry.register(lendingPoolAddress, this.hAave.address);
     this.faucet = await Faucet.new();
     await web3.eth.sendTransaction({
       from: ETH_PROVIDER,
@@ -75,7 +75,7 @@ contract('Aave flashloan', function([_, user]) {
   describe('Ether', function() {
     it('normal', async function() {
       const value = ether('1');
-      const testTo = [this.hmock.address];
+      const testTo = [this.hMock.address];
       const testData = [
         '0x' +
           abi
@@ -86,7 +86,7 @@ contract('Aave flashloan', function([_, user]) {
         ['address[]', 'bytes[]'],
         [testTo, testData]
       );
-      const to = this.haave.address;
+      const to = this.hAave.address;
       const data = abi.simpleEncode(
         'flashLoan(address,uint256,bytes)',
         ETH_TOKEN,
@@ -124,7 +124,7 @@ contract('Aave flashloan', function([_, user]) {
 
     it('normal', async function() {
       const value = ether('1');
-      const testTo = [this.hmock.address];
+      const testTo = [this.hMock.address];
       const testData = [
         '0x' +
           abi
@@ -140,7 +140,7 @@ contract('Aave flashloan', function([_, user]) {
         ['address[]', 'bytes[]'],
         [testTo, testData]
       );
-      const to = this.haave.address;
+      const to = this.hAave.address;
       const data = abi.simpleEncode(
         'flashLoan(address,uint256,bytes)',
         DAI_TOKEN,
@@ -179,7 +179,7 @@ contract('Aave flashloan', function([_, user]) {
 
     it('sequential', async function() {
       const value = ether('1');
-      const test1To = [this.hmock.address];
+      const test1To = [this.hMock.address];
       const test1Data = [
         '0x' +
           abi
@@ -191,7 +191,7 @@ contract('Aave flashloan', function([_, user]) {
         [test1To, test1Data]
       );
 
-      const test2To = [this.hmock.address];
+      const test2To = [this.hMock.address];
       const test2Data = [
         '0x' +
           abi
@@ -208,7 +208,7 @@ contract('Aave flashloan', function([_, user]) {
         [test2To, test2Data]
       );
 
-      const to = [this.haave.address, this.haave.address];
+      const to = [this.hAave.address, this.hAave.address];
       const data = [
         abi.simpleEncode(
           'flashLoan(address,uint256,bytes)',
@@ -240,7 +240,7 @@ contract('Aave flashloan', function([_, user]) {
 
     it('nested', async function() {
       const value = ether('1');
-      const execTo = [this.hmock.address, this.hmock.address];
+      const execTo = [this.hMock.address, this.hMock.address];
       const execData = [
         '0x' +
           abi
@@ -260,7 +260,7 @@ contract('Aave flashloan', function([_, user]) {
         ['address[]', 'bytes[]'],
         [execTo, execData]
       );
-      const flashTokenTo = [this.haave.address];
+      const flashTokenTo = [this.hAave.address];
       const flashTokenData = [
         '0x' +
           abi
@@ -276,7 +276,7 @@ contract('Aave flashloan', function([_, user]) {
         ['address[]', 'bytes[]'],
         [flashTokenTo, flashTokenData]
       );
-      const to = this.haave.address;
+      const to = this.hAave.address;
       const data = abi.simpleEncode(
         'flashLoan(address,uint256,bytes)',
         ETH_TOKEN,

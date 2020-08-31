@@ -38,9 +38,9 @@ contract('OneInch Swap', function([_, user]) {
 
   before(async function() {
     this.registry = await Registry.new();
-    this.honeinch = await HOneInch.new();
+    this.hOneInch = await HOneInch.new();
     await this.registry.register(
-      this.honeinch.address,
+      this.hOneInch.address,
       utils.asciiToHex('OneInch')
     );
     this.proxy = await Proxy.new(this.registry.address);
@@ -75,7 +75,7 @@ contract('OneInch Swap', function([_, user]) {
     describe('Exact input', function() {
       it('normal', async function() {
         const value = ether('1');
-        const to = this.honeinch.address;
+        const to = this.hOneInch.address;
         const slippage = 3;
 
         const swapReq = queryString.stringifyUrl({
@@ -119,7 +119,7 @@ contract('OneInch Swap', function([_, user]) {
 
       it('msg.value greater than input ether amount', async function() {
         const value = ether('1');
-        const to = this.honeinch.address;
+        const to = this.hOneInch.address;
         const slippage = 3;
 
         const swapReq = queryString.stringifyUrl({
@@ -185,7 +185,7 @@ contract('OneInch Swap', function([_, user]) {
     describe('Exact input', function() {
       it('normal', async function() {
         const value = ether('50');
-        const to = this.honeinch.address;
+        const to = this.hOneInch.address;
         const slippage = 3;
 
         const swapReq = queryString.stringifyUrl({
@@ -257,7 +257,7 @@ contract('OneInch Swap', function([_, user]) {
     describe('Exact input', function() {
       it('normal', async function() {
         const value = ether('50');
-        const to = this.honeinch.address;
+        const to = this.hOneInch.address;
         const slippage = 3;
 
         const swapReq = queryString.stringifyUrl({

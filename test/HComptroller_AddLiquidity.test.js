@@ -80,12 +80,12 @@ contract('Claim Comp and add liquidity', function([
   before(async function() {
     this.registry = await Registry.new();
     this.proxy = await Proxy.new(this.registry.address);
-    this.hcomptroller = await HComptroller.new();
+    this.hComptroller = await HComptroller.new();
     await this.registry.register(
-      this.hcomptroller.address,
+      this.hComptroller.address,
       utils.asciiToHex('Comptroller')
     );
-    this.cether = await ICEther.at(CETHER);
+    this.cEther = await ICEther.at(CETHER);
     this.comp = await IToken.at(tokenAddresses[0]);
     this.comptroller = await IComptroller.at(COMPOUND_COMPTROLLER);
   });
@@ -94,7 +94,7 @@ contract('Claim Comp and add liquidity', function([
     id = await evmSnapshot();
     balanceUser = await tracker(user);
     balanceProxy = await tracker(this.proxy.address);
-    await this.cether.mint({
+    await this.cEther.mint({
       from: user,
       value: ether('10'),
     });
@@ -109,17 +109,17 @@ contract('Claim Comp and add liquidity', function([
   describe('UniswapV2 Liquidity', function() {
     const uniswapV2RouterAddress = UNISWAPV2_ROUTER02;
     before(async function() {
-      this.hfunds = await HFunds.new();
+      this.hFunds = await HFunds.new();
       await this.registry.register(
-        this.hfunds.address,
+        this.hFunds.address,
         utils.asciiToHex('ERC20In')
       );
-      this.huniswapv2 = await HUniswapV2.new();
+      this.hUniswapV2 = await HUniswapV2.new();
       await this.registry.register(
-        this.huniswapv2.address,
+        this.hUniswapV2.address,
         utils.asciiToHex('UniswapV2')
       );
-      this.uniCOMPETH = await IToken.at(UNISWAPV2_ETH_COMP);
+      this.uniCompEth = await IToken.at(UNISWAPV2_ETH_COMP);
     });
 
     it('add liquidity', async function() {
@@ -128,9 +128,9 @@ contract('Claim Comp and add liquidity', function([
         from: user,
       });
       const to = [
-        this.hcomptroller.address,
-        this.hfunds.address,
-        this.huniswapv2.address,
+        this.hComptroller.address,
+        this.hFunds.address,
+        this.hUniswapV2.address,
       ];
       const data = [
         abi.simpleEncode('claimComp()'),
@@ -148,7 +148,7 @@ contract('Claim Comp and add liquidity', function([
         from: user,
         value: ether('1'),
       });
-      expect(await this.uniCOMPETH.balanceOf.call(user)).to.be.bignumber.gt(
+      expect(await this.uniCompEth.balanceOf.call(user)).to.be.bignumber.gt(
         ether('0')
       );
     });

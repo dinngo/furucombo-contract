@@ -84,25 +84,25 @@ contract('Maker', function([_, user1, user2, someone]) {
     this.registry = await Registry.new();
     this.proxy = await Proxy.new(this.registry.address);
     this.token = await IToken.at(tokenAddress);
-    this.hmaker = await HMaker.new();
+    this.hMaker = await HMaker.new();
     await this.registry.register(
-      this.hmaker.address,
+      this.hMaker.address,
       utils.asciiToHex('Maker')
     );
-    this.dsregistry = await IDSProxyRegistry.at(MAKER_PROXY_REGISTRY);
-    this.cdpmanager = await IMakerManager.at(MAKER_CDP_MANAGER);
+    this.dsRegistry = await IDSProxyRegistry.at(MAKER_PROXY_REGISTRY);
+    this.cdpManager = await IMakerManager.at(MAKER_CDP_MANAGER);
     this.vat = await IMakerVat.at(MAKER_MCD_VAT);
-    await this.dsregistry.build(this.proxy.address);
-    await this.dsregistry.build(user1);
-    await this.dsregistry.build(user2);
-    this.dsproxy = await IDSProxy.at(
-      await this.dsregistry.proxies.call(this.proxy.address)
+    await this.dsRegistry.build(this.proxy.address);
+    await this.dsRegistry.build(user1);
+    await this.dsRegistry.build(user2);
+    this.dsProxy = await IDSProxy.at(
+      await this.dsRegistry.proxies.call(this.proxy.address)
     );
-    this.user1proxy = await IDSProxy.at(
-      await this.dsregistry.proxies.call(user1)
+    this.user1Proxy = await IDSProxy.at(
+      await this.dsRegistry.proxies.call(user1)
     );
-    this.user2proxy = await IDSProxy.at(
-      await this.dsregistry.proxies.call(user2)
+    this.user2Proxy = await IDSProxy.at(
+      await this.dsRegistry.proxies.call(user2)
     );
     this.dai = await IToken.at(DAI_TOKEN);
   });
@@ -127,12 +127,12 @@ contract('Maker', function([_, user1, user2, someone]) {
         it('User does not has proxy', async function() {
           const daiUser = await this.dai.balanceOf.call(someone);
 
-          expect(await this.dsregistry.proxies.call(this.proxy.address)).not.eq(
+          expect(await this.dsRegistry.proxies.call(this.proxy.address)).not.eq(
             ZERO_ADDRESS
           );
-          expect(await this.dsregistry.proxies.call(someone)).eq(ZERO_ADDRESS);
+          expect(await this.dsRegistry.proxies.call(someone)).eq(ZERO_ADDRESS);
 
-          const to = this.hmaker.address;
+          const to = this.hMaker.address;
           const value = ether('1');
           const ilkEth = utils.padRight(utils.asciiToHex('ETH-A'), 64);
           const wadD = ether('100');
@@ -149,10 +149,10 @@ contract('Maker', function([_, user1, user2, someone]) {
             value: ether('10'),
           });
           expect(
-            await this.cdpmanager.count.call(this.dsproxy.address)
+            await this.cdpManager.count.call(this.dsProxy.address)
           ).to.be.bignumber.eq(new BN('0'));
-          const userProxy = await this.dsregistry.proxies.call(someone);
-          const cdp = await this.cdpmanager.last.call(userProxy);
+          const userProxy = await this.dsRegistry.proxies.call(someone);
+          const cdp = await this.cdpManager.last.call(userProxy);
 
           const [ilk, debt, lock] = await getCdpInfo(cdp);
 
@@ -166,7 +166,7 @@ contract('Maker', function([_, user1, user2, someone]) {
         });
 
         it('User has proxy', async function() {
-          const to = this.hmaker.address;
+          const to = this.hMaker.address;
           const value = ether('1');
           const ilkEth = utils.padRight(utils.asciiToHex('ETH-A'), 64);
           const wadD = ether('100');
@@ -183,10 +183,10 @@ contract('Maker', function([_, user1, user2, someone]) {
             value: ether('10'),
           });
           expect(
-            await this.cdpmanager.count.call(this.dsproxy.address)
+            await this.cdpManager.count.call(this.dsProxy.address)
           ).to.be.bignumber.eq(new BN('0'));
-          const userProxy = await this.dsregistry.proxies.call(user1);
-          const cdp = await this.cdpmanager.last.call(userProxy);
+          const userProxy = await this.dsRegistry.proxies.call(user1);
+          const cdp = await this.cdpManager.last.call(userProxy);
 
           const [ilk, debt, lock] = await getCdpInfo(cdp);
 
@@ -209,12 +209,12 @@ contract('Maker', function([_, user1, user2, someone]) {
         it('User does not has proxy', async function() {
           const daiUser = await this.dai.balanceOf.call(someone);
 
-          expect(await this.dsregistry.proxies.call(this.proxy.address)).not.eq(
+          expect(await this.dsRegistry.proxies.call(this.proxy.address)).not.eq(
             ZERO_ADDRESS
           );
-          expect(await this.dsregistry.proxies.call(someone)).eq(ZERO_ADDRESS);
+          expect(await this.dsRegistry.proxies.call(someone)).eq(ZERO_ADDRESS);
 
-          const to = this.hmaker.address;
+          const to = this.hMaker.address;
           const ilkKnc = utils.padRight(utils.asciiToHex('KNC-A'), 64);
           const wadC = ether('200');
           const wadD = ether('100');
@@ -235,10 +235,10 @@ contract('Maker', function([_, user1, user2, someone]) {
             value: ether('1'),
           });
           expect(
-            await this.cdpmanager.count.call(this.dsproxy.address)
+            await this.cdpManager.count.call(this.dsProxy.address)
           ).to.be.bignumber.eq(new BN('0'));
-          const userProxy = await this.dsregistry.proxies.call(someone);
-          const cdp = await this.cdpmanager.last.call(userProxy);
+          const userProxy = await this.dsRegistry.proxies.call(someone);
+          const cdp = await this.cdpManager.last.call(userProxy);
 
           const [ilk, debt, lock] = await getCdpInfo(cdp);
 
@@ -252,7 +252,7 @@ contract('Maker', function([_, user1, user2, someone]) {
         });
 
         it('User has proxy', async function() {
-          const to = this.hmaker.address;
+          const to = this.hMaker.address;
           const ilkKnc = utils.padRight(utils.asciiToHex('KNC-A'), 64);
           const wadC = ether('200');
           const wadD = ether('100');
@@ -273,10 +273,10 @@ contract('Maker', function([_, user1, user2, someone]) {
             value: ether('1'),
           });
           expect(
-            await this.cdpmanager.count.call(this.dsproxy.address)
+            await this.cdpManager.count.call(this.dsProxy.address)
           ).to.be.bignumber.eq(new BN('0'));
-          const userProxy = await this.dsregistry.proxies.call(user1);
-          const cdp = await this.cdpmanager.last.call(userProxy);
+          const userProxy = await this.dsRegistry.proxies.call(user1);
+          const cdp = await this.cdpManager.last.call(userProxy);
 
           const [ilk, debt, lock] = await getCdpInfo(cdp);
 
@@ -303,22 +303,22 @@ contract('Maker', function([_, user1, user2, someone]) {
         'open(address,bytes32,address)',
         MAKER_CDP_MANAGER,
         utils.padRight(utils.asciiToHex('ETH-A'), 64),
-        this.user1proxy.address
+        this.user1Proxy.address
       );
       const new2 = abi.simpleEncode(
         'open(address,bytes32,address)',
         MAKER_CDP_MANAGER,
         utils.padRight(utils.asciiToHex('KNC-A'), 64),
-        this.user2proxy.address
+        this.user2Proxy.address
       );
-      await this.user1proxy.execute(MAKER_PROXY_ACTIONS, new1, { from: user1 });
-      await this.user2proxy.execute(MAKER_PROXY_ACTIONS, new2, { from: user2 });
+      await this.user1Proxy.execute(MAKER_PROXY_ACTIONS, new1, { from: user1 });
+      await this.user2Proxy.execute(MAKER_PROXY_ACTIONS, new2, { from: user2 });
     });
 
     describe('Lock Ether', function() {
       let balanceUser;
       before(async function() {
-        cdp = await this.cdpmanager.last.call(this.user1proxy.address);
+        cdp = await this.cdpManager.last.call(this.user1Proxy.address);
         expect(cdp).to.be.bignumber.not.eq(new BN('0'));
       });
 
@@ -328,7 +328,7 @@ contract('Maker', function([_, user1, user2, someone]) {
       });
 
       it('normal', async function() {
-        const to = this.hmaker.address;
+        const to = this.hMaker.address;
         const value = ether('1');
         const data = abi.simpleEncode(
           'safeLockETH(uint256,address,uint256)',
@@ -359,7 +359,7 @@ contract('Maker', function([_, user1, user2, someone]) {
       const providerAddress = KNC_PROVIDER;
 
       before(async function() {
-        cdp = await this.cdpmanager.last.call(this.user2proxy.address);
+        cdp = await this.cdpManager.last.call(this.user2Proxy.address);
         expect(cdp).to.be.bignumber.not.eq(new BN('0'));
       });
 
@@ -370,7 +370,7 @@ contract('Maker', function([_, user1, user2, someone]) {
       });
 
       it('normal', async function() {
-        const to = this.hmaker.address;
+        const to = this.hMaker.address;
         const wad = ether('100');
         const data = abi.simpleEncode(
           'safeLockGem(address,uint256,uint256)',
@@ -413,19 +413,19 @@ contract('Maker', function([_, user1, user2, someone]) {
           utils.padRight(utils.asciiToHex('ETH-A'), 64),
           ether('0')
         );
-        await this.user1proxy.execute(MAKER_PROXY_ACTIONS, new1, {
+        await this.user1Proxy.execute(MAKER_PROXY_ACTIONS, new1, {
           from: user1,
           value: etherAmount,
         });
-        cdp = await this.cdpmanager.last.call(this.user1proxy.address);
+        cdp = await this.cdpManager.last.call(this.user1Proxy.address);
         balanceUser = await tracker(user1);
         [ilk, debt, lock] = await getCdpInfo(cdp);
       });
 
       it('normal', async function() {
-        await approveCdp(cdp, user1, this.dsproxy.address);
+        await approveCdp(cdp, user1, this.dsProxy.address);
         balanceUser = await tracker(user1);
-        const to = this.hmaker.address;
+        const to = this.hMaker.address;
         const wad = ether('1');
         const data = abi.simpleEncode(
           'freeETH(address,uint256,uint256)',
@@ -446,7 +446,7 @@ contract('Maker', function([_, user1, user2, someone]) {
 
       it('without cdp approval', async function() {
         balanceUser = await tracker(user1);
-        const to = this.hmaker.address;
+        const to = this.hMaker.address;
         const wad = ether('1');
         const data = abi.simpleEncode(
           'freeETH(address,uint256,uint256)',
@@ -462,9 +462,9 @@ contract('Maker', function([_, user1, user2, someone]) {
       });
 
       it('approved but triggered by unauthorized user', async function() {
-        await approveCdp(cdp, user1, this.dsproxy.address);
+        await approveCdp(cdp, user1, this.dsProxy.address);
         balanceUser = await tracker(user1);
-        const to = this.hmaker.address;
+        const to = this.hMaker.address;
         const wad = ether('1');
         const data = abi.simpleEncode(
           'freeETH(address,uint256,uint256)',
@@ -502,20 +502,20 @@ contract('Maker', function([_, user1, user2, someone]) {
         await this.token.transfer(user1, tokenAmount, {
           from: providerAddress,
         });
-        await this.token.approve(this.user1proxy.address, tokenAmount, {
+        await this.token.approve(this.user1Proxy.address, tokenAmount, {
           from: user1,
         });
-        await this.user1proxy.execute(MAKER_PROXY_ACTIONS, new2, {
+        await this.user1Proxy.execute(MAKER_PROXY_ACTIONS, new2, {
           from: user1,
         });
-        cdp = await this.cdpmanager.last.call(this.user1proxy.address);
+        cdp = await this.cdpManager.last.call(this.user1Proxy.address);
         tokenUser = await this.token.balanceOf.call(user1);
         [ilk, debt, lock] = await getCdpInfo(cdp);
       });
 
       it('normal', async function() {
-        await approveCdp(cdp, user1, this.dsproxy.address);
-        const to = this.hmaker.address;
+        await approveCdp(cdp, user1, this.dsProxy.address);
+        const to = this.hMaker.address;
         const wad = ether('100');
         const data = abi.simpleEncode(
           'freeGem(address,uint256,uint256)',
@@ -534,7 +534,7 @@ contract('Maker', function([_, user1, user2, someone]) {
       });
 
       it('without cdp approval', async function() {
-        const to = this.hmaker.address;
+        const to = this.hMaker.address;
         const wad = ether('100');
         const data = abi.simpleEncode(
           'freeGem(address,uint256,uint256)',
@@ -550,8 +550,8 @@ contract('Maker', function([_, user1, user2, someone]) {
       });
 
       it('approved but triggered by unauthorized user', async function() {
-        await approveCdp(cdp, user1, this.dsproxy.address);
-        const to = this.hmaker.address;
+        await approveCdp(cdp, user1, this.dsProxy.address);
+        const to = this.hMaker.address;
         const wad = ether('100');
         const data = abi.simpleEncode(
           'freeGem(address,uint256,uint256)',
@@ -586,18 +586,18 @@ contract('Maker', function([_, user1, user2, someone]) {
           utils.padRight(utils.asciiToHex('ETH-A'), 64),
           ether('0')
         );
-        await this.user1proxy.execute(MAKER_PROXY_ACTIONS, new1, {
+        await this.user1Proxy.execute(MAKER_PROXY_ACTIONS, new1, {
           from: user1,
           value: etherAmount,
         });
-        cdp = await this.cdpmanager.last.call(this.user1proxy.address);
+        cdp = await this.cdpManager.last.call(this.user1Proxy.address);
         daiUser = await this.dai.balanceOf.call(user1);
         [ilk, debt, lock] = await getCdpInfo(cdp);
       });
 
       it('normal', async function() {
-        await approveCdp(cdp, user1, this.dsproxy.address);
-        const to = this.hmaker.address;
+        await approveCdp(cdp, user1, this.dsProxy.address);
+        const to = this.hMaker.address;
         const wad = ether('100');
         const data = abi.simpleEncode(
           'draw(address,uint256,uint256)',
@@ -616,7 +616,7 @@ contract('Maker', function([_, user1, user2, someone]) {
       });
 
       it('without cdp approval', async function() {
-        const to = this.hmaker.address;
+        const to = this.hMaker.address;
         const wad = ether('100');
         const data = abi.simpleEncode(
           'draw(address,uint256,uint256)',
@@ -632,8 +632,8 @@ contract('Maker', function([_, user1, user2, someone]) {
       });
 
       it('approved but triggered by unauthorized user', async function() {
-        await approveCdp(cdp, user1, this.dsproxy.address);
-        const to = this.hmaker.address;
+        await approveCdp(cdp, user1, this.dsProxy.address);
+        const to = this.hMaker.address;
         const wad = ether('100');
         const data = abi.simpleEncode(
           'draw(address,uint256,uint256)',
@@ -671,20 +671,20 @@ contract('Maker', function([_, user1, user2, someone]) {
         await this.token.transfer(user1, tokenAmount, {
           from: providerAddress,
         });
-        await this.token.approve(this.user1proxy.address, tokenAmount, {
+        await this.token.approve(this.user1Proxy.address, tokenAmount, {
           from: user1,
         });
-        await this.user1proxy.execute(MAKER_PROXY_ACTIONS, new2, {
+        await this.user1Proxy.execute(MAKER_PROXY_ACTIONS, new2, {
           from: user1,
         });
-        cdp = await this.cdpmanager.last.call(this.user1proxy.address);
+        cdp = await this.cdpManager.last.call(this.user1Proxy.address);
         daiUser = await this.dai.balanceOf.call(user1);
         [ilk, debt, lock] = await getCdpInfo(cdp);
       });
 
       it('normal', async function() {
-        await approveCdp(cdp, user1, this.dsproxy.address);
-        const to = this.hmaker.address;
+        await approveCdp(cdp, user1, this.dsProxy.address);
+        const to = this.hMaker.address;
         const wad = ether('100');
         const data = abi.simpleEncode(
           'draw(address,uint256,uint256)',
@@ -703,7 +703,7 @@ contract('Maker', function([_, user1, user2, someone]) {
       });
 
       it('without cdp approval', async function() {
-        const to = this.hmaker.address;
+        const to = this.hMaker.address;
         const wad = ether('100');
         const data = abi.simpleEncode(
           'draw(address,uint256,uint256)',
@@ -719,8 +719,8 @@ contract('Maker', function([_, user1, user2, someone]) {
       });
 
       it('approved but triggered by unauthorized user', async function() {
-        await approveCdp(cdp, user1, this.dsproxy.address);
-        const to = this.hmaker.address;
+        await approveCdp(cdp, user1, this.dsProxy.address);
+        const to = this.hMaker.address;
         const wad = ether('100');
         const data = abi.simpleEncode(
           'draw(address,uint256,uint256)',
@@ -756,17 +756,17 @@ contract('Maker', function([_, user1, user2, someone]) {
           utils.padRight(utils.asciiToHex('ETH-A'), 64),
           daiAmount
         );
-        await this.user1proxy.execute(MAKER_PROXY_ACTIONS, new1, {
+        await this.user1Proxy.execute(MAKER_PROXY_ACTIONS, new1, {
           from: user1,
           value: etherAmount,
         });
-        cdp = await this.cdpmanager.last.call(this.user1proxy.address);
+        cdp = await this.cdpManager.last.call(this.user1Proxy.address);
         daiUser = await this.dai.balanceOf.call(user1);
         [ilk, debt, lock] = await getCdpInfo(cdp);
       });
 
       it('wipe', async function() {
-        const to = this.hmaker.address;
+        const to = this.hMaker.address;
         const wad = ether('5');
         const data = abi.simpleEncode(
           'wipe(address,uint256,uint256)',
@@ -792,7 +792,7 @@ contract('Maker', function([_, user1, user2, someone]) {
       });
 
       it('wipeAll', async function() {
-        const to = this.hmaker.address;
+        const to = this.hMaker.address;
         const data = abi.simpleEncode(
           'wipeAll(address,uint256)',
           MAKER_MCD_JOIN_DAI,
@@ -844,19 +844,19 @@ contract('Maker', function([_, user1, user2, someone]) {
         await this.token.transfer(user1, tokenAmount, {
           from: providerAddress,
         });
-        await this.token.approve(this.user1proxy.address, tokenAmount, {
+        await this.token.approve(this.user1Proxy.address, tokenAmount, {
           from: user1,
         });
-        await this.user1proxy.execute(MAKER_PROXY_ACTIONS, new2, {
+        await this.user1Proxy.execute(MAKER_PROXY_ACTIONS, new2, {
           from: user1,
         });
-        cdp = await this.cdpmanager.last.call(this.user1proxy.address);
+        cdp = await this.cdpManager.last.call(this.user1Proxy.address);
         daiUser = await this.dai.balanceOf.call(user1);
         [ilk, debt, lock] = await getCdpInfo(cdp);
       });
 
       it('wipe', async function() {
-        const to = this.hmaker.address;
+        const to = this.hMaker.address;
         const wad = ether('5');
         const data = abi.simpleEncode(
           'wipe(address,uint256,uint256)',
@@ -882,7 +882,7 @@ contract('Maker', function([_, user1, user2, someone]) {
       });
 
       it('wipeAll', async function() {
-        const to = this.hmaker.address;
+        const to = this.hMaker.address;
         const data = abi.simpleEncode(
           'wipeAll(address,uint256)',
           MAKER_MCD_JOIN_DAI,

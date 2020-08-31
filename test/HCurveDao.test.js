@@ -37,9 +37,9 @@ contract('Curve DAO', function([_, user]) {
   before(async function() {
     this.minter = await IMinter.at(CURVE_MINTER);
     this.registry = await Registry.new();
-    this.hcurvedao = await HCurveDao.new();
+    this.hCurveDao = await HCurveDao.new();
     await this.registry.register(
-      this.hcurvedao.address,
+      this.hCurveDao.address,
       utils.asciiToHex('HCurveDao')
     );
     this.crv = await IToken.at(CRV_TOKEN);
@@ -63,7 +63,7 @@ contract('Curve DAO', function([_, user]) {
       await this.token0.transfer(this.proxy.address, gauge0Amount, {
         from: token0Provider,
       });
-      const to = this.hcurvedao.address;
+      const to = this.hCurveDao.address;
       const data = abi.simpleEncode(
         'deposit(address,uint256)',
         this.gauge0.address,
@@ -90,7 +90,7 @@ contract('Curve DAO', function([_, user]) {
       await this.token0.transfer(this.proxy.address, gauge0Amount, {
         from: token0Provider,
       });
-      const to = this.hcurvedao.address;
+      const to = this.hCurveDao.address;
       const data = abi.simpleEncode(
         'deposit(address,uint256)',
         this.gauge0.address,
@@ -133,7 +133,7 @@ contract('Curve DAO', function([_, user]) {
         await this.minter.toggle_approve_mint(this.proxy.address, {
           from: user,
         });
-        const to = this.hcurvedao.address;
+        const to = this.hCurveDao.address;
         const data = abi.simpleEncode('mint(address)', this.gauge0.address);
         const claimableToken = await this.gauge0.claimable_tokens.call(user);
         const receipt = await this.proxy.execMock(to, data, {
@@ -153,7 +153,7 @@ contract('Curve DAO', function([_, user]) {
       });
 
       it('without approval', async function() {
-        const to = this.hcurvedao.address;
+        const to = this.hCurveDao.address;
         const data = abi.simpleEncode('mint(address)', this.gauge0.address);
         await expectRevert.unspecified(
           this.proxy.execMock(to, data, {
@@ -203,7 +203,7 @@ contract('Curve DAO', function([_, user]) {
         await this.minter.toggle_approve_mint(this.proxy.address, {
           from: user,
         });
-        const to = this.hcurvedao.address;
+        const to = this.hCurveDao.address;
         const data = abi.simpleEncode('mintMany(address[])', [
           this.gauge0.address,
           this.gauge1.address,
@@ -232,7 +232,7 @@ contract('Curve DAO', function([_, user]) {
       });
 
       it('without approval', async function() {
-        const to = this.hcurvedao.address;
+        const to = this.hCurveDao.address;
         const data = abi.simpleEncode('mintMany(address[])', [
           this.gauge0.address,
           this.gauge1.address,

@@ -51,9 +51,9 @@ contract('SwapIntegration', function([_, user]) {
     const uniswapAddress = DAI_UNISWAP;
 
     before(async function() {
-      this.huniswap = await HUniswap.new();
+      this.hUniswap = await HUniswap.new();
       await this.registry.register(
-        this.huniswap.address,
+        this.hUniswap.address,
         utils.asciiToHex('Uniswap')
       );
       this.token = await IToken.at(tokenAddress);
@@ -69,7 +69,7 @@ contract('SwapIntegration', function([_, user]) {
           deadline,
           { from: user, value: value[0] }
         );
-        const to = [this.huniswap.address, this.huniswap.address];
+        const to = [this.hUniswap.address, this.hUniswap.address];
         const data = [
           abi.simpleEncode(
             'ethToTokenSwapInput(uint256,address,uint256):(uint256)',
@@ -101,15 +101,15 @@ contract('SwapIntegration', function([_, user]) {
     });
 
     describe('Compound Token Lending', function() {
-      const ctokenAddress = CDAI;
+      const cTokenAddress = CDAI;
 
       before(async function() {
-        this.hctoken = await HCToken.new();
+        this.hCToken = await HCToken.new();
         await this.registry.register(
-          this.hctoken.address,
+          this.hCToken.address,
           utils.asciiToHex('CToken')
         );
-        this.ctoken = await ICToken.at(ctokenAddress);
+        this.cToken = await ICToken.at(cTokenAddress);
       });
 
       it('normal', async function() {
@@ -120,7 +120,7 @@ contract('SwapIntegration', function([_, user]) {
           deadline,
           { from: user, value: value[0] }
         );
-        const to = [this.huniswap.address, this.hctoken.address];
+        const to = [this.hUniswap.address, this.hCToken.address];
         const data = [
           abi.simpleEncode(
             'ethToTokenSwapInput(uint256,address,uint256):(uint256)',
@@ -128,17 +128,17 @@ contract('SwapIntegration', function([_, user]) {
             tokenAddress,
             new BN('1')
           ),
-          abi.simpleEncode('mint(address,uint256)', ctokenAddress, value[1]),
+          abi.simpleEncode('mint(address,uint256)', cTokenAddress, value[1]),
         ];
-        const rate = await this.ctoken.exchangeRateStored.call();
+        const rate = await this.cToken.exchangeRateStored.call();
         const result = value[1].mul(ether('1')).div(rate);
         const receipt = await this.proxy.batchExec(to, data, {
           from: user,
           value: ether('1'),
         });
-        const ctokenUser = await this.ctoken.balanceOf.call(user);
+        const cTokenUser = await this.cToken.balanceOf.call(user);
         expect(
-          ctokenUser.mul(new BN('1000')).divRound(result)
+          cTokenUser.mul(new BN('1000')).divRound(result)
         ).to.be.bignumber.eq(new BN('1000'));
       });
     });

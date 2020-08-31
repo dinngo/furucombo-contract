@@ -42,18 +42,18 @@ contract('Aave flashloan', function([_, user]) {
   before(async function() {
     this.registry = await Registry.new();
     this.proxy = await Proxy.new(this.registry.address);
-    this.haave = await HAave.new();
-    this.hmock = await HMock.new();
+    this.hAave = await HAave.new();
+    this.hMock = await HMock.new();
     await this.registry.register(
-      this.haave.address,
+      this.hAave.address,
       utils.asciiToHex('Aave Protocol')
     );
-    await this.registry.register(this.hmock.address, utils.asciiToHex('Mock'));
+    await this.registry.register(this.hMock.address, utils.asciiToHex('Mock'));
     this.provider = await IProvider.at(AAVEPROTOCOL_PROVIDER);
     const lendingPoolAddress = await this.provider.getLendingPool.call();
     const lendingPoolCoreAddress = await this.provider.getLendingPoolCore.call();
     this.lendingPool = await ILendingPool.at(lendingPoolAddress);
-    await this.registry.register(lendingPoolAddress, this.haave.address);
+    await this.registry.register(lendingPoolAddress, this.hAave.address);
   });
 
   beforeEach(async function() {
@@ -70,9 +70,9 @@ contract('Aave flashloan', function([_, user]) {
     const uniswapAddress = DAI_UNISWAP;
 
     before(async function() {
-      this.huniswap = await HUniswap.new();
+      this.hUniswap = await HUniswap.new();
       await this.registry.register(
-        this.huniswap.address,
+        this.hUniswap.address,
         utils.asciiToHex('Uniswap')
       );
       this.token = await IToken.at(tokenAddress);
@@ -87,7 +87,7 @@ contract('Aave flashloan', function([_, user]) {
         deadline,
         { from: user, value: value[0] }
       );
-      const flashTo = [this.huniswap.address, this.huniswap.address];
+      const flashTo = [this.hUniswap.address, this.hUniswap.address];
       const flashData = [
         abi.simpleEncode(
           'ethToTokenSwapInput(uint256,address,uint256):(uint256)',
@@ -108,7 +108,7 @@ contract('Aave flashloan', function([_, user]) {
           [flashTo, flashData]
         )
       );
-      const to = this.haave.address;
+      const to = this.hAave.address;
       const data = abi.simpleEncode(
         'flashLoan(address,uint256,bytes)',
         ETH_TOKEN,

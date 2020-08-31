@@ -32,9 +32,9 @@ contract('Uniswap Swap', function([_, user, someone]) {
   let id;
   before(async function() {
     this.registry = await Registry.new();
-    this.huniswap = await HUniswap.new();
+    this.hUniswap = await HUniswap.new();
     await this.registry.register(
-      this.huniswap.address,
+      this.hUniswap.address,
       utils.asciiToHex('Uniswap')
     );
     this.proxy = await Proxy.new(this.registry.address);
@@ -70,7 +70,7 @@ contract('Uniswap Swap', function([_, user, someone]) {
     describe('Exact input', function() {
       it('normal', async function() {
         const value = ether('1');
-        const to = this.huniswap.address;
+        const to = this.hUniswap.address;
         const data = abi.simpleEncode(
           'ethToTokenSwapInput(uint256,address,uint256):(uint256)',
           value,
@@ -104,7 +104,7 @@ contract('Uniswap Swap', function([_, user, someone]) {
 
       it('min amount too high', async function() {
         const value = ether('1');
-        const to = this.huniswap.address;
+        const to = this.hUniswap.address;
         const deadline = (await latest()).add(new BN('100'));
         const uniswapAmount = await this.swap.ethToTokenSwapInput.call(
           new BN('1'),
@@ -133,7 +133,7 @@ contract('Uniswap Swap', function([_, user, someone]) {
     describe('Exact output', function() {
       it('normal', async function() {
         const value = ether('1');
-        const to = this.huniswap.address;
+        const to = this.hUniswap.address;
         const data = abi.simpleEncode(
           'ethToTokenSwapOutput(uint256,address,uint256):(uint256)',
           value,
@@ -167,7 +167,7 @@ contract('Uniswap Swap', function([_, user, someone]) {
 
       it('insufficient ether', async function() {
         const value = ether('0.1');
-        const to = this.huniswap.address;
+        const to = this.hUniswap.address;
         const data = abi.simpleEncode(
           'ethToTokenSwapOutput(uint256,address,uint256):(uint256)',
           value,
@@ -213,7 +213,7 @@ contract('Uniswap Swap', function([_, user, someone]) {
     describe('Exact input', function() {
       it('normal', async function() {
         const value = ether('100');
-        const to = this.huniswap.address;
+        const to = this.hUniswap.address;
         const data = abi.simpleEncode(
           'tokenToEthSwapInput(address,uint256,uint256):(uint256)',
           tokenAddress,
@@ -255,7 +255,7 @@ contract('Uniswap Swap', function([_, user, someone]) {
     describe('Exact output', function() {
       it('normal', async function() {
         const value = ether('100');
-        const to = this.huniswap.address;
+        const to = this.hUniswap.address;
         const data = abi.simpleEncode(
           'tokenToEthSwapOutput(address,uint256,uint256):(uint256)',
           tokenAddress,
@@ -319,7 +319,7 @@ contract('Uniswap Swap', function([_, user, someone]) {
     describe('Exact input', function() {
       it('normal', async function() {
         const value = ether('100');
-        const to = this.huniswap.address;
+        const to = this.hUniswap.address;
         const data = abi.simpleEncode(
           'tokenToTokenSwapInput(address,uint256,uint256,address):(uint256)',
           token0Address,
@@ -365,7 +365,7 @@ contract('Uniswap Swap', function([_, user, someone]) {
     describe('Exact output', function() {
       it('normal', async function() {
         const value = ether('100');
-        const to = this.huniswap.address;
+        const to = this.hUniswap.address;
         const data = abi.simpleEncode(
           'tokenToTokenSwapOutput(address,uint256,uint256,address):(uint256)',
           token0Address,

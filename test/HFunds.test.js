@@ -38,9 +38,9 @@ contract('Funds', function([_, user, someone]) {
   before(async function() {
     this.registry = await Registry.new();
     this.proxy = await Proxy.new(this.registry.address);
-    this.hfunds = await HFunds.new();
+    this.hFunds = await HFunds.new();
     await this.registry.register(
-      this.hfunds.address,
+      this.hFunds.address,
       utils.asciiToHex('Funds')
     );
   });
@@ -62,7 +62,7 @@ contract('Funds', function([_, user, someone]) {
     it('normal', async function() {
       const token = [this.token0.address];
       const value = [ether('100')];
-      const to = this.hfunds.address;
+      const to = this.hFunds.address;
       const data = abi.simpleEncode(
         'inject(address[],uint256[])',
         token,
@@ -94,7 +94,7 @@ contract('Funds', function([_, user, someone]) {
     it('USDT', async function() {
       const token = [this.usdt.address];
       const value = [new BN('1000000')];
-      const to = this.hfunds.address;
+      const to = this.hFunds.address;
       const data = abi.simpleEncode(
         'inject(address[],uint256[])',
         token,
@@ -132,7 +132,7 @@ contract('Funds', function([_, user, someone]) {
     it('normal', async function() {
       const token = [this.token0.address, this.token1.address];
       const value = [ether('100'), ether('100')];
-      const to = this.hfunds.address;
+      const to = this.hFunds.address;
       const data = abi.simpleEncode(
         'inject(address[],uint256[])',
         token,
@@ -189,7 +189,7 @@ contract('Funds', function([_, user, someone]) {
         const providerAddress = providerAddresses[0];
         const value = ether('100');
         const receiver = someone;
-        const to = this.hfunds.address;
+        const to = this.hFunds.address;
         const data = abi.simpleEncode(
           'sendToken(address,uint256,address)',
           token,
@@ -221,7 +221,7 @@ contract('Funds', function([_, user, someone]) {
         const providerAddress = USDT_PROVIDER;
         const value = new BN('1000000');
         const receiver = someone;
-        const to = this.hfunds.address;
+        const to = this.hFunds.address;
         const data = abi.simpleEncode(
           'sendToken(address,uint256,address)',
           token,
@@ -254,7 +254,7 @@ contract('Funds', function([_, user, someone]) {
         const providerAddress = providerAddresses[0];
         const value = ether('100');
         const receiver = someone;
-        const to = this.hfunds.address;
+        const to = this.hFunds.address;
         const data = abi.simpleEncode(
           'sendToken(address,uint256,address)',
           token,
@@ -279,7 +279,7 @@ contract('Funds', function([_, user, someone]) {
       it('normal', async function() {
         const value = ether('1');
         const receiver = someone;
-        const to = this.hfunds.address;
+        const to = this.hFunds.address;
         const data = abi.simpleEncode('send(uint256,address)', value, receiver);
         let balanceSomeone = await tracker(someone);
         const receipt = await this.proxy.execMock(to, data, {
@@ -293,7 +293,7 @@ contract('Funds', function([_, user, someone]) {
       it('insufficient ether', async function() {
         const value = ether('1');
         const receiver = someone;
-        const to = this.hfunds.address;
+        const to = this.hFunds.address;
         const data = abi.simpleEncode('send(uint256,address)', value, receiver);
         let balanceSomeone = await tracker(someone);
         await expectRevert.unspecified(

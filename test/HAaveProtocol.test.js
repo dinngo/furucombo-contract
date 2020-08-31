@@ -35,32 +35,32 @@ const ILendingPool = artifacts.require('ILendingPool');
 const IProvider = artifacts.require('ILendingPoolAddressesProvider');
 
 contract('Aave', function([_, user]) {
-  const atokenAddress = ADAI;
+  const aTokenAddress = ADAI;
   const tokenAddress = DAI_TOKEN;
   const providerAddress = DAI_PROVIDER;
 
   let id;
   let balanceUser;
   let balanceProxy;
-  let aetherUser;
-  let atokenUser;
+  let aEtherUser;
+  let aTokenUser;
 
   before(async function() {
     this.registry = await Registry.new();
     this.proxy = await Proxy.new(this.registry.address);
-    this.haave = await HAave.new();
+    this.hAave = await HAave.new();
     await this.registry.register(
-      this.haave.address,
+      this.hAave.address,
       utils.asciiToHex('Aave Protocol')
     );
     this.provider = await IProvider.at(AAVEPROTOCOL_PROVIDER);
     this.lendingPoolCoreAddress = await this.provider.getLendingPoolCore.call();
     this.lendingPoolAddress = await this.provider.getLendingPool.call();
     this.lendingPool = await ILendingPool.at(this.lendingPoolAddress);
-    await this.registry.register(this.lendingPoolAddress, this.haave.address);
-    this.aether = await IAToken.at(AETHER);
+    await this.registry.register(this.lendingPoolAddress, this.hAave.address);
+    this.aEther = await IAToken.at(AETHER);
     this.token = await IToken.at(tokenAddress);
-    this.atoken = await IAToken.at(atokenAddress);
+    this.aToken = await IAToken.at(aTokenAddress);
   });
 
   beforeEach(async function() {
@@ -75,7 +75,7 @@ contract('Aave', function([_, user]) {
   describe('Deposit', function() {
     it('ETH', async function() {
       const value = ether('10');
-      const to = this.haave.address;
+      const to = this.hAave.address;
       const data = abi.simpleEncode(
         'deposit(address,uint256)',
         ETH_TOKEN,
@@ -85,9 +85,9 @@ contract('Aave', function([_, user]) {
         from: user,
         value: value,
       });
-      const aetherUser = await this.aether.balanceOf.call(user);
+      const aEtherUser = await this.aEther.balanceOf.call(user);
 
-      expect(aetherUser).to.be.bignumber.eq(value);
+      expect(aEtherUser).to.be.bignumber.eq(value);
       expect(await balanceUser.delta()).to.be.bignumber.eq(
         ether('0')
           .sub(value)
@@ -98,7 +98,7 @@ contract('Aave', function([_, user]) {
 
     it('DAI', async function() {
       const value = ether('999');
-      const to = this.haave.address;
+      const to = this.hAave.address;
       const data = abi.simpleEncode(
         'deposit(address,uint256)',
         tokenAddress,
@@ -111,9 +111,9 @@ contract('Aave', function([_, user]) {
       await this.proxy.updateTokenMock(this.token.address);
 
       const receipt = await this.proxy.execMock(to, data, { from: user });
-      const atokenUser = await this.atoken.balanceOf.call(user);
+      const aTokenUser = await this.aToken.balanceOf.call(user);
 
-      expect(atokenUser).to.be.bignumber.eq(new BN(value));
+      expect(aTokenUser).to.be.bignumber.eq(new BN(value));
       expect(await balanceUser.delta()).to.be.bignumber.eq(
         ether('0').sub(new BN(receipt.receipt.gasUsed))
       );
@@ -122,7 +122,7 @@ contract('Aave', function([_, user]) {
 
     it('revert: reserve should not be zero address', async function() {
       const value = ether('10');
-      const to = this.haave.address;
+      const to = this.hAave.address;
       const data = abi.simpleEncode(
         'deposit(address,uint256)',
         constants.ZERO_ADDRESS,
@@ -137,24 +137,24 @@ contract('Aave', function([_, user]) {
   describe('Redeem', function() {
     it('aETH', async function() {
       const value = ether('10');
-      const to = this.haave.address;
+      const to = this.hAave.address;
       const data = abi.simpleEncode('redeem(address,uint256)', AETHER, value);
       await this.lendingPool.deposit(ETH_TOKEN, value, 0, {
         from: user,
         value: value,
       });
 
-      const aetherUserBefore = await this.aether.balanceOf.call(user);
-      await this.aether.transfer(this.proxy.address, value, { from: user });
-      await this.proxy.updateTokenMock(this.aether.address);
+      const aEtherUserBefore = await this.aEther.balanceOf.call(user);
+      await this.aEther.transfer(this.proxy.address, value, { from: user });
+      await this.proxy.updateTokenMock(this.aEther.address);
       await balanceUser.get();
 
       const receipt = await this.proxy.execMock(to, data, { from: user });
 
-      const aetherUserAfter = await this.aether.balanceOf.call(user);
+      const aEtherUserAfter = await this.aEther.balanceOf.call(user);
       const interestMax = value.mul(new BN(1)).div(new BN(10000));
-      expect(aetherUserAfter).to.be.bignumber.lt(
-        aetherUserBefore.sub(value).add(interestMax)
+      expect(aEtherUserAfter).to.be.bignumber.lt(
+        aEtherUserBefore.sub(value).add(interestMax)
       );
       expect(await balanceUser.delta()).to.be.bignumber.eq(
         ether('0')
@@ -166,10 +166,10 @@ contract('Aave', function([_, user]) {
 
     it('aDAI', async function() {
       const value = ether('999');
-      const to = this.haave.address;
+      const to = this.hAave.address;
       const data = abi.simpleEncode(
         'redeem(address,uint256)',
-        atokenAddress,
+        aTokenAddress,
         value
       );
 
@@ -180,20 +180,20 @@ contract('Aave', function([_, user]) {
       await this.lendingPool.deposit(this.token.address, value, 0, {
         from: user,
       });
-      const atokenUserBefore = await this.atoken.balanceOf.call(user);
+      const aTokenUserBefore = await this.aToken.balanceOf.call(user);
       const tokenUserBefore = await this.token.balanceOf.call(user);
 
-      await this.atoken.transfer(this.proxy.address, value, { from: user });
-      await this.proxy.updateTokenMock(this.atoken.address);
+      await this.aToken.transfer(this.proxy.address, value, { from: user });
+      await this.proxy.updateTokenMock(this.aToken.address);
       await balanceUser.get();
 
       const receipt = await this.proxy.execMock(to, data, { from: user });
-      const atokenUserAfter = await this.atoken.balanceOf.call(user);
+      const aTokenUserAfter = await this.aToken.balanceOf.call(user);
       const tokenUserAfter = await this.token.balanceOf.call(user);
 
       const interestMax = value.mul(new BN(1)).div(new BN(10000));
-      expect(atokenUserAfter).to.be.bignumber.lt(
-        atokenUserBefore.sub(value).add(interestMax)
+      expect(aTokenUserAfter).to.be.bignumber.lt(
+        aTokenUserBefore.sub(value).add(interestMax)
       );
       expect(tokenUserAfter).to.be.bignumber.eq(tokenUserBefore.add(value));
       expect(await balanceUser.delta()).to.be.bignumber.eq(
@@ -204,7 +204,7 @@ contract('Aave', function([_, user]) {
 
     it('revert: redeem without sending token to proxy first', async function() {
       const value = ether('10');
-      const to = this.haave.address;
+      const to = this.hAave.address;
       const data = abi.simpleEncode('redeem(address,uint256)', AETHER, value);
       await expectRevert.unspecified(
         this.proxy.execMock(to, data, { from: user, value: value })

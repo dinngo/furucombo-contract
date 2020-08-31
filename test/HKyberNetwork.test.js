@@ -40,9 +40,9 @@ contract('KyberNetwork Swap', function([_, user]) {
   before(async function() {
     this.registry = await Registry.new();
     this.proxy = await Proxy.new(this.registry.address);
-    this.hkybernetwork = await HKyberNetwork.new();
+    this.hKyberNetwork = await HKyberNetwork.new();
     await this.registry.register(
-      this.hkybernetwork.address,
+      this.hKyberNetwork.address,
       utils.asciiToHex('Kyberswap')
     );
     this.token = await IToken.at(tokenAddress);
@@ -64,7 +64,7 @@ contract('KyberNetwork Swap', function([_, user]) {
     describe('Exact input', function() {
       it('normal', async function() {
         const value = ether('1');
-        const to = this.hkybernetwork.address;
+        const to = this.hKyberNetwork.address;
         const rate = await this.swap.getExpectedRate.call(
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
           tokenAddress,
@@ -98,7 +98,7 @@ contract('KyberNetwork Swap', function([_, user]) {
 
       it('min rate too high', async function() {
         const value = ether('1');
-        const to = this.hkybernetwork.address;
+        const to = this.hKyberNetwork.address;
         const rate = await this.swap.getExpectedRate.call(
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
           tokenAddress,
@@ -131,7 +131,7 @@ contract('KyberNetwork Swap', function([_, user]) {
     describe('Exact input', function() {
       it('normal', async function() {
         const value = ether('1');
-        const to = this.hkybernetwork.address;
+        const to = this.hKyberNetwork.address;
         const rate = await this.swap.getExpectedRate.call(
           tokenAddress,
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
@@ -179,7 +179,7 @@ contract('KyberNetwork Swap', function([_, user]) {
     describe('Exact input', function() {
       it('normal', async function() {
         const value = ether('1');
-        const to = this.hkybernetwork.address;
+        const to = this.hKyberNetwork.address;
         const rate = await this.swap.getExpectedRate.call(
           srcTokenAddress,
           destTokenAddress,
