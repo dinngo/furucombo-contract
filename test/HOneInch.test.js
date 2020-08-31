@@ -28,7 +28,7 @@ const {
   resetAccount,
   profileGas,
   evmSnapshot,
-  evmRevertAndSnapshot,
+  evmRevert,
 } = require('./utils/utils');
 const fetch = require('node-fetch');
 const queryString = require('query-string');
@@ -49,11 +49,14 @@ contract('OneInch Swap', function([_, user]) {
       utils.asciiToHex('OneInch')
     );
     this.proxy = await Proxy.new(this.registry.address);
-    id = await evmSnapshot();
   });
 
   beforeEach(async function() {
-    id = await evmRevertAndSnapshot(id);
+    id = await evmSnapshot();
+  });
+
+  afterEach(async function() {
+    await evmRevert(id);
   });
 
   describe('Ether to Token', function() {
