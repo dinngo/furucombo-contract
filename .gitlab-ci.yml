@@ -10,6 +10,8 @@ cache: &global_cache
 
 before_script:
   - npm install
+  - FILES=( $(find -H -L ./test/* -regex "^.*.test.js") )
+  - len=${#FILES[@]}
 
 stages:
   - build
@@ -25,13 +27,59 @@ build:
   cache:
     <<: *global_cache
 
-test:
+test_0:
   stage: test
   tags:
     - docker
   script:
     - apt-get update && apt-get install -y netcat
-    - npm run test
+    - >
+      for (( i=0; i<${len}; i+=4 )); do
+        UNITTEST_FILES+=(${FILES[$i]})
+      done
+    - npm run test "${UNITTEST_FILES[@]}"
+  cache:
+    <<: *global_cache
+
+test_1:
+  stage: test
+  tags:
+    - docker
+  script:
+    - apt-get update && apt-get install -y netcat
+    - >
+      for (( i=1; i<${len}; i+=4 )); do
+        UNITTEST_FILES+=(${FILES[$i]})
+      done
+    - npm run test "${UNITTEST_FILES[@]}"
+  cache:
+    <<: *global_cache
+
+test_2:
+  stage: test
+  tags:
+    - docker
+  script:
+    - apt-get update && apt-get install -y netcat
+    - >
+      for (( i=2; i<${len}; i+=4 )); do
+        UNITTEST_FILES+=(${FILES[$i]})
+      done
+    - npm run test "${UNITTEST_FILES[@]}"
+  cache:
+    <<: *global_cache
+
+test_3:
+  stage: test
+  tags:
+    - docker
+  script:
+    - apt-get update && apt-get install -y netcat
+    - >
+      for (( i=3; i<${len}; i+=4 )); do
+        UNITTEST_FILES+=(${FILES[$i]})
+      done
+    - npm run test "${UNITTEST_FILES[@]}"
   cache:
     <<: *global_cache
 
