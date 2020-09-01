@@ -178,79 +178,79 @@ contract('Curve', function([_, deployer, user]) {
     });
   });
 
-  describe('OneSplit swap', function() {
-    const token0Address = SUSD_TOKEN;
-    const token1Address = TUSD_TOKEN;
-    const providerAddress = SUSD_PROVIDER;
+  // describe('OneSplit swap', function() {
+  //   const token0Address = SUSD_TOKEN;
+  //   const token1Address = TUSD_TOKEN;
+  //   const providerAddress = SUSD_PROVIDER;
 
-    let token0User;
-    let token1User;
+  //   let token0User;
+  //   let token1User;
 
-    before(async function() {
-      this.token0 = await IToken.at(token0Address);
-      this.token1 = await IToken.at(token1Address);
-    });
+  //   before(async function() {
+  //     this.token0 = await IToken.at(token0Address);
+  //     this.token1 = await IToken.at(token1Address);
+  //   });
 
-    beforeEach(async function() {
-      token0User = await this.token0.balanceOf.call(user);
-      token1User = await this.token1.balanceOf.call(user);
-    });
+  //   beforeEach(async function() {
+  //     token0User = await this.token0.balanceOf.call(user);
+  //     token1User = await this.token1.balanceOf.call(user);
+  //   });
 
-    describe('susd to y pool through onesplit', function() {
-      it('Exact input swap sUSD to TUSD by OneSplit', async function() {
-        const value = ether('1');
-        const parts = new BN('2');
-        const flags = 0x401e006d000;
-        const answer = await this.onesplit.getExpectedReturn.call(
-          this.token0.address,
-          this.token1.address,
-          value,
-          parts,
-          flags,
-          {
-            from: user,
-          }
-        );
-        const data = abi.simpleEncode(
-          'swap(address,address,uint256,uint256,uint256[],uint256)',
-          this.token0.address,
-          this.token1.address,
-          value,
-          new BN('1'),
-          answer.distribution,
-          flags
-        );
-        await this.token0.transfer(this.proxy.address, value, {
-          from: providerAddress,
-        });
-        await this.proxy.updateTokenMock(this.token0.address);
-        const receipt = await this.proxy.execMock(this.hcurve.address, data, {
-          from: user,
-          value: ether('1'), // Ensure handler can correctly deal with ether
-        });
-        expect(
-          await this.token0.balanceOf.call(this.proxy.address)
-        ).to.be.bignumber.eq(ether('0'));
-        expect(
-          await this.token1.balanceOf.call(this.proxy.address)
-        ).to.be.bignumber.eq(ether('0'));
-        expect(await this.token0.balanceOf.call(user)).to.be.bignumber.eq(
-          token0User
-        );
-        // oneSplit use sUSD and y pools in this case, give 10% tolerance
-        // for sUSD/TUSD.
-        expect(await this.token1.balanceOf.call(user)).to.be.bignumber.gte(
-          token1User
-            .add(answer.returnAmount)
-            .sub(answer.returnAmount.div(new BN('10')))
-        );
-        expect(await this.token1.balanceOf.call(user)).to.be.bignumber.lte(
-          token1User.add(answer.returnAmount)
-        );
-        profileGas(receipt);
-      });
-    });
-  });
+  //   describe('susd to y pool through onesplit', function() {
+  //     it('Exact input swap sUSD to TUSD by OneSplit', async function() {
+  //       const value = ether('1');
+  //       const parts = new BN('2');
+  //       const flags = 0x401e006d000;
+  //       const answer = await this.onesplit.getExpectedReturn.call(
+  //         this.token0.address,
+  //         this.token1.address,
+  //         value,
+  //         parts,
+  //         flags,
+  //         {
+  //           from: user,
+  //         }
+  //       );
+  //       const data = abi.simpleEncode(
+  //         'swap(address,address,uint256,uint256,uint256[],uint256)',
+  //         this.token0.address,
+  //         this.token1.address,
+  //         value,
+  //         new BN('1'),
+  //         answer.distribution,
+  //         flags
+  //       );
+  //       await this.token0.transfer(this.proxy.address, value, {
+  //         from: providerAddress,
+  //       });
+  //       await this.proxy.updateTokenMock(this.token0.address);
+  //       const receipt = await this.proxy.execMock(this.hcurve.address, data, {
+  //         from: user,
+  //         value: ether('1'), // Ensure handler can correctly deal with ether
+  //       });
+  //       expect(
+  //         await this.token0.balanceOf.call(this.proxy.address)
+  //       ).to.be.bignumber.eq(ether('0'));
+  //       expect(
+  //         await this.token1.balanceOf.call(this.proxy.address)
+  //       ).to.be.bignumber.eq(ether('0'));
+  //       expect(await this.token0.balanceOf.call(user)).to.be.bignumber.eq(
+  //         token0User
+  //       );
+  //       // oneSplit use sUSD and y pools in this case, give 10% tolerance
+  //       // for sUSD/TUSD.
+  //       expect(await this.token1.balanceOf.call(user)).to.be.bignumber.gte(
+  //         token1User
+  //           .add(answer.returnAmount)
+  //           .sub(answer.returnAmount.div(new BN('10')))
+  //       );
+  //       expect(await this.token1.balanceOf.call(user)).to.be.bignumber.lte(
+  //         token1User.add(answer.returnAmount)
+  //       );
+  //       profileGas(receipt);
+  //     });
+  //   });
+  // });
 
   describe('Liquidity', function() {
     const token0Address = RENBTC_TOKEN;
