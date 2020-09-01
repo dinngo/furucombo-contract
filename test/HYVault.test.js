@@ -22,7 +22,7 @@ const HYVault = artifacts.require('HYVault');
 const IYVault = artifacts.require('IYVault');
 const IToken = artifacts.require('IERC20');
 
-contract('YVault', function([user]) {
+contract('YVault', function([_, user]) {
   before(async function() {
     this.registry = await Registry.new();
     this.proxy = await Proxy.new(this.registry.address);
@@ -85,18 +85,14 @@ contract('YVault', function([user]) {
 
       // User deposits aLINK to get yaLINK
       const amountDeposit = ether('1');
-      const dataDeposit = abi.simpleEncode(
-        'deposit(address,uint256)',
-        vault.address,
-        amountDeposit
-      );
-      await token.transfer(this.proxy.address, amountDeposit, {
+      await token.transfer(user, amountDeposit, {
         from: ALINK_PROVIDER,
       });
-      await this.proxy.updateTokenMock(token.address);
-      await this.proxy.execMock(this.hYVault.address, dataDeposit, {
+      await token.approve(vault.address, amountDeposit, {
         from: user,
-        value: ether('0.1'),
+      });
+      await vault.deposit(amountDeposit, {
+        from: user,
       });
 
       // User withdraws aLINK by yaLINK

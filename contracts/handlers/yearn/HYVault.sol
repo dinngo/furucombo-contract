@@ -10,9 +10,10 @@ contract HYVault is HandlerBase {
 
     function deposit(address vault, uint256 _amount) external payable {
         IYVault yVault = IYVault(vault);
-        IERC20(yVault.token()).safeApprove(address(yVault), _amount);
+        address token = yVault.token();
+        IERC20(token).safeApprove(address(yVault), _amount);
         yVault.deposit(_amount);
-        IERC20(yVault.token()).safeApprove(address(yVault), 0);
+        IERC20(token).safeApprove(address(yVault), 0);
 
         _updateToken(address(yVault));
     }
