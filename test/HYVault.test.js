@@ -22,17 +22,15 @@ const HYVault = artifacts.require('HYVault');
 const IYVault = artifacts.require('IYVault');
 const IToken = artifacts.require('IERC20');
 
-contract('YVault', function([_, deployer, user]) {
+contract('YVault', function([user]) {
   before(async function() {
     this.registry = await Registry.new();
     this.proxy = await Proxy.new(this.registry.address);
-    this.hyvault = await HYVault.new();
+    this.hYVault = await HYVault.new();
     await this.registry.register(
-      this.hyvault.address,
+      this.hYVault.address,
       utils.asciiToHex('HYVault')
     );
-    this.ycrvvault = await IYVault.at(YEARN_YCRV_VAULT);
-    token = await IToken.at(CURVE_YCRV);
     this.id = await evmSnapshot();
   });
 
@@ -55,7 +53,7 @@ contract('YVault', function([_, deployer, user]) {
       });
       await this.proxy.updateTokenMock(token.address);
       const ratio = await vault.getPricePerFullShare.call();
-      const receipt = await this.proxy.execMock(this.hyvault.address, data, {
+      const receipt = await this.proxy.execMock(this.hYVault.address, data, {
         from: user,
         value: ether('0.1'),
       });
@@ -86,24 +84,24 @@ contract('YVault', function([_, deployer, user]) {
       const token = await IToken.at(ALINK);
 
       // User deposits aLINK to get yaLINK
-      let amount = ether('1');
-      let data = abi.simpleEncode(
+      const amountDeposit = ether('1');
+      const dataDeposit = abi.simpleEncode(
         'deposit(address,uint256)',
         vault.address,
-        amount
+        amountDeposit
       );
-      await token.transfer(this.proxy.address, amount, {
+      await token.transfer(this.proxy.address, amountDeposit, {
         from: ALINK_PROVIDER,
       });
       await this.proxy.updateTokenMock(token.address);
-      await this.proxy.execMock(this.hyvault.address, data, {
+      await this.proxy.execMock(this.hYVault.address, dataDeposit, {
         from: user,
         value: ether('0.1'),
       });
 
       // User withdraws aLINK by yaLINK
-      amount = await vault.balanceOf.call(user);
-      data = abi.simpleEncode(
+      const amount = await vault.balanceOf.call(user);
+      const data = abi.simpleEncode(
         'withdraw(address,uint256)',
         vault.address,
         amount
@@ -113,7 +111,7 @@ contract('YVault', function([_, deployer, user]) {
       });
       await this.proxy.updateTokenMock(vault.address);
       const ratio = await vault.getPricePerFullShare.call();
-      const receipt = await this.proxy.execMock(this.hyvault.address, data, {
+      const receipt = await this.proxy.execMock(this.hYVault.address, data, {
         from: user,
         value: ether('0.1'),
       });
@@ -121,6 +119,9 @@ contract('YVault', function([_, deployer, user]) {
       // Check proxy balance
       expect(await vault.balanceOf.call(this.proxy.address)).to.be.zero;
       expect(await token.balanceOf.call(this.proxy.address)).to.be.zero;
+
+      // Check user vault balance
+      expect(await vault.balanceOf.call(user)).to.be.zero;
 
       // Check user token balance <= 100.1% expected result
       expect(await token.balanceOf.call(user)).to.be.bignumber.gte(
