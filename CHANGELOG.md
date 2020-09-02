@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+### Added
+
+- Support Yearn vault deposit and withdraw in `HYVault`.
+
 ## [0.9.0] - 2020-08-21
 
 - Support Mooniswap deposit/withdraw liquidity function in `HMooniswap`.
