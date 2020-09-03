@@ -3,12 +3,13 @@ pragma solidity ^0.5.16;
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
-import "@openzeppelin/contracts/utils/Pausable.sol";
+// import "@openzeppelin/contracts/utils/Pausable.sol";
 
 import "./IStakingRewards.sol";
+import "./Whitelistable.sol";
 
 
-contract StakingRewardsAdapter is ReentrancyGuard, Pausable {
+contract StakingRewardsAdapter is ReentrancyGuard, Whitelistable {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
 
@@ -32,8 +33,9 @@ contract StakingRewardsAdapter is ReentrancyGuard, Pausable {
     /* ========== CONSTRUCTOR ========== */
 
     constructor(
+        address _whitelist,
         address _stakingContract
-    ) public {
+    ) public Whitelistable(_whitelist) {
         stakingContract = IStakingRewards(_stakingContract);
         rewardsToken = stakingContract.rewardsToken();
         stakingToken = stakingContract.stakingToken();
@@ -82,43 +84,80 @@ contract StakingRewardsAdapter is ReentrancyGuard, Pausable {
         rewardRate = stakingContract.rewardRate();
     }
 
-    /* ========== MUTATIVE FUNCTIONS ========== */
+    /* ========== INTERNAL FUNCTIONS ========== */
 
-    function stake(uint256 amount) external nonReentrant notPaused updateReward(msg.sender) {
+    function _stakeInternal(address account, uint256 amount) internal {
         require(amount > 0, "StakingRewardsAdapter: Cannot stake 0");
         _totalSupply = _totalSupply.add(amount);
-        _balances[msg.sender] = _balances[msg.sender].add(amount);
+        _balances[account] = _balances[account].add(amount);
         stakingToken.safeTransferFrom(msg.sender, address(this), amount);
         stakingToken.safeApprove(address(stakingContract), amount);
         stakingContract.stake(amount);
-        // emit Staked(msg.sender, amount);
+        // emit Staked(account, amount);
     }
 
-    function withdraw(uint256 amount) public nonReentrant updateReward(msg.sender) {
+    function _withdrawInternal(address account, uint256 amount) internal {
         require(amount > 0, "StakingRewardsAdapter: Cannot withdraw 0");
         _totalSupply = _totalSupply.sub(amount);
-        _balances[msg.sender] = _balances[msg.sender].sub(amount);
+        _balances[account] = _balances[account].sub(amount);
         stakingContract.withdraw(amount);
         stakingToken.safeTransfer(msg.sender, amount);
-        // emit Withdrawn(msg.sender, amount);
+        // emit Withdrawn(account, amount);
     }
 
-    function getReward() public nonReentrant updateReward(msg.sender) {
-        uint256 reward = rewards[msg.sender];
+    function _getRewardInternal(address account) internal {
+        uint256 reward = rewards[account];
         if (reward > 0) {
-            rewards[msg.sender] = 0;
+            rewards[account] = 0;
             uint256 rewardBalance = rewardsToken.balanceOf(address(this));
             if(reward > rewardBalance) {
                 stakingContract.getReward();
             }
             rewardsToken.safeTransfer(msg.sender, reward);
-            // emit RewardPaid(msg.sender, reward);
+            // emit RewardPaid(account, reward);
         }
+    }
+
+    /* ========== SELF_OPERATE FUNCTIONS ========== */
+
+    function stake(uint256 amount) external nonReentrant updateReward(msg.sender) {
+        // require(amount > 0, "StakingRewardsAdapter: Cannot stake 0");
+        _stakeInternal(msg.sender, amount);
+    }
+
+    function withdraw(uint256 amount) public nonReentrant updateReward(msg.sender) {
+        // require(amount > 0, "StakingRewardsAdapter: Cannot withdraw 0");
+        _withdrawInternal(msg.sender, amount);
+    }
+
+    function getReward() public nonReentrant updateReward(msg.sender) {
+        _getRewardInternal(msg.sender);
     }
 
     function exit() external {
         withdraw(_balances[msg.sender]);
         getReward();
+    }
+
+    /* ========== RESTRICTED OPERATE_FOR FUNCTIONS ========== */
+
+    function stakeFor(address account, uint256 amount) external nonReentrant onlyWhitelist updateReward(account) {
+        // require(amount > 0, "StakingRewardsAdapter: Cannot stake 0");
+        _stakeInternal(account, amount);
+    }
+
+    function withdrawFor(address account, uint256 amount) public nonReentrant onlyWhitelist updateReward(account) {
+        // require(amount > 0, "StakingRewardsAdapter: Cannot withdraw 0");
+        _withdrawInternal(account, amount);
+    }
+
+    function getRewardFor(address account) public nonReentrant onlyWhitelist updateReward(account) {
+        _getRewardInternal(account);
+    }
+
+    function exitFor(address account) external onlyWhitelist {
+        withdrawFor(account, _balances[account]);
+        getRewardFor(account);
     }
 
     /* ========== EVENTS ========== */
