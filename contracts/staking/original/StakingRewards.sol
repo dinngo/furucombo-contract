@@ -1,15 +1,15 @@
 pragma solidity ^0.5.16;
 
-import "openzeppelin-solidity-2.3.0/contracts/math/Math.sol";
-import "openzeppelin-solidity-2.3.0/contracts/math/SafeMath.sol";
-import "openzeppelin-solidity-2.3.0/contracts/token/ERC20/ERC20Detailed.sol";
-import "openzeppelin-solidity-2.3.0/contracts/token/ERC20/SafeERC20.sol";
-import "openzeppelin-solidity-2.3.0/contracts/utils/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/math/Math.sol";
+import "@openzeppelin/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20Detailed.sol";
+import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 // Inheritance
-import "./interfaces/IStakingRewards.sol";
-import "./RewardsDistributionRecipient.sol";
-import "./Pausable.sol";
+import "../IStakingRewards.sol";
+import "./dependency/RewardsDistributionRecipient.sol";
+import "./dependency/Pausable.sol";
 
 
 contract StakingRewards is IStakingRewards, RewardsDistributionRecipient, ReentrancyGuard, Pausable {
