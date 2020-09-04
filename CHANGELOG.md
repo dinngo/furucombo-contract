@@ -4,13 +4,18 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+## [0.10.0] - 2020-09-04
+
 ### Added
 
 - Support Yearn vault deposit and withdraw in `HYVault`.
+- Support Mooniswap deposit/withdraw liquidity function in `HMooniswap`.
+
+### Removed
+
+- Unused `HERC20TokenIn`.
 
 ## [0.9.0] - 2020-08-21
-
-- Support Mooniswap deposit/withdraw liquidity function in `HMooniswap`.
 
 ### Added
 
