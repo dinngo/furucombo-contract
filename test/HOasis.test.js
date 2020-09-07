@@ -23,7 +23,12 @@ const {
   OASIS_DIRECT_PROXY,
   MAKER_OTC,
 } = require('./utils/constants');
-const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
+const {
+  evmRevert,
+  evmSnapshot,
+  mulPercent,
+  profileGas,
+} = require('./utils/utils');
 
 const HOasis = artifacts.require('HOasis');
 const Registry = artifacts.require('Registry');
@@ -34,6 +39,7 @@ const IMakerOtc = artifacts.require('IMakerOtc');
 
 // (if tests keep being reverted, check if there are enough liquidity for the tokens)
 contract('Oasis Swap', function([_, user, someone]) {
+  const slippage = new BN('3');
   let id;
   before(async function() {
     this.registry = await Registry.new();
@@ -55,7 +61,7 @@ contract('Oasis Swap', function([_, user, someone]) {
   });
 
   describe('Ether to Token', function() {
-    const tokenAddress = DAI_TOKEN;
+    const tokenAddress = BAT_TOKEN;
     const oasisAddress = OASIS_DIRECT_PROXY;
 
     let balanceUser;
@@ -77,21 +83,21 @@ contract('Oasis Swap', function([_, user, someone]) {
       it('normal', async function() {
         const value = ether('1');
         const to = this.hOasis.address;
-        const data = abi.simpleEncode(
-          'sellAllAmountPayEth(uint256,address,address,uint256):(uint256)',
-          value,
-          WETH_TOKEN,
-          tokenAddress,
-          new BN('1')
-        );
-        // TODO: get exact amount using same function call
-        // or find out why inaccuracy exists
         const oasisAmount = await this.otc.getBuyAmount.call(
           tokenAddress,
           WETH_TOKEN,
           value,
           { from: someone }
         );
+        const data = abi.simpleEncode(
+          'sellAllAmountPayEth(uint256,address,address,uint256):(uint256)',
+          value,
+          WETH_TOKEN,
+          tokenAddress,
+          mulPercent(oasisAmount, new BN('100').sub(slippage))
+        );
+        // TODO: get exact amount using same function call
+        // or find out why inaccuracy exists
         const receipt = await this.proxy.execMock(to, data, {
           from: user,
           value: value,
@@ -148,21 +154,21 @@ contract('Oasis Swap', function([_, user, someone]) {
         const value = ether('1');
         const buyAmt = ether('100');
         const to = this.hOasis.address;
-        const data = abi.simpleEncode(
-          'buyAllAmountPayEth(uint256,address,uint256,address):(uint256)',
-          value,
-          tokenAddress,
-          buyAmt,
-          WETH_TOKEN
-        );
-        // TODO: get exact amount using same function call
-        // or find out why inaccuracy exists
         const oasisAmount = await this.otc.getPayAmount.call(
           WETH_TOKEN,
           tokenAddress,
           buyAmt,
           { from: someone }
         );
+        const data = abi.simpleEncode(
+          'buyAllAmountPayEth(uint256,address,uint256,address):(uint256)',
+          mulPercent(oasisAmount, new BN('100').add(slippage)),
+          tokenAddress,
+          buyAmt,
+          WETH_TOKEN
+        );
+        // TODO: get exact amount using same function call
+        // or find out why inaccuracy exists
         const receipt = await this.proxy.execMock(to, data, {
           from: user,
           value: value,
@@ -228,12 +234,18 @@ contract('Oasis Swap', function([_, user, someone]) {
       it('normal', async function() {
         const value = ether('100');
         const to = this.hOasis.address;
+        const result = await this.otc.getBuyAmount.call(
+          WETH_TOKEN,
+          tokenAddress,
+          value,
+          { from: someone }
+        );
         const data = abi.simpleEncode(
           'sellAllAmountBuyEth(address,uint256,address,uint256):(uint256)',
           tokenAddress,
           value,
           WETH_TOKEN,
-          new BN('1')
+          mulPercent(result, new BN('100').sub(slippage))
         );
         await this.token.transfer(this.proxy.address, value, {
           from: providerAddress,
@@ -246,12 +258,6 @@ contract('Oasis Swap', function([_, user, someone]) {
 
         // TODO: get exact amount using same function call
         // or find out why inaccuracy exists
-        const result = await this.otc.getBuyAmount.call(
-          WETH_TOKEN,
-          tokenAddress,
-          value,
-          { from: someone }
-        );
         const receipt = await this.proxy.execMock(to, data, { from: user });
 
         expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
@@ -308,12 +314,18 @@ contract('Oasis Swap', function([_, user, someone]) {
         const value = ether('100');
         const buyAmt = ether('0.1');
         const to = this.hOasis.address;
+        const result = await this.otc.getPayAmount.call(
+          tokenAddress,
+          WETH_TOKEN,
+          buyAmt,
+          { from: someone }
+        );
         const data = abi.simpleEncode(
           'buyAllAmountBuyEth(address,uint256,address,uint256):(uint256)',
           WETH_TOKEN,
           buyAmt,
           tokenAddress,
-          value
+          mulPercent(result, new BN('100').add(slippage))
         );
         await this.token.transfer(this.proxy.address, value, {
           from: providerAddress,
@@ -326,12 +338,6 @@ contract('Oasis Swap', function([_, user, someone]) {
 
         // TODO: get exact amount using same function call
         // or find out why inaccuracy exists
-        const result = await this.otc.getPayAmount.call(
-          tokenAddress,
-          WETH_TOKEN,
-          buyAmt,
-          { from: someone }
-        );
         const receipt = await this.proxy.execMock(to, data, {
           from: user,
         });
@@ -397,12 +403,18 @@ contract('Oasis Swap', function([_, user, someone]) {
       it('normal', async function() {
         const value = ether('100');
         const to = this.hOasis.address;
+        const result = await this.otc.getBuyAmount.call(
+          token1Address,
+          token0Address,
+          value,
+          { from: someone }
+        );
         const data = abi.simpleEncode(
           'sellAllAmount(address,uint256,address,uint256):(uint256)',
           token0Address,
           value,
           token1Address,
-          new BN('1')
+          mulPercent(result, new BN('100').sub(slippage))
         );
         await this.token0.transfer(this.proxy.address, value, {
           from: providerAddress,
@@ -417,12 +429,6 @@ contract('Oasis Swap', function([_, user, someone]) {
 
         // TODO: get exact amount using same function call
         // or find out why inaccuracy exists
-        const result = await this.otc.getBuyAmount.call(
-          token1Address,
-          token0Address,
-          value,
-          { from: someone }
-        );
         const receipt = await this.proxy.execMock(to, data, { from: user });
 
         expect(await this.token0.balanceOf.call(user)).to.be.bignumber.eq(
@@ -483,12 +489,18 @@ contract('Oasis Swap', function([_, user, someone]) {
         const value = ether('100');
         const buyAmt = new BN('10').mul(new BN(1000000));
         const to = this.hOasis.address;
+        const result = await this.otc.getPayAmount.call(
+          token0Address,
+          token1Address,
+          buyAmt,
+          { from: someone }
+        );
         const data = abi.simpleEncode(
           'buyAllAmount(address,uint256,address,uint256):(uint256)',
           token1Address,
           buyAmt,
           token0Address,
-          value
+          mulPercent(result, new BN('100').add(slippage))
         );
         await this.token0.transfer(this.proxy.address, value, {
           from: providerAddress,
@@ -503,12 +515,6 @@ contract('Oasis Swap', function([_, user, someone]) {
 
         // TODO: get exact amount using same function call
         // or find out why inaccuracy exists
-        const result = await this.otc.getPayAmount.call(
-          token0Address,
-          token1Address,
-          buyAmt,
-          { from: someone }
-        );
         const receipt = await this.proxy.execMock(to, data, { from: user });
 
         // TODO: modified the expect below when using exact amount
