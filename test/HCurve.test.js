@@ -25,7 +25,12 @@ const {
   CURVE_YDAI_TOKEN,
   CURVE_YUSDT_TOKEN,
 } = require('./utils/constants');
-const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
+const {
+  evmRevert,
+  evmSnapshot,
+  mulPercent,
+  profileGas,
+} = require('./utils/utils');
 
 const Proxy = artifacts.require('ProxyMock');
 const Registry = artifacts.require('Registry');
@@ -37,6 +42,7 @@ const IToken = artifacts.require('IERC20');
 const IYToken = artifacts.require('IYToken');
 
 contract('Curve', function([_, user]) {
+  const slippage = new BN('3');
   let id;
   before(async function() {
     this.registry = await Registry.new();
@@ -90,7 +96,7 @@ contract('Curve', function([_, user]) {
           2,
           0,
           value,
-          new BN('1')
+          mulPercent(answer, new BN('100').sub(slippage))
         );
         await this.token0.transfer(this.proxy.address, value, {
           from: providerAddress,
@@ -152,7 +158,7 @@ contract('Curve', function([_, user]) {
           1,
           0,
           value,
-          new BN('1')
+          mulPercent(answer, new BN('100').sub(slippage))
         );
         await this.token0.transfer(this.proxy.address, value, {
           from: providerAddress,
@@ -222,7 +228,7 @@ contract('Curve', function([_, user]) {
           this.token0.address,
           this.token1.address,
           value,
-          new BN('1'),
+          mulPercent(answer.returnAmount, new BN('100').sub(slippage)),
           answer.distribution,
           flags
         );
@@ -300,7 +306,7 @@ contract('Curve', function([_, user]) {
         });
         await this.proxy.updateTokenMock(this.token0.address);
         await this.proxy.updateTokenMock(this.token1.address);
-        const minMintAmount = new BN('1');
+        const minMintAmount = mulPercent(answer, new BN('100').sub(slippage));
         const data = abi.simpleEncode(
           'addLiquidity(address,address,uint256[],uint256)',
           this.sbtcSwap.address,
@@ -352,7 +358,7 @@ contract('Curve', function([_, user]) {
           from: poolTokenProvider,
         });
         await this.proxy.updateTokenMock(this.poolToken.address);
-        const minAmount = new BN('1');
+        const minAmount = mulPercent(answer, new BN('100').sub(slippage));
         const data = abi.simpleEncode(
           'removeLiquidityOneCoin(address,address,uint256,int128,uint256)',
           this.sbtcSwap.address,
@@ -462,7 +468,7 @@ contract('Curve', function([_, user]) {
         await this.proxy.updateTokenMock(this.token0.address);
         await this.proxy.updateTokenMock(this.token1.address);
         const amounts = [token0Amount, 0, token1Amount, 0];
-        const minMintAmount = new BN('1');
+        const minMintAmount = mulPercent(answer, new BN('100').sub(slippage));
         const data = abi.simpleEncode(
           'addLiquidityZap(address,uint256[],uint256)',
           this.yDeposit.address,
@@ -513,7 +519,7 @@ contract('Curve', function([_, user]) {
           from: poolTokenProvider,
         });
         await this.proxy.updateTokenMock(this.poolToken.address);
-        const minUamount = new BN('1');
+        const minUamount = mulPercent(answer, new BN('100').sub(slippage));
         const data = abi.simpleEncode(
           'removeLiquidityOneCoinZap(address,uint256,int128,uint256)',
           this.yDeposit.address,
