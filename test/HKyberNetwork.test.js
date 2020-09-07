@@ -20,7 +20,12 @@ const {
   DAI_PROVIDER,
   KYBERNETWORK_PROXY,
 } = require('./utils/constants');
-const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
+const {
+  evmRevert,
+  evmSnapshot,
+  mulPercent,
+  profileGas,
+} = require('./utils/utils');
 
 const HKyberNetwork = artifacts.require('HKyberNetwork');
 const Registry = artifacts.require('Registry');
@@ -29,6 +34,7 @@ const IToken = artifacts.require('IERC20');
 const IKyberNetworkProxy = artifacts.require('IKyberNetworkProxy');
 
 contract('KyberNetwork Swap', function([_, user]) {
+  const slippage = new BN('3');
   let id;
   const tokenAddress = DAI_TOKEN;
   const providerAddress = DAI_PROVIDER;
@@ -74,7 +80,7 @@ contract('KyberNetwork Swap', function([_, user]) {
           'swapEtherToToken(uint256,address,uint256):(uint256)',
           value,
           tokenAddress,
-          rate[1]
+          mulPercent(rate[1], new BN('100').sub(slippage))
         );
         const kyberswapAmount = value.mul(rate[1]).div(ether('1'));
         const receipt = await this.proxy.execMock(to, data, {
@@ -141,7 +147,7 @@ contract('KyberNetwork Swap', function([_, user]) {
           'swapTokenToEther(address,uint256,uint256):(uint256)',
           tokenAddress,
           value,
-          rate[1]
+          mulPercent(rate[1], new BN('100').sub(slippage))
         );
         await this.token.transfer(this.proxy.address, value, {
           from: providerAddress,
@@ -190,7 +196,7 @@ contract('KyberNetwork Swap', function([_, user]) {
           srcTokenAddress,
           value,
           destTokenAddress,
-          rate[1]
+          mulPercent(rate[1], new BN('100').sub(slippage))
         );
         await this.token.transfer(this.proxy.address, value, {
           from: providerAddress,
