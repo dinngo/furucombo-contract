@@ -13,5 +13,9 @@ interface IYVault {
 
     function deposit(uint256 _amount) external;
 
+    function depositETH() external payable;
+
     function withdraw(uint256 _shares) external;
+
+    function withdrawETH(uint256 _shares) external;
 }
