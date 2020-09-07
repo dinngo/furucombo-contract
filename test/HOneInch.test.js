@@ -24,7 +24,12 @@ const {
   KNC_TOKEN,
   KNC_SYMBOL,
 } = require('./utils/constants');
-const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
+const {
+  evmRevert,
+  evmSnapshot,
+  mulPercent,
+  profileGas,
+} = require('./utils/utils');
 const fetch = require('node-fetch');
 const queryString = require('query-string');
 
@@ -306,7 +311,3 @@ contract('OneInch Swap', function([_, user]) {
     });
   });
 });
-
-function mulPercent(num, percentage) {
-  return new BN(num).mul(new BN(percentage)).div(new BN(100));
-}

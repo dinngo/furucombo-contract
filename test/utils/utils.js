@@ -66,9 +66,14 @@ async function evmRevertAndSnapshot(id = 1, host = 'http://localhost:8545') {
   return new_id;
 }
 
+function mulPercent(num, percentage) {
+  return new BN(num).mul(new BN(percentage)).div(new BN(100));
+}
+
 module.exports = {
   profileGas,
   evmSnapshot,
   evmRevert,
   evmRevertAndSnapshot,
+  mulPercent,
 };
