@@ -186,6 +186,56 @@ contract('StakingRewardsAdapter', function([_, user0, user1, user2]) {
       log('rewardUser1Got', rewardUser1Got);
     });
 
+    it('simple staking - 2 on adapter - one stake in the middle', async function() {
+      // Prepare staking data
+      const sValue = ether('100');
+      const rValue = ether('6048');
+      await this.st.transfer(user0, sValue, {from: stProviderAddress});
+      await this.st.transfer(user1, sValue, {from: stProviderAddress});
+      await this.st.transfer(user2, sValue, {from: stProviderAddress});
+
+      // Staking to original and adapter contract respectively
+      await this.st.approve(this.staking.address, sValue, {from: user0});
+      await this.staking.stake(sValue, {from: user0});
+      await this.st.approve(this.adapter.address, sValue, {from: user1});
+      await this.adapter.stake(sValue, {from: user1});
+
+      // Notify reward
+      await this.rt.transfer(this.staking.address, rValue, {from: rtProviderAddress});
+      await this.notifyReward.notifyReward(rValue, this.staking.address, this.adapter.address, {from: rtProviderAddress});
+
+      // Make time elapsed
+      await increase(duration.days(1));
+
+      // User2 stake through adapter
+      await this.st.approve(this.adapter.address, sValue, {from: user2});
+      await this.adapter.stake(sValue, {from: user2});
+
+      // Make time elapsed
+      await increase(duration.days(1));
+
+      // Get the state after user2 staked
+      const earnedAdapter = await this.staking.earned.call(this.adapter.address);
+      log('earnedAdapter', earnedAdapter);
+      const earnedUser0 = await this.staking.earned.call(user0);
+      log('earnedUser0', earnedUser0);
+      const earnedUser1 = await this.adapter.earned.call(user1);
+      log('earnedUser1', earnedUser1);
+      const earnedUser2 = await this.adapter.earned.call(user2);
+      log('earnedUser2', earnedUser2);
+      
+      // Verify everyone gets reward
+      expect(earnedUser0).to.be.bignumber.gt(ether('0'));
+      expect(earnedUser1).to.be.bignumber.gt(ether('0'));
+      expect(earnedUser2).to.be.bignumber.gt(ether('0'));
+      expect(earnedAdapter).to.be.bignumber.gt(ether('0'));
+
+      // Verify user0 & user1 gets equal share
+      expect(earnedUser0).to.be.bignumber.eq(earnedUser1);
+      // Verify earnedAdapter = user1 + user2
+      expect(earnedAdapter).to.be.bignumber.eq(earnedUser1.add(earnedUser2));
+    });
+
     it('simple staking - 2 on adapter - one exit in the middle', async function() {
       // Prepare staking data
       const sValue = ether('100');
@@ -209,6 +259,7 @@ contract('StakingRewardsAdapter', function([_, user0, user1, user2]) {
       // Make time elapsed
       await increase(duration.days(1));
 
+      // User2 exit
       const earnedUser2 = await this.adapter.earned.call(user2);
       await this.adapter.exit({from: user2});
       const rewardUser2AmountAfter = await this.rt.balanceOf(user2);
@@ -265,6 +316,76 @@ contract('StakingRewardsAdapter', function([_, user0, user1, user2]) {
       expect(rewardUser1Got).to.be.bignumber.gte(earnedUser1);
       expect(rewardUser1Got).to.be.bignumber.lte(getBuffer(earnedUser1));
       log('rewardUser1Got', rewardUser1Got);
+    });
+
+    it('simple staking - 2 on adapter - one getReward in the middle', async function() {
+      // Prepare staking data
+      const sValue = ether('100');
+      const rValue = ether('6048');
+      await this.st.transfer(user0, sValue, {from: stProviderAddress});
+      await this.st.transfer(user1, sValue, {from: stProviderAddress});
+      await this.st.transfer(user2, sValue, {from: stProviderAddress});
+
+      // Staking to original and adapter contract respectively
+      await this.st.approve(this.staking.address, sValue, {from: user0});
+      await this.staking.stake(sValue, {from: user0});
+      await this.st.approve(this.adapter.address, sValue, {from: user1});
+      await this.adapter.stake(sValue, {from: user1});
+      await this.st.approve(this.adapter.address, sValue, {from: user2});
+      await this.adapter.stake(sValue, {from: user2});
+
+      // Notify reward
+      await this.rt.transfer(this.staking.address, rValue, {from: rtProviderAddress});
+      await this.notifyReward.notifyReward(rValue, this.staking.address, this.adapter.address, {from: rtProviderAddress});
+
+      // Make time elapsed
+      await increase(duration.days(1));
+
+      // User2 get current reward but not unstake
+      const earnedUser2Middle = await this.adapter.earned.call(user2);
+      await this.adapter.getReward({from: user2});
+      const rtBalanceUser2Middle = await this.rt.balanceOf.call(user2);
+      log('rtBalanceUser2Middle', rtBalanceUser2Middle);
+
+      // Make time elapsed
+      await increase(duration.days(1));
+
+      // Get the state after user2 get his reward at that moment
+      const rtBalanceAdapter = await this.rt.balanceOf(this.adapter.address);
+      log('rtBalanceAdapter', rtBalanceAdapter);
+      const earnedAdapter = await this.staking.earned.call(this.adapter.address);
+      log('earnedAdapter', earnedAdapter);
+      // Total reward adapter got = earned(adapter) + rt.balanceOf(adapter) since
+      // anyone invokes `getReward()` on adapter will make adapter to claim all its
+      // reward from original contract and reset the earned number.  
+      const totalRewardAdapter = rtBalanceAdapter.add(earnedAdapter);
+      const earnedUser0 = await this.staking.earned.call(user0);
+      log('earnedUser0', earnedUser0);
+      const earnedUser1 = await this.adapter.earned.call(user1);
+      log('earnedUser1', earnedUser1);
+      const earnedUser2End = await this.adapter.earned.call(user2);
+      log('earnedUser2End', earnedUser2End);
+      
+      // Verify everyone gets reward
+      expect(earnedUser0).to.be.bignumber.gt(ether('0'));
+      expect(earnedUser1).to.be.bignumber.gt(ether('0'));
+      expect(earnedUser2End).to.be.bignumber.gt(ether('0'));
+      expect(totalRewardAdapter).to.be.bignumber.gt(ether('0'));
+
+      // Verify user0 & user1 gets equal share
+      expect(earnedUser0).to.be.bignumber.eq(earnedUser1);
+      // Verify user1 gets equal amount to user2's overall reward
+      expect(earnedUser1).to.be.bignumber.eq(rtBalanceUser2Middle.add(earnedUser2End));
+      // Verify user2 earnedAmountMiddle equals to his rt balance after getReward
+      expect(earnedUser2Middle).to.be.bignumber.eq(rtBalanceUser2Middle);
+      // Verify user2 earned overall equals to user1
+      expect(earnedUser2End.add(rtBalanceUser2Middle)).to.be.bignumber.eq(
+        earnedUser1
+      );
+      // Verify adapter earned overall equals to 2x of user0 has earned
+      expect(totalRewardAdapter.add(rtBalanceUser2Middle)).to.be.bignumber.eq(
+        earnedUser0.mul(new BN('2'))
+      );
     });
 
     it('simple staking - notify reward twice', async function() {
@@ -328,7 +449,6 @@ contract('StakingRewardsAdapter', function([_, user0, user1, user2]) {
       expect(rewardUser1Got).to.be.bignumber.lte(getBuffer(earnedUser1));
       log('rewardUser1Got', rewardUser1Got);
     });
-
 
   });
 });
