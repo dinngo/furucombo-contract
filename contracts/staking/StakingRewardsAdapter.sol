@@ -60,10 +60,10 @@ contract StakingRewardsAdapter is ReentrancyGuard, Whitelistable {
         if (_totalSupply == 0) {
             return rewardPerTokenStored;
         }
-        return
-            rewardPerTokenStored.add(
-                lastTimeRewardApplicable().sub(lastUpdateTime).mul(rewardRate).mul(1e18).div(_totalSupply)
-            );
+        return stakingContract.rewardPerToken();
+            // rewardPerTokenStored.add(
+            //     lastTimeRewardApplicable().sub(lastUpdateTime).mul(rewardRate).mul(1e18).div(_totalSupply)
+            // );
     }
 
     function earned(address account) public view returns (uint256) {

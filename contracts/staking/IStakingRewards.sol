@@ -19,4 +19,7 @@ interface IStakingRewards {
     function withdraw(uint256 amount) external;
     function getReward() external;
     function exit() external;
+
+    // Restricted
+    function notifyRewardAmount(uint256 reward) external;
 }
