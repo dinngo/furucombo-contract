@@ -109,6 +109,7 @@ contract('StakingRewardsAdapter', function([_, user0, user1, user2]) {
       // Verify user1 gets whole share of adapter
       expect(earnedUser1).to.be.bignumber.eq(earnedAdapter);
 
+      // Actually invoke getReward and verify amount
       await this.adapter.getReward({from: user1});
       const rewardUser1AmountAfter = await this.rt.balanceOf(user1);
       const rewardUser1Got = rewardUser1AmountAfter.sub(rewardUser1Amount);
@@ -170,6 +171,7 @@ contract('StakingRewardsAdapter', function([_, user0, user1, user2]) {
       // Verify user1 + user2 get whole share of adapter
       expect(earnedAdapter).to.be.bignumber.eq(earnedUser1.add(earnedUser2));
 
+      // Actually invoke getReward and verify amount
       await this.adapter.getReward({from: user2});
       const rewardUser2AmountAfter = await this.rt.balanceOf(user2);
       const rewardUser2Got = rewardUser2AmountAfter.sub(rewardUser2Amount);
@@ -309,6 +311,7 @@ contract('StakingRewardsAdapter', function([_, user0, user1, user2]) {
       expect(rewardUser2Got).to.be.bignumber.lte(getBuffer(earnedUser2));
       log('rewardUser2Got', rewardUser2Got);
 
+      // Actually invoke getReward and verify amount
       await this.adapter.getReward({from: user1});
       const rewardUser1AmountAfter = await this.rt.balanceOf(user1);
       const rewardUser1Got = rewardUser1AmountAfter.sub(rewardUser1Amount);
@@ -441,6 +444,7 @@ contract('StakingRewardsAdapter', function([_, user0, user1, user2]) {
       // Verify user1 gets whole share of adapter
       expect(earnedUser1).to.be.bignumber.eq(earnedAdapter);
 
+      // Actually invoke getReward and verify amount
       await this.adapter.getReward({from: user1});
       const rewardUser1AmountAfter = await this.rt.balanceOf(user1);
       const rewardUser1Got = rewardUser1AmountAfter.sub(rewardUser1Amount);
