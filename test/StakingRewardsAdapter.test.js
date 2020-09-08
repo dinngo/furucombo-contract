@@ -14,7 +14,7 @@ const utils = web3.utils;
 
 const { expect } = require('chai');
 
-const { DAI_TOKEN, DAI_PROVIDER, ZRX_TOKEN, ZRX_PROVIDER } = require('./utils/constants');
+const { DAI_TOKEN, DAI_PROVIDER, KNC_TOKEN, KNC_PROVIDER } = require('./utils/constants');
 const { evmRevert, evmSnapshot } = require('./utils/utils');
 
 const StakingRewards = artifacts.require('StakingRewards');
@@ -32,8 +32,8 @@ contract('StakingRewardsAdapter', function([_, user0, user1, user2]) {
   /// rt = rewardToken
   const stAddress = DAI_TOKEN;
   const stProviderAddress = DAI_PROVIDER;
-  const rtAddress = ZRX_TOKEN;
-  const rtProviderAddress = ZRX_PROVIDER;
+  const rtAddress = KNC_TOKEN;
+  const rtProviderAddress = KNC_PROVIDER;
 
   before(async function() {
     outterId = await evmSnapshot();
