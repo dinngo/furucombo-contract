@@ -15,16 +15,17 @@ const utils = web3.utils;
 const { expect } = require('chai');
 
 const { WETH_TOKEN, WETH_PROVIDER } = require('./utils/constants');
-const { resetAccount, profileGas } = require('./utils/utils');
+const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
 
 const HWeth = artifacts.require('HWeth');
 const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('ProxyMock');
 const IToken = artifacts.require('IERC20');
 
-contract('Weth', function([_, deployer, user, someone]) {
+contract('Weth', function([_, user]) {
   const tokenAddress = WETH_TOKEN;
   const tokenProviderAddress = WETH_PROVIDER;
+  let id;
 
   before(async function() {
     this.token = await IToken.at(tokenAddress);
@@ -35,8 +36,11 @@ contract('Weth', function([_, deployer, user, someone]) {
   });
 
   beforeEach(async function() {
-    await resetAccount(_);
-    await resetAccount(user);
+    id = await evmSnapshot();
+  });
+
+  afterEach(async function() {
+    await evmRevert(id);
   });
 
   describe('deposit', function() {

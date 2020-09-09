@@ -1,6 +1,6 @@
 pragma solidity ^0.5.0;
 
-import "./IDSProxy.sol";
+import "../maker/IDSProxy.sol";
 import "./IBPool.sol";
 import "../HandlerBase.sol";
 

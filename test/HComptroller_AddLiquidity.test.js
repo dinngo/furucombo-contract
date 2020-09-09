@@ -22,9 +22,9 @@ const {
   UNISWAPV2_ETH_COMP,
   UNISWAPV2_ROUTER02,
 } = require('./utils/constants');
-const { resetAccount, profileGas } = require('./utils/utils');
+const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
 
-const HERC20TokenIn = artifacts.require('HERC20TokenIn');
+const HFunds = artifacts.require('HFunds');
 const HComptroller = artifacts.require('HComptroller');
 const HUniswapV2 = artifacts.require('HUniswapV2');
 const Registry = artifacts.require('Registry');
@@ -72,6 +72,7 @@ contract('Claim Comp and add liquidity', function([
 ]) {
   const tokenAddresses = [COMP_TOKEN];
   const values = [new BN('10000')];
+  let id;
   let balanceUser;
   let balanceProxy;
   let compUser;
@@ -79,22 +80,21 @@ contract('Claim Comp and add liquidity', function([
   before(async function() {
     this.registry = await Registry.new();
     this.proxy = await Proxy.new(this.registry.address);
-    this.hcomptroller = await HComptroller.new();
+    this.hComptroller = await HComptroller.new();
     await this.registry.register(
-      this.hcomptroller.address,
+      this.hComptroller.address,
       utils.asciiToHex('Comptroller')
     );
-    this.cether = await ICEther.at(CETHER);
+    this.cEther = await ICEther.at(CETHER);
     this.comp = await IToken.at(tokenAddresses[0]);
     this.comptroller = await IComptroller.at(COMPOUND_COMPTROLLER);
   });
 
   beforeEach(async function() {
-    await resetAccount(_);
-    await resetAccount(user);
+    id = await evmSnapshot();
     balanceUser = await tracker(user);
     balanceProxy = await tracker(this.proxy.address);
-    await this.cether.mint({
+    await this.cEther.mint({
       from: user,
       value: ether('10'),
     });
@@ -102,20 +102,24 @@ contract('Claim Comp and add liquidity', function([
     compUser = await this.comp.balanceOf.call(user);
   });
 
+  afterEach(async function() {
+    await evmRevert(id);
+  });
+
   describe('UniswapV2 Liquidity', function() {
     const uniswapV2RouterAddress = UNISWAPV2_ROUTER02;
     before(async function() {
-      this.herc20tokenin = await HERC20TokenIn.new();
+      this.hFunds = await HFunds.new();
       await this.registry.register(
-        this.herc20tokenin.address,
+        this.hFunds.address,
         utils.asciiToHex('ERC20In')
       );
-      this.huniswapv2 = await HUniswapV2.new();
+      this.hUniswapV2 = await HUniswapV2.new();
       await this.registry.register(
-        this.huniswapv2.address,
+        this.hUniswapV2.address,
         utils.asciiToHex('UniswapV2')
       );
-      this.uniCOMPETH = await IToken.at(UNISWAPV2_ETH_COMP);
+      this.uniCompEth = await IToken.at(UNISWAPV2_ETH_COMP);
     });
 
     it('add liquidity', async function() {
@@ -124,9 +128,9 @@ contract('Claim Comp and add liquidity', function([
         from: user,
       });
       const to = [
-        this.hcomptroller.address,
-        this.herc20tokenin.address,
-        this.huniswapv2.address,
+        this.hComptroller.address,
+        this.hFunds.address,
+        this.hUniswapV2.address,
       ];
       const data = [
         abi.simpleEncode('claimComp()'),
@@ -144,7 +148,7 @@ contract('Claim Comp and add liquidity', function([
         from: user,
         value: ether('1'),
       });
-      expect(await this.uniCOMPETH.balanceOf.call(user)).to.be.bignumber.gt(
+      expect(await this.uniCompEth.balanceOf.call(user)).to.be.bignumber.gt(
         ether('0')
       );
     });

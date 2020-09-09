@@ -23,7 +23,7 @@ const {
   MOONISWAP_ETH_DAI,
   MOONISWAP_YFI_DAI,
 } = require('./utils/constants');
-const { resetAccount, profileGas } = require('./utils/utils');
+const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
 
 const HMooniswap = artifacts.require('HMooniswap');
 const Registry = artifacts.require('Registry');
@@ -31,7 +31,8 @@ const Proxy = artifacts.require('ProxyMock');
 const IToken = artifacts.require('IERC20');
 const IMoonPool = artifacts.require('IMooniswap');
 
-contract('Mooniswap', function([_, deployer, user]) {
+contract('Mooniswap', function([_, user]) {
+  let id;
   const tokenAAddress = YFI_TOKEN;
   const tokenBAddress = DAI_TOKEN;
   const tokenAProviderAddress = YFI_PROVIDER;
@@ -45,11 +46,12 @@ contract('Mooniswap', function([_, deployer, user]) {
 
   before(async function() {
     this.registry = await Registry.new();
-    this.hmooniswap = await HMooniswap.new();
+    this.hMooniswap = await HMooniswap.new();
     await this.registry.register(
-      this.hmooniswap.address,
+      this.hMooniswap.address,
       utils.asciiToHex('Mooniswap')
     );
+    this.proxy = await Proxy.new(this.registry.address);
 
     // Setup and transfer token to user
     this.tokenA = await IToken.at(tokenAAddress);
@@ -62,16 +64,17 @@ contract('Mooniswap', function([_, deployer, user]) {
     await this.tokenA.transfer(user, ether('1000'), {
       from: tokenAProviderAddress,
     });
-
     await this.tokenB.transfer(user, ether('1000'), {
       from: tokenBProviderAddress,
     });
   });
 
   beforeEach(async function() {
-    await resetAccount(_);
-    await resetAccount(user);
-    this.proxy = await Proxy.new(this.registry.address);
+    id = await evmSnapshot();
+  });
+
+  afterEach(async function() {
+    await evmRevert(id);
   });
 
   describe('deposit', function() {
@@ -88,7 +91,7 @@ contract('Mooniswap', function([_, deployer, user]) {
       // Prepare handler data
       const value = ether('0.1');
       const tokenBAmount = ether('100');
-      const to = this.hmooniswap.address;
+      const to = this.hMooniswap.address;
       const tokens = [constants.ZERO_ADDRESS, this.tokenB.address];
       const amounts = [value, tokenBAmount];
       const minAmounts = [new BN('1'), new BN('1')];
@@ -151,7 +154,7 @@ contract('Mooniswap', function([_, deployer, user]) {
       // Prepare handler data
       const tokenAAmount = ether('10');
       const tokenBAmount = ether('10');
-      const to = this.hmooniswap.address;
+      const to = this.hMooniswap.address;
       const tokens = [this.tokenA.address, this.tokenB.address];
       const amounts = [tokenAAmount, tokenBAmount];
       const minAmounts = [new BN('1'), new BN('1')];
@@ -225,7 +228,7 @@ contract('Mooniswap', function([_, deployer, user]) {
     it('deposit the same tokens', async function() {
       // Prepare handler data
       const value = ether('0.1');
-      const to = this.hmooniswap.address;
+      const to = this.hMooniswap.address;
       const tokens = [constants.ZERO_ADDRESS, constants.ZERO_ADDRESS];
       const amounts = [value, value];
       const minAmounts = [new BN('1'), new BN('1')];
@@ -250,7 +253,7 @@ contract('Mooniswap', function([_, deployer, user]) {
       // Prepare handler data
       const value = ether('0.1');
       const tokenBAmount = ether('100');
-      const to = this.hmooniswap.address;
+      const to = this.hMooniswap.address;
       const tokens = [constants.ZERO_ADDRESS, this.tokenB.address];
       const amounts = [value, tokenBAmount, new BN('1')];
       const minAmounts = [new BN('1'), new BN('1'), new BN('1')];
@@ -272,7 +275,7 @@ contract('Mooniswap', function([_, deployer, user]) {
       // Prepare handler data
       const value = ether('0.1');
       const tokenBAmount = ether('100');
-      const to = this.hmooniswap.address;
+      const to = this.hMooniswap.address;
       const tokens = [this.tokenB.address, constants.ZERO_ADDRESS];
       const amounts = [tokenBAmount, value];
       const minAmounts = [new BN('1'), new BN('1')];
@@ -321,7 +324,7 @@ contract('Mooniswap', function([_, deployer, user]) {
       PoolATokenUserAmount = await this.moonPoolAToken.balanceOf.call(user);
 
       // Prepare handler data
-      const to = this.hmooniswap.address;
+      const to = this.hMooniswap.address;
       const amount = await this.moonPoolAToken.balanceOf.call(user);
       const minReturns = [new BN('1'), new BN('1')];
       const data = abi.simpleEncode(
@@ -389,7 +392,7 @@ contract('Mooniswap', function([_, deployer, user]) {
       PoolBTokenUserAmount = await this.moonPoolBToken.balanceOf.call(user);
 
       // Prepare handler data
-      const to = this.hmooniswap.address;
+      const to = this.hMooniswap.address;
       const amount = await this.moonPoolBToken.balanceOf.call(user);
       const minReturns = [new BN('1'), new BN('1')];
       const data = abi.simpleEncode(

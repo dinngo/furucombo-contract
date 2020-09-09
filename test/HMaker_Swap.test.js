@@ -33,7 +33,7 @@ const {
   MAKER_MCD_JOIN_WBTC_A,
   MAKER_MCD_JOIN_DAI,
 } = require('./utils/constants');
-const { resetAccount, profileGas } = require('./utils/utils');
+const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
 
 const HMaker = artifacts.require('HMaker');
 const HUniswap = artifacts.require('HUniswap');
@@ -77,7 +77,8 @@ async function approveCdp(cdp, owner, user) {
   await proxy.execute(MAKER_PROXY_ACTIONS, data, { from: owner });
 }
 
-contract('Maker', function([_, deployer, user]) {
+contract('Maker', function([_, user]) {
+  let id;
   const tokenAddress = DAI_TOKEN;
   const uniswapAddress = DAI_UNISWAP;
   const providerAddress = DAI_PROVIDER;
@@ -85,33 +86,36 @@ contract('Maker', function([_, deployer, user]) {
     this.registry = await Registry.new();
     this.proxy = await Proxy.new(this.registry.address);
     this.token = await IToken.at(tokenAddress);
-    this.hmaker = await HMaker.new();
+    this.hMaker = await HMaker.new();
     await this.registry.register(
-      this.hmaker.address,
+      this.hMaker.address,
       utils.asciiToHex('Maker')
     );
-    this.huniswap = await HUniswap.new();
+    this.hUniswap = await HUniswap.new();
     await this.registry.register(
-      this.huniswap.address,
+      this.hUniswap.address,
       utils.asciiToHex('Uniswap')
     );
-    this.dsregistry = await IDSProxyRegistry.at(MAKER_PROXY_REGISTRY);
-    this.cdpmanager = await IMakerManager.at(MAKER_CDP_MANAGER);
+    this.dsRegistry = await IDSProxyRegistry.at(MAKER_PROXY_REGISTRY);
+    this.cdpManager = await IMakerManager.at(MAKER_CDP_MANAGER);
     this.vat = await IMakerVat.at(MAKER_MCD_VAT);
-    await this.dsregistry.build(this.proxy.address);
-    await this.dsregistry.build(user);
-    this.dsproxy = await IDSProxy.at(
-      await this.dsregistry.proxies.call(this.proxy.address)
+    await this.dsRegistry.build(this.proxy.address);
+    await this.dsRegistry.build(user);
+    this.dsProxy = await IDSProxy.at(
+      await this.dsRegistry.proxies.call(this.proxy.address)
     );
-    this.userproxy = await IDSProxy.at(
-      await this.dsregistry.proxies.call(user)
+    this.userProxy = await IDSProxy.at(
+      await this.dsRegistry.proxies.call(user)
     );
     this.dai = await IToken.at(DAI_TOKEN);
   });
 
   beforeEach(async function() {
-    await resetAccount(_);
-    await resetAccount(user);
+    id = await evmSnapshot();
+  });
+
+  afterEach(async function() {
+    await evmRevert(id);
   });
 
   describe('Open new cdp', function() {
@@ -140,7 +144,7 @@ contract('Maker', function([_, deployer, user]) {
 
         it('normal', async function() {
           const daiUser = await this.dai.balanceOf.call(user);
-          const to1 = this.hmaker.address;
+          const to1 = this.hMaker.address;
           const value1 = ether('1');
           const ilkEth = utils.padRight(utils.asciiToHex('ETH-A'), 64);
           const wadD = ether('100');
@@ -153,7 +157,7 @@ contract('Maker', function([_, deployer, user]) {
             wadD
           );
           const value2 = ether('100');
-          const to2 = this.huniswap.address;
+          const to2 = this.hUniswap.address;
           const data2 = abi.simpleEncode(
             'tokenToEthSwapInput(address,uint256,uint256):(uint256)',
             tokenAddress,

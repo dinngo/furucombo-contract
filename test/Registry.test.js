@@ -16,13 +16,23 @@ const utils = web3.utils;
 const { expect } = require('chai');
 
 const { CETHER } = require('./utils/constants');
-const { resetAccount } = require('./utils/utils');
+const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
 
 const Registry = artifacts.require('Registry');
 
-contract('Registry', function([_, deployer, handler1, handler2, someone]) {
+contract('Registry', function([_, handler1, handler2, someone]) {
+  let id;
+
   beforeEach(async function() {
     this.registry = await Registry.new();
+  });
+
+  beforeEach(async function() {
+    id = await evmSnapshot();
+  });
+
+  afterEach(async function() {
+    await evmRevert(id);
   });
 
   describe('register', function() {

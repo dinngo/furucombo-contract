@@ -22,7 +22,7 @@ const {
   BALANCER_WETH_MKR_DAI,
   MAKER_PROXY_REGISTRY,
 } = require('./utils/constants');
-const { resetAccount, profileGas } = require('./utils/utils');
+const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
 
 const HBalancer = artifacts.require('HBalancer');
 const Registry = artifacts.require('Registry');
@@ -32,7 +32,7 @@ const IDSProxy = artifacts.require('IDSProxy');
 const IDSProxyRegistry = artifacts.require('IDSProxyRegistry');
 const IBPool = artifacts.require('IBPool');
 
-contract('Balancer', function([_, deployer, user]) {
+contract('Balancer', function([_, user]) {
   const tokenAAddress = WETH_TOKEN;
   const tokenBAddress = MKR_TOKEN;
   const tokenCAddress = DAI_TOKEN;
@@ -41,6 +41,7 @@ contract('Balancer', function([_, deployer, user]) {
   const tokenCProviderAddress = DAI_PROVIDER;
   const balancerPoolAddress = BALANCER_WETH_MKR_DAI;
 
+  let id;
   let tokenAUserAmount;
   let tokenBUserAmount;
   let tokenCUserAmount;
@@ -50,18 +51,18 @@ contract('Balancer', function([_, deployer, user]) {
     // Deploy proxy and handler
     this.registry = await Registry.new();
     this.proxy = await Proxy.new(this.registry.address);
-    this.HBalancer = await HBalancer.new();
+    this.hBalancer = await HBalancer.new();
     await this.registry.register(
-      this.HBalancer.address,
+      this.hBalancer.address,
       utils.asciiToHex('Balancer')
     );
-    this.BPool = await IBPool.at(balancerPoolAddress);
+    this.bPool = await IBPool.at(balancerPoolAddress);
 
     // Create DSProxy of proxy
-    this.DSRegistry = await IDSProxyRegistry.at(MAKER_PROXY_REGISTRY);
-    await this.DSRegistry.build(this.proxy.address);
+    this.dsRegistry = await IDSProxyRegistry.at(MAKER_PROXY_REGISTRY);
+    await this.dsRegistry.build(this.proxy.address);
     this.DSProxy = await IDSProxy.at(
-      await this.DSRegistry.proxies.call(this.proxy.address)
+      await this.dsRegistry.proxies.call(this.proxy.address)
     );
 
     // Setup and transfer token to user
@@ -81,8 +82,7 @@ contract('Balancer', function([_, deployer, user]) {
   });
 
   beforeEach(async function() {
-    await resetAccount(_);
-    await resetAccount(user);
+    id = await evmSnapshot();
     balanceProxy = await tracker(this.proxy.address);
     tokenAUserAmount = await this.tokenA.balanceOf.call(user);
     tokenBUserAmount = await this.tokenB.balanceOf.call(user);
@@ -92,13 +92,17 @@ contract('Balancer', function([_, deployer, user]) {
     );
   });
 
+  afterEach(async function() {
+    await evmRevert(id);
+  });
+
   describe('Liquidity ', function() {
     describe('Add Liquidity Single Asset', function() {
       it('normal', async function() {
         // Prepare handler data
         const tokenAAmount = ether('1');
         const minPoolAmountOut = new BN('1');
-        const to = this.HBalancer.address;
+        const to = this.hBalancer.address;
         const data = abi.simpleEncode(
           'joinswapExternAmountIn(address,address,uint256,uint256)',
           balancerPoolAddress,
@@ -108,10 +112,10 @@ contract('Balancer', function([_, deployer, user]) {
         );
 
         // Simulate Balancer contract behavior
-        await this.tokenA.approve(this.BPool.address, tokenAAmount, {
+        await this.tokenA.approve(this.bPool.address, tokenAAmount, {
           from: user,
         });
-        const expectedPoolAmountOut = await this.BPool.joinswapExternAmountIn.call(
+        const expectedPoolAmountOut = await this.bPool.joinswapExternAmountIn.call(
           tokenAAddress,
           tokenAAmount,
           minPoolAmountOut,
@@ -154,19 +158,19 @@ contract('Balancer', function([_, deployer, user]) {
     describe('Add Liquidity All Assets', function() {
       it('normal', async function() {
         // Get BPool Information
-        const poolTokenABalance = await this.BPool.getBalance.call(
+        const poolTokenABalance = await this.bPool.getBalance.call(
           tokenAAddress
         );
-        const poolTokenBBalance = await this.BPool.getBalance.call(
+        const poolTokenBBalance = await this.bPool.getBalance.call(
           tokenBAddress
         );
-        const poolTokenCBalance = await this.BPool.getBalance.call(
+        const poolTokenCBalance = await this.bPool.getBalance.call(
           tokenCAddress
         );
-        const poolTotalSupply = await this.BPool.totalSupply.call();
+        const poolTotalSupply = await this.bPool.totalSupply.call();
 
         // Prepare handler data
-        const to = this.HBalancer.address;
+        const to = this.hBalancer.address;
         const poolAmountPercent = new BN('1000'); // poolAmountPercent is 0.1%
         const poolAmountOut = poolTotalSupply.divRound(poolAmountPercent); // Expected receive pool token amount
 
@@ -250,7 +254,7 @@ contract('Balancer', function([_, deployer, user]) {
 
       it('Amounts not match', async function() {
         // Prepare handler data
-        const to = this.HBalancer.address;
+        const to = this.hBalancer.address;
         const poolAmountOut = new BN('100000');
         const maxAmountsIn = [new BN('100'), new BN('100')];
 
@@ -277,10 +281,10 @@ contract('Balancer', function([_, deployer, user]) {
       beforeEach(async function() {
         // Add liquidity before removing liquidity
         const tokenAAmount = ether('1');
-        await this.tokenA.approve(this.BPool.address, tokenAAmount, {
+        await this.tokenA.approve(this.bPool.address, tokenAAmount, {
           from: user,
         });
-        await this.BPool.joinswapExternAmountIn(
+        await this.bPool.joinswapExternAmountIn(
           tokenAAddress,
           tokenAAmount,
           new BN('1'),
@@ -298,7 +302,7 @@ contract('Balancer', function([_, deployer, user]) {
         // Prepare handler data
         const poolAmountIn = balancerPoolTokenUserAmount.divRound(new BN('10'));
         const minTokenAAmount = ether('0');
-        const to = this.HBalancer.address;
+        const to = this.hBalancer.address;
         const data = abi.simpleEncode(
           'exitswapPoolAmountIn(address,address,uint256,uint256)',
           balancerPoolAddress,
@@ -308,7 +312,7 @@ contract('Balancer', function([_, deployer, user]) {
         );
 
         // Simulate Balancer contract behavior
-        const expectedTokenAmountOut = await this.BPool.exitswapPoolAmountIn.call(
+        const expectedTokenAmountOut = await this.bPool.exitswapPoolAmountIn.call(
           tokenAAddress,
           poolAmountIn,
           minTokenAAmount,
@@ -357,10 +361,10 @@ contract('Balancer', function([_, deployer, user]) {
       beforeEach(async function() {
         // Add liquidity before removing liquidity
         const tokenAAmount = ether('10');
-        await this.tokenA.approve(this.BPool.address, tokenAAmount, {
+        await this.tokenA.approve(this.bPool.address, tokenAAmount, {
           from: user,
         });
-        await this.BPool.joinswapExternAmountIn(
+        await this.bPool.joinswapExternAmountIn(
           tokenAAddress,
           tokenAAmount,
           new BN('1'),
@@ -377,16 +381,16 @@ contract('Balancer', function([_, deployer, user]) {
 
       it('normal', async function() {
         // Get BPool Information
-        const poolTokenABalance = await this.BPool.getBalance.call(
+        const poolTokenABalance = await this.bPool.getBalance.call(
           tokenAAddress
         );
-        const poolTokenBBalance = await this.BPool.getBalance.call(
+        const poolTokenBBalance = await this.bPool.getBalance.call(
           tokenBAddress
         );
-        const poolTokenCBalance = await this.BPool.getBalance.call(
+        const poolTokenCBalance = await this.bPool.getBalance.call(
           tokenCAddress
         );
-        const poolTotalSupply = await this.BPool.totalSupply.call();
+        const poolTotalSupply = await this.bPool.totalSupply.call();
 
         // Prepare handler data
         const poolAmountPercent = new BN('100'); // poolAmountPercent is 1%
@@ -394,7 +398,7 @@ contract('Balancer', function([_, deployer, user]) {
           poolAmountPercent
         );
         const minAmountsOut = [ether('0'), ether('0'), ether('0')];
-        const to = this.HBalancer.address;
+        const to = this.hBalancer.address;
         const data = abi.simpleEncode(
           'exitPool(address,uint256,uint256[])',
           balancerPoolAddress,
@@ -473,7 +477,7 @@ contract('Balancer', function([_, deployer, user]) {
           poolAmountPercent
         );
         const minAmountsOut = [ether('0'), ether('0')];
-        const to = this.HBalancer.address;
+        const to = this.hBalancer.address;
         const data = abi.simpleEncode(
           'exitPool(address,uint256,uint256[])',
           balancerPoolAddress,

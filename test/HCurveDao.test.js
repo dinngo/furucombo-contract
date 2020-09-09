@@ -13,7 +13,7 @@ const {
   CURVE_TCRV_GAUGE,
   CURVE_MINTER,
 } = require('./utils/constants');
-const { resetAccount, profileGas } = require('./utils/utils');
+const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
 
 const Proxy = artifacts.require('ProxyMock');
 const Registry = artifacts.require('Registry');
@@ -22,7 +22,8 @@ const IMinter = artifacts.require('IMinter');
 const ILiquidityGauge = artifacts.require('ILiquidityGauge');
 const IToken = artifacts.require('IERC20');
 
-contract('Curve DAO', function([_, deployer, user1, user2]) {
+contract('Curve DAO', function([_, user]) {
+  let id;
   // Wait for the gaude to be ready
   const token0Address = CURVE_YCRV;
   const token1Address = CURVE_TCRV;
@@ -36,9 +37,9 @@ contract('Curve DAO', function([_, deployer, user1, user2]) {
   before(async function() {
     this.minter = await IMinter.at(CURVE_MINTER);
     this.registry = await Registry.new();
-    this.hcurvedao = await HCurveDao.new();
+    this.hCurveDao = await HCurveDao.new();
     await this.registry.register(
-      this.hcurvedao.address,
+      this.hCurveDao.address,
       utils.asciiToHex('HCurveDao')
     );
     this.crv = await IToken.at(CRV_TOKEN);
@@ -46,13 +47,15 @@ contract('Curve DAO', function([_, deployer, user1, user2]) {
     this.token1 = await IToken.at(token1Address);
     this.gauge0 = await ILiquidityGauge.at(gauge0Address);
     this.gauge1 = await ILiquidityGauge.at(gauge1Address);
+    this.proxy = await Proxy.new(this.registry.address);
   });
 
   beforeEach(async function() {
-    await resetAccount(_);
-    await resetAccount(user1);
-    await resetAccount(user2);
-    this.proxy = await Proxy.new(this.registry.address);
+    id = await evmSnapshot();
+  });
+
+  afterEach(async function() {
+    await evmRevert(id);
   });
 
   describe('Deposit lp token to gauge', function() {
@@ -60,25 +63,23 @@ contract('Curve DAO', function([_, deployer, user1, user2]) {
       await this.token0.transfer(this.proxy.address, gauge0Amount, {
         from: token0Provider,
       });
-      const to = this.hcurvedao.address;
+      const to = this.hCurveDao.address;
       const data = abi.simpleEncode(
         'deposit(address,uint256)',
         this.gauge0.address,
         gauge0Amount
       );
       await this.gauge0.set_approve_deposit(this.proxy.address, true, {
-        from: user1,
+        from: user,
       });
 
-      const depositUser1 = await this.gauge0.balanceOf.call(user1);
+      const depositUser = await this.gauge0.balanceOf.call(user);
       const receipt = await this.proxy.execMock(to, data, {
-        from: user1,
+        from: user,
         value: ether('0.1'),
       });
-      const depositUser1End = await this.gauge0.balanceOf.call(user1);
-      expect(depositUser1End.sub(depositUser1)).to.be.bignumber.eq(
-        gauge0Amount
-      );
+      const depositUserEnd = await this.gauge0.balanceOf.call(user);
+      expect(depositUserEnd.sub(depositUser)).to.be.bignumber.eq(gauge0Amount);
       expect(
         await this.token0.balanceOf.call(this.proxy.address)
       ).to.be.bignumber.eq(ether('0'));
@@ -89,7 +90,7 @@ contract('Curve DAO', function([_, deployer, user1, user2]) {
       await this.token0.transfer(this.proxy.address, gauge0Amount, {
         from: token0Provider,
       });
-      const to = this.hcurvedao.address;
+      const to = this.hCurveDao.address;
       const data = abi.simpleEncode(
         'deposit(address,uint256)',
         this.gauge0.address,
@@ -97,7 +98,7 @@ contract('Curve DAO', function([_, deployer, user1, user2]) {
       );
       await expectRevert.unspecified(
         this.proxy.execMock(to, data, {
-          from: user1,
+          from: user,
           value: ether('0.1'),
         })
       );
@@ -105,44 +106,43 @@ contract('Curve DAO', function([_, deployer, user1, user2]) {
   });
 
   describe('Claim CRV', function() {
-    let crvUser1;
-    let crvUser2;
+    let crvUser;
     describe('from single gauge', function() {
       beforeEach(async function() {
-        await this.token0.transfer(user1, gauge0Amount, {
+        await this.token0.transfer(user, gauge0Amount, {
           from: token0Provider,
         });
         await this.token0.approve(this.gauge0.address, gauge0Amount, {
-          from: user1,
+          from: user,
         });
-        await this.gauge0.deposit(gauge0Amount, user1, { from: user1 });
+        await this.gauge0.deposit(gauge0Amount, user, { from: user });
         await increase(duration.days('30'));
-        crvUser1 = await this.crv.balanceOf.call(user1);
+        crvUser = await this.crv.balanceOf.call(user);
       });
 
       afterEach(async function() {
-        const rest0 = await this.gauge0.balanceOf.call(user1);
-        await this.gauge0.withdraw(rest0, { from: user1 });
-        await this.minter.mint(this.gauge0.address, { from: user1 });
+        const rest0 = await this.gauge0.balanceOf.call(user);
+        await this.gauge0.withdraw(rest0, { from: user });
+        await this.minter.mint(this.gauge0.address, { from: user });
         await this.token0.approve(this.gauge0.address, ether('0'), {
-          from: user1,
+          from: user,
         });
       });
 
       it('normal', async function() {
         await this.minter.toggle_approve_mint(this.proxy.address, {
-          from: user1,
+          from: user,
         });
-        const to = this.hcurvedao.address;
+        const to = this.hCurveDao.address;
         const data = abi.simpleEncode('mint(address)', this.gauge0.address);
-        const claimableToken = await this.gauge0.claimable_tokens.call(user1);
+        const claimableToken = await this.gauge0.claimable_tokens.call(user);
         const receipt = await this.proxy.execMock(to, data, {
-          from: user1,
+          from: user,
           value: ether('0.1'),
         });
 
-        const crvUser1End = await this.crv.balanceOf.call(user1);
-        expect(crvUser1End.sub(crvUser1)).to.be.bignumber.gte(claimableToken);
+        const crvUserEnd = await this.crv.balanceOf.call(user);
+        expect(crvUserEnd.sub(crvUser)).to.be.bignumber.gte(claimableToken);
         expect(
           await this.token0.balanceOf.call(this.proxy.address)
         ).to.be.bignumber.eq(ether('0'));
@@ -153,11 +153,11 @@ contract('Curve DAO', function([_, deployer, user1, user2]) {
       });
 
       it('without approval', async function() {
-        const to = this.hcurvedao.address;
+        const to = this.hCurveDao.address;
         const data = abi.simpleEncode('mint(address)', this.gauge0.address);
         await expectRevert.unspecified(
           this.proxy.execMock(to, data, {
-            from: user1,
+            from: user,
             value: ether('0.1'),
           })
         );
@@ -166,57 +166,57 @@ contract('Curve DAO', function([_, deployer, user1, user2]) {
 
     describe('from multiple gauges', function() {
       beforeEach(async function() {
-        await this.token0.transfer(user2, gauge0Amount, {
+        await this.token0.transfer(user, gauge0Amount, {
           from: token0Provider,
         });
-        await this.token1.transfer(user2, gauge1Amount, {
+        await this.token1.transfer(user, gauge1Amount, {
           from: token1Provider,
         });
         await this.token0.approve(this.gauge0.address, gauge0Amount, {
-          from: user2,
+          from: user,
         });
         await this.token1.approve(this.gauge1.address, gauge1Amount, {
-          from: user2,
+          from: user,
         });
-        await this.gauge0.deposit(gauge0Amount, user2, { from: user2 });
-        await this.gauge1.deposit(gauge1Amount, user2, { from: user2 });
+        await this.gauge0.deposit(gauge0Amount, user, { from: user });
+        await this.gauge1.deposit(gauge1Amount, user, { from: user });
         await increase(duration.days('30'));
-        crvUser2 = await this.crv.balanceOf.call(user2);
+        crvUser = await this.crv.balanceOf.call(user);
       });
 
       afterEach(async function() {
-        const rest0 = await this.gauge0.balanceOf.call(user2);
-        const rest1 = await this.gauge0.balanceOf.call(user2);
-        await this.gauge0.withdraw(rest0, { from: user2 });
-        await this.gauge1.withdraw(rest1, { from: user2 });
-        await this.minter.mint(this.gauge0.address, { from: user2 });
-        await this.minter.mint(this.gauge1.address, { from: user2 });
+        const rest0 = await this.gauge0.balanceOf.call(user);
+        const rest1 = await this.gauge0.balanceOf.call(user);
+        await this.gauge0.withdraw(rest0, { from: user });
+        await this.gauge1.withdraw(rest1, { from: user });
+        await this.minter.mint(this.gauge0.address, { from: user });
+        await this.minter.mint(this.gauge1.address, { from: user });
         await this.token0.approve(this.gauge0.address, ether('0'), {
-          from: user2,
+          from: user,
         });
         await this.token1.approve(this.gauge1.address, ether('0'), {
-          from: user2,
+          from: user,
         });
       });
 
       it('normal', async function() {
         await this.minter.toggle_approve_mint(this.proxy.address, {
-          from: user2,
+          from: user,
         });
-        const to = this.hcurvedao.address;
+        const to = this.hCurveDao.address;
         const data = abi.simpleEncode('mintMany(address[])', [
           this.gauge0.address,
           this.gauge1.address,
         ]);
-        const claimableToken0 = await this.gauge0.claimable_tokens.call(user2);
-        const claimableToken1 = await this.gauge1.claimable_tokens.call(user2);
+        const claimableToken0 = await this.gauge0.claimable_tokens.call(user);
+        const claimableToken1 = await this.gauge1.claimable_tokens.call(user);
         const receipt = await this.proxy.execMock(to, data, {
-          from: user2,
+          from: user,
           value: ether('0.1'),
         });
 
-        const crvUser2End = await this.crv.balanceOf(user2);
-        expect(crvUser2End.sub(crvUser2)).to.be.bignumber.gte(
+        const crvUserEnd = await this.crv.balanceOf(user);
+        expect(crvUserEnd.sub(crvUser)).to.be.bignumber.gte(
           claimableToken0.add(claimableToken1)
         );
         expect(
@@ -232,14 +232,14 @@ contract('Curve DAO', function([_, deployer, user1, user2]) {
       });
 
       it('without approval', async function() {
-        const to = this.hcurvedao.address;
+        const to = this.hCurveDao.address;
         const data = abi.simpleEncode('mintMany(address[])', [
           this.gauge0.address,
           this.gauge1.address,
         ]);
         await expectRevert.unspecified(
           this.proxy.execMock(to, data, {
-            from: user2,
+            from: user,
             value: ether('0.1'),
           })
         );
