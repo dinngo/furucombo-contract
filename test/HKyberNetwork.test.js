@@ -20,7 +20,12 @@ const {
   DAI_PROVIDER,
   KYBERNETWORK_PROXY,
 } = require('./utils/constants');
-const { resetAccount, profileGas } = require('./utils/utils');
+const {
+  evmRevert,
+  evmSnapshot,
+  mulPercent,
+  profileGas,
+} = require('./utils/utils');
 
 const HKyberNetwork = artifacts.require('HKyberNetwork');
 const Registry = artifacts.require('Registry');
@@ -28,7 +33,9 @@ const Proxy = artifacts.require('ProxyMock');
 const IToken = artifacts.require('IERC20');
 const IKyberNetworkProxy = artifacts.require('IKyberNetworkProxy');
 
-contract('KyberNetwork Swap', function([_, deployer, user, someone]) {
+contract('KyberNetwork Swap', function([_, user]) {
+  const slippage = new BN('3');
+  let id;
   const tokenAddress = DAI_TOKEN;
   const providerAddress = DAI_PROVIDER;
 
@@ -39,9 +46,9 @@ contract('KyberNetwork Swap', function([_, deployer, user, someone]) {
   before(async function() {
     this.registry = await Registry.new();
     this.proxy = await Proxy.new(this.registry.address);
-    this.hkybernetwork = await HKyberNetwork.new();
+    this.hKyberNetwork = await HKyberNetwork.new();
     await this.registry.register(
-      this.hkybernetwork.address,
+      this.hKyberNetwork.address,
       utils.asciiToHex('Kyberswap')
     );
     this.token = await IToken.at(tokenAddress);
@@ -49,18 +56,21 @@ contract('KyberNetwork Swap', function([_, deployer, user, someone]) {
   });
 
   beforeEach(async function() {
-    await resetAccount(_);
-    await resetAccount(user);
+    id = await evmSnapshot();
     balanceUser = await tracker(user);
     balanceProxy = await tracker(this.proxy.address);
     tokenUser = await this.token.balanceOf.call(user);
+  });
+
+  afterEach(async function() {
+    await evmRevert(id);
   });
 
   describe('Ether to Token', function() {
     describe('Exact input', function() {
       it('normal', async function() {
         const value = ether('1');
-        const to = this.hkybernetwork.address;
+        const to = this.hKyberNetwork.address;
         const rate = await this.swap.getExpectedRate.call(
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
           tokenAddress,
@@ -70,7 +80,7 @@ contract('KyberNetwork Swap', function([_, deployer, user, someone]) {
           'swapEtherToToken(uint256,address,uint256):(uint256)',
           value,
           tokenAddress,
-          rate[1]
+          mulPercent(rate[1], new BN('100').sub(slippage))
         );
         const kyberswapAmount = value.mul(rate[1]).div(ether('1'));
         const receipt = await this.proxy.execMock(to, data, {
@@ -94,7 +104,7 @@ contract('KyberNetwork Swap', function([_, deployer, user, someone]) {
 
       it('min rate too high', async function() {
         const value = ether('1');
-        const to = this.hkybernetwork.address;
+        const to = this.hKyberNetwork.address;
         const rate = await this.swap.getExpectedRate.call(
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
           tokenAddress,
@@ -127,7 +137,7 @@ contract('KyberNetwork Swap', function([_, deployer, user, someone]) {
     describe('Exact input', function() {
       it('normal', async function() {
         const value = ether('1');
-        const to = this.hkybernetwork.address;
+        const to = this.hKyberNetwork.address;
         const rate = await this.swap.getExpectedRate.call(
           tokenAddress,
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
@@ -137,7 +147,7 @@ contract('KyberNetwork Swap', function([_, deployer, user, someone]) {
           'swapTokenToEther(address,uint256,uint256):(uint256)',
           tokenAddress,
           value,
-          rate[1]
+          mulPercent(rate[1], new BN('100').sub(slippage))
         );
         await this.token.transfer(this.proxy.address, value, {
           from: providerAddress,
@@ -175,7 +185,7 @@ contract('KyberNetwork Swap', function([_, deployer, user, someone]) {
     describe('Exact input', function() {
       it('normal', async function() {
         const value = ether('1');
-        const to = this.hkybernetwork.address;
+        const to = this.hKyberNetwork.address;
         const rate = await this.swap.getExpectedRate.call(
           srcTokenAddress,
           destTokenAddress,
@@ -186,7 +196,7 @@ contract('KyberNetwork Swap', function([_, deployer, user, someone]) {
           srcTokenAddress,
           value,
           destTokenAddress,
-          rate[1]
+          mulPercent(rate[1], new BN('100').sub(slippage))
         );
         await this.token.transfer(this.proxy.address, value, {
           from: providerAddress,

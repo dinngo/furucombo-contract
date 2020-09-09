@@ -33,9 +33,10 @@ start_ganache() {
     TCRV_PROVIDER="0xc447fcaf1def19a583f97b3620627bf69c05b5fb"
     YFI_PROVIDER="0x3f5CE5FBFe3E9af3971dD833D26bA9b5C936f0bE"
     ALINK_PROVIDER="0xe3786BF25E15013FDDa09dbe881529d44B9CA239"
+    CURVE_SBTCCRV_PROVIDER="0xddF4538cf464D587Fb22D2349a465B16C3fFaf63"
 
     # node_modules/.bin/ganache-cli --gasLimit 0xfffffffffff -m "$TEST_MNEMONIC_PHRASE" > /dev/null &
-    node_modules/.bin/ganache-cli --gasLimit 0xfffffffffff --debug -f $ETH_MAINNET_NODE -m "$TEST_MNEMONIC_PHRASE" -u "$ETHER_PROVIDER" -u "$DAI_PROVIDER" -u "$MKR_PROVIDER" -u "$BAT_PROVIDER" -u "$USDT_PROVIDER" -u "$SUSD_PROVIDER" -u "$WBTC_PROVIDER" -u "$KNC_PROVIDER" -u "$WETH_PROVIDER" -u "$RENBTC_PROVIDER" -u "$YCRV_PROVIDER" -u "$TCRV_PROVIDER" -u "$YFI_PROVIDER" -u "$ALINK_PROVIDER" > /dev/null &
+    node_modules/.bin/ganache-cli --gasLimit 0xfffffffffff --debug -f $ETH_MAINNET_NODE -m "$TEST_MNEMONIC_PHRASE" -u "$ETHER_PROVIDER" -u "$DAI_PROVIDER" -u "$MKR_PROVIDER" -u "$BAT_PROVIDER" -u "$USDT_PROVIDER" -u "$SUSD_PROVIDER" -u "$WBTC_PROVIDER" -u "$KNC_PROVIDER" -u "$WETH_PROVIDER" -u "$RENBTC_PROVIDER" -u "$YCRV_PROVIDER" -u "$TCRV_PROVIDER" -u "$YFI_PROVIDER" -u "$ALINK_PROVIDER" -u "$CURVE_SBTCCRV_PROVIDER" > /dev/null &
 
     ganache_pid=$!
 }
@@ -49,13 +50,5 @@ fi
 
 truffle version
 
-# Filter out test files with suffix `.except.js` and execute with `truffle test` seperately
-scripts=$(find -H -L ./test/* -regex "^.*.except.js$")
-echo "$scripts"
-for script in $scripts
-do
-    node_modules/.bin/truffle test "$script" "$@"
-done
-
 # Execute rest test files with suffix `.test.js` with single `truffle test`
-node_modules/.bin/truffle test ./test/*.test.js "$@"
+node_modules/.bin/truffle test "$@"

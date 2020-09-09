@@ -20,7 +20,7 @@ const {
   COMPOUND_COMPTROLLER,
   COMPOUND_LENS,
 } = require('./utils/constants');
-const { resetAccount, profileGas } = require('./utils/utils');
+const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
 
 const HComptroller = artifacts.require('HComptroller');
 const Registry = artifacts.require('Registry');
@@ -60,7 +60,8 @@ async function getEstimatedComp(account) {
   return d['3'];
 }
 
-contract('Comptroller', function([_, deployer, user, someone]) {
+contract('Comptroller', function([_, user, someone]) {
+  let id;
   let balanceUser;
   let balanceProxy;
   let compUser;
@@ -68,21 +69,24 @@ contract('Comptroller', function([_, deployer, user, someone]) {
   before(async function() {
     this.registry = await Registry.new();
     this.proxy = await Proxy.new(this.registry.address);
-    this.hcomptroller = await HComptroller.new();
+    this.hComptroller = await HComptroller.new();
     await this.registry.register(
-      this.hcomptroller.address,
+      this.hComptroller.address,
       utils.asciiToHex('Comptroller')
     );
-    this.cether = await ICEther.at(CETHER);
+    this.cEther = await ICEther.at(CETHER);
     this.comp = await IToken.at(COMP_TOKEN);
     this.comptroller = await IComptroller.at(COMPOUND_COMPTROLLER);
   });
 
   beforeEach(async function() {
-    await resetAccount(_);
-    await resetAccount(user);
+    id = await evmSnapshot();
     balanceUser = await tracker(user);
     balanceProxy = await tracker(this.proxy.address);
+  });
+
+  afterEach(async function() {
+    await evmRevert(id);
   });
 
   describe('Claim COMP', function() {
@@ -91,7 +95,7 @@ contract('Comptroller', function([_, deployer, user, someone]) {
     });
 
     beforeEach(async function() {
-      await this.cether.mint({
+      await this.cEther.mint({
         from: user,
         value: ether('10'),
       });
@@ -101,7 +105,7 @@ contract('Comptroller', function([_, deployer, user, someone]) {
 
     describe('Owner claim', function() {
       it('normal', async function() {
-        const to = this.hcomptroller.address;
+        const to = this.hComptroller.address;
         const data = abi.simpleEncode('claimComp()');
         const result = await getEstimatedComp(user);
         const receipt = await this.proxy.execMock(to, data, {
@@ -117,7 +121,7 @@ contract('Comptroller', function([_, deployer, user, someone]) {
 
     describe('Others claim', function() {
       it('normal', async function() {
-        const to = this.hcomptroller.address;
+        const to = this.hComptroller.address;
         const data = abi.simpleEncode('claimComp(address)', user);
         const result = await getEstimatedComp(user);
         const receipt = await this.proxy.execMock(to, data, {

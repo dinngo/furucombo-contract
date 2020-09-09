@@ -30,7 +30,7 @@ const {
   MAKER_MCD_JOIN_ETH_A,
   MAKER_MCD_JOIN_DAI,
 } = require('./utils/constants');
-const { resetAccount } = require('./utils/utils');
+const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
 
 const HAave = artifacts.require('HAaveProtocol');
 const HMaker = artifacts.require('HMaker');
@@ -77,46 +77,50 @@ async function approveCdp(cdp, owner, user) {
   await proxy.execute(MAKER_PROXY_ACTIONS, data, { from: owner });
 }
 
-contract('Aave flashloan', function([_, deployer, user]) {
+contract('Aave flashloan', function([_, user]) {
+  let id;
   let balanceUser;
   let balanceProxy;
 
   before(async function() {
     this.registry = await Registry.new();
     this.proxy = await Proxy.new(this.registry.address);
-    this.haave = await HAave.new();
-    this.hmaker = await HMaker.new();
+    this.hAave = await HAave.new();
+    this.hMaker = await HMaker.new();
     await this.registry.register(
-      this.haave.address,
+      this.hAave.address,
       utils.asciiToHex('Aave Protocol')
     );
     await this.registry.register(
-      this.hmaker.address,
+      this.hMaker.address,
       utils.asciiToHex('Maker')
     );
-    this.dsregistry = await IDSProxyRegistry.at(MAKER_PROXY_REGISTRY);
-    this.cdpmanager = await IMakerManager.at(MAKER_CDP_MANAGER);
+    this.dsRegistry = await IDSProxyRegistry.at(MAKER_PROXY_REGISTRY);
+    this.cdpManager = await IMakerManager.at(MAKER_CDP_MANAGER);
     this.vat = await IMakerVat.at(MAKER_MCD_VAT);
-    await this.dsregistry.build(this.proxy.address);
-    await this.dsregistry.build(user);
-    this.dsproxy = await IDSProxy.at(
-      await this.dsregistry.proxies.call(this.proxy.address)
+    await this.dsRegistry.build(this.proxy.address);
+    await this.dsRegistry.build(user);
+    this.dsProxy = await IDSProxy.at(
+      await this.dsRegistry.proxies.call(this.proxy.address)
     );
-    this.userproxy = await IDSProxy.at(
-      await this.dsregistry.proxies.call(user)
+    this.userProxy = await IDSProxy.at(
+      await this.dsRegistry.proxies.call(user)
     );
     this.dai = await IToken.at(DAI_TOKEN);
     this.provider = await IProvider.at(AAVEPROTOCOL_PROVIDER);
     const lendingPoolAddress = await this.provider.getLendingPool.call();
     this.lendingPool = await ILendingPool.at(lendingPoolAddress);
-    await this.registry.register(lendingPoolAddress, this.haave.address);
+    await this.registry.register(lendingPoolAddress, this.hAave.address);
   });
 
   beforeEach(async function() {
-    await resetAccount(_);
-    await resetAccount(user);
+    id = await evmSnapshot();
     balanceUser = await tracker(user);
     balanceProxy = await tracker(this.proxy.address);
+  });
+
+  afterEach(async function() {
+    await evmRevert(id);
   });
 
   describe('Maker', function() {
@@ -137,20 +141,20 @@ contract('Aave flashloan', function([_, deployer, user]) {
         utils.padRight(utils.asciiToHex('ETH-A'), 64),
         ether('0')
       );
-      await this.userproxy.execute(MAKER_PROXY_ACTIONS, new1, {
+      await this.userProxy.execute(MAKER_PROXY_ACTIONS, new1, {
         from: user,
         value: etherAmount,
       });
-      cdp = await this.cdpmanager.last.call(this.userproxy.address);
+      cdp = await this.cdpManager.last.call(this.userProxy.address);
       balanceUser = await tracker(user);
       [ilk, debt, lock] = await getCdpInfo(cdp);
     });
 
     it('withdraw', async function() {
-      await approveCdp(cdp, user, this.dsproxy.address);
+      await approveCdp(cdp, user, this.dsProxy.address);
       balanceUser = await tracker(user);
       const wad = ether('1');
-      const testTo = [this.hmaker.address];
+      const testTo = [this.hMaker.address];
       const testData = [
         '0x' +
           abi
@@ -166,7 +170,7 @@ contract('Aave flashloan', function([_, deployer, user]) {
         ['address[]', 'bytes[]'],
         [testTo, testData]
       );
-      const to = this.haave.address;
+      const to = this.hAave.address;
       const value = ether('0.1');
       const data = abi.simpleEncode(
         'flashLoan(address,uint256,bytes)',

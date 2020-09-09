@@ -25,10 +25,10 @@ const {
   KNC_SYMBOL,
 } = require('./utils/constants');
 const {
-  resetAccount,
-  profileGas,
+  evmRevert,
   evmSnapshot,
-  evmRevertAndSnapshot,
+  mulPercent,
+  profileGas,
 } = require('./utils/utils');
 const fetch = require('node-fetch');
 const queryString = require('query-string');
@@ -38,24 +38,25 @@ const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('ProxyMock');
 const IToken = artifacts.require('IERC20');
 
-contract('OneInch Swap', function([_, deployer, user, someone]) {
+contract('OneInch Swap', function([_, user]) {
   let id;
 
   before(async function() {
     this.registry = await Registry.new();
-    this.honeinch = await HOneInch.new();
+    this.hOneInch = await HOneInch.new();
     await this.registry.register(
-      this.honeinch.address,
+      this.hOneInch.address,
       utils.asciiToHex('OneInch')
     );
-    id = await evmSnapshot();
+    this.proxy = await Proxy.new(this.registry.address);
   });
 
   beforeEach(async function() {
-    id = await evmRevertAndSnapshot(id);
-    await resetAccount(_);
-    await resetAccount(user);
-    this.proxy = await Proxy.new(this.registry.address);
+    id = await evmSnapshot();
+  });
+
+  afterEach(async function() {
+    await evmRevert(id);
   });
 
   describe('Ether to Token', function() {
@@ -79,7 +80,7 @@ contract('OneInch Swap', function([_, deployer, user, someone]) {
     describe('Exact input', function() {
       it('normal', async function() {
         const value = ether('1');
-        const to = this.honeinch.address;
+        const to = this.hOneInch.address;
         const slippage = 3;
 
         const swapReq = queryString.stringifyUrl({
@@ -123,7 +124,7 @@ contract('OneInch Swap', function([_, deployer, user, someone]) {
 
       it('msg.value greater than input ether amount', async function() {
         const value = ether('1');
-        const to = this.honeinch.address;
+        const to = this.hOneInch.address;
         const slippage = 3;
 
         const swapReq = queryString.stringifyUrl({
@@ -189,7 +190,7 @@ contract('OneInch Swap', function([_, deployer, user, someone]) {
     describe('Exact input', function() {
       it('normal', async function() {
         const value = ether('50');
-        const to = this.honeinch.address;
+        const to = this.hOneInch.address;
         const slippage = 3;
 
         const swapReq = queryString.stringifyUrl({
@@ -261,7 +262,7 @@ contract('OneInch Swap', function([_, deployer, user, someone]) {
     describe('Exact input', function() {
       it('normal', async function() {
         const value = ether('50');
-        const to = this.honeinch.address;
+        const to = this.hOneInch.address;
         const slippage = 3;
 
         const swapReq = queryString.stringifyUrl({
@@ -310,7 +311,3 @@ contract('OneInch Swap', function([_, deployer, user, someone]) {
     });
   });
 });
-
-function mulPercent(num, percentage) {
-  return new BN(num).mul(new BN(percentage)).div(new BN(100));
-}

@@ -22,7 +22,7 @@ const {
   UNISWAPV2_BAT_DAI,
   UNISWAPV2_ROUTER02,
 } = require('./utils/constants');
-const { resetAccount, profileGas } = require('./utils/utils');
+const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
 
 const HUniswapV2 = artifacts.require('HUniswapV2');
 const Registry = artifacts.require('Registry');
@@ -30,7 +30,8 @@ const Proxy = artifacts.require('ProxyMock');
 const IToken = artifacts.require('IERC20');
 const UniswapV2Router02 = artifacts.require('IUniswapV2Router02');
 
-contract('UniswapV2 Liquidity', function([_, deployer, user]) {
+contract('UniswapV2 Liquidity', function([_, user]) {
+  let id;
   const tokenAAddress = DAI_TOKEN;
   const tokenBAddress = BAT_TOKEN;
   const tokenAProviderAddress = DAI_PROVIDER;
@@ -46,14 +47,14 @@ contract('UniswapV2 Liquidity', function([_, deployer, user]) {
   before(async function() {
     this.registry = await Registry.new();
     this.proxy = await Proxy.new(this.registry.address);
-    this.huniswapv2 = await HUniswapV2.new();
+    this.hUniswapV2 = await HUniswapV2.new();
     await this.registry.register(
-      this.huniswapv2.address,
+      this.hUniswapV2.address,
       utils.asciiToHex('UniswapV2')
     );
     this.tokenA = await IToken.at(tokenAAddress);
     this.tokenB = await IToken.at(tokenBAddress);
-    this.uniTokenETH = await IToken.at(uniswapV2ETHDAIAddress);
+    this.uniTokenEth = await IToken.at(uniswapV2ETHDAIAddress);
     this.uniTokenToken = await IToken.at(uniswapV2BATDAIAddress);
     this.router = await UniswapV2Router02.at(uniswapV2RouterAddress);
 
@@ -66,14 +67,17 @@ contract('UniswapV2 Liquidity', function([_, deployer, user]) {
   });
 
   beforeEach(async function() {
-    await resetAccount(_);
-    await resetAccount(user);
+    id = await evmSnapshot();
     balanceUser = await tracker(user);
     balanceProxy = await tracker(this.proxy.address);
     tokenAUserAmount = await this.tokenA.balanceOf.call(user);
     tokenBUserAmount = await this.tokenB.balanceOf.call(user);
-    uniTokenETHUserAmount = await this.uniTokenETH.balanceOf.call(user);
+    uniTokenEthUserAmount = await this.uniTokenEth.balanceOf.call(user);
     uniTokenTokenUserAmount = await this.uniTokenToken.balanceOf.call(user);
+  });
+
+  afterEach(async function() {
+    await evmRevert(id);
   });
 
   describe('Add ETH', function() {
@@ -92,7 +96,7 @@ contract('UniswapV2 Liquidity', function([_, deployer, user]) {
       const minTokenAmount = ether('0.000001');
       const minEthAmount = ether('0.000001');
       const value = ether('1');
-      const to = this.huniswapv2.address;
+      const to = this.hUniswapV2.address;
       const data = abi.simpleEncode(
         'addLiquidityETH(uint256,address,uint256,uint256,uint256):(uint256,uint256,uint256)',
         value,
@@ -130,8 +134,8 @@ contract('UniswapV2 Liquidity', function([_, deployer, user]) {
 
       // TODO: Find out the exact number of uniToken for testing
       // Verify spent ether
-      expect(await this.uniTokenETH.balanceOf.call(user)).to.be.bignumber.gt(
-        uniTokenETHUserAmount
+      expect(await this.uniTokenEth.balanceOf.call(user)).to.be.bignumber.gt(
+        uniTokenEthUserAmount
       );
 
       // Gas profile
@@ -160,7 +164,7 @@ contract('UniswapV2 Liquidity', function([_, deployer, user]) {
       const tokenBAmount = ether('0.002');
       const minTokenAAmount = ether('0.000001');
       const minTokenBAmount = ether('0.000001');
-      const to = this.huniswapv2.address;
+      const to = this.hUniswapV2.address;
       const data = abi.simpleEncode(
         'addLiquidity(address,address,uint256,uint256,uint256,uint256):(uint256,uint256,uint256)',
         tokenAAddress,
@@ -228,12 +232,12 @@ contract('UniswapV2 Liquidity', function([_, deployer, user]) {
 
       // Get user tokenA/uniToken balance
       tokenAUserAmount = await this.tokenA.balanceOf.call(user);
-      uniTokenUserAmount = await this.uniTokenETH.balanceOf.call(user);
+      uniTokenUserAmount = await this.uniTokenEth.balanceOf.call(user);
     });
 
     it('normal', async function() {
       // Get simulation result
-      await this.uniTokenETH.approve(this.router.address, uniTokenUserAmount, {
+      await this.uniTokenEth.approve(this.router.address, uniTokenUserAmount, {
         from: user,
       });
       const result = await this.router.removeLiquidityETH.call(
@@ -247,13 +251,13 @@ contract('UniswapV2 Liquidity', function([_, deployer, user]) {
       );
 
       // Send uniToken to proxy and prepare handler data
-      await this.uniTokenETH.transfer(this.proxy.address, uniTokenUserAmount, {
+      await this.uniTokenEth.transfer(this.proxy.address, uniTokenUserAmount, {
         from: user,
       });
-      await this.proxy.updateTokenMock(this.uniTokenETH.address);
+      await this.proxy.updateTokenMock(this.uniTokenEth.address);
 
       const value = uniTokenUserAmount;
-      const to = this.huniswapv2.address;
+      const to = this.hUniswapV2.address;
       const data = abi.simpleEncode(
         'removeLiquidityETH(address,uint256,uint256,uint256):(uint256,uint256)',
         tokenAAddress,
@@ -270,13 +274,13 @@ contract('UniswapV2 Liquidity', function([_, deployer, user]) {
       expect(await this.tokenA.balanceOf.call(user)).to.be.bignumber.eq(
         tokenAUserAmount.add(result[0])
       );
-      expect(await this.uniTokenETH.balanceOf.call(user)).to.be.bignumber.eq(
+      expect(await this.uniTokenEth.balanceOf.call(user)).to.be.bignumber.eq(
         ether('0')
       );
 
       // Verify proxy token should be zero
       expect(
-        await this.uniTokenETH.balanceOf.call(this.proxy.address)
+        await this.uniTokenEth.balanceOf.call(this.proxy.address)
       ).to.be.bignumber.eq(ether('0'));
       expect(
         await this.tokenA.balanceOf.call(this.proxy.address)
@@ -361,7 +365,7 @@ contract('UniswapV2 Liquidity', function([_, deployer, user]) {
       await this.proxy.updateTokenMock(this.uniTokenToken.address);
 
       const value = uniTokenUserAmount;
-      const to = this.huniswapv2.address;
+      const to = this.hUniswapV2.address;
       const data = abi.simpleEncode(
         'removeLiquidity(address,address,uint256,uint256,uint256):(uint256,uint256)',
         tokenAAddress,

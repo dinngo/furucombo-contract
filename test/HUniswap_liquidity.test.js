@@ -18,7 +18,7 @@ const {
   DAI_PROVIDER,
   ETH_PROVIDER,
 } = require('./utils/constants');
-const { resetAccount, profileGas } = require('./utils/utils');
+const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
 
 const HUniswap = artifacts.require('HUniswap');
 const Registry = artifacts.require('Registry');
@@ -26,11 +26,12 @@ const Proxy = artifacts.require('ProxyMock');
 const IToken = artifacts.require('IERC20');
 const IUniswapExchange = artifacts.require('IUniswapExchange');
 
-contract('Uniswap Liquidity', function([_, deployer, user]) {
+contract('Uniswap Liquidity', function([_, user]) {
   const tokenAddress = DAI_TOKEN;
   const uniswapAddress = DAI_UNISWAP;
   const providerAddress = DAI_PROVIDER;
 
+  let id;
   let balanceUser;
   let tokenUser;
   let uniTokenUser;
@@ -38,9 +39,9 @@ contract('Uniswap Liquidity', function([_, deployer, user]) {
   before(async function() {
     this.registry = await Registry.new();
     this.proxy = await Proxy.new(this.registry.address);
-    this.huniswap = await HUniswap.new();
+    this.hUniswap = await HUniswap.new();
     await this.registry.register(
-      this.huniswap.address,
+      this.hUniswap.address,
       utils.asciiToHex('Uniswap')
     );
     this.token = await IToken.at(tokenAddress);
@@ -49,11 +50,14 @@ contract('Uniswap Liquidity', function([_, deployer, user]) {
   });
 
   beforeEach(async function() {
-    await resetAccount(_);
-    await resetAccount(user);
+    id = await evmSnapshot();
     balanceUser = await tracker(user);
     tokenUser = await this.token.balanceOf.call(user);
     uniTokenUser = await this.swap.balanceOf.call(user);
+  });
+
+  afterEach(async function() {
+    await evmRevert(id);
   });
 
   describe('Add', function() {
@@ -66,7 +70,7 @@ contract('Uniswap Liquidity', function([_, deployer, user]) {
 
     it('normal', async function() {
       const value = ether('0.1');
-      const to = this.huniswap.address;
+      const to = this.hUniswap.address;
       const data = abi.simpleEncode(
         'addLiquidity(uint256,address,uint256):(uint256)',
         value,
@@ -115,7 +119,7 @@ contract('Uniswap Liquidity', function([_, deployer, user]) {
 
     it('normal', async function() {
       const value = uniTokenUser;
-      const to = this.huniswap.address;
+      const to = this.hUniswap.address;
       const data = abi.simpleEncode(
         'removeLiquidity(address,uint256,uint256,uint256):(uint256,uint256)',
         tokenAddress,

@@ -22,7 +22,7 @@ const {
   USDT_TOKEN,
   USDT_PROVIDER,
 } = require('./utils/constants');
-const { resetAccount, profileGas } = require('./utils/utils');
+const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
 
 const HFunds = artifacts.require('HFunds');
 const Registry = artifacts.require('Registry');
@@ -30,23 +30,27 @@ const Proxy = artifacts.require('ProxyMock');
 const IToken = artifacts.require('IERC20');
 const IUsdt = artifacts.require('IERC20Usdt');
 
-contract('Funds', function([_, deployer, user, someone]) {
+contract('Funds', function([_, user, someone]) {
+  let id;
   const tokenAddresses = [DAI_TOKEN, BAT_TOKEN];
   const providerAddresses = [DAI_PROVIDER, BAT_PROVIDER];
 
   before(async function() {
     this.registry = await Registry.new();
     this.proxy = await Proxy.new(this.registry.address);
-    this.hfunds = await HFunds.new();
+    this.hFunds = await HFunds.new();
     await this.registry.register(
-      this.hfunds.address,
+      this.hFunds.address,
       utils.asciiToHex('Funds')
     );
   });
 
   beforeEach(async function() {
-    await resetAccount(_);
-    await resetAccount(user);
+    id = await evmSnapshot();
+  });
+
+  afterEach(async function() {
+    await evmRevert(id);
   });
 
   describe('single token', function() {
@@ -58,7 +62,7 @@ contract('Funds', function([_, deployer, user, someone]) {
     it('normal', async function() {
       const token = [this.token0.address];
       const value = [ether('100')];
-      const to = this.hfunds.address;
+      const to = this.hFunds.address;
       const data = abi.simpleEncode(
         'inject(address[],uint256[])',
         token,
@@ -90,7 +94,7 @@ contract('Funds', function([_, deployer, user, someone]) {
     it('USDT', async function() {
       const token = [this.usdt.address];
       const value = [new BN('1000000')];
-      const to = this.hfunds.address;
+      const to = this.hFunds.address;
       const data = abi.simpleEncode(
         'inject(address[],uint256[])',
         token,
@@ -128,7 +132,7 @@ contract('Funds', function([_, deployer, user, someone]) {
     it('normal', async function() {
       const token = [this.token0.address, this.token1.address];
       const value = [ether('100'), ether('100')];
-      const to = this.hfunds.address;
+      const to = this.hFunds.address;
       const data = abi.simpleEncode(
         'inject(address[],uint256[])',
         token,
@@ -185,7 +189,7 @@ contract('Funds', function([_, deployer, user, someone]) {
         const providerAddress = providerAddresses[0];
         const value = ether('100');
         const receiver = someone;
-        const to = this.hfunds.address;
+        const to = this.hFunds.address;
         const data = abi.simpleEncode(
           'sendToken(address,uint256,address)',
           token,
@@ -217,7 +221,7 @@ contract('Funds', function([_, deployer, user, someone]) {
         const providerAddress = USDT_PROVIDER;
         const value = new BN('1000000');
         const receiver = someone;
-        const to = this.hfunds.address;
+        const to = this.hFunds.address;
         const data = abi.simpleEncode(
           'sendToken(address,uint256,address)',
           token,
@@ -250,7 +254,7 @@ contract('Funds', function([_, deployer, user, someone]) {
         const providerAddress = providerAddresses[0];
         const value = ether('100');
         const receiver = someone;
-        const to = this.hfunds.address;
+        const to = this.hFunds.address;
         const data = abi.simpleEncode(
           'sendToken(address,uint256,address)',
           token,
@@ -275,7 +279,7 @@ contract('Funds', function([_, deployer, user, someone]) {
       it('normal', async function() {
         const value = ether('1');
         const receiver = someone;
-        const to = this.hfunds.address;
+        const to = this.hFunds.address;
         const data = abi.simpleEncode('send(uint256,address)', value, receiver);
         let balanceSomeone = await tracker(someone);
         const receipt = await this.proxy.execMock(to, data, {
@@ -289,7 +293,7 @@ contract('Funds', function([_, deployer, user, someone]) {
       it('insufficient ether', async function() {
         const value = ether('1');
         const receiver = someone;
-        const to = this.hfunds.address;
+        const to = this.hFunds.address;
         const data = abi.simpleEncode('send(uint256,address)', value, receiver);
         let balanceSomeone = await tracker(someone);
         await expectRevert.unspecified(

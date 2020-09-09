@@ -22,7 +22,7 @@ const {
   USDT_TOKEN,
   USDT_PROVIDER,
 } = require('./utils/constants');
-const { resetAccount, profileGas } = require('./utils/utils');
+const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
 
 const HERC20TokenIn = artifacts.require('OldHERC20TokenIn');
 const Registry = artifacts.require('Registry');
@@ -30,23 +30,27 @@ const Proxy = artifacts.require('ProxyMock');
 const IToken = artifacts.require('IERC20');
 const IUsdt = artifacts.require('IERC20Usdt');
 
-contract('Old ERC20TokenIn', function([_, deployer, user, someone]) {
+contract('Old ERC20TokenIn', function([_, user]) {
   const tokenAddresses = [DAI_TOKEN, BAT_TOKEN];
   const providerAddresses = [DAI_PROVIDER, BAT_PROVIDER];
+  let id;
 
   before(async function() {
     this.registry = await Registry.new();
     this.proxy = await Proxy.new(this.registry.address);
-    this.herc20tokenin = await HERC20TokenIn.new();
+    this.hERC20TokenIn = await HERC20TokenIn.new();
     await this.registry.register(
-      this.herc20tokenin.address,
+      this.hERC20TokenIn.address,
       utils.asciiToHex('ERC20In')
     );
   });
 
   beforeEach(async function() {
-    await resetAccount(_);
-    await resetAccount(user);
+    id = await evmSnapshot();
+  });
+
+  afterEach(async function() {
+    await evmRevert(id);
   });
 
   describe('single token', function() {
@@ -58,7 +62,7 @@ contract('Old ERC20TokenIn', function([_, deployer, user, someone]) {
     it('normal', async function() {
       const token = [this.token0.address];
       const value = [ether('100')];
-      const to = this.herc20tokenin.address;
+      const to = this.hERC20TokenIn.address;
       const data = abi.simpleEncode(
         'inject(address[],uint256[])',
         token,
@@ -87,7 +91,7 @@ contract('Old ERC20TokenIn', function([_, deployer, user, someone]) {
     it('USDT', async function() {
       const token = [this.usdt.address];
       const value = [new BN('1000000')];
-      const to = this.herc20tokenin.address;
+      const to = this.hERC20TokenIn.address;
       const data = abi.simpleEncode(
         'inject(address[],uint256[])',
         token,
@@ -122,7 +126,7 @@ contract('Old ERC20TokenIn', function([_, deployer, user, someone]) {
     it('normal', async function() {
       const token = [this.token0.address, this.token1.address];
       const value = [ether('100'), ether('100')];
-      const to = this.herc20tokenin.address;
+      const to = this.hERC20TokenIn.address;
       const data = abi.simpleEncode(
         'inject(address[],uint256[])',
         token,

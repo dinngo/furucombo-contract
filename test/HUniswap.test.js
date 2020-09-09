@@ -20,7 +20,12 @@ const {
   BAT_TOKEN,
   ETH_PROVIDER,
 } = require('./utils/constants');
-const { resetAccount, profileGas } = require('./utils/utils');
+const {
+  evmRevert,
+  evmSnapshot,
+  mulPercent,
+  profileGas,
+} = require('./utils/utils');
 
 const HUniswap = artifacts.require('HUniswap');
 const Registry = artifacts.require('Registry');
@@ -28,20 +33,25 @@ const Proxy = artifacts.require('ProxyMock');
 const IToken = artifacts.require('IERC20');
 const IUniswapExchange = artifacts.require('IUniswapExchange');
 
-contract('Uniswap Swap', function([_, deployer, user, someone]) {
+contract('Uniswap Swap', function([_, user, someone]) {
+  const slippage = new BN('3');
+  let id;
   before(async function() {
     this.registry = await Registry.new();
-    this.huniswap = await HUniswap.new();
+    this.hUniswap = await HUniswap.new();
     await this.registry.register(
-      this.huniswap.address,
+      this.hUniswap.address,
       utils.asciiToHex('Uniswap')
     );
+    this.proxy = await Proxy.new(this.registry.address);
   });
 
   beforeEach(async function() {
-    await resetAccount(_);
-    await resetAccount(user);
-    this.proxy = await Proxy.new(this.registry.address, { from: deployer });
+    id = await evmSnapshot();
+  });
+
+  afterEach(async function() {
+    await evmRevert(id);
   });
 
   describe('Ether to Token', function() {
@@ -66,25 +76,29 @@ contract('Uniswap Swap', function([_, deployer, user, someone]) {
     describe('Exact input', function() {
       it('normal', async function() {
         const value = ether('1');
-        const to = this.huniswap.address;
-        const data = abi.simpleEncode(
-          'ethToTokenSwapInput(uint256,address,uint256):(uint256)',
-          value,
-          tokenAddress,
-          new BN('1')
-        );
+        const to = this.hUniswap.address;
         const deadline = (await latest()).add(new BN('100'));
         const uniswapAmount = await this.swap.ethToTokenSwapInput.call(
           new BN('1'),
           deadline,
           { from: user, value: ether('1') }
         );
+        const minAmount = mulPercent(
+          uniswapAmount,
+          new BN('100').sub(slippage)
+        );
+        const data = abi.simpleEncode(
+          'ethToTokenSwapInput(uint256,address,uint256):(uint256)',
+          value,
+          tokenAddress,
+          minAmount
+        );
         const receipt = await this.proxy.execMock(to, data, {
           from: user,
           value: ether('1'),
         });
-        expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
-          tokenUser.add(uniswapAmount)
+        expect(await this.token.balanceOf.call(user)).to.be.bignumber.gte(
+          tokenUser.add(minAmount)
         );
         expect(
           await this.token.balanceOf.call(this.proxy.address)
@@ -100,7 +114,7 @@ contract('Uniswap Swap', function([_, deployer, user, someone]) {
 
       it('min amount too high', async function() {
         const value = ether('1');
-        const to = this.huniswap.address;
+        const to = this.hUniswap.address;
         const deadline = (await latest()).add(new BN('100'));
         const uniswapAmount = await this.swap.ethToTokenSwapInput.call(
           new BN('1'),
@@ -129,18 +143,22 @@ contract('Uniswap Swap', function([_, deployer, user, someone]) {
     describe('Exact output', function() {
       it('normal', async function() {
         const value = ether('1');
-        const to = this.huniswap.address;
-        const data = abi.simpleEncode(
-          'ethToTokenSwapOutput(uint256,address,uint256):(uint256)',
-          value,
-          tokenAddress,
-          ether('100')
-        );
+        const to = this.hUniswap.address;
         const deadline = (await latest()).add(new BN('100'));
         const uniswapAmount = await this.swap.ethToTokenSwapOutput.call(
           ether('100'),
           deadline,
           { from: user, value: ether('1') }
+        );
+        const maxAmount = mulPercent(
+          uniswapAmount,
+          new BN('100').add(slippage)
+        );
+        const data = abi.simpleEncode(
+          'ethToTokenSwapOutput(uint256,address,uint256):(uint256)',
+          maxAmount,
+          tokenAddress,
+          ether('100')
         );
         const receipt = await this.proxy.execMock(to, data, {
           from: user,
@@ -153,9 +171,9 @@ contract('Uniswap Swap', function([_, deployer, user, someone]) {
           await this.token.balanceOf.call(this.proxy.address)
         ).to.be.bignumber.eq(ether('0'));
         expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
-        expect(await balanceUser.delta()).to.be.bignumber.eq(
+        expect(await balanceUser.delta()).to.be.bignumber.gte(
           ether('0')
-            .sub(uniswapAmount)
+            .sub(maxAmount)
             .sub(new BN(receipt.receipt.gasUsed))
         );
         profileGas(receipt);
@@ -163,7 +181,7 @@ contract('Uniswap Swap', function([_, deployer, user, someone]) {
 
       it('insufficient ether', async function() {
         const value = ether('0.1');
-        const to = this.huniswap.address;
+        const to = this.hUniswap.address;
         const data = abi.simpleEncode(
           'ethToTokenSwapOutput(uint256,address,uint256):(uint256)',
           value,
@@ -209,22 +227,11 @@ contract('Uniswap Swap', function([_, deployer, user, someone]) {
     describe('Exact input', function() {
       it('normal', async function() {
         const value = ether('100');
-        const to = this.huniswap.address;
-        const data = abi.simpleEncode(
-          'tokenToEthSwapInput(address,uint256,uint256):(uint256)',
-          tokenAddress,
-          value,
-          new BN('1')
-        );
-        await this.token.transfer(this.proxy.address, value, {
-          from: providerAddress,
-        });
-        await this.proxy.updateTokenMock(this.token.address);
+        const to = this.hUniswap.address;
         await this.token.transfer(someone, value, { from: providerAddress });
         await this.token.approve(this.swap.address, value, {
           from: someone,
         });
-
         const deadline = (await latest()).add(new BN('100'));
         const result = await this.swap.tokenToEthSwapInput.call(
           value,
@@ -232,6 +239,17 @@ contract('Uniswap Swap', function([_, deployer, user, someone]) {
           deadline,
           { from: someone }
         );
+        const minAmount = mulPercent(result, new BN('100').sub(slippage));
+        const data = abi.simpleEncode(
+          'tokenToEthSwapInput(address,uint256,uint256):(uint256)',
+          tokenAddress,
+          value,
+          minAmount
+        );
+        await this.token.transfer(this.proxy.address, value, {
+          from: providerAddress,
+        });
+        await this.proxy.updateTokenMock(this.token.address);
         const receipt = await this.proxy.execMock(to, data, { from: user });
 
         expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
@@ -241,8 +259,8 @@ contract('Uniswap Swap', function([_, deployer, user, someone]) {
           await this.token.balanceOf.call(this.proxy.address)
         ).to.be.bignumber.eq(ether('0'));
         expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
-        expect(await balanceUser.delta()).to.be.bignumber.eq(
-          result.sub(new BN(receipt.receipt.gasUsed))
+        expect(await balanceUser.delta()).to.be.bignumber.gte(
+          minAmount.sub(new BN(receipt.receipt.gasUsed))
         );
         profileGas(receipt);
       });
@@ -251,17 +269,7 @@ contract('Uniswap Swap', function([_, deployer, user, someone]) {
     describe('Exact output', function() {
       it('normal', async function() {
         const value = ether('100');
-        const to = this.huniswap.address;
-        const data = abi.simpleEncode(
-          'tokenToEthSwapOutput(address,uint256,uint256):(uint256)',
-          tokenAddress,
-          ether('0.1'),
-          value
-        );
-        await this.token.transfer(this.proxy.address, value, {
-          from: providerAddress,
-        });
-        await this.proxy.updateTokenMock(this.token.address);
+        const to = this.hUniswap.address;
         await this.token.transfer(someone, value, { from: providerAddress });
         await this.token.approve(this.swap.address, value, {
           from: someone,
@@ -274,11 +282,22 @@ contract('Uniswap Swap', function([_, deployer, user, someone]) {
           deadline,
           { from: someone }
         );
+        const maxAmount = mulPercent(result, new BN('100').add(slippage));
+        const data = abi.simpleEncode(
+          'tokenToEthSwapOutput(address,uint256,uint256):(uint256)',
+          tokenAddress,
+          ether('0.1'),
+          maxAmount
+        );
+        await this.token.transfer(this.proxy.address, value, {
+          from: providerAddress,
+        });
+        await this.proxy.updateTokenMock(this.token.address);
         const receipt = await this.proxy.execMock(to, data, {
           from: user,
         });
-        expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
-          tokenUser.add(value).sub(result)
+        expect(await this.token.balanceOf.call(user)).to.be.bignumber.gte(
+          tokenUser.add(value).sub(maxAmount)
         );
         expect(
           await this.token.balanceOf.call(this.proxy.address)
@@ -315,25 +334,13 @@ contract('Uniswap Swap', function([_, deployer, user, someone]) {
     describe('Exact input', function() {
       it('normal', async function() {
         const value = ether('100');
-        const to = this.huniswap.address;
-        const data = abi.simpleEncode(
-          'tokenToTokenSwapInput(address,uint256,uint256,address):(uint256)',
-          token0Address,
-          value,
-          new BN('1'),
-          token1Address
-        );
-        await this.token0.transfer(this.proxy.address, value, {
-          from: providerAddress,
-        });
-        await this.proxy.updateTokenMock(this.token0.address);
+        const to = this.hUniswap.address;
         await this.token0.transfer(someone, value, {
           from: providerAddress,
         });
         await this.token0.approve(this.swap.address, value, {
           from: someone,
         });
-
         const deadline = (await latest()).add(new BN('100'));
         const result = await this.swap.tokenToTokenSwapInput.call(
           value,
@@ -343,6 +350,18 @@ contract('Uniswap Swap', function([_, deployer, user, someone]) {
           token1Address,
           { from: someone }
         );
+        const minAmount = mulPercent(result, new BN('100').sub(slippage));
+        const data = abi.simpleEncode(
+          'tokenToTokenSwapInput(address,uint256,uint256,address):(uint256)',
+          token0Address,
+          value,
+          minAmount,
+          token1Address
+        );
+        await this.token0.transfer(this.proxy.address, value, {
+          from: providerAddress,
+        });
+        await this.proxy.updateTokenMock(this.token0.address);
         const receipt = await this.proxy.execMock(to, data, { from: user });
 
         expect(await this.token0.balanceOf.call(user)).to.be.bignumber.eq(
@@ -351,8 +370,8 @@ contract('Uniswap Swap', function([_, deployer, user, someone]) {
         expect(
           await this.token0.balanceOf.call(this.proxy.address)
         ).to.be.bignumber.eq(ether('0'));
-        expect(await this.token1.balanceOf.call(user)).to.be.bignumber.eq(
-          token1User.add(result)
+        expect(await this.token1.balanceOf.call(user)).to.be.bignumber.gte(
+          token1User.add(minAmount)
         );
         profileGas(receipt);
       });
@@ -361,25 +380,13 @@ contract('Uniswap Swap', function([_, deployer, user, someone]) {
     describe('Exact output', function() {
       it('normal', async function() {
         const value = ether('100');
-        const to = this.huniswap.address;
-        const data = abi.simpleEncode(
-          'tokenToTokenSwapOutput(address,uint256,uint256,address):(uint256)',
-          token0Address,
-          value,
-          value,
-          token1Address
-        );
-        await this.token0.transfer(this.proxy.address, value, {
-          from: providerAddress,
-        });
-        await this.proxy.updateTokenMock(this.token0.address);
+        const to = this.hUniswap.address;
         await this.token0.transfer(someone, value, {
           from: providerAddress,
         });
         await this.token0.approve(this.swap.address, value, {
           from: someone,
         });
-
         const deadline = (await latest()).add(new BN('100'));
         const result = await this.swap.tokenToTokenSwapOutput.call(
           value,
@@ -389,11 +396,23 @@ contract('Uniswap Swap', function([_, deployer, user, someone]) {
           token1Address,
           { from: someone }
         );
+        const maxAmount = mulPercent(result, new BN('100').add(slippage));
+        const data = abi.simpleEncode(
+          'tokenToTokenSwapOutput(address,uint256,uint256,address):(uint256)',
+          token0Address,
+          value,
+          maxAmount,
+          token1Address
+        );
+        await this.token0.transfer(this.proxy.address, value, {
+          from: providerAddress,
+        });
+        await this.proxy.updateTokenMock(this.token0.address);
         const receipt = await this.proxy.execMock(to, data, {
           from: user,
         });
-        expect(await this.token0.balanceOf.call(user)).to.be.bignumber.eq(
-          token0User.add(value).sub(result)
+        expect(await this.token0.balanceOf.call(user)).to.be.bignumber.gte(
+          token0User.add(value).sub(maxAmount)
         );
         expect(
           await this.token0.balanceOf.call(this.proxy.address)
