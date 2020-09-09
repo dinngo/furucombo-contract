@@ -23,7 +23,6 @@ const NotifyRewardMock = artifacts.require('NotifyRewardMock');
 const IToken = artifacts.require('IERC20');
 
 contract('StakingRewardsAdapter', function([_, user0, user1, user2]) {
-  let outterId;
   let id;
   /// user0 stake to the original staking contract
   /// user1 stake to the adapter contract
@@ -36,7 +35,6 @@ contract('StakingRewardsAdapter', function([_, user0, user1, user2]) {
   const rtProviderAddress = KNC_PROVIDER;
 
   before(async function() {
-    outterId = await evmSnapshot();
     this.st = await IToken.at(stAddress);
     this.rt = await IToken.at(rtAddress);
     this.notifyReward = await NotifyRewardMock.new();
@@ -52,18 +50,14 @@ contract('StakingRewardsAdapter', function([_, user0, user1, user2]) {
     await evmRevert(id);
   });
 
-  after(async function() {
-    await evmRevert(outterId);
-  });
-
-  describe('Stake', function() {
+  describe('Stake by oneself', function() {
     beforeEach(async function() {
       rewardUser0Amount = await this.rt.balanceOf.call(user0);
       rewardUser1Amount = await this.rt.balanceOf.call(user1);
       rewardUser2Amount = await this.rt.balanceOf.call(user2);
     });
 
-    it('simple staking', async function() {
+    it('1 on original - 1 on adapter', async function() {
       // Prepare staking data
       const sValue = ether('100');
       const rValue = ether('6048');
@@ -119,7 +113,7 @@ contract('StakingRewardsAdapter', function([_, user0, user1, user2]) {
       log('rewardUser1Got', rewardUser1Got);
     });
 
-    it('simple staking - 2 on adapter', async function() {
+    it('1 on original - 2 on adapter', async function() {
       // Prepare staking data
       const sValue = ether('100');
       const rValue = ether('6048');
@@ -188,7 +182,7 @@ contract('StakingRewardsAdapter', function([_, user0, user1, user2]) {
       log('rewardUser1Got', rewardUser1Got);
     });
 
-    it('simple staking - 2 on adapter - one stake in the middle', async function() {
+    it('1 on original - 2 on adapter - one stake in the middle', async function() {
       // Prepare staking data
       const sValue = ether('100');
       const rValue = ether('6048');
@@ -238,7 +232,7 @@ contract('StakingRewardsAdapter', function([_, user0, user1, user2]) {
       expect(earnedAdapter).to.be.bignumber.eq(earnedUser1.add(earnedUser2));
     });
 
-    it('simple staking - 2 on adapter - one exit in the middle', async function() {
+    it('1 on original - 2 on adapter - one exit in the middle', async function() {
       // Prepare staking data
       const sValue = ether('100');
       const rValue = ether('6048');
@@ -310,6 +304,10 @@ contract('StakingRewardsAdapter', function([_, user0, user1, user2]) {
       expect(rewardUser2Got).to.be.bignumber.gte(earnedUser2);
       expect(rewardUser2Got).to.be.bignumber.lte(getBuffer(earnedUser2));
       log('rewardUser2Got', rewardUser2Got);
+      // Verify user2 unstake all share by using exit
+      expect(await this.adapter.balanceOf(user2)).to.be.zero;
+      // Verify user2 not being rewarded after exit
+      expect(await this.adapter.earned(user2)).to.be.zero;
 
       // Actually invoke getReward and verify amount
       await this.adapter.getReward({from: user1});
@@ -321,7 +319,7 @@ contract('StakingRewardsAdapter', function([_, user0, user1, user2]) {
       log('rewardUser1Got', rewardUser1Got);
     });
 
-    it('simple staking - 2 on adapter - one getReward in the middle', async function() {
+    it('1 on original - 2 on adapter - one getReward in the middle', async function() {
       // Prepare staking data
       const sValue = ether('100');
       const rValue = ether('6048');
@@ -391,7 +389,7 @@ contract('StakingRewardsAdapter', function([_, user0, user1, user2]) {
       );
     });
 
-    it('simple staking - notify reward twice', async function() {
+    it('1 on original - 1 on adapter - notify reward twice', async function() {
       // Prepare staking data
       const sValue = ether('100');
       const rValue = ether('6048');
