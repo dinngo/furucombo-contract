@@ -141,7 +141,7 @@ contract StakingRewardsAdapter is ReentrancyGuard, Whitelistable {
 
     /* ========== RESTRICTED OPERATE_FOR FUNCTIONS ========== */
 
-    function stakeFor(address account, uint256 amount) external nonReentrant onlyWhitelist updateReward(account) {
+    function stakeFor(address account, uint256 amount) external nonReentrant updateReward(account) {
         // require(amount > 0, "StakingRewardsAdapter: Cannot stake 0");
         _stakeInternal(account, amount);
     }
