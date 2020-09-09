@@ -17,9 +17,9 @@ contract HYVault is HandlerBase {
         _updateToken(address(yVault));
     }
 
-    function depositETH(address vault, uint256 _amount) external payable {
+    function depositETH(uint256 value, address vault) external payable {
         IYVault yVault = IYVault(vault);
-        yVault.depositETH.value(_amount)();
+        yVault.depositETH.value(value)();
 
         _updateToken(address(yVault));
     }

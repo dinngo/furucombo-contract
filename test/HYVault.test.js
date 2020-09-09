@@ -12,11 +12,7 @@ const {
   ALINK_PROVIDER,
   YEARN_ALINK_VAULT,
 } = require('./utils/constants');
-const {
-  profileGas,
-  evmSnapshot,
-  evmRevertAndSnapshot,
-} = require('./utils/utils');
+const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
 
 const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('ProxyMock');
@@ -25,6 +21,8 @@ const IYVault = artifacts.require('IYVault');
 const IToken = artifacts.require('IERC20');
 
 contract('YVault', function([_, user]) {
+  let id;
+
   before(async function() {
     this.registry = await Registry.new();
     this.proxy = await Proxy.new(this.registry.address);
@@ -33,11 +31,14 @@ contract('YVault', function([_, user]) {
       this.hYVault.address,
       utils.asciiToHex('HYVault')
     );
-    this.id = await evmSnapshot();
   });
 
   beforeEach(async function() {
-    this.id = await evmRevertAndSnapshot(this.id);
+    id = await evmSnapshot();
+  });
+
+  afterEach(async function() {
+    await evmRevert(id);
   });
 
   describe('Deposit', function() {
@@ -83,9 +84,9 @@ contract('YVault', function([_, user]) {
       const vault = await IYVault.at(YEARN_YWETH_VAULT);
       const value = ether('1');
       const data = abi.simpleEncode(
-        'depositETH(address,uint256)',
-        vault.address,
-        value
+        'depositETH(uint256,address)',
+        value,
+        vault.address
       );
       const ratio = await vault.getPricePerFullShare.call();
       const receipt = await this.proxy.execMock(this.hYVault.address, data, {
@@ -185,7 +186,6 @@ contract('YVault', function([_, user]) {
       });
 
       // User withdraws ETH by yWETH
-      const balanceUser = await tracker(user);
       const amount = await vault.balanceOf.call(user);
       const data = abi.simpleEncode(
         'withdrawETH(address,uint256)',
@@ -197,6 +197,7 @@ contract('YVault', function([_, user]) {
       });
       await this.proxy.updateTokenMock(vault.address);
       const ratio = await vault.getPricePerFullShare.call();
+      const balanceUser = await tracker(user);
       const receipt = await this.proxy.execMock(this.hYVault.address, data, {
         from: user,
         value: ether('0.1'),
@@ -209,19 +210,19 @@ contract('YVault', function([_, user]) {
       // Check user vault balance
       expect(await vault.balanceOf.call(user)).to.be.zero;
 
-      // Check user eth balance >= 99.9% expected result
+      // Check user eth balance <= 100.1% expected result
       const delta = await balanceUser.delta();
-      expect(delta).to.be.bignumber.lte(
+      expect(delta).to.be.bignumber.gte(
         amount
           .mul(ratio)
           .div(ether('1'))
           .sub(new BN(receipt.receipt.gasUsed))
       );
-      expect(delta).to.be.bignumber.gte(
+      expect(delta).to.be.bignumber.lte(
         amount
           .mul(ratio)
           .div(ether('1'))
-          .mul(new BN('999'))
+          .mul(new BN('1001'))
           .div(new BN('1000'))
           .sub(new BN(receipt.receipt.gasUsed))
       );
