@@ -83,7 +83,6 @@ contract('Balancer', function([_, user]) {
 
   beforeEach(async function() {
     id = await evmSnapshot();
-    balanceUser = await tracker(user);
     balanceProxy = await tracker(this.proxy.address);
     tokenAUserAmount = await this.tokenA.balanceOf.call(user);
     tokenBUserAmount = await this.tokenB.balanceOf.call(user);
