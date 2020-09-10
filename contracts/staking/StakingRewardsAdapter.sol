@@ -121,12 +121,10 @@ contract StakingRewardsAdapter is IStakingRewardsAdapter, ReentrancyGuard, White
     /* ========== SELF_OPERATE FUNCTIONS ========== */
 
     function stake(uint256 amount) external nonReentrant updateReward(msg.sender) {
-        // require(amount > 0, "StakingRewardsAdapter: Cannot stake 0");
         _stakeInternal(msg.sender, amount);
     }
 
     function withdraw(uint256 amount) public nonReentrant updateReward(msg.sender) {
-        // require(amount > 0, "StakingRewardsAdapter: Cannot withdraw 0");
         _withdrawInternal(msg.sender, amount);
     }
 
@@ -142,12 +140,10 @@ contract StakingRewardsAdapter is IStakingRewardsAdapter, ReentrancyGuard, White
     /* ========== RESTRICTED OPERATE_FOR FUNCTIONS ========== */
 
     function stakeFor(address account, uint256 amount) external nonReentrant updateReward(account) {
-        // require(amount > 0, "StakingRewardsAdapter: Cannot stake 0");
         _stakeInternal(account, amount);
     }
 
     function withdrawFor(address account, uint256 amount) public nonReentrant onlyWhitelist updateReward(account) {
-        // require(amount > 0, "StakingRewardsAdapter: Cannot withdraw 0");
         _withdrawInternal(account, amount);
     }
 
