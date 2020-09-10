@@ -93,7 +93,7 @@ contract StakingRewardsAdapter is IStakingRewardsAdapter, ReentrancyGuard, White
         stakingToken.safeTransferFrom(msg.sender, address(this), amount);
         stakingToken.safeApprove(address(stakingContract), amount);
         stakingContract.stake(amount);
-        // emit Staked(account, amount);
+        emit Staked(msg.sender, account, amount);
     }
 
     function _withdrawInternal(address account, uint256 amount) internal {
@@ -102,7 +102,7 @@ contract StakingRewardsAdapter is IStakingRewardsAdapter, ReentrancyGuard, White
         _balances[account] = _balances[account].sub(amount);
         stakingContract.withdraw(amount);
         stakingToken.safeTransfer(msg.sender, amount);
-        // emit Withdrawn(account, amount);
+        emit Withdrawn(msg.sender, account, amount);
     }
 
     function _getRewardInternal(address account) internal {
@@ -114,7 +114,7 @@ contract StakingRewardsAdapter is IStakingRewardsAdapter, ReentrancyGuard, White
                 stakingContract.getReward();
             }
             rewardsToken.safeTransfer(msg.sender, reward);
-            // emit RewardPaid(account, reward);
+            emit ClaimedReward(msg.sender, account, reward);
         }
     }
 
@@ -158,10 +158,8 @@ contract StakingRewardsAdapter is IStakingRewardsAdapter, ReentrancyGuard, White
 
     /* ========== EVENTS ========== */
 
-    // event RewardAdded(uint256 reward);
-    // event Staked(address indexed user, uint256 amount);
-    // event Withdrawn(address indexed user, uint256 amount);
-    // event RewardPaid(address indexed user, uint256 reward);
-    // event RewardsDurationUpdated(uint256 newDuration);
-    // event Recovered(address token, uint256 amount);
+    event Staked(address sender,address onBehalfOf, uint256 amount);
+    event Withdrawn(address sender,address onBehalfOf, uint256 amount);
+    event ClaimedReward(address sender,address onBehalfOf, uint256 amount);
+    
 }
