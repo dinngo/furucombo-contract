@@ -453,8 +453,9 @@ contract('StakingRewardsAdapter - Action For', function([
       expect(earnedUser1).to.be.bignumber.eq(
         rewardWhitelist.add(earnedUser2End)
       );
-      // Verify user2 earnedAmountMiddle equals to whitelist's rt balance after getRewardFor user2
-      expect(earnedUser2Middle).to.be.bignumber.eq(rewardWhitelist);
+      // Verify whitelist's rt balance equals to user2 earnedAmountMiddle after getRewardFor user2
+      expect(rewardWhitelist).to.be.bignumber.gte(earnedUser2Middle);
+      expect(rewardWhitelist).to.be.bignumber.lte(getBuffer(earnedUser2Middle));
       // Verify user2 not get the reward in the middle since its been transfered to whitelist
       expect(rewardUser2Middle).to.be.zero;
       // Verify adapter earned overall equals to 2x of user0 has earned

@@ -324,18 +324,6 @@ contract('StakingRewardsAdapter', function([_, user0, user1, user2]) {
       const earnedUser1 = await this.adapter.earned.call(user1);
       log('earnedUser1', earnedUser1);
 
-      // log('staking address', this.staking.address);
-      // log('adapter address', this.adapter.address);
-      // log('staking token', this.st.address);
-      // log('reward  token', this.rt.address);
-      // log('user0', user0);
-      // log('user1', user1);
-      // log('earnedAdapter', earnedAdapter);
-      // log('earnedUser0', earnedUser0);
-      // log('earnedUser1', earnedUser1);
-      // await printStateAdapter(this.adapter.address, user1);
-      // await printStateOriginal(this.staking.address, user0);
-
       // Verify everyone gets reward
       expect(earnedUser0).to.be.bignumber.gt(ether('0'));
       expect(earnedUser1).to.be.bignumber.gt(ether('0'));
@@ -435,7 +423,8 @@ contract('StakingRewardsAdapter', function([_, user0, user1, user2]) {
         rewardUser2Middle.add(earnedUser2End)
       );
       // Verify user2 earnedAmountMiddle equals to his rt balance after getReward
-      expect(earnedUser2Middle).to.be.bignumber.eq(rewardUser2Middle);
+      expect(rewardUser2Middle).to.be.bignumber.gte(earnedUser2Middle);
+      expect(rewardUser2Middle).to.be.bignumber.lte(getBuffer(earnedUser2Middle));
       // Verify adapter earned overall equals to 2x of user0 has earned
       expect(totalRewardAdapter.add(rewardUser2Middle)).to.be.bignumber.eq(
         earnedUser0.mul(new BN('2'))
