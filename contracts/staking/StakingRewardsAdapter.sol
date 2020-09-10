@@ -6,10 +6,11 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 // import "@openzeppelin/contracts/utils/Pausable.sol";
 
 import "./IStakingRewards.sol";
+import "./IStakingRewardsAdapter.sol";
 import "./Whitelistable.sol";
 
 
-contract StakingRewardsAdapter is ReentrancyGuard, Whitelistable {
+contract StakingRewardsAdapter is IStakingRewardsAdapter, ReentrancyGuard, Whitelistable {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
 
@@ -18,9 +19,6 @@ contract StakingRewardsAdapter is ReentrancyGuard, Whitelistable {
     IStakingRewards public stakingContract;
     IERC20 public rewardsToken;
     IERC20 public stakingToken;
-    // uint256 public periodFinish = 0;
-    uint256 public rewardRate = 0;
-    // uint256 public rewardsDuration = 7 days;
     uint256 public lastUpdateTime;
     uint256 public rewardPerTokenStored;
 
@@ -39,7 +37,6 @@ contract StakingRewardsAdapter is ReentrancyGuard, Whitelistable {
         stakingContract = IStakingRewards(_stakingContract);
         rewardsToken = stakingContract.rewardsToken();
         stakingToken = stakingContract.stakingToken();
-        rewardRate = stakingContract.rewardRate();
     }
 
     /* ========== VIEWS ========== */
@@ -61,13 +58,18 @@ contract StakingRewardsAdapter is ReentrancyGuard, Whitelistable {
             return rewardPerTokenStored;
         }
         return stakingContract.rewardPerToken();
-            // rewardPerTokenStored.add(
-            //     lastTimeRewardApplicable().sub(lastUpdateTime).mul(rewardRate).mul(1e18).div(_totalSupply)
-            // );
     }
 
     function earned(address account) public view returns (uint256) {
         return _balances[account].mul(rewardPerToken().sub(userRewardPerTokenPaid[account])).div(1e18).add(rewards[account]);
+    }
+
+    function getRewardForDuration() external view returns (uint256) {
+        return stakingContract.getRewardForDuration();
+    }
+
+    function rewardRate() external view returns (uint256) {
+        return stakingContract.rewardRate();
     }
 
     /* ========== MODIFIERS ========== */
@@ -80,8 +82,6 @@ contract StakingRewardsAdapter is ReentrancyGuard, Whitelistable {
             userRewardPerTokenPaid[account] = rewardPerTokenStored;
         }
         _;
-        /// Update rewardRate in the end so we will not distribute more rewards than we got from the original staking contract.
-        rewardRate = stakingContract.rewardRate();
     }
 
     /* ========== INTERNAL FUNCTIONS ========== */
