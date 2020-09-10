@@ -14,7 +14,12 @@ const utils = web3.utils;
 
 const { expect } = require('chai');
 
-const { DAI_TOKEN, DAI_PROVIDER, KNC_TOKEN, KNC_PROVIDER } = require('./utils/constants');
+const {
+  DAI_TOKEN,
+  DAI_PROVIDER,
+  KNC_TOKEN,
+  KNC_PROVIDER,
+} = require('./utils/constants');
 const { evmRevert, evmSnapshot } = require('./utils/utils');
 
 const StakingRewards = artifacts.require('StakingRewards');
@@ -22,7 +27,14 @@ const StakingRewardsAdapter = artifacts.require('StakingRewardsAdapter');
 const NotifyRewardMock = artifacts.require('NotifyRewardMock');
 const IToken = artifacts.require('IERC20');
 
-contract('StakingRewardsAdapter - Action For', function([_, whitelist, notWhitelist, user0, user1, user2]) {
+contract('StakingRewardsAdapter - Action For', function([
+  _,
+  whitelist,
+  notWhitelist,
+  user0,
+  user1,
+  user2,
+]) {
   let id;
   /// whitelist is the address who has permission to do actions for others
   /// user0 stake to the original staking contract
@@ -39,8 +51,16 @@ contract('StakingRewardsAdapter - Action For', function([_, whitelist, notWhitel
     this.st = await IToken.at(stAddress);
     this.rt = await IToken.at(rtAddress);
     this.notifyReward = await NotifyRewardMock.new();
-    this.staking = await StakingRewards.new(_, this.notifyReward.address, rtAddress, stAddress);
-    this.adapter = await StakingRewardsAdapter.new(whitelist, this.staking.address);
+    this.staking = await StakingRewards.new(
+      _,
+      this.notifyReward.address,
+      rtAddress,
+      stAddress
+    );
+    this.adapter = await StakingRewardsAdapter.new(
+      whitelist,
+      this.staking.address
+    );
   });
 
   beforeEach(async function() {
@@ -62,24 +82,33 @@ contract('StakingRewardsAdapter - Action For', function([_, whitelist, notWhitel
       // Prepare staking data
       const sValue = ether('100');
       const rValue = ether('6048');
-      await this.st.transfer(user0, sValue, {from: stProviderAddress});
-      await this.st.transfer(whitelist, sValue, {from: stProviderAddress});
+      await this.st.transfer(user0, sValue, { from: stProviderAddress });
+      await this.st.transfer(whitelist, sValue, { from: stProviderAddress });
 
       // User0 stake to original
-      await this.st.approve(this.staking.address, sValue, {from: user0});
-      await this.staking.stake(sValue, {from: user0});
+      await this.st.approve(this.staking.address, sValue, { from: user0 });
+      await this.staking.stake(sValue, { from: user0 });
       // Whitelist stake to adapter for user1
-      await this.st.approve(this.adapter.address, sValue, {from: whitelist});
-      await this.adapter.stakeFor(user1, sValue, {from: whitelist});
+      await this.st.approve(this.adapter.address, sValue, { from: whitelist });
+      await this.adapter.stakeFor(user1, sValue, { from: whitelist });
 
       // Notify reward
-      await this.rt.transfer(this.staking.address, rValue, {from: rtProviderAddress});
-      await this.notifyReward.notifyReward(rValue, this.staking.address, this.adapter.address, {from: rtProviderAddress});
+      await this.rt.transfer(this.staking.address, rValue, {
+        from: rtProviderAddress,
+      });
+      await this.notifyReward.notifyReward(
+        rValue,
+        this.staking.address,
+        this.adapter.address,
+        { from: rtProviderAddress }
+      );
 
       // Make time elapsed
       await increase(duration.days(1));
 
-      const earnedAdapter = await this.staking.earned.call(this.adapter.address);
+      const earnedAdapter = await this.staking.earned.call(
+        this.adapter.address
+      );
       const earnedUser0 = await this.staking.earned.call(user0);
       const earnedUser1 = await this.adapter.earned.call(user1);
       const earnedWhitelist = await this.adapter.earned.call(whitelist);
@@ -103,7 +132,7 @@ contract('StakingRewardsAdapter - Action For', function([_, whitelist, notWhitel
       expect(earnedUser1).to.be.bignumber.eq(earnedAdapter);
 
       // Actually invoke getReward and verify amount
-      await this.adapter.getReward({from: user1});
+      await this.adapter.getReward({ from: user1 });
       const rewardUser1AmountAfter = await this.rt.balanceOf(user1);
       const rewardUser1Got = rewardUser1AmountAfter.sub(rewardUser1Amount);
       // Verify 'earned <= rewardActuallyGot <= earned * 1.001' caused by timestamp differ
@@ -116,27 +145,36 @@ contract('StakingRewardsAdapter - Action For', function([_, whitelist, notWhitel
       // Prepare staking data
       const sValue = ether('100');
       const rValue = ether('6048');
-      await this.st.transfer(user0, sValue, {from: stProviderAddress});
-      await this.st.transfer(user1, sValue, {from: stProviderAddress});
-      await this.st.transfer(whitelist, sValue, {from: stProviderAddress});
+      await this.st.transfer(user0, sValue, { from: stProviderAddress });
+      await this.st.transfer(user1, sValue, { from: stProviderAddress });
+      await this.st.transfer(whitelist, sValue, { from: stProviderAddress });
 
       // Staking to original and adapter contract respectively
-      await this.st.approve(this.staking.address, sValue, {from: user0});
-      await this.staking.stake(sValue, {from: user0});
-      await this.st.approve(this.adapter.address, sValue, {from: user1});
-      await this.adapter.stake(sValue, {from: user1});
+      await this.st.approve(this.staking.address, sValue, { from: user0 });
+      await this.staking.stake(sValue, { from: user0 });
+      await this.st.approve(this.adapter.address, sValue, { from: user1 });
+      await this.adapter.stake(sValue, { from: user1 });
       // Whitelist stake to adapter for user2
-      await this.st.approve(this.adapter.address, sValue, {from: whitelist});
-      await this.adapter.stakeFor(user2, sValue, {from: whitelist});
+      await this.st.approve(this.adapter.address, sValue, { from: whitelist });
+      await this.adapter.stakeFor(user2, sValue, { from: whitelist });
 
       // Notify reward
-      await this.rt.transfer(this.staking.address, rValue, {from: rtProviderAddress});
-      await this.notifyReward.notifyReward(rValue, this.staking.address, this.adapter.address, {from: rtProviderAddress});
+      await this.rt.transfer(this.staking.address, rValue, {
+        from: rtProviderAddress,
+      });
+      await this.notifyReward.notifyReward(
+        rValue,
+        this.staking.address,
+        this.adapter.address,
+        { from: rtProviderAddress }
+      );
 
       // Make time elapsed
       await increase(duration.days(1));
 
-      const earnedAdapter = await this.staking.earned.call(this.adapter.address);
+      const earnedAdapter = await this.staking.earned.call(
+        this.adapter.address
+      );
       const earnedUser0 = await this.staking.earned.call(user0);
       const earnedUser1 = await this.adapter.earned.call(user1);
       const earnedUser2 = await this.adapter.earned.call(user2);
@@ -163,10 +201,10 @@ contract('StakingRewardsAdapter - Action For', function([_, whitelist, notWhitel
       expect(earnedAdapter).to.be.bignumber.eq(earnedUser1.add(earnedUser2));
 
       // Actually invoke getReward and verify amount
-      await this.adapter.getReward({from: user2});
+      await this.adapter.getReward({ from: user2 });
       const rewardUser2AmountAfter = await this.rt.balanceOf(user2);
       const rewardUser2Got = rewardUser2AmountAfter.sub(rewardUser2Amount);
-      await this.adapter.getReward({from: user1});
+      await this.adapter.getReward({ from: user1 });
       const rewardUser1AmountAfter = await this.rt.balanceOf(user1);
       const rewardUser1Got = rewardUser1AmountAfter.sub(rewardUser1Amount);
       // Verify 'earned <= rewardActuallyGot <= earned * 1.001' caused by timestamp differ
@@ -183,32 +221,41 @@ contract('StakingRewardsAdapter - Action For', function([_, whitelist, notWhitel
       // Prepare staking data
       const sValue = ether('100');
       const rValue = ether('6048');
-      await this.st.transfer(user0, sValue, {from: stProviderAddress});
-      await this.st.transfer(user1, sValue, {from: stProviderAddress});
-      await this.st.transfer(whitelist, sValue, {from: stProviderAddress});
+      await this.st.transfer(user0, sValue, { from: stProviderAddress });
+      await this.st.transfer(user1, sValue, { from: stProviderAddress });
+      await this.st.transfer(whitelist, sValue, { from: stProviderAddress });
 
       // Staking to original and adapter contract respectively
-      await this.st.approve(this.staking.address, sValue, {from: user0});
-      await this.staking.stake(sValue, {from: user0});
-      await this.st.approve(this.adapter.address, sValue, {from: user1});
-      await this.adapter.stake(sValue, {from: user1});
+      await this.st.approve(this.staking.address, sValue, { from: user0 });
+      await this.staking.stake(sValue, { from: user0 });
+      await this.st.approve(this.adapter.address, sValue, { from: user1 });
+      await this.adapter.stake(sValue, { from: user1 });
 
       // Notify reward
-      await this.rt.transfer(this.staking.address, rValue, {from: rtProviderAddress});
-      await this.notifyReward.notifyReward(rValue, this.staking.address, this.adapter.address, {from: rtProviderAddress});
+      await this.rt.transfer(this.staking.address, rValue, {
+        from: rtProviderAddress,
+      });
+      await this.notifyReward.notifyReward(
+        rValue,
+        this.staking.address,
+        this.adapter.address,
+        { from: rtProviderAddress }
+      );
 
       // Make time elapsed
       await increase(duration.days(1));
 
       // Whitelist stake for user2 through adapter
-      await this.st.approve(this.adapter.address, sValue, {from: whitelist});
-      await this.adapter.stakeFor(user2, sValue, {from: whitelist});
+      await this.st.approve(this.adapter.address, sValue, { from: whitelist });
+      await this.adapter.stakeFor(user2, sValue, { from: whitelist });
 
       // Make time elapsed
       await increase(duration.days(1));
 
       // Get the state after user2 staked
-      const earnedAdapter = await this.staking.earned.call(this.adapter.address);
+      const earnedAdapter = await this.staking.earned.call(
+        this.adapter.address
+      );
       log('earnedAdapter', earnedAdapter);
       const earnedUser0 = await this.staking.earned.call(user0);
       log('earnedUser0', earnedUser0);
@@ -218,7 +265,7 @@ contract('StakingRewardsAdapter - Action For', function([_, whitelist, notWhitel
       log('earnedUser2', earnedUser2);
       const earnedWhitelist = await this.adapter.earned.call(whitelist);
       log('earnedWhitelist', earnedWhitelist);
-      
+
       // Verify everyone gets reward
       expect(earnedUser0).to.be.bignumber.gt(ether('0'));
       expect(earnedUser1).to.be.bignumber.gt(ether('0'));
@@ -237,29 +284,36 @@ contract('StakingRewardsAdapter - Action For', function([_, whitelist, notWhitel
       // Prepare staking data
       const sValue = ether('100');
       const rValue = ether('6048');
-      await this.st.transfer(user0, sValue, {from: stProviderAddress});
-      await this.st.transfer(user1, sValue, {from: stProviderAddress});
-      await this.st.transfer(user2, sValue, {from: stProviderAddress});
+      await this.st.transfer(user0, sValue, { from: stProviderAddress });
+      await this.st.transfer(user1, sValue, { from: stProviderAddress });
+      await this.st.transfer(user2, sValue, { from: stProviderAddress });
 
       // Staking to original and adapter contract respectively
-      await this.st.approve(this.staking.address, sValue, {from: user0});
-      await this.staking.stake(sValue, {from: user0});
-      await this.st.approve(this.adapter.address, sValue, {from: user1});
-      await this.adapter.stake(sValue, {from: user1});
+      await this.st.approve(this.staking.address, sValue, { from: user0 });
+      await this.staking.stake(sValue, { from: user0 });
+      await this.st.approve(this.adapter.address, sValue, { from: user1 });
+      await this.adapter.stake(sValue, { from: user1 });
       // Stake by user2 self and whitelist will exitFor user2 later
-      await this.st.approve(this.adapter.address, sValue, {from: user2});
-      await this.adapter.stake(sValue, {from: user2});
+      await this.st.approve(this.adapter.address, sValue, { from: user2 });
+      await this.adapter.stake(sValue, { from: user2 });
 
       // Notify reward
-      await this.rt.transfer(this.staking.address, rValue, {from: rtProviderAddress});
-      await this.notifyReward.notifyReward(rValue, this.staking.address, this.adapter.address, {from: rtProviderAddress});
+      await this.rt.transfer(this.staking.address, rValue, {
+        from: rtProviderAddress,
+      });
+      await this.notifyReward.notifyReward(
+        rValue,
+        this.staking.address,
+        this.adapter.address,
+        { from: rtProviderAddress }
+      );
 
       // Make time elapsed
       await increase(duration.days(1));
 
       // Whitelist exitFor user2
       const earnedUser2 = await this.adapter.earned.call(user2);
-      await this.adapter.exitFor(user2, {from: whitelist});
+      await this.adapter.exitFor(user2, { from: whitelist });
       const rewardUser2AmountAfter = await this.rt.balanceOf(user2);
       const rewardUser2Got = rewardUser2AmountAfter.sub(rewardUser2Amount);
       const rewardWhitelist = await this.rt.balanceOf(whitelist);
@@ -270,18 +324,20 @@ contract('StakingRewardsAdapter - Action For', function([_, whitelist, notWhitel
       // Get the state after user2 claimed and exited
       const rewardAdapter = await this.rt.balanceOf(this.adapter.address);
       log('rewardAdapter', rewardAdapter);
-      const earnedAdapter = await this.staking.earned.call(this.adapter.address);
+      const earnedAdapter = await this.staking.earned.call(
+        this.adapter.address
+      );
       log('earnedAdapter', earnedAdapter);
       // Total reward adapter got = earned(adapter) + rt.balanceOf(adapter) since
       // anyone invokes `getReward()` on adapter will make adapter to claim all its
-      // reward from original contract and reset the earned number.  
+      // reward from original contract and reset the earned number.
       const totalRewardAdapter = rewardAdapter.add(earnedAdapter);
       const earnedUser0 = await this.staking.earned.call(user0);
       log('earnedUser0', earnedUser0);
       const earnedUser1 = await this.adapter.earned.call(user1);
       log('earnedUser1', earnedUser1);
       const earnedWhitelist = await this.adapter.earned.call(whitelist);
-      
+
       // Verify everyone being counted for reward
       expect(earnedUser0).to.be.bignumber.gt(ether('0'));
       expect(earnedUser1).to.be.bignumber.gt(ether('0'));
@@ -311,7 +367,7 @@ contract('StakingRewardsAdapter - Action For', function([_, whitelist, notWhitel
       expect(await this.adapter.earned(user2)).to.be.zero;
 
       // Actually invoke getReward and verify amount
-      await this.adapter.getReward({from: user1});
+      await this.adapter.getReward({ from: user1 });
       const rewardUser1AmountAfter = await this.rt.balanceOf(user1);
       const rewardUser1Got = rewardUser1AmountAfter.sub(rewardUser1Amount);
       // Verify 'earned <= rewardActuallyGot <= earned * 1.001' caused by timestamp differ
@@ -324,29 +380,36 @@ contract('StakingRewardsAdapter - Action For', function([_, whitelist, notWhitel
       // Prepare staking data
       const sValue = ether('100');
       const rValue = ether('6048');
-      await this.st.transfer(user0, sValue, {from: stProviderAddress});
-      await this.st.transfer(user1, sValue, {from: stProviderAddress});
-      await this.st.transfer(user2, sValue, {from: stProviderAddress});
+      await this.st.transfer(user0, sValue, { from: stProviderAddress });
+      await this.st.transfer(user1, sValue, { from: stProviderAddress });
+      await this.st.transfer(user2, sValue, { from: stProviderAddress });
 
       // Staking to original and adapter contract respectively
-      await this.st.approve(this.staking.address, sValue, {from: user0});
-      await this.staking.stake(sValue, {from: user0});
-      await this.st.approve(this.adapter.address, sValue, {from: user1});
-      await this.adapter.stake(sValue, {from: user1});
+      await this.st.approve(this.staking.address, sValue, { from: user0 });
+      await this.staking.stake(sValue, { from: user0 });
+      await this.st.approve(this.adapter.address, sValue, { from: user1 });
+      await this.adapter.stake(sValue, { from: user1 });
       // Stake by user2 self and whitelist will getRewardFor user2 later
-      await this.st.approve(this.adapter.address, sValue, {from: user2});
-      await this.adapter.stake(sValue, {from: user2});
+      await this.st.approve(this.adapter.address, sValue, { from: user2 });
+      await this.adapter.stake(sValue, { from: user2 });
 
       // Notify reward
-      await this.rt.transfer(this.staking.address, rValue, {from: rtProviderAddress});
-      await this.notifyReward.notifyReward(rValue, this.staking.address, this.adapter.address, {from: rtProviderAddress});
+      await this.rt.transfer(this.staking.address, rValue, {
+        from: rtProviderAddress,
+      });
+      await this.notifyReward.notifyReward(
+        rValue,
+        this.staking.address,
+        this.adapter.address,
+        { from: rtProviderAddress }
+      );
 
       // Make time elapsed
       await increase(duration.days(1));
 
       // Whitelist getRewardFor user2 but not unstake
       const earnedUser2Middle = await this.adapter.earned.call(user2);
-      await this.adapter.getRewardFor(user2, {from: whitelist});
+      await this.adapter.getRewardFor(user2, { from: whitelist });
       const rewardUser2Middle = await this.rt.balanceOf.call(user2);
       log('rewardUser2Middle', rewardUser2Middle);
       const rewardWhitelist = await this.rt.balanceOf.call(whitelist);
@@ -358,11 +421,13 @@ contract('StakingRewardsAdapter - Action For', function([_, whitelist, notWhitel
       // Get the state after whitelist getRewardFor user2
       const rewardAdapter = await this.rt.balanceOf(this.adapter.address);
       log('rewardAdapter', rewardAdapter);
-      const earnedAdapter = await this.staking.earned.call(this.adapter.address);
+      const earnedAdapter = await this.staking.earned.call(
+        this.adapter.address
+      );
       log('earnedAdapter', earnedAdapter);
       // Total reward adapter got = earned(adapter) + rt.balanceOf(adapter) since
       // anyone invokes `getReward()` on adapter will make adapter to claim all its
-      // reward from original contract and reset the earned number.  
+      // reward from original contract and reset the earned number.
       const totalRewardAdapter = rewardAdapter.add(earnedAdapter);
       const earnedUser0 = await this.staking.earned.call(user0);
       log('earnedUser0', earnedUser0);
@@ -372,7 +437,7 @@ contract('StakingRewardsAdapter - Action For', function([_, whitelist, notWhitel
       log('earnedUser2End', earnedUser2End);
       const earnedWhitelist = await this.adapter.earned.call(whitelist);
       log('earnedWhitelist', earnedWhitelist);
-      
+
       // Verify everyone being counted for reward
       expect(earnedUser0).to.be.bignumber.gt(ether('0'));
       expect(earnedUser1).to.be.bignumber.gt(ether('0'));
@@ -385,7 +450,9 @@ contract('StakingRewardsAdapter - Action For', function([_, whitelist, notWhitel
       // Verify user0 & user1 gets equal share
       expect(earnedUser0).to.be.bignumber.eq(earnedUser1);
       // Verify user1 gets equal amount to user2 + whitelist got
-      expect(earnedUser1).to.be.bignumber.eq(rewardWhitelist.add(earnedUser2End));
+      expect(earnedUser1).to.be.bignumber.eq(
+        rewardWhitelist.add(earnedUser2End)
+      );
       // Verify user2 earnedAmountMiddle equals to whitelist's rt balance after getRewardFor user2
       expect(earnedUser2Middle).to.be.bignumber.eq(rewardWhitelist);
       // Verify user2 not get the reward in the middle since its been transfered to whitelist
@@ -395,7 +462,6 @@ contract('StakingRewardsAdapter - Action For', function([_, whitelist, notWhitel
         earnedUser0.mul(new BN('2'))
       );
     });
-
   });
 
   describe('Unauthorized', function() {
@@ -409,24 +475,35 @@ contract('StakingRewardsAdapter - Action For', function([_, whitelist, notWhitel
       // Prepare staking data
       const sValue = ether('100');
       const rValue = ether('6048');
-      await this.st.transfer(user0, sValue, {from: stProviderAddress});
-      await this.st.transfer(notWhitelist, sValue, {from: stProviderAddress});
+      await this.st.transfer(user0, sValue, { from: stProviderAddress });
+      await this.st.transfer(notWhitelist, sValue, { from: stProviderAddress });
 
       // User0 stake to original
-      await this.st.approve(this.staking.address, sValue, {from: user0});
-      await this.staking.stake(sValue, {from: user0});
+      await this.st.approve(this.staking.address, sValue, { from: user0 });
+      await this.staking.stake(sValue, { from: user0 });
       // NotWhitelist stake to adapter for user1
-      await this.st.approve(this.adapter.address, sValue, {from: notWhitelist});
-      await this.adapter.stakeFor(user1, sValue, {from: notWhitelist});
+      await this.st.approve(this.adapter.address, sValue, {
+        from: notWhitelist,
+      });
+      await this.adapter.stakeFor(user1, sValue, { from: notWhitelist });
 
       // Notify reward
-      await this.rt.transfer(this.staking.address, rValue, {from: rtProviderAddress});
-      await this.notifyReward.notifyReward(rValue, this.staking.address, this.adapter.address, {from: rtProviderAddress});
+      await this.rt.transfer(this.staking.address, rValue, {
+        from: rtProviderAddress,
+      });
+      await this.notifyReward.notifyReward(
+        rValue,
+        this.staking.address,
+        this.adapter.address,
+        { from: rtProviderAddress }
+      );
 
       // Make time elapsed
       await increase(duration.days(1));
 
-      const earnedAdapter = await this.staking.earned.call(this.adapter.address);
+      const earnedAdapter = await this.staking.earned.call(
+        this.adapter.address
+      );
       const earnedUser0 = await this.staking.earned.call(user0);
       const earnedUser1 = await this.adapter.earned.call(user1);
       const earnedNotWhitelist = await this.adapter.earned.call(notWhitelist);
@@ -450,7 +527,7 @@ contract('StakingRewardsAdapter - Action For', function([_, whitelist, notWhitel
       expect(earnedUser1).to.be.bignumber.eq(earnedAdapter);
 
       // Actually invoke getReward and verify amount
-      await this.adapter.getReward({from: user1});
+      await this.adapter.getReward({ from: user1 });
       const rewardUser1AmountAfter = await this.rt.balanceOf(user1);
       const rewardUser1Got = rewardUser1AmountAfter.sub(rewardUser1Amount);
       // Verify 'earned <= rewardActuallyGot <= earned * 1.001' caused by timestamp differ
@@ -463,22 +540,29 @@ contract('StakingRewardsAdapter - Action For', function([_, whitelist, notWhitel
       // Prepare staking data
       const sValue = ether('100');
       const rValue = ether('6048');
-      await this.st.transfer(user2, sValue, {from: stProviderAddress});
+      await this.st.transfer(user2, sValue, { from: stProviderAddress });
 
       // Stake by user2 self and notWhitelist will exitFor user2 later
-      await this.st.approve(this.adapter.address, sValue, {from: user2});
-      await this.adapter.stake(sValue, {from: user2});
+      await this.st.approve(this.adapter.address, sValue, { from: user2 });
+      await this.adapter.stake(sValue, { from: user2 });
 
       // Notify reward
-      await this.rt.transfer(this.staking.address, rValue, {from: rtProviderAddress});
-      await this.notifyReward.notifyReward(rValue, this.staking.address, this.adapter.address, {from: rtProviderAddress});
+      await this.rt.transfer(this.staking.address, rValue, {
+        from: rtProviderAddress,
+      });
+      await this.notifyReward.notifyReward(
+        rValue,
+        this.staking.address,
+        this.adapter.address,
+        { from: rtProviderAddress }
+      );
 
       // Make time elapsed
       await increase(duration.days(1));
 
       // NotWhitelist exitFor user2
       await expectRevert(
-        this.adapter.exitFor(user2, {from: notWhitelist}),
+        this.adapter.exitFor(user2, { from: notWhitelist }),
         'Whitelistable: caller is not whitelisted'
       );
     });
@@ -487,22 +571,29 @@ contract('StakingRewardsAdapter - Action For', function([_, whitelist, notWhitel
       // Prepare staking data
       const sValue = ether('100');
       const rValue = ether('6048');
-      await this.st.transfer(user2, sValue, {from: stProviderAddress});
+      await this.st.transfer(user2, sValue, { from: stProviderAddress });
 
       // Stake by user2 self and notWhitelist will withdrawFor user2 later
-      await this.st.approve(this.adapter.address, sValue, {from: user2});
-      await this.adapter.stake(sValue, {from: user2});
+      await this.st.approve(this.adapter.address, sValue, { from: user2 });
+      await this.adapter.stake(sValue, { from: user2 });
 
       // Notify reward
-      await this.rt.transfer(this.staking.address, rValue, {from: rtProviderAddress});
-      await this.notifyReward.notifyReward(rValue, this.staking.address, this.adapter.address, {from: rtProviderAddress});
+      await this.rt.transfer(this.staking.address, rValue, {
+        from: rtProviderAddress,
+      });
+      await this.notifyReward.notifyReward(
+        rValue,
+        this.staking.address,
+        this.adapter.address,
+        { from: rtProviderAddress }
+      );
 
       // Make time elapsed
       await increase(duration.days(1));
 
       // NotWhitelist exitFor user2
       await expectRevert(
-        this.adapter.getRewardFor(user2, {from: notWhitelist}),
+        this.adapter.getRewardFor(user2, { from: notWhitelist }),
         'Whitelistable: caller is not whitelisted'
       );
     });
@@ -511,38 +602,44 @@ contract('StakingRewardsAdapter - Action For', function([_, whitelist, notWhitel
       // Prepare staking data
       const sValue = ether('100');
       const rValue = ether('6048');
-      await this.st.transfer(user2, sValue, {from: stProviderAddress});
+      await this.st.transfer(user2, sValue, { from: stProviderAddress });
 
       // Stake by user2 self and notWhitelist will getRewardFor user2 later
-      await this.st.approve(this.adapter.address, sValue, {from: user2});
-      await this.adapter.stake(sValue, {from: user2});
+      await this.st.approve(this.adapter.address, sValue, { from: user2 });
+      await this.adapter.stake(sValue, { from: user2 });
 
       // Notify reward
-      await this.rt.transfer(this.staking.address, rValue, {from: rtProviderAddress});
-      await this.notifyReward.notifyReward(rValue, this.staking.address, this.adapter.address, {from: rtProviderAddress});
+      await this.rt.transfer(this.staking.address, rValue, {
+        from: rtProviderAddress,
+      });
+      await this.notifyReward.notifyReward(
+        rValue,
+        this.staking.address,
+        this.adapter.address,
+        { from: rtProviderAddress }
+      );
 
       // Make time elapsed
       await increase(duration.days(1));
 
       // NotWhitelist exitFor user2
       await expectRevert(
-        this.adapter.getRewardFor(user2, {from: notWhitelist}),
+        this.adapter.getRewardFor(user2, { from: notWhitelist }),
         'Whitelistable: caller is not whitelisted'
       );
     });
-
   });
 });
 
 function getBuffer(num) {
-  return (new BN(num)).mul(new BN(1001)).div(new BN(1000));
+  return new BN(num).mul(new BN(1001)).div(new BN(1000));
 }
 
 function log(text, value) {
   console.log(`>>> ${text}: ${value}`);
 }
 
-async function printStateAdapter(adapterAddr, user){
+async function printStateAdapter(adapterAddr, user) {
   const adapter = await StakingRewardsAdapter.at(adapterAddr);
   const totalSupply = await adapter.totalSupply.call();
   const balanceOfUser = await adapter.balanceOf.call(user);
@@ -561,7 +658,7 @@ async function printStateAdapter(adapterAddr, user){
   log('earnedUser', earnedUser);
 }
 
-async function printStateOriginal(contractAddr, user){
+async function printStateOriginal(contractAddr, user) {
   const contract = await StakingRewardsAdapter.at(contractAddr);
   const totalSupply = await contract.totalSupply.call();
   const balanceOfUser = await contract.balanceOf.call(user);

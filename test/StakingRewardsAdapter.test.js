@@ -14,7 +14,12 @@ const utils = web3.utils;
 
 const { expect } = require('chai');
 
-const { DAI_TOKEN, DAI_PROVIDER, KNC_TOKEN, KNC_PROVIDER } = require('./utils/constants');
+const {
+  DAI_TOKEN,
+  DAI_PROVIDER,
+  KNC_TOKEN,
+  KNC_PROVIDER,
+} = require('./utils/constants');
 const { evmRevert, evmSnapshot } = require('./utils/utils');
 
 const StakingRewards = artifacts.require('StakingRewards');
@@ -38,7 +43,12 @@ contract('StakingRewardsAdapter', function([_, user0, user1, user2]) {
     this.st = await IToken.at(stAddress);
     this.rt = await IToken.at(rtAddress);
     this.notifyReward = await NotifyRewardMock.new();
-    this.staking = await StakingRewards.new(_, this.notifyReward.address, rtAddress, stAddress);
+    this.staking = await StakingRewards.new(
+      _,
+      this.notifyReward.address,
+      rtAddress,
+      stAddress
+    );
     this.adapter = await StakingRewardsAdapter.new(_, this.staking.address);
   });
 
@@ -61,23 +71,32 @@ contract('StakingRewardsAdapter', function([_, user0, user1, user2]) {
       // Prepare staking data
       const sValue = ether('100');
       const rValue = ether('6048');
-      await this.st.transfer(user0, sValue, {from: stProviderAddress});
-      await this.st.transfer(user1, sValue, {from: stProviderAddress});
+      await this.st.transfer(user0, sValue, { from: stProviderAddress });
+      await this.st.transfer(user1, sValue, { from: stProviderAddress });
 
       // Staking to original and adapter contract respectively
-      await this.st.approve(this.staking.address, sValue, {from: user0});
-      await this.staking.stake(sValue, {from: user0});
-      await this.st.approve(this.adapter.address, sValue, {from: user1});
-      await this.adapter.stake(sValue, {from: user1});
+      await this.st.approve(this.staking.address, sValue, { from: user0 });
+      await this.staking.stake(sValue, { from: user0 });
+      await this.st.approve(this.adapter.address, sValue, { from: user1 });
+      await this.adapter.stake(sValue, { from: user1 });
 
       // Notify reward
-      await this.rt.transfer(this.staking.address, rValue, {from: rtProviderAddress});
-      await this.notifyReward.notifyReward(rValue, this.staking.address, this.adapter.address, {from: rtProviderAddress});
+      await this.rt.transfer(this.staking.address, rValue, {
+        from: rtProviderAddress,
+      });
+      await this.notifyReward.notifyReward(
+        rValue,
+        this.staking.address,
+        this.adapter.address,
+        { from: rtProviderAddress }
+      );
 
       // Make time elapsed
       await increase(duration.days(1));
 
-      const earnedAdapter = await this.staking.earned.call(this.adapter.address);
+      const earnedAdapter = await this.staking.earned.call(
+        this.adapter.address
+      );
       const earnedUser0 = await this.staking.earned.call(user0);
       const earnedUser1 = await this.adapter.earned.call(user1);
 
@@ -104,7 +123,7 @@ contract('StakingRewardsAdapter', function([_, user0, user1, user2]) {
       expect(earnedUser1).to.be.bignumber.eq(earnedAdapter);
 
       // Actually invoke getReward and verify amount
-      await this.adapter.getReward({from: user1});
+      await this.adapter.getReward({ from: user1 });
       const rewardUser1AmountAfter = await this.rt.balanceOf(user1);
       const rewardUser1Got = rewardUser1AmountAfter.sub(rewardUser1Amount);
       // Verify 'earned <= rewardActuallyGot <= earned * 1.001' caused by timestamp differ
@@ -117,26 +136,35 @@ contract('StakingRewardsAdapter', function([_, user0, user1, user2]) {
       // Prepare staking data
       const sValue = ether('100');
       const rValue = ether('6048');
-      await this.st.transfer(user0, sValue, {from: stProviderAddress});
-      await this.st.transfer(user1, sValue, {from: stProviderAddress});
-      await this.st.transfer(user2, sValue, {from: stProviderAddress});
+      await this.st.transfer(user0, sValue, { from: stProviderAddress });
+      await this.st.transfer(user1, sValue, { from: stProviderAddress });
+      await this.st.transfer(user2, sValue, { from: stProviderAddress });
 
       // Staking to original and adapter contract respectively
-      await this.st.approve(this.staking.address, sValue, {from: user0});
-      await this.staking.stake(sValue, {from: user0});
-      await this.st.approve(this.adapter.address, sValue, {from: user1});
-      await this.adapter.stake(sValue, {from: user1});
-      await this.st.approve(this.adapter.address, sValue, {from: user2});
-      await this.adapter.stake(sValue, {from: user2});
+      await this.st.approve(this.staking.address, sValue, { from: user0 });
+      await this.staking.stake(sValue, { from: user0 });
+      await this.st.approve(this.adapter.address, sValue, { from: user1 });
+      await this.adapter.stake(sValue, { from: user1 });
+      await this.st.approve(this.adapter.address, sValue, { from: user2 });
+      await this.adapter.stake(sValue, { from: user2 });
 
       // Notify reward
-      await this.rt.transfer(this.staking.address, rValue, {from: rtProviderAddress});
-      await this.notifyReward.notifyReward(rValue, this.staking.address, this.adapter.address, {from: rtProviderAddress});
+      await this.rt.transfer(this.staking.address, rValue, {
+        from: rtProviderAddress,
+      });
+      await this.notifyReward.notifyReward(
+        rValue,
+        this.staking.address,
+        this.adapter.address,
+        { from: rtProviderAddress }
+      );
 
       // Make time elapsed
       await increase(duration.days(1));
 
-      const earnedAdapter = await this.staking.earned.call(this.adapter.address);
+      const earnedAdapter = await this.staking.earned.call(
+        this.adapter.address
+      );
       const earnedUser0 = await this.staking.earned.call(user0);
       const earnedUser1 = await this.adapter.earned.call(user1);
       const earnedUser2 = await this.adapter.earned.call(user2);
@@ -166,10 +194,10 @@ contract('StakingRewardsAdapter', function([_, user0, user1, user2]) {
       expect(earnedAdapter).to.be.bignumber.eq(earnedUser1.add(earnedUser2));
 
       // Actually invoke getReward and verify amount
-      await this.adapter.getReward({from: user2});
+      await this.adapter.getReward({ from: user2 });
       const rewardUser2AmountAfter = await this.rt.balanceOf(user2);
       const rewardUser2Got = rewardUser2AmountAfter.sub(rewardUser2Amount);
-      await this.adapter.getReward({from: user1});
+      await this.adapter.getReward({ from: user1 });
       const rewardUser1AmountAfter = await this.rt.balanceOf(user1);
       const rewardUser1Got = rewardUser1AmountAfter.sub(rewardUser1Amount);
       // Verify 'earned <= rewardActuallyGot <= earned * 1.001' caused by timestamp differ
@@ -186,32 +214,41 @@ contract('StakingRewardsAdapter', function([_, user0, user1, user2]) {
       // Prepare staking data
       const sValue = ether('100');
       const rValue = ether('6048');
-      await this.st.transfer(user0, sValue, {from: stProviderAddress});
-      await this.st.transfer(user1, sValue, {from: stProviderAddress});
-      await this.st.transfer(user2, sValue, {from: stProviderAddress});
+      await this.st.transfer(user0, sValue, { from: stProviderAddress });
+      await this.st.transfer(user1, sValue, { from: stProviderAddress });
+      await this.st.transfer(user2, sValue, { from: stProviderAddress });
 
       // Staking to original and adapter contract respectively
-      await this.st.approve(this.staking.address, sValue, {from: user0});
-      await this.staking.stake(sValue, {from: user0});
-      await this.st.approve(this.adapter.address, sValue, {from: user1});
-      await this.adapter.stake(sValue, {from: user1});
+      await this.st.approve(this.staking.address, sValue, { from: user0 });
+      await this.staking.stake(sValue, { from: user0 });
+      await this.st.approve(this.adapter.address, sValue, { from: user1 });
+      await this.adapter.stake(sValue, { from: user1 });
 
       // Notify reward
-      await this.rt.transfer(this.staking.address, rValue, {from: rtProviderAddress});
-      await this.notifyReward.notifyReward(rValue, this.staking.address, this.adapter.address, {from: rtProviderAddress});
+      await this.rt.transfer(this.staking.address, rValue, {
+        from: rtProviderAddress,
+      });
+      await this.notifyReward.notifyReward(
+        rValue,
+        this.staking.address,
+        this.adapter.address,
+        { from: rtProviderAddress }
+      );
 
       // Make time elapsed
       await increase(duration.days(1));
 
       // User2 stake through adapter
-      await this.st.approve(this.adapter.address, sValue, {from: user2});
-      await this.adapter.stake(sValue, {from: user2});
+      await this.st.approve(this.adapter.address, sValue, { from: user2 });
+      await this.adapter.stake(sValue, { from: user2 });
 
       // Make time elapsed
       await increase(duration.days(1));
 
       // Get the state after user2 staked
-      const earnedAdapter = await this.staking.earned.call(this.adapter.address);
+      const earnedAdapter = await this.staking.earned.call(
+        this.adapter.address
+      );
       log('earnedAdapter', earnedAdapter);
       const earnedUser0 = await this.staking.earned.call(user0);
       log('earnedUser0', earnedUser0);
@@ -219,7 +256,7 @@ contract('StakingRewardsAdapter', function([_, user0, user1, user2]) {
       log('earnedUser1', earnedUser1);
       const earnedUser2 = await this.adapter.earned.call(user2);
       log('earnedUser2', earnedUser2);
-      
+
       // Verify everyone gets reward
       expect(earnedUser0).to.be.bignumber.gt(ether('0'));
       expect(earnedUser1).to.be.bignumber.gt(ether('0'));
@@ -236,28 +273,35 @@ contract('StakingRewardsAdapter', function([_, user0, user1, user2]) {
       // Prepare staking data
       const sValue = ether('100');
       const rValue = ether('6048');
-      await this.st.transfer(user0, sValue, {from: stProviderAddress});
-      await this.st.transfer(user1, sValue, {from: stProviderAddress});
-      await this.st.transfer(user2, sValue, {from: stProviderAddress});
+      await this.st.transfer(user0, sValue, { from: stProviderAddress });
+      await this.st.transfer(user1, sValue, { from: stProviderAddress });
+      await this.st.transfer(user2, sValue, { from: stProviderAddress });
 
       // Staking to original and adapter contract respectively
-      await this.st.approve(this.staking.address, sValue, {from: user0});
-      await this.staking.stake(sValue, {from: user0});
-      await this.st.approve(this.adapter.address, sValue, {from: user1});
-      await this.adapter.stake(sValue, {from: user1});
-      await this.st.approve(this.adapter.address, sValue, {from: user2});
-      await this.adapter.stake(sValue, {from: user2});
+      await this.st.approve(this.staking.address, sValue, { from: user0 });
+      await this.staking.stake(sValue, { from: user0 });
+      await this.st.approve(this.adapter.address, sValue, { from: user1 });
+      await this.adapter.stake(sValue, { from: user1 });
+      await this.st.approve(this.adapter.address, sValue, { from: user2 });
+      await this.adapter.stake(sValue, { from: user2 });
 
       // Notify reward
-      await this.rt.transfer(this.staking.address, rValue, {from: rtProviderAddress});
-      await this.notifyReward.notifyReward(rValue, this.staking.address, this.adapter.address, {from: rtProviderAddress});
+      await this.rt.transfer(this.staking.address, rValue, {
+        from: rtProviderAddress,
+      });
+      await this.notifyReward.notifyReward(
+        rValue,
+        this.staking.address,
+        this.adapter.address,
+        { from: rtProviderAddress }
+      );
 
       // Make time elapsed
       await increase(duration.days(1));
 
       // User2 exit
       const earnedUser2 = await this.adapter.earned.call(user2);
-      await this.adapter.exit({from: user2});
+      await this.adapter.exit({ from: user2 });
       const rewardUser2AmountAfter = await this.rt.balanceOf(user2);
       const rewardUser2Got = rewardUser2AmountAfter.sub(rewardUser2Amount);
 
@@ -267,17 +311,19 @@ contract('StakingRewardsAdapter', function([_, user0, user1, user2]) {
       // Get the state after user2 claimed and exited
       const rewardAdapter = await this.rt.balanceOf(this.adapter.address);
       log('rewardAdapter', rewardAdapter);
-      const earnedAdapter = await this.staking.earned.call(this.adapter.address);
+      const earnedAdapter = await this.staking.earned.call(
+        this.adapter.address
+      );
       log('earnedAdapter', earnedAdapter);
       // Total reward adapter got = earned(adapter) + rt.balanceOf(adapter) since
       // anyone invokes `getReward()` on adapter will make adapter to claim all its
-      // reward from original contract and reset the earned number.  
+      // reward from original contract and reset the earned number.
       const totalRewardAdapter = rewardAdapter.add(earnedAdapter);
       const earnedUser0 = await this.staking.earned.call(user0);
       log('earnedUser0', earnedUser0);
       const earnedUser1 = await this.adapter.earned.call(user1);
       log('earnedUser1', earnedUser1);
-      
+
       // log('staking address', this.staking.address);
       // log('adapter address', this.adapter.address);
       // log('staking token', this.st.address);
@@ -310,7 +356,7 @@ contract('StakingRewardsAdapter', function([_, user0, user1, user2]) {
       expect(await this.adapter.earned(user2)).to.be.zero;
 
       // Actually invoke getReward and verify amount
-      await this.adapter.getReward({from: user1});
+      await this.adapter.getReward({ from: user1 });
       const rewardUser1AmountAfter = await this.rt.balanceOf(user1);
       const rewardUser1Got = rewardUser1AmountAfter.sub(rewardUser1Amount);
       // Verify 'earned <= rewardActuallyGot <= earned * 1.001' caused by timestamp differ
@@ -323,28 +369,35 @@ contract('StakingRewardsAdapter', function([_, user0, user1, user2]) {
       // Prepare staking data
       const sValue = ether('100');
       const rValue = ether('6048');
-      await this.st.transfer(user0, sValue, {from: stProviderAddress});
-      await this.st.transfer(user1, sValue, {from: stProviderAddress});
-      await this.st.transfer(user2, sValue, {from: stProviderAddress});
+      await this.st.transfer(user0, sValue, { from: stProviderAddress });
+      await this.st.transfer(user1, sValue, { from: stProviderAddress });
+      await this.st.transfer(user2, sValue, { from: stProviderAddress });
 
       // Staking to original and adapter contract respectively
-      await this.st.approve(this.staking.address, sValue, {from: user0});
-      await this.staking.stake(sValue, {from: user0});
-      await this.st.approve(this.adapter.address, sValue, {from: user1});
-      await this.adapter.stake(sValue, {from: user1});
-      await this.st.approve(this.adapter.address, sValue, {from: user2});
-      await this.adapter.stake(sValue, {from: user2});
+      await this.st.approve(this.staking.address, sValue, { from: user0 });
+      await this.staking.stake(sValue, { from: user0 });
+      await this.st.approve(this.adapter.address, sValue, { from: user1 });
+      await this.adapter.stake(sValue, { from: user1 });
+      await this.st.approve(this.adapter.address, sValue, { from: user2 });
+      await this.adapter.stake(sValue, { from: user2 });
 
       // Notify reward
-      await this.rt.transfer(this.staking.address, rValue, {from: rtProviderAddress});
-      await this.notifyReward.notifyReward(rValue, this.staking.address, this.adapter.address, {from: rtProviderAddress});
+      await this.rt.transfer(this.staking.address, rValue, {
+        from: rtProviderAddress,
+      });
+      await this.notifyReward.notifyReward(
+        rValue,
+        this.staking.address,
+        this.adapter.address,
+        { from: rtProviderAddress }
+      );
 
       // Make time elapsed
       await increase(duration.days(1));
 
       // User2 get current reward but not unstake
       const earnedUser2Middle = await this.adapter.earned.call(user2);
-      await this.adapter.getReward({from: user2});
+      await this.adapter.getReward({ from: user2 });
       const rewardUser2Middle = await this.rt.balanceOf.call(user2);
       log('rewardUser2Middle', rewardUser2Middle);
 
@@ -354,11 +407,13 @@ contract('StakingRewardsAdapter', function([_, user0, user1, user2]) {
       // Get the state after user2 get his reward at that moment
       const rewardAdapter = await this.rt.balanceOf(this.adapter.address);
       log('rewardAdapter', rewardAdapter);
-      const earnedAdapter = await this.staking.earned.call(this.adapter.address);
+      const earnedAdapter = await this.staking.earned.call(
+        this.adapter.address
+      );
       log('earnedAdapter', earnedAdapter);
       // Total reward adapter got = earned(adapter) + rt.balanceOf(adapter) since
       // anyone invokes `getReward()` on adapter will make adapter to claim all its
-      // reward from original contract and reset the earned number.  
+      // reward from original contract and reset the earned number.
       const totalRewardAdapter = rewardAdapter.add(earnedAdapter);
       const earnedUser0 = await this.staking.earned.call(user0);
       log('earnedUser0', earnedUser0);
@@ -366,7 +421,7 @@ contract('StakingRewardsAdapter', function([_, user0, user1, user2]) {
       log('earnedUser1', earnedUser1);
       const earnedUser2End = await this.adapter.earned.call(user2);
       log('earnedUser2End', earnedUser2End);
-      
+
       // Verify everyone gets reward
       expect(earnedUser0).to.be.bignumber.gt(ether('0'));
       expect(earnedUser1).to.be.bignumber.gt(ether('0'));
@@ -376,7 +431,9 @@ contract('StakingRewardsAdapter', function([_, user0, user1, user2]) {
       // Verify user0 & user1 gets equal share
       expect(earnedUser0).to.be.bignumber.eq(earnedUser1);
       // Verify user1 gets equal amount to user2's overall reward
-      expect(earnedUser1).to.be.bignumber.eq(rewardUser2Middle.add(earnedUser2End));
+      expect(earnedUser1).to.be.bignumber.eq(
+        rewardUser2Middle.add(earnedUser2End)
+      );
       // Verify user2 earnedAmountMiddle equals to his rt balance after getReward
       expect(earnedUser2Middle).to.be.bignumber.eq(rewardUser2Middle);
       // Verify adapter earned overall equals to 2x of user0 has earned
@@ -389,30 +446,46 @@ contract('StakingRewardsAdapter', function([_, user0, user1, user2]) {
       // Prepare staking data
       const sValue = ether('100');
       const rValue = ether('6048');
-      await this.st.transfer(user0, sValue, {from: stProviderAddress});
-      await this.st.transfer(user1, sValue, {from: stProviderAddress});
+      await this.st.transfer(user0, sValue, { from: stProviderAddress });
+      await this.st.transfer(user1, sValue, { from: stProviderAddress });
 
       // Staking to original and adapter contract respectively
-      await this.st.approve(this.staking.address, sValue, {from: user0});
-      await this.staking.stake(sValue, {from: user0});
-      await this.st.approve(this.adapter.address, sValue, {from: user1});
-      await this.adapter.stake(sValue, {from: user1});
+      await this.st.approve(this.staking.address, sValue, { from: user0 });
+      await this.staking.stake(sValue, { from: user0 });
+      await this.st.approve(this.adapter.address, sValue, { from: user1 });
+      await this.adapter.stake(sValue, { from: user1 });
 
       // Notify reward
-      await this.rt.transfer(this.staking.address, rValue, {from: rtProviderAddress});
-      await this.notifyReward.notifyReward(rValue, this.staking.address, this.adapter.address, {from: rtProviderAddress});
+      await this.rt.transfer(this.staking.address, rValue, {
+        from: rtProviderAddress,
+      });
+      await this.notifyReward.notifyReward(
+        rValue,
+        this.staking.address,
+        this.adapter.address,
+        { from: rtProviderAddress }
+      );
 
       // Make time elapsed
       await increase(duration.days(1));
 
       // Notify reward second time
-      await this.rt.transfer(this.staking.address, rValue, {from: rtProviderAddress});
-      await this.notifyReward.notifyReward(rValue, this.staking.address, this.adapter.address, {from: rtProviderAddress});
+      await this.rt.transfer(this.staking.address, rValue, {
+        from: rtProviderAddress,
+      });
+      await this.notifyReward.notifyReward(
+        rValue,
+        this.staking.address,
+        this.adapter.address,
+        { from: rtProviderAddress }
+      );
 
       // Make time elapsed
       await increase(duration.days(1));
 
-      const earnedAdapter = await this.staking.earned.call(this.adapter.address);
+      const earnedAdapter = await this.staking.earned.call(
+        this.adapter.address
+      );
       const earnedUser0 = await this.staking.earned.call(user0);
       const earnedUser1 = await this.adapter.earned.call(user1);
 
@@ -439,7 +512,7 @@ contract('StakingRewardsAdapter', function([_, user0, user1, user2]) {
       expect(earnedUser1).to.be.bignumber.eq(earnedAdapter);
 
       // Actually invoke getReward and verify amount
-      await this.adapter.getReward({from: user1});
+      await this.adapter.getReward({ from: user1 });
       const rewardUser1AmountAfter = await this.rt.balanceOf(user1);
       const rewardUser1Got = rewardUser1AmountAfter.sub(rewardUser1Amount);
       // Verify 'earned <= rewardActuallyGot <= earned * 1.001' caused by timestamp differ
@@ -447,19 +520,18 @@ contract('StakingRewardsAdapter', function([_, user0, user1, user2]) {
       expect(rewardUser1Got).to.be.bignumber.lte(getBuffer(earnedUser1));
       log('rewardUser1Got', rewardUser1Got);
     });
-
   });
 });
 
 function getBuffer(num) {
-  return (new BN(num)).mul(new BN(1001)).div(new BN(1000));
+  return new BN(num).mul(new BN(1001)).div(new BN(1000));
 }
 
 function log(text, value) {
   console.log(`>>> ${text}: ${value}`);
 }
 
-async function printStateAdapter(adapterAddr, user){
+async function printStateAdapter(adapterAddr, user) {
   const adapter = await StakingRewardsAdapter.at(adapterAddr);
   const totalSupply = await adapter.totalSupply.call();
   const balanceOfUser = await adapter.balanceOf.call(user);
@@ -478,7 +550,7 @@ async function printStateAdapter(adapterAddr, user){
   log('earnedUser', earnedUser);
 }
 
-async function printStateOriginal(contractAddr, user){
+async function printStateOriginal(contractAddr, user) {
   const contract = await StakingRewardsAdapter.at(contractAddr);
   const totalSupply = await contract.totalSupply.call();
   const balanceOfUser = await contract.balanceOf.call(user);
