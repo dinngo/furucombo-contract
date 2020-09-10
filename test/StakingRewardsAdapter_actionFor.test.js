@@ -262,20 +262,20 @@ contract('StakingRewardsAdapter - Action For', function([_, whitelist, notWhitel
       await this.adapter.exitFor(user2, {from: whitelist});
       const rewardUser2AmountAfter = await this.rt.balanceOf(user2);
       const rewardUser2Got = rewardUser2AmountAfter.sub(rewardUser2Amount);
-      const rtBalanceWhitelist = await this.rt.balanceOf(whitelist);
+      const rewardWhitelist = await this.rt.balanceOf(whitelist);
 
       // Make time elapsed
       await increase(duration.days(1));
 
       // Get the state after user2 claimed and exited
-      const rtBalanceAdapter = await this.rt.balanceOf(this.adapter.address);
-      log('rtBalanceAdapter', rtBalanceAdapter);
+      const rewardAdapter = await this.rt.balanceOf(this.adapter.address);
+      log('rewardAdapter', rewardAdapter);
       const earnedAdapter = await this.staking.earned.call(this.adapter.address);
       log('earnedAdapter', earnedAdapter);
       // Total reward adapter got = earned(adapter) + rt.balanceOf(adapter) since
       // anyone invokes `getReward()` on adapter will make adapter to claim all its
       // reward from original contract and reset the earned number.  
-      const totalRewardAdapter = rtBalanceAdapter.add(earnedAdapter);
+      const totalRewardAdapter = rewardAdapter.add(earnedAdapter);
       const earnedUser0 = await this.staking.earned.call(user0);
       log('earnedUser0', earnedUser0);
       const earnedUser1 = await this.adapter.earned.call(user1);
@@ -294,16 +294,16 @@ contract('StakingRewardsAdapter - Action For', function([_, whitelist, notWhitel
       expect(earnedUser0).to.be.bignumber.eq(earnedUser1);
       // Verify user1 gets whole share of adapter after user2 claimed
       expect(earnedUser1).to.be.bignumber.eq(totalRewardAdapter);
-      // Verify WHITELIST gets the reward USER2 earned since actionFor will transfer assets to msg.sender
-      expect(rtBalanceWhitelist).to.be.bignumber.gte(earnedUser2);
-      expect(rtBalanceWhitelist).to.be.bignumber.lte(getBuffer(earnedUser2));
-      log('rtBalanceWhitelist', rtBalanceWhitelist);
-      // Verify USER2 not gets the reward since its been transfered to WHITELIST
+      // Verify whitelist gets the reward user2 earned since actionFor will transfer assets to msg.sender
+      expect(rewardWhitelist).to.be.bignumber.gte(earnedUser2);
+      expect(rewardWhitelist).to.be.bignumber.lte(getBuffer(earnedUser2));
+      log('rewardWhitelist', rewardWhitelist);
+      // Verify user2 not gets the reward since its been transfered to whitelist
       expect(rewardUser2Got).to.be.zero;
       log('rewardUser2Got', rewardUser2Got);
-      // Verify WHITELIST gets the amount unstake for USER2
+      // Verify whitelist gets the amount unstake for user2
       expect(await this.st.balanceOf(whitelist)).to.be.bignumber.eq(sValue);
-      // Verify USER2 not gets the amount unstake since its been transfered to WHITELIST
+      // Verify user2 not gets the amount unstake since its been transfered to whitelist
       expect(await this.st.balanceOf(user2)).to.be.zero;
       // Verify user2 unstake all share after whitelist exitFor him
       expect(await this.adapter.balanceOf(user2)).to.be.zero;
@@ -347,23 +347,23 @@ contract('StakingRewardsAdapter - Action For', function([_, whitelist, notWhitel
       // Whitelist getRewardFor user2 but not unstake
       const earnedUser2Middle = await this.adapter.earned.call(user2);
       await this.adapter.getRewardFor(user2, {from: whitelist});
-      const rtBalanceUser2Middle = await this.rt.balanceOf.call(user2);
-      log('rtBalanceUser2Middle', rtBalanceUser2Middle);
-      const rtBalanceWhitelist = await this.rt.balanceOf.call(whitelist);
-      log('rtBalanceWhitelist', rtBalanceWhitelist);
+      const rewardUser2Middle = await this.rt.balanceOf.call(user2);
+      log('rewardUser2Middle', rewardUser2Middle);
+      const rewardWhitelist = await this.rt.balanceOf.call(whitelist);
+      log('rewardWhitelist', rewardWhitelist);
 
       // Make time elapsed
       await increase(duration.days(1));
 
       // Get the state after whitelist getRewardFor user2
-      const rtBalanceAdapter = await this.rt.balanceOf(this.adapter.address);
-      log('rtBalanceAdapter', rtBalanceAdapter);
+      const rewardAdapter = await this.rt.balanceOf(this.adapter.address);
+      log('rewardAdapter', rewardAdapter);
       const earnedAdapter = await this.staking.earned.call(this.adapter.address);
       log('earnedAdapter', earnedAdapter);
       // Total reward adapter got = earned(adapter) + rt.balanceOf(adapter) since
       // anyone invokes `getReward()` on adapter will make adapter to claim all its
       // reward from original contract and reset the earned number.  
-      const totalRewardAdapter = rtBalanceAdapter.add(earnedAdapter);
+      const totalRewardAdapter = rewardAdapter.add(earnedAdapter);
       const earnedUser0 = await this.staking.earned.call(user0);
       log('earnedUser0', earnedUser0);
       const earnedUser1 = await this.adapter.earned.call(user1);
@@ -385,13 +385,13 @@ contract('StakingRewardsAdapter - Action For', function([_, whitelist, notWhitel
       // Verify user0 & user1 gets equal share
       expect(earnedUser0).to.be.bignumber.eq(earnedUser1);
       // Verify user1 gets equal amount to user2 + whitelist got
-      expect(earnedUser1).to.be.bignumber.eq(rtBalanceWhitelist.add(earnedUser2End));
-      // Verify USER2 earnedAmountMiddle equals to WHITELIST's rt balance after getRewardFor user2
-      expect(earnedUser2Middle).to.be.bignumber.eq(rtBalanceWhitelist);
-      // Verify USER2 not get the reward in the middle since its been transfered to whitelist
-      expect(rtBalanceUser2Middle).to.be.zero;
+      expect(earnedUser1).to.be.bignumber.eq(rewardWhitelist.add(earnedUser2End));
+      // Verify user2 earnedAmountMiddle equals to whitelist's rt balance after getRewardFor user2
+      expect(earnedUser2Middle).to.be.bignumber.eq(rewardWhitelist);
+      // Verify user2 not get the reward in the middle since its been transfered to whitelist
+      expect(rewardUser2Middle).to.be.zero;
       // Verify adapter earned overall equals to 2x of user0 has earned
-      expect(totalRewardAdapter.add(rtBalanceWhitelist)).to.be.bignumber.eq(
+      expect(totalRewardAdapter.add(rewardWhitelist)).to.be.bignumber.eq(
         earnedUser0.mul(new BN('2'))
       );
     });

@@ -265,14 +265,14 @@ contract('StakingRewardsAdapter', function([_, user0, user1, user2]) {
       await increase(duration.days(1));
 
       // Get the state after user2 claimed and exited
-      const rtBalanceAdapter = await this.rt.balanceOf(this.adapter.address);
-      log('rtBalanceAdapter', rtBalanceAdapter);
+      const rewardAdapter = await this.rt.balanceOf(this.adapter.address);
+      log('rewardAdapter', rewardAdapter);
       const earnedAdapter = await this.staking.earned.call(this.adapter.address);
       log('earnedAdapter', earnedAdapter);
       // Total reward adapter got = earned(adapter) + rt.balanceOf(adapter) since
       // anyone invokes `getReward()` on adapter will make adapter to claim all its
       // reward from original contract and reset the earned number.  
-      const totalRewardAdapter = rtBalanceAdapter.add(earnedAdapter);
+      const totalRewardAdapter = rewardAdapter.add(earnedAdapter);
       const earnedUser0 = await this.staking.earned.call(user0);
       log('earnedUser0', earnedUser0);
       const earnedUser1 = await this.adapter.earned.call(user1);
@@ -345,21 +345,21 @@ contract('StakingRewardsAdapter', function([_, user0, user1, user2]) {
       // User2 get current reward but not unstake
       const earnedUser2Middle = await this.adapter.earned.call(user2);
       await this.adapter.getReward({from: user2});
-      const rtBalanceUser2Middle = await this.rt.balanceOf.call(user2);
-      log('rtBalanceUser2Middle', rtBalanceUser2Middle);
+      const rewardUser2Middle = await this.rt.balanceOf.call(user2);
+      log('rewardUser2Middle', rewardUser2Middle);
 
       // Make time elapsed
       await increase(duration.days(1));
 
       // Get the state after user2 get his reward at that moment
-      const rtBalanceAdapter = await this.rt.balanceOf(this.adapter.address);
-      log('rtBalanceAdapter', rtBalanceAdapter);
+      const rewardAdapter = await this.rt.balanceOf(this.adapter.address);
+      log('rewardAdapter', rewardAdapter);
       const earnedAdapter = await this.staking.earned.call(this.adapter.address);
       log('earnedAdapter', earnedAdapter);
       // Total reward adapter got = earned(adapter) + rt.balanceOf(adapter) since
       // anyone invokes `getReward()` on adapter will make adapter to claim all its
       // reward from original contract and reset the earned number.  
-      const totalRewardAdapter = rtBalanceAdapter.add(earnedAdapter);
+      const totalRewardAdapter = rewardAdapter.add(earnedAdapter);
       const earnedUser0 = await this.staking.earned.call(user0);
       log('earnedUser0', earnedUser0);
       const earnedUser1 = await this.adapter.earned.call(user1);
@@ -376,11 +376,11 @@ contract('StakingRewardsAdapter', function([_, user0, user1, user2]) {
       // Verify user0 & user1 gets equal share
       expect(earnedUser0).to.be.bignumber.eq(earnedUser1);
       // Verify user1 gets equal amount to user2's overall reward
-      expect(earnedUser1).to.be.bignumber.eq(rtBalanceUser2Middle.add(earnedUser2End));
+      expect(earnedUser1).to.be.bignumber.eq(rewardUser2Middle.add(earnedUser2End));
       // Verify user2 earnedAmountMiddle equals to his rt balance after getReward
-      expect(earnedUser2Middle).to.be.bignumber.eq(rtBalanceUser2Middle);
+      expect(earnedUser2Middle).to.be.bignumber.eq(rewardUser2Middle);
       // Verify adapter earned overall equals to 2x of user0 has earned
-      expect(totalRewardAdapter.add(rtBalanceUser2Middle)).to.be.bignumber.eq(
+      expect(totalRewardAdapter.add(rewardUser2Middle)).to.be.bignumber.eq(
         earnedUser0.mul(new BN('2'))
       );
     });
