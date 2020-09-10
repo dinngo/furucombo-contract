@@ -1,4 +1,5 @@
-const { BN, ether } = require('@openzeppelin/test-helpers');
+const { balance, BN, ether } = require('@openzeppelin/test-helpers');
+const { tracker } = balance;
 const { expect } = require('chai');
 const abi = require('ethereumjs-abi');
 const utils = web3.utils;
@@ -6,15 +7,12 @@ const {
   CURVE_YCRV,
   CURVE_YCRV_PROVIDER,
   YEARN_YCRV_VAULT,
+  YEARN_YWETH_VAULT,
   ALINK,
   ALINK_PROVIDER,
   YEARN_ALINK_VAULT,
 } = require('./utils/constants');
-const {
-  profileGas,
-  evmSnapshot,
-  evmRevertAndSnapshot,
-} = require('./utils/utils');
+const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
 
 const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('ProxyMock');
@@ -23,6 +21,8 @@ const IYVault = artifacts.require('IYVault');
 const IToken = artifacts.require('IERC20');
 
 contract('YVault', function([_, user]) {
+  let id;
+
   before(async function() {
     this.registry = await Registry.new();
     this.proxy = await Proxy.new(this.registry.address);
@@ -31,11 +31,14 @@ contract('YVault', function([_, user]) {
       this.hYVault.address,
       utils.asciiToHex('HYVault')
     );
-    this.id = await evmSnapshot();
   });
 
   beforeEach(async function() {
-    this.id = await evmRevertAndSnapshot(this.id);
+    id = await evmSnapshot();
+  });
+
+  afterEach(async function() {
+    await evmRevert(id);
   });
 
   describe('Deposit', function() {
@@ -73,7 +76,45 @@ contract('YVault', function([_, user]) {
           .mul(new BN('999'))
           .div(new BN('1000'))
       );
+      profileGas(receipt);
+    });
 
+    it('yWETH vault', async function() {
+      let balanceUser = await tracker(user);
+      const vault = await IYVault.at(YEARN_YWETH_VAULT);
+      const value = ether('1');
+      const data = abi.simpleEncode(
+        'depositETH(uint256,address)',
+        value,
+        vault.address
+      );
+      const ratio = await vault.getPricePerFullShare.call();
+      const receipt = await this.proxy.execMock(this.hYVault.address, data, {
+        from: user,
+        value: value,
+      });
+
+      // Check proxy balance
+      expect(await vault.balanceOf.call(this.proxy.address)).to.be.zero;
+      expect(await balance.current(this.proxy.address)).to.be.zero;
+
+      // Check user vault balance >= 99.9% expected result
+      expect(await vault.balanceOf.call(user)).to.be.bignumber.lte(
+        value.mul(ether('1')).div(ratio)
+      );
+      expect(await vault.balanceOf.call(user)).to.be.bignumber.gte(
+        value
+          .mul(ether('1'))
+          .div(ratio)
+          .mul(new BN('999'))
+          .div(new BN('1000'))
+      );
+      // Check user eth balance
+      expect(await balanceUser.delta()).to.be.bignumber.eq(
+        ether('0')
+          .sub(value)
+          .sub(new BN(receipt.receipt.gasUsed))
+      );
       profileGas(receipt);
     });
   });
@@ -129,6 +170,61 @@ contract('YVault', function([_, user]) {
           .div(ether('1'))
           .mul(new BN('1001'))
           .div(new BN('1000'))
+      );
+
+      profileGas(receipt);
+    });
+
+    it('yWETH vault', async function() {
+      const vault = await IYVault.at(YEARN_YWETH_VAULT);
+
+      // User deposits ETH to get yWETH
+      const amountDeposit = ether('1');
+      await vault.depositETH({
+        from: user,
+        value: amountDeposit,
+      });
+
+      // User withdraws ETH by yWETH
+      const amount = await vault.balanceOf.call(user);
+      const data = abi.simpleEncode(
+        'withdrawETH(address,uint256)',
+        vault.address,
+        amount
+      );
+      await vault.transfer(this.proxy.address, amount, {
+        from: user,
+      });
+      await this.proxy.updateTokenMock(vault.address);
+      const ratio = await vault.getPricePerFullShare.call();
+      const balanceUser = await tracker(user);
+      const receipt = await this.proxy.execMock(this.hYVault.address, data, {
+        from: user,
+        value: ether('0.1'),
+      });
+
+      // Check proxy balance
+      expect(await vault.balanceOf.call(this.proxy.address)).to.be.zero;
+      expect(await balance.current(this.proxy.address)).to.be.zero;
+
+      // Check user vault balance
+      expect(await vault.balanceOf.call(user)).to.be.zero;
+
+      // Check user eth balance <= 100.1% expected result
+      const delta = await balanceUser.delta();
+      expect(delta).to.be.bignumber.gte(
+        amount
+          .mul(ratio)
+          .div(ether('1'))
+          .sub(new BN(receipt.receipt.gasUsed))
+      );
+      expect(delta).to.be.bignumber.lte(
+        amount
+          .mul(ratio)
+          .div(ether('1'))
+          .mul(new BN('1001'))
+          .div(new BN('1000'))
+          .sub(new BN(receipt.receipt.gasUsed))
       );
 
       profileGas(receipt);
