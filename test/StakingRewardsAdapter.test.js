@@ -379,10 +379,6 @@ contract('StakingRewardsAdapter', function([_, user0, user1, user2]) {
       expect(earnedUser1).to.be.bignumber.eq(rtBalanceUser2Middle.add(earnedUser2End));
       // Verify user2 earnedAmountMiddle equals to his rt balance after getReward
       expect(earnedUser2Middle).to.be.bignumber.eq(rtBalanceUser2Middle);
-      // Verify user2 earned overall equals to user1
-      expect(earnedUser2End.add(rtBalanceUser2Middle)).to.be.bignumber.eq(
-        earnedUser1
-      );
       // Verify adapter earned overall equals to 2x of user0 has earned
       expect(totalRewardAdapter.add(rtBalanceUser2Middle)).to.be.bignumber.eq(
         earnedUser0.mul(new BN('2'))
