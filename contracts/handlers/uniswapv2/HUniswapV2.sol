@@ -6,7 +6,6 @@ import "../HandlerBase.sol";
 import "./libraries/UniswapV2Library.sol";
 import "./IUniswapV2Router02.sol";
 
-
 contract HUniswapV2 is HandlerBase {
     using SafeERC20 for IERC20;
 
@@ -327,5 +326,4 @@ contract HUniswapV2 is HandlerBase {
 
         _updateToken(tokenOut);
     }
-
 }

@@ -3,13 +3,11 @@ pragma solidity ^0.5.0;
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "../handlers/HandlerBase.sol";
 
-
 interface IFaucet {
     function drain() external payable;
 
     function drainToken(address token, uint256 amount) external;
 }
-
 
 contract HMock is HandlerBase {
     using SafeERC20 for IERC20;

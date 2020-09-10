@@ -6,7 +6,6 @@ import "../HandlerBase.sol";
 
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 
-
 contract HMaker is HandlerBase {
     using SafeERC20 for IERC20;
 

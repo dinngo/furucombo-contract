@@ -1,6 +1,5 @@
 pragma solidity ^0.5.0;
 
-
 library LibCache {
     function setAddress(bytes32[] storage _cache, address _input) internal {
         _cache.push(bytes32(uint256(uint160(_input))));

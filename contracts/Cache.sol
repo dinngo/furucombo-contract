@@ -2,7 +2,6 @@ pragma solidity ^0.5.0;
 
 import "./lib/LibCache.sol";
 
-
 /// @notice A cache structure composed by a bytes32 array
 contract Cache {
     using LibCache for bytes32[];

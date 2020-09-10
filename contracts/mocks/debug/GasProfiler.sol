@@ -1,8 +1,8 @@
 pragma solidity ^0.5.0;
 
-
 contract GasProfiler {
     // keccak256 hash of "gas.profiler.base"
+    // prettier-ignore
     bytes32 private constant GAS_BASE = 0x37698e52cd5639897dae03c485a7870bceb6876f0e950fc063664398d5580c0c;
 
     event DeltaGas(bytes32 tag, int256 gas);

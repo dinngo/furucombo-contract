@@ -5,11 +5,12 @@ import "../HandlerBase.sol";
 import "./IMinter.sol";
 import "./ILiquidityGauge.sol";
 
-
 contract HCurveDao is HandlerBase {
     using SafeERC20 for IERC20;
 
+    // prettier-ignore
     address public constant CURVE_MINTER = 0xd061D61a4d941c39E5453435B6345Dc261C2fcE0;
+    // prettier-ignore
     address public constant CRV_TOKEN = 0xD533a949740bb3306d119CC777fa900bA034cd52;
 
     function mint(address gauge_addr) external payable {

@@ -7,7 +7,6 @@ import "./interface/IRegistry.sol";
 import "./Cache.sol";
 import "./Config.sol";
 
-
 /**
  * @title The entrance of Furucombo
  * @author Ben Huang
@@ -17,6 +16,7 @@ contract Proxy is Cache, Config {
     using SafeERC20 for IERC20;
 
     // keccak256 hash of "furucombo.handler.registry"
+    // prettier-ignore
     bytes32 private constant HANDLER_REGISTRY = 0x6874162fd62902201ea0f4bf541086067b3b88bd802fac9e150fd2d1db584e19;
 
     constructor(address registry) public {
