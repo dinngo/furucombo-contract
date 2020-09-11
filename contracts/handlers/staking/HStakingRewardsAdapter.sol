@@ -17,7 +17,7 @@ contract HStakingRewardsAdapter is HandlerBase {
         IERC20 token = adapter.stakingToken();
         
         token.safeApprove(address(adapter), amount);
-        adapter.stakeFor(msg.sender, amount);
+        adapter.stakeFor(cache.getSender(), amount);
         token.safeApprove(address(adapter), 0);
     }
 
@@ -41,7 +41,7 @@ contract HStakingRewardsAdapter is HandlerBase {
         uint256 amount
     ) external payable {
         IStakingRewardsAdapter adapter = IStakingRewardsAdapter(adapterAddr);
-        adapter.withdrawFor(msg.sender, amount);
+        adapter.withdrawFor(cache.getSender(), amount);
 
         _updateToken(address(adapter.stakingToken()));
     }
@@ -51,7 +51,7 @@ contract HStakingRewardsAdapter is HandlerBase {
         address adapterAddr
     ) external payable {
         IStakingRewardsAdapter adapter = IStakingRewardsAdapter(adapterAddr);
-        adapter.exitFor(msg.sender);
+        adapter.exitFor(cache.getSender());
 
         _updateToken(address(adapter.stakingToken()));
         _updateToken(address(adapter.rewardsToken()));
@@ -62,7 +62,7 @@ contract HStakingRewardsAdapter is HandlerBase {
         address adapterAddr
     ) external payable {
         IStakingRewardsAdapter adapter = IStakingRewardsAdapter(adapterAddr);
-        adapter.getRewardFor(msg.sender);
+        adapter.getRewardFor(cache.getSender());
 
         _updateToken(address(adapter.rewardsToken()));
     }
