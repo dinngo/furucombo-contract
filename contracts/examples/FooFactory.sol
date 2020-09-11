@@ -1,7 +1,6 @@
 pragma solidity ^0.5.0;
 import "./Foo.sol";
 
-
 contract FooFactory {
     mapping(uint256 => address) private _foos;
     uint256 private _nFoo;

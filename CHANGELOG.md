@@ -8,6 +8,12 @@ All notable changes to this project will be documented in this file.
 
 - Support Yearn vault depositETH and withdrawETH in `HYVault`.
 
+### Changed
+
+- Apply slippage to swapping and add/remove liquidity related testcases.
+- Apply evm state reset to every testcase.
+- Upgrade `prettier-plugin-solidity` to `1.0.0-alpha.57`
+
 ## [0.10.0] - 2020-09-04
 
 ### Added

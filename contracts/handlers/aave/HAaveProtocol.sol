@@ -11,7 +11,6 @@ import "./FlashLoanReceiverBase.sol";
 import "../HandlerBase.sol";
 import "../../interface/IProxy.sol";
 
-
 contract HAaveProtocol is HandlerBase, FlashLoanReceiverBase {
     using SafeERC20 for IERC20;
 

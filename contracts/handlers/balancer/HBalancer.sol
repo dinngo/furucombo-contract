@@ -6,11 +6,12 @@ import "../HandlerBase.sol";
 
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 
-
 contract HBalancer is HandlerBase {
     using SafeERC20 for IERC20;
 
+    // prettier-ignore
     address public constant BACTIONS = 0xde4A25A0b9589689945d842c5ba0CF4f0D4eB3ac;
+    // prettier-ignore
     address public constant PROXY_REGISTRY = 0x4678f0a6958e4D2Bc4F1BAF7Bc52E8F3564f3fE4;
 
     function joinswapExternAmountIn(

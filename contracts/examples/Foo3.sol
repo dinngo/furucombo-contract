@@ -1,6 +1,5 @@
 pragma solidity ^0.5.0;
 
-
 contract Foo3 {
     uint256 public num;
 

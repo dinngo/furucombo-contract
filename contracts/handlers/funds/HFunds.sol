@@ -4,7 +4,6 @@ import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 
 import "../HandlerBase.sol";
 
-
 contract HFunds is HandlerBase {
     using SafeERC20 for IERC20;
 

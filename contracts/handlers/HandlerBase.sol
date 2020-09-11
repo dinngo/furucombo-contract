@@ -3,7 +3,6 @@ pragma solidity ^0.5.0;
 import "../Cache.sol";
 import "../Config.sol";
 
-
 contract HandlerBase is Cache, Config {
     function postProcess() external payable {
         revert("Invalid post process");

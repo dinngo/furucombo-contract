@@ -6,10 +6,10 @@ import "./ICurveSwap.sol";
 import "./ICurveDeposit.sol";
 import "./IOneSplit.sol";
 
-
 contract HCurve is HandlerBase {
     using SafeERC20 for IERC20;
 
+    // prettier-ignore
     address public constant ONE_SPLIT = 0xC586BeF4a0992C495Cf22e1aeEE4E446CECDee0E;
 
     // Curve fixed input used for susd, ren and sbtc pools

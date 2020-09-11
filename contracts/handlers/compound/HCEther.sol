@@ -5,7 +5,6 @@ import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "../HandlerBase.sol";
 import "./ICEther.sol";
 
-
 contract HCEther is HandlerBase {
     using SafeERC20 for IERC20;
 

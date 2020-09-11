@@ -4,7 +4,6 @@ import "@openzeppelin/contracts/math/SafeMath.sol";
 
 import "../IUniswapV2Pair.sol";
 
-
 library UniswapV2Library {
     using SafeMath for uint256;
 

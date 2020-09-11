@@ -2,7 +2,6 @@ pragma solidity ^0.5.0;
 
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 
-
 contract OldHandlerBase {
     address[] public tokens;
 
@@ -10,7 +9,6 @@ contract OldHandlerBase {
         tokens.push(token);
     }
 }
-
 
 contract OldHERC20TokenIn is OldHandlerBase {
     using SafeERC20 for IERC20;

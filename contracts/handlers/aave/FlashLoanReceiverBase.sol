@@ -5,7 +5,6 @@ import "@openzeppelin/contracts/math/SafeMath.sol";
 import "./ILendingPool.sol";
 import "./ILendingPoolAddressesProvider.sol";
 
-
 contract FlashLoanReceiverBase {
     using SafeERC20 for IERC20;
     using SafeMath for uint256;

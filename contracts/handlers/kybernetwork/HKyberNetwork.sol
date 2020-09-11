@@ -6,7 +6,6 @@ import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "../HandlerBase.sol";
 import "./IKyberNetworkProxy.sol";
 
-
 contract HKyberNetwork is HandlerBase {
     using SafeERC20 for IERC20;
 

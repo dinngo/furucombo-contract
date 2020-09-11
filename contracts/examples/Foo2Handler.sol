@@ -2,18 +2,15 @@ pragma solidity ^0.5.0;
 
 import "../handlers/HandlerBase.sol";
 
-
 interface IFoo2 {
     function bar() external payable returns (uint256 result);
 }
-
 
 interface IFoo2Factory {
     function addressOf(uint256 index) external view returns (address result);
 
     function createFoo() external;
 }
-
 
 contract Foo2Handler is HandlerBase {
     function getFooFactory() public pure returns (address target) {

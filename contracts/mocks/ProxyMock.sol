@@ -4,7 +4,6 @@ pragma experimental ABIEncoderV2;
 import "../Proxy.sol";
 import "./debug/GasProfiler.sol";
 
-
 contract ProxyMock is Proxy, GasProfiler {
     constructor(address registry) public Proxy(registry) {}
 

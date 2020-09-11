@@ -2,7 +2,6 @@ pragma solidity ^0.5.0;
 
 import "../handlers/HandlerBase.sol";
 
-
 interface IFoo3 {
     function bar1() external;
 
@@ -12,7 +11,6 @@ interface IFoo3 {
 
     function reset2() external;
 }
-
 
 contract Foo3Handler is HandlerBase {
     function bar1(address foo) public payable {
