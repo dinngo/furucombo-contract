@@ -49,7 +49,7 @@ contract('StakingRewardsAdapter', function([_, user0, user1, user2]) {
       rtAddress,
       stAddress
     );
-    this.adapter = await StakingRewardsAdapter.new(_, this.staking.address);
+    this.adapter = await StakingRewardsAdapter.new(this.staking.address);
   });
 
   beforeEach(async function() {

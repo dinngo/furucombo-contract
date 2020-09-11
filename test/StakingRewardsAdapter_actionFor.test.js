@@ -58,7 +58,6 @@ contract('StakingRewardsAdapter - Action For', function([
       stAddress
     );
     this.adapter = await StakingRewardsAdapter.new(
-      whitelist,
       this.staking.address
     );
   });
@@ -89,6 +88,7 @@ contract('StakingRewardsAdapter - Action For', function([
       await this.st.approve(this.staking.address, sValue, { from: user0 });
       await this.staking.stake(sValue, { from: user0 });
       // Whitelist stake to adapter for user1
+      await this.adapter.setApproval(whitelist, true, {from: user1});
       await this.st.approve(this.adapter.address, sValue, { from: whitelist });
       await this.adapter.stakeFor(user1, sValue, { from: whitelist });
 
@@ -155,6 +155,7 @@ contract('StakingRewardsAdapter - Action For', function([
       await this.st.approve(this.adapter.address, sValue, { from: user1 });
       await this.adapter.stake(sValue, { from: user1 });
       // Whitelist stake to adapter for user2
+      await this.adapter.setApproval(whitelist, true, {from: user2});
       await this.st.approve(this.adapter.address, sValue, { from: whitelist });
       await this.adapter.stakeFor(user2, sValue, { from: whitelist });
 
@@ -246,6 +247,7 @@ contract('StakingRewardsAdapter - Action For', function([
       await increase(duration.days(1));
 
       // Whitelist stake for user2 through adapter
+      await this.adapter.setApproval(whitelist, true, {from: user2});
       await this.st.approve(this.adapter.address, sValue, { from: whitelist });
       await this.adapter.stakeFor(user2, sValue, { from: whitelist });
 
@@ -313,6 +315,7 @@ contract('StakingRewardsAdapter - Action For', function([
 
       // Whitelist exitFor user2
       const earnedUser2 = await this.adapter.earned.call(user2);
+      await this.adapter.setApproval(whitelist, true, {from: user2});
       await this.adapter.exitFor(user2, { from: whitelist });
       const rewardUser2AmountAfter = await this.rt.balanceOf(user2);
       const rewardUser2Got = rewardUser2AmountAfter.sub(rewardUser2Amount);
@@ -409,6 +412,7 @@ contract('StakingRewardsAdapter - Action For', function([
 
       // Whitelist getRewardFor user2 but not unstake
       const earnedUser2Middle = await this.adapter.earned.call(user2);
+      await this.adapter.setApproval(whitelist, true, {from: user2});
       await this.adapter.getRewardFor(user2, { from: whitelist });
       const rewardUser2Middle = await this.rt.balanceOf.call(user2);
       log('rewardUser2Middle', rewardUser2Middle);
@@ -564,7 +568,7 @@ contract('StakingRewardsAdapter - Action For', function([
       // NotWhitelist exitFor user2
       await expectRevert(
         this.adapter.exitFor(user2, { from: notWhitelist }),
-        'Whitelistable: caller is not whitelisted'
+        'StakingRewardsAdapter: agent not been approved'
       );
     });
 
@@ -595,7 +599,7 @@ contract('StakingRewardsAdapter - Action For', function([
       // NotWhitelist exitFor user2
       await expectRevert(
         this.adapter.getRewardFor(user2, { from: notWhitelist }),
-        'Whitelistable: caller is not whitelisted'
+        'StakingRewardsAdapter: agent not been approved'
       );
     });
 
@@ -626,7 +630,7 @@ contract('StakingRewardsAdapter - Action For', function([
       // NotWhitelist exitFor user2
       await expectRevert(
         this.adapter.getRewardFor(user2, { from: notWhitelist }),
-        'Whitelistable: caller is not whitelisted'
+        'StakingRewardsAdapter: agent not been approved'
       );
     });
   });

@@ -7,10 +7,9 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 import "./IStakingRewards.sol";
 import "./IStakingRewardsAdapter.sol";
-import "./Whitelistable.sol";
 
 
-contract StakingRewardsAdapter is IStakingRewardsAdapter, ReentrancyGuard, Whitelistable {
+contract StakingRewardsAdapter is IStakingRewardsAdapter, ReentrancyGuard {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
 
@@ -27,13 +26,13 @@ contract StakingRewardsAdapter is IStakingRewardsAdapter, ReentrancyGuard, White
 
     uint256 private _totalSupply;
     mapping(address => uint256) private _balances;
+    mapping(address => mapping(address => bool)) private _approvals;
 
     /* ========== CONSTRUCTOR ========== */
 
     constructor(
-        address _whitelist,
         address _stakingContract
-    ) public Whitelistable(_whitelist) {
+    ) public {
         stakingContract = IStakingRewards(_stakingContract);
         rewardsToken = stakingContract.rewardsToken();
         stakingToken = stakingContract.stakingToken();
@@ -72,6 +71,10 @@ contract StakingRewardsAdapter is IStakingRewardsAdapter, ReentrancyGuard, White
         return stakingContract.rewardRate();
     }
 
+    function isApproved(address owner, address agent) public view returns (bool) {
+        return _approvals[owner][agent];
+    }
+
     /* ========== MODIFIERS ========== */
 
     modifier updateReward(address account) {
@@ -84,10 +87,15 @@ contract StakingRewardsAdapter is IStakingRewardsAdapter, ReentrancyGuard, White
         _;
     }
 
+    modifier onlyApproved(address owner) {
+        require(isApproved(owner, msg.sender), "StakingRewardsAdapter: agent not been approved");
+        _;
+    }
+
     /* ========== INTERNAL FUNCTIONS ========== */
 
     function _stakeInternal(address account, uint256 amount) internal {
-        require(amount > 0, "StakingRewardsAdapter: Cannot stake 0");
+        require(amount > 0, "StakingRewardsAdapter: cannot stake 0");
         _totalSupply = _totalSupply.add(amount);
         _balances[account] = _balances[account].add(amount);
         stakingToken.safeTransferFrom(msg.sender, address(this), amount);
@@ -97,7 +105,7 @@ contract StakingRewardsAdapter is IStakingRewardsAdapter, ReentrancyGuard, White
     }
 
     function _withdrawInternal(address account, uint256 amount) internal {
-        require(amount > 0, "StakingRewardsAdapter: Cannot withdraw 0");
+        require(amount > 0, "StakingRewardsAdapter: cannot withdraw 0");
         _totalSupply = _totalSupply.sub(amount);
         _balances[account] = _balances[account].sub(amount);
         stakingContract.withdraw(amount);
@@ -143,17 +151,27 @@ contract StakingRewardsAdapter is IStakingRewardsAdapter, ReentrancyGuard, White
         _stakeInternal(account, amount);
     }
 
-    function withdrawFor(address account, uint256 amount) public nonReentrant onlyWhitelist updateReward(account) {
+    function withdrawFor(address account, uint256 amount) public nonReentrant onlyApproved(account) updateReward(account) {
         _withdrawInternal(account, amount);
     }
 
-    function getRewardFor(address account) public nonReentrant onlyWhitelist updateReward(account) {
+    function getRewardFor(address account) public nonReentrant onlyApproved(account) updateReward(account) {
         _getRewardInternal(account);
     }
 
-    function exitFor(address account) external onlyWhitelist {
+    function exitFor(address account) external onlyApproved(account) {
         withdrawFor(account, _balances[account]);
         getRewardFor(account);
+    }
+
+    /* ========== APPROVAL ========== */
+
+    function setApproval(address agent, bool approval) external returns (bool) {
+        require(agent != address(0), "StakingRewardsAdapter: approve to the zero address");
+        require(_approvals[msg.sender][agent] != approval, "StakingRewardsAdapter: approval should be different to current");
+
+        _approvals[msg.sender][agent] = approval;
+        emit Approval(msg.sender, agent, approval);
     }
 
     /* ========== EVENTS ========== */
@@ -161,5 +179,6 @@ contract StakingRewardsAdapter is IStakingRewardsAdapter, ReentrancyGuard, White
     event Staked(address sender,address onBehalfOf, uint256 amount);
     event Withdrawn(address sender,address onBehalfOf, uint256 amount);
     event ClaimedReward(address sender,address onBehalfOf, uint256 amount);
+    event Approval(address owner, address agent, bool approval);
     
 }

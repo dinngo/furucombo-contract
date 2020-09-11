@@ -13,6 +13,7 @@ interface IStakingRewardsAdapter {
     function rewardsToken() external view returns (IERC20);
     function stakingToken() external view returns (IERC20);
     function rewardRate() external view returns (uint256);
+    function isApproved(address owner, address agent) external view returns (bool);
 
     // Mutative
     function stake(uint256 amount) external;
@@ -25,4 +26,5 @@ interface IStakingRewardsAdapter {
     function getRewardFor(address account) external;
     function exitFor(address account) external;
 
+    function setApproval(address agent, bool approval) external returns (bool);
 }
