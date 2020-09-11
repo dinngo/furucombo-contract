@@ -57,9 +57,7 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
       rtAddress,
       stAddress
     );
-    this.adapter = await StakingRewardsAdapter.new(
-      this.staking.address
-    );
+    this.adapter = await StakingRewardsAdapter.new(this.staking.address);
   });
 
   beforeEach(async function() {
@@ -235,7 +233,7 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
       const stBalanceUser = await this.st.balanceOf.call(user);
 
       // User approve proxy as agent
-      await this.adapter.setApproval(this.proxy.address, true, {from: user});
+      await this.adapter.setApproval(this.proxy.address, true, { from: user });
 
       // Proxy withdrawFor user
       const data = abi.simpleEncode(
@@ -271,15 +269,22 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
       // Prepare staking data
       const sValue = ether('100');
       const rValue = ether('6048');
-      await this.st.transfer(user, sValue, {from: stProviderAddress});
+      await this.st.transfer(user, sValue, { from: stProviderAddress });
 
       // Stake by user self and proxy will withdrawFor user later
-      await this.st.approve(this.adapter.address, sValue, {from: user});
-      await this.adapter.stake(sValue, {from: user});
+      await this.st.approve(this.adapter.address, sValue, { from: user });
+      await this.adapter.stake(sValue, { from: user });
 
       // Notify reward
-      await this.rt.transfer(this.staking.address, rValue, {from: rtProviderAddress});
-      await this.notifyReward.notifyReward(rValue, this.staking.address, this.adapter.address, {from: rtProviderAddress});
+      await this.rt.transfer(this.staking.address, rValue, {
+        from: rtProviderAddress,
+      });
+      await this.notifyReward.notifyReward(
+        rValue,
+        this.staking.address,
+        this.adapter.address,
+        { from: rtProviderAddress }
+      );
 
       // Make time elapsed
       await increase(duration.days(1));
@@ -291,10 +296,13 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
         sValue
       );
       await balanceUser.get();
-      await expectRevert(this.proxy.execMock(this.hAdapter.address, data, {
-        from: user,
-        value: ether('0.1'),
-      }), 'StakingRewardsAdapter: agent not been approved');
+      await expectRevert(
+        this.proxy.execMock(this.hAdapter.address, data, {
+          from: user,
+          value: ether('0.1'),
+        }),
+        'StakingRewardsAdapter: agent not been approved'
+      );
     });
   });
 
@@ -335,7 +343,7 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
       const earnedUser = await this.adapter.earned.call(user);
 
       // User approve proxy as agent
-      await this.adapter.setApproval(this.proxy.address, true, {from: user});
+      await this.adapter.setApproval(this.proxy.address, true, { from: user });
 
       // Proxy exitFor user
       const data = abi.simpleEncode('exitFor(address)', this.adapter.address);
@@ -372,28 +380,35 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
       // Prepare staking data
       const sValue = ether('100');
       const rValue = ether('6048');
-      await this.st.transfer(user, sValue, {from: stProviderAddress});
+      await this.st.transfer(user, sValue, { from: stProviderAddress });
 
       // Stake by user self and proxy will exitFor user later
-      await this.st.approve(this.adapter.address, sValue, {from: user});
-      await this.adapter.stake(sValue, {from: user});
+      await this.st.approve(this.adapter.address, sValue, { from: user });
+      await this.adapter.stake(sValue, { from: user });
 
       // Notify reward
-      await this.rt.transfer(this.staking.address, rValue, {from: rtProviderAddress});
-      await this.notifyReward.notifyReward(rValue, this.staking.address, this.adapter.address, {from: rtProviderAddress});
+      await this.rt.transfer(this.staking.address, rValue, {
+        from: rtProviderAddress,
+      });
+      await this.notifyReward.notifyReward(
+        rValue,
+        this.staking.address,
+        this.adapter.address,
+        { from: rtProviderAddress }
+      );
 
       // Make time elapsed
       await increase(duration.days(1));
 
       // Proxy exitFor user
-      const data = abi.simpleEncode(
-        'exitFor(address)',
-        this.adapter.address
+      const data = abi.simpleEncode('exitFor(address)', this.adapter.address);
+      await expectRevert(
+        this.proxy.execMock(this.hAdapter.address, data, {
+          from: user,
+          value: ether('0.1'),
+        }),
+        'StakingRewardsAdapter: agent not been approved'
       );
-      await expectRevert(this.proxy.execMock(this.hAdapter.address, data, {
-        from: user,
-        value: ether('0.1'),
-      }), 'StakingRewardsAdapter: agent not been approved');
     });
   });
 
@@ -431,7 +446,7 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
       const earnedUser = await this.adapter.earned.call(user);
 
       // User approve proxy as agent
-      await this.adapter.setApproval(this.proxy.address, true, {from: user});
+      await this.adapter.setApproval(this.proxy.address, true, { from: user });
 
       // Proxy getRewardFor user
       const data = abi.simpleEncode(
@@ -469,15 +484,22 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
       // Prepare staking data
       const sValue = ether('100');
       const rValue = ether('6048');
-      await this.st.transfer(user, sValue, {from: stProviderAddress});
+      await this.st.transfer(user, sValue, { from: stProviderAddress });
 
       // Stake by user self and proxy will getRewardFor user later
-      await this.st.approve(this.adapter.address, sValue, {from: user});
-      await this.adapter.stake(sValue, {from: user});
+      await this.st.approve(this.adapter.address, sValue, { from: user });
+      await this.adapter.stake(sValue, { from: user });
 
       // Notify reward
-      await this.rt.transfer(this.staking.address, rValue, {from: rtProviderAddress});
-      await this.notifyReward.notifyReward(rValue, this.staking.address, this.adapter.address, {from: rtProviderAddress});
+      await this.rt.transfer(this.staking.address, rValue, {
+        from: rtProviderAddress,
+      });
+      await this.notifyReward.notifyReward(
+        rValue,
+        this.staking.address,
+        this.adapter.address,
+        { from: rtProviderAddress }
+      );
 
       // Make time elapsed
       await increase(duration.days(1));
@@ -488,10 +510,13 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
         this.adapter.address
       );
       await balanceUser.get();
-      await expectRevert(this.proxy.execMock(this.hAdapter.address, data, {
-        from: user,
-        value: ether('0.1'),
-      }), 'StakingRewardsAdapter: agent not been approved');
+      await expectRevert(
+        this.proxy.execMock(this.hAdapter.address, data, {
+          from: user,
+          value: ether('0.1'),
+        }),
+        'StakingRewardsAdapter: agent not been approved'
+      );
     });
   });
 });
