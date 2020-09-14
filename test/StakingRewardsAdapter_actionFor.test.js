@@ -24,6 +24,7 @@ const { evmRevert, evmSnapshot } = require('./utils/utils');
 
 const StakingRewards = artifacts.require('StakingRewards');
 const StakingRewardsAdapter = artifacts.require('StakingRewardsAdapter');
+const StakingRewardsAdapterFactory = artifacts.require('StakingRewardsAdapterFactory');
 const NotifyRewardMock = artifacts.require('NotifyRewardMock');
 const IToken = artifacts.require('IERC20');
 
@@ -59,7 +60,11 @@ contract('StakingRewardsAdapter - Action For', function([
       rtAddress,
       stAddress
     );
-    this.adapter = await StakingRewardsAdapter.new(this.staking.address);
+    // Deploy new adapter through factory
+    this.factory = await StakingRewardsAdapterFactory.new();
+    await this.factory.newAdapter(this.staking.address);
+    const adapterAddr = await this.factory.adapters.call(this.staking.address, 0);
+    this.adapter = await StakingRewardsAdapter.at(adapterAddr);
   });
 
   beforeEach(async function() {
