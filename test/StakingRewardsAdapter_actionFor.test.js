@@ -24,7 +24,9 @@ const { evmRevert, evmSnapshot } = require('./utils/utils');
 
 const StakingRewards = artifacts.require('StakingRewards');
 const StakingRewardsAdapter = artifacts.require('StakingRewardsAdapter');
-const StakingRewardsAdapterFactory = artifacts.require('StakingRewardsAdapterFactory');
+const StakingRewardsAdapterFactory = artifacts.require(
+  'StakingRewardsAdapterFactory'
+);
 const NotifyRewardMock = artifacts.require('NotifyRewardMock');
 const IToken = artifacts.require('IERC20');
 
@@ -35,7 +37,7 @@ contract('StakingRewardsAdapter - Action For', function([
   user0,
   user1,
   user2,
-  pauser
+  pauser,
 ]) {
   let id;
   /// whitelist is the address who gets the permission to do actions for the user
@@ -63,7 +65,10 @@ contract('StakingRewardsAdapter - Action For', function([
     // Deploy new adapter through factory
     this.factory = await StakingRewardsAdapterFactory.new();
     await this.factory.newAdapter(this.staking.address);
-    const adapterAddr = await this.factory.adapters.call(this.staking.address, 0);
+    const adapterAddr = await this.factory.adapters.call(
+      this.staking.address,
+      0
+    );
     this.adapter = await StakingRewardsAdapter.at(adapterAddr);
   });
 
@@ -478,15 +483,18 @@ contract('StakingRewardsAdapter - Action For', function([
       const sValue = ether('100');
       await this.st.transfer(whitelist, sValue, { from: stProviderAddress });
       // Add pauser
-      await this.adapter.addPauser(pauser, {from: _});
+      await this.adapter.addPauser(pauser, { from: _ });
       // Set paused on adapter
-      await this.adapter.pause({from: pauser});
+      await this.adapter.pause({ from: pauser });
       // Whitelist stake to adapter for user1
       await this.adapter.setApproval(whitelist, true, { from: user1 });
       await this.st.approve(this.adapter.address, sValue, { from: whitelist });
-      await expectRevert(this.adapter.stakeFor(user1, sValue, { from: whitelist }), 'Pausable: paused');
+      await expectRevert(
+        this.adapter.stakeFor(user1, sValue, { from: whitelist }),
+        'Pausable: paused'
+      );
       // Set unpaused on adapter
-      await this.adapter.unpause({from: _});
+      await this.adapter.unpause({ from: _ });
       // Should success when not paused
       await this.adapter.stakeFor(user1, sValue, { from: whitelist });
       const stakingUser1 = await this.adapter.balanceOf.call(user1);

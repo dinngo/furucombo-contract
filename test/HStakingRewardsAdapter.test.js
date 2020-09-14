@@ -27,7 +27,9 @@ const Proxy = artifacts.require('ProxyMock');
 const HStakingRewardsAdapter = artifacts.require('HStakingRewardsAdapter');
 const StakingRewards = artifacts.require('StakingRewards');
 const StakingRewardsAdapter = artifacts.require('StakingRewardsAdapter');
-const StakingRewardsAdapterFactory = artifacts.require('StakingRewardsAdapterFactory');
+const StakingRewardsAdapterFactory = artifacts.require(
+  'StakingRewardsAdapterFactory'
+);
 const NotifyRewardMock = artifacts.require('NotifyRewardMock');
 const IToken = artifacts.require('IERC20');
 
@@ -61,7 +63,10 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
     // Deploy new adapter through factory
     this.factory = await StakingRewardsAdapterFactory.new();
     await this.factory.newAdapter(this.staking.address);
-    const adapterAddr = await this.factory.adapters.call(this.staking.address, 0);
+    const adapterAddr = await this.factory.adapters.call(
+      this.staking.address,
+      0
+    );
     this.adapter = await StakingRewardsAdapter.at(adapterAddr);
   });
 

@@ -24,7 +24,9 @@ const { evmRevert, evmSnapshot } = require('./utils/utils');
 
 const StakingRewards = artifacts.require('StakingRewards');
 const StakingRewardsAdapter = artifacts.require('StakingRewardsAdapter');
-const StakingRewardsAdapterFactory = artifacts.require('StakingRewardsAdapterFactory');
+const StakingRewardsAdapterFactory = artifacts.require(
+  'StakingRewardsAdapterFactory'
+);
 const NotifyRewardMock = artifacts.require('NotifyRewardMock');
 const IToken = artifacts.require('IERC20');
 
@@ -54,7 +56,10 @@ contract('StakingRewardsAdapter', function([_, user0, user1, user2, pauser]) {
     // Deploy new adapter through factory
     this.factory = await StakingRewardsAdapterFactory.new();
     await this.factory.newAdapter(this.staking.address);
-    const adapterAddr = await this.factory.adapters.call(this.staking.address, 0);
+    const adapterAddr = await this.factory.adapters.call(
+      this.staking.address,
+      0
+    );
     this.adapter = await StakingRewardsAdapter.at(adapterAddr);
   });
 
@@ -525,13 +530,16 @@ contract('StakingRewardsAdapter', function([_, user0, user1, user2, pauser]) {
       // User approve st to adapter
       await this.st.approve(this.adapter.address, sValue, { from: user1 });
       // Add pauser
-      await this.adapter.addPauser(pauser, {from: _});
+      await this.adapter.addPauser(pauser, { from: _ });
       // Set paused on adapter
-      await this.adapter.pause({from: pauser});
+      await this.adapter.pause({ from: pauser });
       // Should revert on stake when paused
-      await expectRevert(this.adapter.stake(sValue, { from: user1 }), 'Pausable: paused');
+      await expectRevert(
+        this.adapter.stake(sValue, { from: user1 }),
+        'Pausable: paused'
+      );
       // Set unpaused on adapter
-      await this.adapter.unpause({from: _});
+      await this.adapter.unpause({ from: _ });
       // Should success when not paused
       await this.adapter.stake(sValue, { from: user1 });
       const stakingUser1 = await this.adapter.balanceOf.call(user1);
