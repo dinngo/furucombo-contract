@@ -27,11 +27,12 @@ const StakingRewardsAdapter = artifacts.require('StakingRewardsAdapter');
 const NotifyRewardMock = artifacts.require('NotifyRewardMock');
 const IToken = artifacts.require('IERC20');
 
-contract('StakingRewardsAdapter', function([_, user0, user1, user2]) {
+contract('StakingRewardsAdapter', function([_, user0, user1, user2, pauser]) {
   let id;
   /// user0 stake to the original staking contract
   /// user1 stake to the adapter contract
   /// user2 case by case
+  /// pauser who can set adapter to paused
   /// st = stakingToken
   /// rt = rewardToken
   const stAddress = DAI_TOKEN;
@@ -510,6 +511,26 @@ contract('StakingRewardsAdapter', function([_, user0, user1, user2]) {
       expect(rewardUser1Got).to.be.bignumber.gte(earnedUser1);
       expect(rewardUser1Got).to.be.bignumber.lte(getBuffer(earnedUser1));
       log('rewardUser1Got', rewardUser1Got);
+    });
+
+    it('paused -> unpaused -> stake', async function() {
+      // Prepare staking data
+      const sValue = ether('100');
+      await this.st.transfer(user1, sValue, { from: stProviderAddress });
+      // User approve st to adapter
+      await this.st.approve(this.adapter.address, sValue, { from: user1 });
+      // Add pauser
+      await this.adapter.addPauser(pauser, {from: _});
+      // Set paused on adapter
+      await this.adapter.pause({from: pauser});
+      // Should revert on stake when paused
+      await expectRevert(this.adapter.stake(sValue, { from: user1 }), 'Pausable: paused');
+      // Set unpaused on adapter
+      await this.adapter.unpause({from: _});
+      // Should success when not paused
+      await this.adapter.stake(sValue, { from: user1 });
+      const stakingUser1 = await this.adapter.balanceOf.call(user1);
+      expect(stakingUser1).to.be.bignumber.eq(stakingUser1);
     });
   });
 });

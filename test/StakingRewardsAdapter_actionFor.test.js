@@ -34,12 +34,14 @@ contract('StakingRewardsAdapter - Action For', function([
   user0,
   user1,
   user2,
+  pauser
 ]) {
   let id;
-  /// whitelist is the address who has permission to do actions for others
+  /// whitelist is the address who gets the permission to do actions for the user
   /// user0 stake to the original staking contract
   /// user1 stake to the adapter contract
   /// user2 case by case
+  /// pauser who can set adapter to paused
   /// st = stakingToken
   /// rt = rewardToken
   const stAddress = DAI_TOKEN;
@@ -464,6 +466,26 @@ contract('StakingRewardsAdapter - Action For', function([
       expect(totalRewardAdapter.add(rewardWhitelist)).to.be.bignumber.eq(
         earnedUser0.mul(new BN('2'))
       );
+    });
+
+    it('paused -> unpaused -> stakeFor', async function() {
+      // Prepare staking data
+      const sValue = ether('100');
+      await this.st.transfer(whitelist, sValue, { from: stProviderAddress });
+      // Add pauser
+      await this.adapter.addPauser(pauser, {from: _});
+      // Set paused on adapter
+      await this.adapter.pause({from: pauser});
+      // Whitelist stake to adapter for user1
+      await this.adapter.setApproval(whitelist, true, { from: user1 });
+      await this.st.approve(this.adapter.address, sValue, { from: whitelist });
+      await expectRevert(this.adapter.stakeFor(user1, sValue, { from: whitelist }), 'Pausable: paused');
+      // Set unpaused on adapter
+      await this.adapter.unpause({from: _});
+      // Should success when not paused
+      await this.adapter.stakeFor(user1, sValue, { from: whitelist });
+      const stakingUser1 = await this.adapter.balanceOf.call(user1);
+      expect(stakingUser1).to.be.bignumber.eq(stakingUser1);
     });
   });
 

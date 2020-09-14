@@ -3,13 +3,13 @@ pragma solidity ^0.5.16;
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
-// import "@openzeppelin/contracts/utils/Pausable.sol";
+import "@openzeppelin/contracts/lifecycle/Pausable.sol";
 
 import "./IStakingRewards.sol";
 import "./IStakingRewardsAdapter.sol";
 
 
-contract StakingRewardsAdapter is IStakingRewardsAdapter, ReentrancyGuard {
+contract StakingRewardsAdapter is IStakingRewardsAdapter, ReentrancyGuard, Pausable {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
 
@@ -128,7 +128,7 @@ contract StakingRewardsAdapter is IStakingRewardsAdapter, ReentrancyGuard {
 
     /* ========== SELF_OPERATE FUNCTIONS ========== */
 
-    function stake(uint256 amount) external nonReentrant updateReward(msg.sender) {
+    function stake(uint256 amount) external nonReentrant whenNotPaused updateReward(msg.sender) {
         _stakeInternal(msg.sender, amount);
     }
 
@@ -147,7 +147,7 @@ contract StakingRewardsAdapter is IStakingRewardsAdapter, ReentrancyGuard {
 
     /* ========== RESTRICTED OPERATE_FOR FUNCTIONS ========== */
 
-    function stakeFor(address account, uint256 amount) external nonReentrant updateReward(account) {
+    function stakeFor(address account, uint256 amount) external nonReentrant whenNotPaused updateReward(account) {
         _stakeInternal(account, amount);
     }
 
