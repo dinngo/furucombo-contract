@@ -9,7 +9,11 @@ import "./IStakingRewards.sol";
 import "./IStakingRewardsAdapter.sol";
 
 
-contract StakingRewardsAdapter is IStakingRewardsAdapter, ReentrancyGuard, Pausable {
+contract StakingRewardsAdapter is
+    IStakingRewardsAdapter,
+    ReentrancyGuard,
+    Pausable
+{
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
 
@@ -30,9 +34,7 @@ contract StakingRewardsAdapter is IStakingRewardsAdapter, ReentrancyGuard, Pausa
 
     /* ========== CONSTRUCTOR ========== */
 
-    constructor(
-        address _stakingContract
-    ) public {
+    constructor(address _stakingContract) public {
         stakingContract = IStakingRewards(_stakingContract);
         rewardsToken = stakingContract.rewardsToken();
         stakingToken = stakingContract.stakingToken();
@@ -60,7 +62,11 @@ contract StakingRewardsAdapter is IStakingRewardsAdapter, ReentrancyGuard, Pausa
     }
 
     function earned(address account) public view returns (uint256) {
-        return _balances[account].mul(rewardPerToken().sub(userRewardPerTokenPaid[account])).div(1e18).add(rewards[account]);
+        return
+            _balances[account]
+                .mul(rewardPerToken().sub(userRewardPerTokenPaid[account]))
+                .div(1e18)
+                .add(rewards[account]);
     }
 
     function getRewardForDuration() external view returns (uint256) {
@@ -71,7 +77,11 @@ contract StakingRewardsAdapter is IStakingRewardsAdapter, ReentrancyGuard, Pausa
         return stakingContract.rewardRate();
     }
 
-    function isApproved(address owner, address agent) public view returns (bool) {
+    function isApproved(address owner, address agent)
+        public
+        view
+        returns (bool)
+    {
         return _approvals[owner][agent];
     }
 
@@ -88,7 +98,10 @@ contract StakingRewardsAdapter is IStakingRewardsAdapter, ReentrancyGuard, Pausa
     }
 
     modifier onlyApproved(address owner) {
-        require(isApproved(owner, msg.sender), "StakingRewardsAdapter: agent not been approved");
+        require(
+            isApproved(owner, msg.sender),
+            "StakingRewardsAdapter: agent not been approved"
+        );
         _;
     }
 
@@ -118,7 +131,7 @@ contract StakingRewardsAdapter is IStakingRewardsAdapter, ReentrancyGuard, Pausa
         if (reward > 0) {
             rewards[account] = 0;
             uint256 rewardBalance = rewardsToken.balanceOf(address(this));
-            if(reward > rewardBalance) {
+            if (reward > rewardBalance) {
                 stakingContract.getReward();
             }
             rewardsToken.safeTransfer(msg.sender, reward);
@@ -128,11 +141,20 @@ contract StakingRewardsAdapter is IStakingRewardsAdapter, ReentrancyGuard, Pausa
 
     /* ========== SELF_OPERATE FUNCTIONS ========== */
 
-    function stake(uint256 amount) external nonReentrant whenNotPaused updateReward(msg.sender) {
+    function stake(uint256 amount)
+        external
+        nonReentrant
+        whenNotPaused
+        updateReward(msg.sender)
+    {
         _stakeInternal(msg.sender, amount);
     }
 
-    function withdraw(uint256 amount) public nonReentrant updateReward(msg.sender) {
+    function withdraw(uint256 amount)
+        public
+        nonReentrant
+        updateReward(msg.sender)
+    {
         _withdrawInternal(msg.sender, amount);
     }
 
@@ -147,15 +169,30 @@ contract StakingRewardsAdapter is IStakingRewardsAdapter, ReentrancyGuard, Pausa
 
     /* ========== RESTRICTED OPERATE_FOR FUNCTIONS ========== */
 
-    function stakeFor(address account, uint256 amount) external nonReentrant whenNotPaused updateReward(account) {
+    function stakeFor(address account, uint256 amount)
+        external
+        nonReentrant
+        whenNotPaused
+        updateReward(account)
+    {
         _stakeInternal(account, amount);
     }
 
-    function withdrawFor(address account, uint256 amount) public nonReentrant onlyApproved(account) updateReward(account) {
+    function withdrawFor(address account, uint256 amount)
+        public
+        nonReentrant
+        onlyApproved(account)
+        updateReward(account)
+    {
         _withdrawInternal(account, amount);
     }
 
-    function getRewardFor(address account) public nonReentrant onlyApproved(account) updateReward(account) {
+    function getRewardFor(address account)
+        public
+        nonReentrant
+        onlyApproved(account)
+        updateReward(account)
+    {
         _getRewardInternal(account);
     }
 
@@ -167,8 +204,14 @@ contract StakingRewardsAdapter is IStakingRewardsAdapter, ReentrancyGuard, Pausa
     /* ========== APPROVAL ========== */
 
     function setApproval(address agent, bool approval) external returns (bool) {
-        require(agent != address(0), "StakingRewardsAdapter: approve to the zero address");
-        require(_approvals[msg.sender][agent] != approval, "StakingRewardsAdapter: approval should be different to current");
+        require(
+            agent != address(0),
+            "StakingRewardsAdapter: approve to the zero address"
+        );
+        require(
+            _approvals[msg.sender][agent] != approval,
+            "StakingRewardsAdapter: approval should be different to current"
+        );
 
         _approvals[msg.sender][agent] = approval;
         emit Approval(msg.sender, agent, approval);
@@ -176,9 +219,8 @@ contract StakingRewardsAdapter is IStakingRewardsAdapter, ReentrancyGuard, Pausa
 
     /* ========== EVENTS ========== */
 
-    event Staked(address sender,address onBehalfOf, uint256 amount);
-    event Withdrawn(address sender,address onBehalfOf, uint256 amount);
-    event ClaimedReward(address sender,address onBehalfOf, uint256 amount);
+    event Staked(address sender, address onBehalfOf, uint256 amount);
+    event Withdrawn(address sender, address onBehalfOf, uint256 amount);
+    event ClaimedReward(address sender, address onBehalfOf, uint256 amount);
     event Approval(address owner, address agent, bool approval);
-    
 }

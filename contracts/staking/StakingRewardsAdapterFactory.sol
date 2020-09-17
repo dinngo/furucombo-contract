@@ -6,15 +6,20 @@ import "./StakingRewardsAdapter.sol";
 
 
 contract StakingRewardsAdapterFactory is Ownable {
-    
     // List of adapters
     mapping(address => address[]) public adapters;
 
     event NewAdapter(address stakingContract, address adapter);
 
-    function newAdapter(address _stakingContract) external onlyOwner returns (address) {
+    function newAdapter(address _stakingContract)
+        external
+        onlyOwner
+        returns (address)
+    {
         // Deploy new adapter
-        StakingRewardsAdapter adapter = new StakingRewardsAdapter(_stakingContract);
+        StakingRewardsAdapter adapter = new StakingRewardsAdapter(
+            _stakingContract
+        );
         // Transfer pausership to factory owner and renounce
         adapter.addPauser(owner());
         adapter.renouncePauser();
