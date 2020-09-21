@@ -9,7 +9,7 @@ contract HStakingRewardsAdapter is HandlerBase {
     using SafeERC20 for IERC20;
 
     // Stake for msg.sender
-    function stakeFor(
+    function stake(
         address adapterAddr,
         uint256 amount
     ) external payable {
@@ -35,8 +35,8 @@ contract HStakingRewardsAdapter is HandlerBase {
         token.safeApprove(address(adapter), 0);
     }
 
-    // Only withdrawFor msg.sender
-    function withdrawFor(
+    // Only withdraw for msg.sender
+    function withdraw(
         address adapterAddr,
         uint256 amount
     ) external payable {
@@ -46,8 +46,8 @@ contract HStakingRewardsAdapter is HandlerBase {
         _updateToken(address(adapter.stakingToken()));
     }
 
-    // Only exitFor msg.sender
-    function exitFor(
+    // Only exit for msg.sender
+    function exit(
         address adapterAddr
     ) external payable {
         IStakingRewardsAdapter adapter = IStakingRewardsAdapter(adapterAddr);
@@ -57,8 +57,8 @@ contract HStakingRewardsAdapter is HandlerBase {
         _updateToken(address(adapter.rewardsToken()));
     }
 
-    // Only getRewardFor msg.sender
-    function getRewardFor(
+    // Only getReward for msg.sender
+    function getReward(
         address adapterAddr
     ) external payable {
         IStakingRewardsAdapter adapter = IStakingRewardsAdapter(adapterAddr);

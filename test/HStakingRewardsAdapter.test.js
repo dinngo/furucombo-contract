@@ -78,13 +78,13 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
     await evmRevert(id);
   });
 
-  describe('StakeFor', function() {
+  describe('Stake', function() {
     beforeEach(async function() {
       rewardUserAmount = await this.rt.balanceOf.call(user);
       balanceUser = await tracker(user);
     });
 
-    it('stakeFor msg.sender', async function() {
+    it('stake for msg.sender', async function() {
       // Prepare staking data
       const sValue = ether('100');
       const rValue = ether('6048');
@@ -94,7 +94,7 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
       });
       await this.proxy.updateTokenMock(this.st.address);
       const data = abi.simpleEncode(
-        'stakeFor(address,uint256)',
+        'stake(address,uint256)',
         this.adapter.address,
         sValue
       );
@@ -144,7 +144,7 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
       );
     });
 
-    it('stakeFor others', async function() {
+    it('stake for others', async function() {
       // Prepare staking data
       const sValue = ether('100');
       const rValue = ether('6048');
@@ -208,7 +208,7 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
     });
   });
 
-  describe('WithdrawFor', function() {
+  describe('Withdraw', function() {
     beforeEach(async function() {
       rewardUserAmount = await this.rt.balanceOf.call(user);
       balanceUser = await tracker(user);
@@ -247,7 +247,7 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
 
       // Proxy withdrawFor user
       const data = abi.simpleEncode(
-        'withdrawFor(address,uint256)',
+        'withdraw(address,uint256)',
         this.adapter.address,
         sValue
       );
@@ -301,7 +301,7 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
 
       // Proxy withdrawFor user
       const data = abi.simpleEncode(
-        'withdrawFor(address,uint256)',
+        'withdraw(address,uint256)',
         this.adapter.address,
         sValue
       );
@@ -316,7 +316,7 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
     });
   });
 
-  describe('ExitFor', function() {
+  describe('Exit', function() {
     beforeEach(async function() {
       rewardUserAmount = await this.rt.balanceOf.call(user);
       balanceUser = await tracker(user);
@@ -356,7 +356,7 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
       await this.adapter.setApproval(this.proxy.address, true, { from: user });
 
       // Proxy exitFor user
-      const data = abi.simpleEncode('exitFor(address)', this.adapter.address);
+      const data = abi.simpleEncode('exit(address)', this.adapter.address);
       await balanceUser.get();
       const receipt = await this.proxy.execMock(this.hAdapter.address, data, {
         from: user,
@@ -386,7 +386,7 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
       );
     });
 
-    it('should revert: exitFor', async function() {
+    it('unauthorized', async function() {
       // Prepare staking data
       const sValue = ether('100');
       const rValue = ether('6048');
@@ -411,7 +411,7 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
       await increase(duration.days(1));
 
       // Proxy exitFor user
-      const data = abi.simpleEncode('exitFor(address)', this.adapter.address);
+      const data = abi.simpleEncode('exit(address)', this.adapter.address);
       await expectRevert(
         this.proxy.execMock(this.hAdapter.address, data, {
           from: user,
@@ -422,7 +422,7 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
     });
   });
 
-  describe('GetRewardFor', function() {
+  describe('GetReward', function() {
     beforeEach(async function() {
       rewardUserAmount = await this.rt.balanceOf.call(user);
       balanceUser = await tracker(user);
@@ -460,7 +460,7 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
 
       // Proxy getRewardFor user
       const data = abi.simpleEncode(
-        'getRewardFor(address)',
+        'getReward(address)',
         this.adapter.address
       );
       await balanceUser.get();
@@ -516,7 +516,7 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
 
       // Proxy getRewardFor user
       const data = abi.simpleEncode(
-        'getRewardFor(address)',
+        'getReward(address)',
         this.adapter.address
       );
       await balanceUser.get();
