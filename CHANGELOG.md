@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+## [0.11.0] - 2020-09-21
+
 ### Added
 
 - Support Yearn vault depositETH and withdrawETH in `HYVault`.
