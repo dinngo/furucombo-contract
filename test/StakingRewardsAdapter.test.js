@@ -276,6 +276,8 @@ contract('StakingRewardsAdapter', function([_, user0, user1, user2, pauser]) {
 
       // Verify user0 & user1 gets equal share
       expect(earnedUser0).to.be.bignumber.eq(earnedUser1);
+      // Verify user1 gets more reward than user2
+      expect(earnedUser1).to.be.bignumber.gt(earnedUser2);
       // Verify earnedAdapter = user1 + user2
       expect(earnedAdapter).to.be.bignumber.eq(earnedUser1.add(earnedUser2));
     });
