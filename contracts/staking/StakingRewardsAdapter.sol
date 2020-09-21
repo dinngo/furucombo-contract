@@ -105,39 +105,20 @@ contract StakingRewardsAdapter is
         _;
     }
 
-    /* ========== INTERNAL FUNCTIONS ========== */
+    /* ========== APPROVAL ========== */
 
-    function _stakeInternal(address account, uint256 amount) internal {
-        require(amount > 0, "StakingRewardsAdapter: cannot stake 0");
-        _totalSupply = _totalSupply.add(amount);
-        _balances[account] = _balances[account].add(amount);
-        stakingToken.safeTransferFrom(msg.sender, address(this), amount);
-        stakingToken.safeApprove(address(stakingContract), amount);
-        stakingContract.stake(amount);
-        stakingToken.safeApprove(address(stakingContract), 0);
-        emit Staked(msg.sender, account, amount);
-    }
+    function setApproval(address agent, bool approval) external returns (bool) {
+        require(
+            agent != address(0),
+            "StakingRewardsAdapter: approve to the zero address"
+        );
+        require(
+            _approvals[msg.sender][agent] != approval,
+            "StakingRewardsAdapter: approval should be different to current"
+        );
 
-    function _withdrawInternal(address account, uint256 amount) internal {
-        require(amount > 0, "StakingRewardsAdapter: cannot withdraw 0");
-        _totalSupply = _totalSupply.sub(amount);
-        _balances[account] = _balances[account].sub(amount);
-        stakingContract.withdraw(amount);
-        stakingToken.safeTransfer(msg.sender, amount);
-        emit Withdrawn(msg.sender, account, amount);
-    }
-
-    function _getRewardInternal(address account) internal {
-        uint256 reward = rewards[account];
-        if (reward > 0) {
-            rewards[account] = 0;
-            uint256 rewardBalance = rewardsToken.balanceOf(address(this));
-            if (reward > rewardBalance) {
-                stakingContract.getReward();
-            }
-            rewardsToken.safeTransfer(msg.sender, reward);
-            emit ClaimedReward(msg.sender, account, reward);
-        }
+        _approvals[msg.sender][agent] = approval;
+        emit Approval(msg.sender, agent, approval);
     }
 
     /* ========== SELF_OPERATE FUNCTIONS ========== */
@@ -202,20 +183,39 @@ contract StakingRewardsAdapter is
         getRewardFor(account);
     }
 
-    /* ========== APPROVAL ========== */
+    /* ========== INTERNAL FUNCTIONS ========== */
 
-    function setApproval(address agent, bool approval) external returns (bool) {
-        require(
-            agent != address(0),
-            "StakingRewardsAdapter: approve to the zero address"
-        );
-        require(
-            _approvals[msg.sender][agent] != approval,
-            "StakingRewardsAdapter: approval should be different to current"
-        );
+    function _stakeInternal(address account, uint256 amount) internal {
+        require(amount > 0, "StakingRewardsAdapter: cannot stake 0");
+        _totalSupply = _totalSupply.add(amount);
+        _balances[account] = _balances[account].add(amount);
+        stakingToken.safeTransferFrom(msg.sender, address(this), amount);
+        stakingToken.safeApprove(address(stakingContract), amount);
+        stakingContract.stake(amount);
+        stakingToken.safeApprove(address(stakingContract), 0);
+        emit Staked(msg.sender, account, amount);
+    }
 
-        _approvals[msg.sender][agent] = approval;
-        emit Approval(msg.sender, agent, approval);
+    function _withdrawInternal(address account, uint256 amount) internal {
+        require(amount > 0, "StakingRewardsAdapter: cannot withdraw 0");
+        _totalSupply = _totalSupply.sub(amount);
+        _balances[account] = _balances[account].sub(amount);
+        stakingContract.withdraw(amount);
+        stakingToken.safeTransfer(msg.sender, amount);
+        emit Withdrawn(msg.sender, account, amount);
+    }
+
+    function _getRewardInternal(address account) internal {
+        uint256 reward = rewards[account];
+        if (reward > 0) {
+            rewards[account] = 0;
+            uint256 rewardBalance = rewardsToken.balanceOf(address(this));
+            if (reward > rewardBalance) {
+                stakingContract.getReward();
+            }
+            rewardsToken.safeTransfer(msg.sender, reward);
+            emit ClaimedReward(msg.sender, account, reward);
+        }
     }
 
     /* ========== EVENTS ========== */
