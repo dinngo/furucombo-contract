@@ -43,7 +43,7 @@ contract HBalancerExchange is HandlerBase {
             IERC20(tokenIn).safeApprove(EXCHANGE_PROXY, 0);
         }
 
-        _updateToken(tokenOut);
+        if (tokenOut != ETH_ADDRESS) _updateToken(tokenOut);
     }
 
     function batchSwapExactOut(
@@ -72,7 +72,7 @@ contract HBalancerExchange is HandlerBase {
             IERC20(tokenIn).safeApprove(EXCHANGE_PROXY, 0);
         }
 
-        _updateToken(tokenOut);
+        if (tokenOut != ETH_ADDRESS) _updateToken(tokenOut);
     }
 
     function multihopBatchSwapExactIn(
@@ -106,7 +106,7 @@ contract HBalancerExchange is HandlerBase {
             IERC20(tokenIn).safeApprove(EXCHANGE_PROXY, 0);
         }
 
-        _updateToken(tokenOut);
+        if (tokenOut != ETH_ADDRESS) _updateToken(tokenOut);
     }
 
     function multihopBatchSwapExactOut(
@@ -132,7 +132,7 @@ contract HBalancerExchange is HandlerBase {
             IERC20(tokenIn).safeApprove(EXCHANGE_PROXY, 0);
         }
 
-        _updateToken(tokenOut);
+        if (tokenOut != ETH_ADDRESS) _updateToken(tokenOut);
     }
 
     function smartSwapExactIn(
@@ -164,7 +164,7 @@ contract HBalancerExchange is HandlerBase {
             IERC20(tokenIn).safeApprove(EXCHANGE_PROXY, 0);
         }
 
-        _updateToken(tokenOut);
+        if (tokenOut != ETH_ADDRESS) _updateToken(tokenOut);
     }
 
     function smartSwapExactOut(
@@ -196,6 +196,6 @@ contract HBalancerExchange is HandlerBase {
             IERC20(tokenIn).safeApprove(EXCHANGE_PROXY, 0);
         }
 
-        _updateToken(tokenOut);
+        if (tokenOut != ETH_ADDRESS) _updateToken(tokenOut);
     }
 }

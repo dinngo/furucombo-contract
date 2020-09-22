@@ -18,13 +18,25 @@ const {
   processEpsOfInterestMultiHop,
   smartOrderRouterMultiHopEpsOfInterest,
   filterAllPools,
+  formatSubgraphPools,
   getCostOutputToken,
+  getAllPublicSwapPools,
 } = require('@balancer-labs/sor');
+const disabledTokens = require('./utils/disabled-tokens.json');
+const multihopBatchSwapExactInAbi = require('./utils/abi/multihopBatchSwapExactIn.json');
 
-const abi = require('ethereumjs-abi');
+const abi = web3.eth.abi;
 const utils = web3.utils;
+const bignumber = require('bignumber.js');
 const { expect } = require('chai');
-const { BALANCER_EXCHANGE_PROXY } = require('./utils/constants');
+const {
+  ETH_TOKEN,
+  DAI_TOKEN,
+  DAI_PROVIDER,
+  WETH_TOKEN,
+  WETH_PROVIDER,
+  BALANCER_EXCHANGE_PROXY,
+} = require('./utils/constants');
 const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
 
 const HBalancerExchange = artifacts.require('HBalancerExchange');
@@ -34,6 +46,12 @@ const IToken = artifacts.require('IERC20');
 const IExchangeProxy = artifacts.require('IExchangeProxy');
 
 contract('BalancerExchange', function([_, user]) {
+  let id;
+  const token0 = DAI_TOKEN;
+  const token1 = WETH_TOKEN;
+  const token0Provider = DAI_PROVIDER;
+  const token1Provider = WETH_PROVIDER;
+
   before(async function() {
     // Deploy proxy and handler
     this.registry = await Registry.new();
@@ -44,6 +62,8 @@ contract('BalancerExchange', function([_, user]) {
       utils.asciiToHex('BalancerExchange')
     );
     this.exchange = await IExchangeProxy.at(BALANCER_EXCHANGE_PROXY);
+    this.token0 = await IToken.at(token0);
+    this.token1 = await IToken.at(token1);
   });
 
   beforeEach(async function() {
@@ -54,6 +74,7 @@ contract('BalancerExchange', function([_, user]) {
     await evmRevert(id);
   });
 
+  /*
   describe('Batch swap', function() {
     describe('Exact input', function() {
       describe('Ether to Token', function() {
@@ -83,19 +104,121 @@ contract('BalancerExchange', function([_, user]) {
       });
     });
   });
+*/
 
   describe('Multihop swap', function() {
+    let balanceUser;
+
+    beforeEach(async function() {
+      balanceUser = await tracker(user);
+    });
+
     describe('Exact input', function() {
+      const swapType = 'swapExactIn';
+      const noPools = 2;
       describe('Ether to Token', function() {
-        it('normal', async function() {});
+        it('normal', async function() {
+          const amount = ether('0.01');
+          const minAmount = ether('0');
+          let swaps;
+          let totalReturnWei;
+          [swaps, totalReturnWei] = await getPath(
+            this.token1.address,
+            this.token0.address,
+            amount,
+            minAmount,
+            noPools,
+            swapType
+          );
+          const to = this.hBalancerExchange.address;
+          const data = abi.encodeFunctionCall(multihopBatchSwapExactInAbi, [
+            swaps,
+            ETH_TOKEN,
+            this.token0.address,
+            amount.toString(),
+            minAmount.toString(),
+          ]);
+          const receipt = await this.proxy.execMock(to, data, {
+            from: user,
+            value: amount,
+          });
+          expect(await this.token0.balanceOf.call(user)).to.be.bignumber.eq(
+            utils.toBN(totalReturnWei)
+          );
+        });
       });
 
       describe('Token to Ether', function() {
-        it('normal', async function() {});
+        it('normal', async function() {
+          const amount = ether('1');
+          const minAmount = ether('0');
+          let swaps;
+          let totalReturnWei;
+          [swaps, totalReturnWei] = await getPath(
+            this.token0.address,
+            this.token1.address,
+            amount,
+            minAmount,
+            noPools,
+            swapType
+          );
+          const to = this.hBalancerExchange.address;
+          const data = abi.encodeFunctionCall(multihopBatchSwapExactInAbi, [
+            swaps,
+            this.token0.address,
+            ETH_TOKEN,
+            amount.toString(),
+            minAmount.toString(),
+          ]);
+          await this.token0.transfer(this.proxy.address, amount, {
+            from: token0Provider,
+          });
+          await this.proxy.updateTokenMock(this.token0.address);
+          await balanceUser.get();
+          const receipt = await this.proxy.execMock(to, data, {
+            from: user,
+            value: ether('0.1'),
+          });
+          expect(await balanceUser.delta()).to.be.bignumber.eq(
+            utils.toBN(totalReturnWei).sub(new BN(receipt.receipt.gasUsed))
+          );
+        });
       });
 
       describe('Token to Token', function() {
-        it('normal', async function() {});
+        it('normal', async function() {
+          const amount = ether('1');
+          const minAmount = ether('0');
+          let swaps;
+          let totalReturnWei;
+          [swaps, totalReturnWei] = await getPath(
+            this.token0.address,
+            this.token1.address,
+            amount,
+            minAmount,
+            noPools,
+            swapType
+          );
+          const to = this.hBalancerExchange.address;
+          const data = abi.encodeFunctionCall(multihopBatchSwapExactInAbi, [
+            swaps,
+            this.token0.address,
+            this.token1.address,
+            amount.toString(),
+            minAmount.toString(),
+          ]);
+          await this.token0.transfer(this.proxy.address, amount, {
+            from: token0Provider,
+          });
+          await this.proxy.updateTokenMock(this.token0.address);
+          const receipt = await this.proxy.execMock(to, data, {
+            from: user,
+            value: ether('0.1'),
+          });
+          expect(await this.token1.balanceOf.call(user)).to.be.bignumber.eq(
+            utils.toBN(totalReturnWei)
+          );
+        });
       });
     });
 
@@ -114,6 +237,7 @@ contract('BalancerExchange', function([_, user]) {
     });
   });
 
+  /*
   describe('Smart swap', function() {
     describe('Exact input', function() {
       describe('Ether to Token', function() {
@@ -143,18 +267,74 @@ contract('BalancerExchange', function([_, user]) {
       });
     });
   });
+*/
 });
 
-async function loadPathData(allPools, tokenIn, tokenOut) {
-  tokenIn = tokenIn.toLowerCase();
-  tokenOut = tokenOut.toLowerCase();
+function formatAndFilterPools(allPools, disabledTokens) {
+  let allTokens = [];
+  let allTokensSet = new Set();
+  let allPoolsNonZeroBalances = { pools: [] };
 
-  let [, allPoolsNonZeroBalances] = filterAllPools(allPools);
+  for (let pool of allPools.pools) {
+    // Build list of non-zero balance pools
+    // Only check first balance since AFAIK either all balances are zero or none are:
+    if (pool.tokens.length != 0) {
+      if (pool.tokens[0].balance != '0') {
+        let tokens = [];
+        pool.tokensList.forEach(token => {
+          if (
+            !disabledTokens.find(
+              t =>
+                utils.toChecksumAddress(t.address) ===
+                utils.toChecksumAddress(token)
+            )
+          ) {
+            tokens.push(token);
+          }
+        });
+
+        if (tokens.length > 1) {
+          allTokens.push(tokens.sort()); // Will add without duplicate
+        }
+
+        allPoolsNonZeroBalances.pools.push(pool);
+      }
+    }
+  }
+
+  allTokensSet = new Set(
+    Array.from(new Set(allTokens.map(a => JSON.stringify(a))), json =>
+      JSON.parse(json)
+    )
+  );
+
+  // Formats Subgraph to wei/bnum format
+  formatSubgraphPools(allPoolsNonZeroBalances);
+
+  return [allTokensSet, allPoolsNonZeroBalances];
+}
+
+async function getPath(
+  tokenIn,
+  tokenOut,
+  totalSwapAmount,
+  costReturnToken,
+  noPools,
+  swapType
+) {
+  let allTokensSet;
+  let allPoolsNonZeroBalances;
+  const allPools = await getAllPublicSwapPools();
+  [allTokensSet, allPoolsNonZeroBalances] = formatAndFilterPools(
+    JSON.parse(JSON.stringify(allPools)),
+    disabledTokens.tokens
+  );
 
   const directPools = await filterPoolsWithTokensDirect(
-    allPoolsNonZeroBalances,
-    tokenIn,
-    tokenOut
+    allPoolsNonZeroBalances.pools,
+    tokenIn.toLowerCase(),
+    tokenOut.toLowerCase(),
+    { isOverRide: true, disabledTokens: disabledTokens.tokens }
   );
 
   let mostLiquidPoolsFirstHop, mostLiquidPoolsSecondHop, hopTokens;
@@ -163,61 +343,30 @@ async function loadPathData(allPools, tokenIn, tokenOut) {
     mostLiquidPoolsSecondHop,
     hopTokens,
   ] = await filterPoolsWithTokensMultihop(
-    allPoolsNonZeroBalances,
+    allPoolsNonZeroBalances.pools,
     tokenIn,
-    tokenOut
+    tokenOut,
+    { isOverRide: true, disabledTokens: disabledTokens.tokens }
   );
-
   let pools, pathData;
   [pools, pathData] = parsePoolData(
     directPools,
-    tokenIn,
-    tokenOut,
+    tokenIn.toLowerCase(),
+    tokenOut.toLowerCase(),
     mostLiquidPoolsFirstHop,
     mostLiquidPoolsSecondHop,
     hopTokens
   );
-
-  return [pools, pathData];
-}
-
-async function findBestSwapsMulti(
-  Pools,
-  InputToken,
-  OutputToken,
-  swapType,
-  swapAmount,
-  maxPools,
-  returnTokenCostPerPool
-) {
-  let [pools, pathData] = await loadPathData(Pools, InputToken, OutputToken);
-
-  processedPools = pools;
-
-  if (swapType === SwapMethods.EXACT_IN) {
-    processedPaths = processPaths(pathData, pools, 'swapExactIn');
-    epsOfInterest = processEpsOfInterestMultiHop(
-      processedPaths,
-      'swapExactIn',
-      noPools
-    );
-  } else {
-    processedPaths = processPaths(pathData, pools, 'swapExactOut');
-
-    epsOfInterest = processEpsOfInterestMultiHop(
-      processedPaths,
-      'swapExactOut',
-      noPools
-    );
-  }
+  const paths = processPaths(pathData, pools, swapType);
+  const epsOfInterest = processEpsOfInterestMultiHop(paths, swapType, noPools);
 
   return smartOrderRouterMultiHopEpsOfInterest(
-    JSON.parse(JSON.stringify(processedPools)),
-    processedPaths,
+    JSON.parse(JSON.stringify(pools)),
+    paths,
     swapType,
-    swapAmount,
-    maxPools,
-    returnTokenCostPerPool,
+    new bignumber(totalSwapAmount),
+    noPools,
+    new bignumber(costReturnToken),
     epsOfInterest
   );
 }

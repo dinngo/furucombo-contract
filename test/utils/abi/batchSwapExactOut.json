@@ -1,0 +1,68 @@
+{
+  "constant": false,
+  "inputs": [
+    {
+      "components": [
+        {
+          "internalType": "address",
+          "name": "pool",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "tokenIn",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "tokenOut",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "swapAmount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "limitReturnAmount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "maxPrice",
+          "type": "uint256"
+        }
+      ],
+      "internalType": "struct IExchangeProxy.Swap[]",
+      "name": "swaps",
+      "type": "tuple[]"
+    },
+    {
+      "internalType": "address",
+      "name": "tokenIn",
+      "type": "address"
+    },
+    {
+      "internalType": "address",
+      "name": "tokenOut",
+      "type": "address"
+    },
+    {
+      "internalType": "uint256",
+      "name": "maxTotalAmountIn",
+      "type": "uint256"
+    }
+  ],
+  "name": "batchSwapExactOut",
+  "outputs": [
+    {
+      "internalType": "uint256",
+      "name": "totalAmountIn",
+      "type": "uint256"
+    }
+  ],
+  "payable": true,
+  "stateMutability": "payable",
+  "type": "function"
+}
