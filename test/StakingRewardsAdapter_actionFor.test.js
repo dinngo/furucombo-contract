@@ -97,8 +97,11 @@ contract('StakingRewardsAdapter - Action For', function([
       // User0 stake to original
       await this.st.approve(this.staking.address, sValue, { from: user0 });
       await this.staking.stake(sValue, { from: user0 });
-      // Whitelist stake to adapter for user1
+      // This step is not necessary, just write to make sure there is no unexpected result when doing stakeFor with approval. 
+      // And stakeFor without approval is also inclued in the 'Unauthorized' section.
+      // User1 set approval to whitelist.
       await this.adapter.setApproval(whitelist, true, { from: user1 });
+      // Whitelist stake to adapter for user1
       await this.st.approve(this.adapter.address, sValue, { from: whitelist });
       await this.adapter.stakeFor(user1, sValue, { from: whitelist });
 
@@ -164,8 +167,11 @@ contract('StakingRewardsAdapter - Action For', function([
       await this.staking.stake(sValue, { from: user0 });
       await this.st.approve(this.adapter.address, sValue, { from: user1 });
       await this.adapter.stake(sValue, { from: user1 });
-      // Whitelist stake to adapter for user2
+      // This step is not necessary, just write to make sure there is no unexpected result when doing stakeFor with approval. 
+      // And stakeFor without approval is also inclued in the 'Unauthorized' section.
+      // User2 set approval to whitelist.
       await this.adapter.setApproval(whitelist, true, { from: user2 });
+      // Whitelist stake to adapter for user2
       await this.st.approve(this.adapter.address, sValue, { from: whitelist });
       await this.adapter.stakeFor(user2, sValue, { from: whitelist });
 
