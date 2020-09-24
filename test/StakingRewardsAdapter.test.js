@@ -27,7 +27,6 @@ const StakingRewardsAdapter = artifacts.require('StakingRewardsAdapter');
 const StakingRewardsAdapterFactory = artifacts.require(
   'StakingRewardsAdapterFactory'
 );
-const NotifyRewardMock = artifacts.require('NotifyRewardMock');
 const IToken = artifacts.require('IERC20');
 
 contract('StakingRewardsAdapter', function([_, user0, user1, user2, pauser]) {
@@ -46,10 +45,9 @@ contract('StakingRewardsAdapter', function([_, user0, user1, user2, pauser]) {
   before(async function() {
     this.st = await IToken.at(stAddress);
     this.rt = await IToken.at(rtAddress);
-    this.notifyReward = await NotifyRewardMock.new();
     this.staking = await StakingRewards.new(
       _,
-      this.notifyReward.address,
+      _,
       rtAddress,
       stAddress
     );
@@ -95,11 +93,9 @@ contract('StakingRewardsAdapter', function([_, user0, user1, user2, pauser]) {
       await this.rt.transfer(this.staking.address, rValue, {
         from: rtProviderAddress,
       });
-      await this.notifyReward.notifyReward(
+      await this.staking.notifyRewardAmount(
         rValue,
-        this.staking.address,
-        this.adapter.address,
-        { from: rtProviderAddress }
+        { from: _ }
       );
 
       // Make time elapsed
@@ -163,11 +159,9 @@ contract('StakingRewardsAdapter', function([_, user0, user1, user2, pauser]) {
       await this.rt.transfer(this.staking.address, rValue, {
         from: rtProviderAddress,
       });
-      await this.notifyReward.notifyReward(
+      await this.staking.notifyRewardAmount(
         rValue,
-        this.staking.address,
-        this.adapter.address,
-        { from: rtProviderAddress }
+        { from: _ }
       );
 
       // Make time elapsed
@@ -239,11 +233,9 @@ contract('StakingRewardsAdapter', function([_, user0, user1, user2, pauser]) {
       await this.rt.transfer(this.staking.address, rValue, {
         from: rtProviderAddress,
       });
-      await this.notifyReward.notifyReward(
+      await this.staking.notifyRewardAmount(
         rValue,
-        this.staking.address,
-        this.adapter.address,
-        { from: rtProviderAddress }
+        { from: _ }
       );
 
       // Make time elapsed
@@ -302,11 +294,9 @@ contract('StakingRewardsAdapter', function([_, user0, user1, user2, pauser]) {
       await this.rt.transfer(this.staking.address, rValue, {
         from: rtProviderAddress,
       });
-      await this.notifyReward.notifyReward(
+      await this.staking.notifyRewardAmount(
         rValue,
-        this.staking.address,
-        this.adapter.address,
-        { from: rtProviderAddress }
+        { from: _ }
       );
 
       // Make time elapsed
@@ -386,11 +376,9 @@ contract('StakingRewardsAdapter', function([_, user0, user1, user2, pauser]) {
       await this.rt.transfer(this.staking.address, rValue, {
         from: rtProviderAddress,
       });
-      await this.notifyReward.notifyReward(
+      await this.staking.notifyRewardAmount(
         rValue,
-        this.staking.address,
-        this.adapter.address,
-        { from: rtProviderAddress }
+        { from: _ }
       );
 
       // Make time elapsed
@@ -463,11 +451,9 @@ contract('StakingRewardsAdapter', function([_, user0, user1, user2, pauser]) {
       await this.rt.transfer(this.staking.address, rValue, {
         from: rtProviderAddress,
       });
-      await this.notifyReward.notifyReward(
+      await this.staking.notifyRewardAmount(
         rValue,
-        this.staking.address,
-        this.adapter.address,
-        { from: rtProviderAddress }
+        { from: _ }
       );
 
       // Make time elapsed
@@ -477,11 +463,9 @@ contract('StakingRewardsAdapter', function([_, user0, user1, user2, pauser]) {
       await this.rt.transfer(this.staking.address, rValue, {
         from: rtProviderAddress,
       });
-      await this.notifyReward.notifyReward(
+      await this.staking.notifyRewardAmount(
         rValue,
-        this.staking.address,
-        this.adapter.address,
-        { from: rtProviderAddress }
+        { from: _ }
       );
 
       // Make time elapsed

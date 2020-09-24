@@ -27,7 +27,6 @@ const StakingRewardsAdapter = artifacts.require('StakingRewardsAdapter');
 const StakingRewardsAdapterFactory = artifacts.require(
   'StakingRewardsAdapterFactory'
 );
-const NotifyRewardMock = artifacts.require('NotifyRewardMock');
 const IToken = artifacts.require('IERC20');
 
 contract('StakingRewardsAdapter - Action For', function([
@@ -55,10 +54,9 @@ contract('StakingRewardsAdapter - Action For', function([
   before(async function() {
     this.st = await IToken.at(stAddress);
     this.rt = await IToken.at(rtAddress);
-    this.notifyReward = await NotifyRewardMock.new();
     this.staking = await StakingRewards.new(
       _,
-      this.notifyReward.address,
+      _,
       rtAddress,
       stAddress
     );
@@ -109,11 +107,9 @@ contract('StakingRewardsAdapter - Action For', function([
       await this.rt.transfer(this.staking.address, rValue, {
         from: rtProviderAddress,
       });
-      await this.notifyReward.notifyReward(
+      await this.staking.notifyRewardAmount(
         rValue,
-        this.staking.address,
-        this.adapter.address,
-        { from: rtProviderAddress }
+        { from: _ }
       );
 
       // Make time elapsed
@@ -179,11 +175,9 @@ contract('StakingRewardsAdapter - Action For', function([
       await this.rt.transfer(this.staking.address, rValue, {
         from: rtProviderAddress,
       });
-      await this.notifyReward.notifyReward(
+      await this.staking.notifyRewardAmount(
         rValue,
-        this.staking.address,
-        this.adapter.address,
-        { from: rtProviderAddress }
+        { from: _ }
       );
 
       // Make time elapsed
@@ -252,11 +246,9 @@ contract('StakingRewardsAdapter - Action For', function([
       await this.rt.transfer(this.staking.address, rValue, {
         from: rtProviderAddress,
       });
-      await this.notifyReward.notifyReward(
+      await this.staking.notifyRewardAmount(
         rValue,
-        this.staking.address,
-        this.adapter.address,
-        { from: rtProviderAddress }
+        { from: _ }
       );
 
       // Make time elapsed
@@ -319,11 +311,9 @@ contract('StakingRewardsAdapter - Action For', function([
       await this.rt.transfer(this.staking.address, rValue, {
         from: rtProviderAddress,
       });
-      await this.notifyReward.notifyReward(
+      await this.staking.notifyRewardAmount(
         rValue,
-        this.staking.address,
-        this.adapter.address,
-        { from: rtProviderAddress }
+        { from: _ }
       );
 
       // Make time elapsed
@@ -416,11 +406,9 @@ contract('StakingRewardsAdapter - Action For', function([
       await this.rt.transfer(this.staking.address, rValue, {
         from: rtProviderAddress,
       });
-      await this.notifyReward.notifyReward(
+      await this.staking.notifyRewardAmount(
         rValue,
-        this.staking.address,
-        this.adapter.address,
-        { from: rtProviderAddress }
+        { from: _ }
       );
 
       // Make time elapsed
@@ -535,11 +523,9 @@ contract('StakingRewardsAdapter - Action For', function([
       await this.rt.transfer(this.staking.address, rValue, {
         from: rtProviderAddress,
       });
-      await this.notifyReward.notifyReward(
+      await this.staking.notifyRewardAmount(
         rValue,
-        this.staking.address,
-        this.adapter.address,
-        { from: rtProviderAddress }
+        { from: _ }
       );
 
       // Make time elapsed
@@ -594,11 +580,9 @@ contract('StakingRewardsAdapter - Action For', function([
       await this.rt.transfer(this.staking.address, rValue, {
         from: rtProviderAddress,
       });
-      await this.notifyReward.notifyReward(
+      await this.staking.notifyRewardAmount(
         rValue,
-        this.staking.address,
-        this.adapter.address,
-        { from: rtProviderAddress }
+        { from: _ }
       );
 
       // Make time elapsed
@@ -625,11 +609,9 @@ contract('StakingRewardsAdapter - Action For', function([
       await this.rt.transfer(this.staking.address, rValue, {
         from: rtProviderAddress,
       });
-      await this.notifyReward.notifyReward(
+      await this.staking.notifyRewardAmount(
         rValue,
-        this.staking.address,
-        this.adapter.address,
-        { from: rtProviderAddress }
+        { from: _ }
       );
 
       // Make time elapsed
@@ -656,11 +638,9 @@ contract('StakingRewardsAdapter - Action For', function([
       await this.rt.transfer(this.staking.address, rValue, {
         from: rtProviderAddress,
       });
-      await this.notifyReward.notifyReward(
+      await this.staking.notifyRewardAmount(
         rValue,
-        this.staking.address,
-        this.adapter.address,
-        { from: rtProviderAddress }
+        { from: _ }
       );
 
       // Make time elapsed
