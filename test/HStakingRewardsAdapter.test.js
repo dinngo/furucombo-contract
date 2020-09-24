@@ -19,6 +19,8 @@ const {
   DAI_PROVIDER,
   KNC_TOKEN,
   KNC_PROVIDER,
+  STAKING_ADAPTER_REGISTRY,
+  STAKING_ADAPTER_REGISTRY_OWNER,
 } = require('./utils/constants');
 const { evmRevert, evmSnapshot } = require('./utils/utils');
 
@@ -29,6 +31,9 @@ const StakingRewards = artifacts.require('StakingRewards');
 const StakingRewardsAdapter = artifacts.require('StakingRewardsAdapter');
 const StakingRewardsAdapterFactory = artifacts.require(
   'StakingRewardsAdapterFactory'
+);
+const StakingRewardsAdapterRegistry = artifacts.require(
+  'StakingRewardsAdapterRegistry'
 );
 const IToken = artifacts.require('IERC20');
 
@@ -66,6 +71,8 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
       0
     );
     this.adapter = await StakingRewardsAdapter.at(adapterAddr);
+    this.adapterRegistry = await StakingRewardsAdapterRegistry.at(STAKING_ADAPTER_REGISTRY);
+    await this.adapterRegistry.register(this.adapter.address, utils.asciiToHex('DAI-KNC'), {from: STAKING_ADAPTER_REGISTRY_OWNER});
   });
 
   beforeEach(async function() {

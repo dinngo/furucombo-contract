@@ -3,16 +3,28 @@ pragma solidity ^0.5.0;
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "../HandlerBase.sol";
 import "../../staking/IStakingRewardsAdapter.sol";
+import "../../staking/IStakingRewardsAdapterRegistry.sol";
 
 
 contract HStakingRewardsAdapter is HandlerBase {
     using SafeERC20 for IERC20;
 
+    // address constant public registry = 0xbeef;
+    // TODO: 
+    // Change the address to adapterRegistry when it is deployed on mainnet.
+    // The one below is handler registry address.
+    IStakingRewardsAdapterRegistry constant public registry = IStakingRewardsAdapterRegistry(0xAf1134A479c0d3eCae95CEc4490B97305Ac17970);
+
+    modifier whenAdapterIsValid(address adapter) {
+        require(registry.isValid(adapter), "Invalid adapter");
+        _;
+    }
+
     // Stake for msg.sender
     function stake(
         address adapterAddr,
         uint256 amount
-    ) external payable {
+    ) external payable whenAdapterIsValid(adapterAddr) {
         IStakingRewardsAdapter adapter = IStakingRewardsAdapter(adapterAddr);
         IERC20 token = adapter.stakingToken();
         
@@ -26,7 +38,7 @@ contract HStakingRewardsAdapter is HandlerBase {
         address adapterAddr,
         address account,
         uint256 amount
-    ) external payable {
+    ) external payable whenAdapterIsValid(adapterAddr) {
         IStakingRewardsAdapter adapter = IStakingRewardsAdapter(adapterAddr);
         IERC20 token = adapter.stakingToken();
         
@@ -39,7 +51,7 @@ contract HStakingRewardsAdapter is HandlerBase {
     function withdraw(
         address adapterAddr,
         uint256 amount
-    ) external payable {
+    ) external payable whenAdapterIsValid(adapterAddr) {
         IStakingRewardsAdapter adapter = IStakingRewardsAdapter(adapterAddr);
         adapter.withdrawFor(cache.getSender(), amount);
 
@@ -49,7 +61,7 @@ contract HStakingRewardsAdapter is HandlerBase {
     // Only exit for msg.sender
     function exit(
         address adapterAddr
-    ) external payable {
+    ) external payable whenAdapterIsValid(adapterAddr) {
         IStakingRewardsAdapter adapter = IStakingRewardsAdapter(adapterAddr);
         adapter.exitFor(cache.getSender());
 
@@ -60,7 +72,7 @@ contract HStakingRewardsAdapter is HandlerBase {
     // Only getReward for msg.sender
     function getReward(
         address adapterAddr
-    ) external payable {
+    ) external payable whenAdapterIsValid(adapterAddr) {
         IStakingRewardsAdapter adapter = IStakingRewardsAdapter(adapterAddr);
         adapter.getRewardFor(cache.getSender());
 

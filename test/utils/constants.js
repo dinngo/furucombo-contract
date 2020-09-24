@@ -185,4 +185,7 @@ module.exports = {
   /* Event Signature */
   RecordHandlerResultSig:
     '0x90c726ff5efa7268723ee48df835144384bc0f012e89750782886764b5e54f16',
+  // TODO: change to mainnet adapter registry address, below one is handler registry now.
+  STAKING_ADAPTER_REGISTRY: '0xAf1134A479c0d3eCae95CEc4490B97305Ac17970',
+  STAKING_ADAPTER_REGISTRY_OWNER: '0xbcb909975715dc8fde643ee44b89e3fd6a35a259',
 };
