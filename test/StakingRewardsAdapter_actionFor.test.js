@@ -122,12 +122,6 @@ contract('StakingRewardsAdapter - Action For', function([
       const earnedUser1 = await this.adapter.earned.call(user1);
       const earnedWhitelist = await this.adapter.earned.call(whitelist);
 
-      log('earnedAdapter', earnedAdapter);
-      log('earnedUser0', earnedUser0);
-      log('earnedUser1', earnedUser1);
-      await printStateAdapter(this.adapter.address, user1);
-      await printStateOriginal(this.staking.address, user0);
-
       // Verify everyone gets reward
       expect(earnedUser0).to.be.bignumber.gt(ether('0'));
       expect(earnedUser1).to.be.bignumber.gt(ether('0'));
@@ -147,7 +141,6 @@ contract('StakingRewardsAdapter - Action For', function([
       // Verify 'earned <= rewardActuallyGot <= earned * 1.001' caused by timestamp differ
       expect(rewardUser1Got).to.be.bignumber.gte(earnedUser1);
       expect(rewardUser1Got).to.be.bignumber.lte(getBuffer(earnedUser1));
-      log('rewardUser1Got', rewardUser1Got);
     });
 
     it('1 on original - 2 on adapter - one stake by whitelist', async function() {
@@ -191,12 +184,6 @@ contract('StakingRewardsAdapter - Action For', function([
       const earnedUser2 = await this.adapter.earned.call(user2);
       const earnedWhitelist = await this.adapter.earned.call(whitelist);
 
-      log('earnedAdapter', earnedAdapter);
-      log('earnedUser0', earnedUser0);
-      log('earnedUser1', earnedUser1);
-      await printStateAdapter(this.adapter.address, user1);
-      await printStateOriginal(this.staking.address, user0);
-
       // Verify everyone gets reward
       expect(earnedUser0).to.be.bignumber.gt(ether('0'));
       expect(earnedUser1).to.be.bignumber.gt(ether('0'));
@@ -221,11 +208,9 @@ contract('StakingRewardsAdapter - Action For', function([
       // Verify 'earned <= rewardActuallyGot <= earned * 1.001' caused by timestamp differ
       expect(rewardUser2Got).to.be.bignumber.gte(earnedUser2);
       expect(rewardUser2Got).to.be.bignumber.lte(getBuffer(earnedUser2));
-      log('rewardUser2Got', rewardUser2Got);
       // Verify 'earned <= rewardActuallyGot <= earned * 1.001' caused by timestamp differ
       expect(rewardUser1Got).to.be.bignumber.gte(earnedUser1);
       expect(rewardUser1Got).to.be.bignumber.lte(getBuffer(earnedUser1));
-      log('rewardUser1Got', rewardUser1Got);
     });
 
     it('1 on original - 2 on adapter - one stake in the middle by whitelist', async function() {
@@ -266,15 +251,10 @@ contract('StakingRewardsAdapter - Action For', function([
       const earnedAdapter = await this.staking.earned.call(
         this.adapter.address
       );
-      log('earnedAdapter', earnedAdapter);
       const earnedUser0 = await this.staking.earned.call(user0);
-      log('earnedUser0', earnedUser0);
       const earnedUser1 = await this.adapter.earned.call(user1);
-      log('earnedUser1', earnedUser1);
       const earnedUser2 = await this.adapter.earned.call(user2);
-      log('earnedUser2', earnedUser2);
       const earnedWhitelist = await this.adapter.earned.call(whitelist);
-      log('earnedWhitelist', earnedWhitelist);
 
       // Verify everyone gets reward
       expect(earnedUser0).to.be.bignumber.gt(ether('0'));
@@ -332,19 +312,15 @@ contract('StakingRewardsAdapter - Action For', function([
 
       // Get the state after user2 claimed and exited
       const rewardAdapter = await this.rt.balanceOf(this.adapter.address);
-      log('rewardAdapter', rewardAdapter);
       const earnedAdapter = await this.staking.earned.call(
         this.adapter.address
       );
-      log('earnedAdapter', earnedAdapter);
       // Total reward adapter got = earned(adapter) + rt.balanceOf(adapter) since
       // anyone invokes `getReward()` on adapter will make adapter to claim all its
       // reward from original contract and reset the earned number.
       const totalRewardAdapter = rewardAdapter.add(earnedAdapter);
       const earnedUser0 = await this.staking.earned.call(user0);
-      log('earnedUser0', earnedUser0);
       const earnedUser1 = await this.adapter.earned.call(user1);
-      log('earnedUser1', earnedUser1);
       const earnedWhitelist = await this.adapter.earned.call(whitelist);
 
       // Verify everyone being counted for reward
@@ -362,10 +338,8 @@ contract('StakingRewardsAdapter - Action For', function([
       // Verify whitelist gets the reward user2 earned since actionFor will transfer assets to msg.sender
       expect(rewardWhitelist).to.be.bignumber.gte(earnedUser2);
       expect(rewardWhitelist).to.be.bignumber.lte(getBuffer(earnedUser2));
-      log('rewardWhitelist', rewardWhitelist);
       // Verify user2 not gets the reward since its been transfered to whitelist
       expect(rewardUser2Got).to.be.zero;
-      log('rewardUser2Got', rewardUser2Got);
       // Verify whitelist gets the amount unstake for user2
       expect(await this.st.balanceOf(whitelist)).to.be.bignumber.eq(sValue);
       // Verify user2 not gets the amount unstake since its been transfered to whitelist
@@ -382,7 +356,6 @@ contract('StakingRewardsAdapter - Action For', function([
       // Verify 'earned <= rewardActuallyGot <= earned * 1.001' caused by timestamp differ
       expect(rewardUser1Got).to.be.bignumber.gte(earnedUser1);
       expect(rewardUser1Got).to.be.bignumber.lte(getBuffer(earnedUser1));
-      log('rewardUser1Got', rewardUser1Got);
     });
 
     it('1 on original - 2 on adapter - one getReward in the middle by whitelist', async function() {
@@ -419,32 +392,24 @@ contract('StakingRewardsAdapter - Action For', function([
       await this.adapter.setApproval(whitelist, true, { from: user2 });
       await this.adapter.getRewardFor(user2, { from: whitelist });
       const rewardUser2Middle = await this.rt.balanceOf.call(user2);
-      log('rewardUser2Middle', rewardUser2Middle);
       const rewardWhitelist = await this.rt.balanceOf.call(whitelist);
-      log('rewardWhitelist', rewardWhitelist);
 
       // Make time elapsed
       await increase(duration.days(1));
 
       // Get the state after whitelist getRewardFor user2
       const rewardAdapter = await this.rt.balanceOf(this.adapter.address);
-      log('rewardAdapter', rewardAdapter);
       const earnedAdapter = await this.staking.earned.call(
         this.adapter.address
       );
-      log('earnedAdapter', earnedAdapter);
       // Total reward adapter got = earned(adapter) + rt.balanceOf(adapter) since
       // anyone invokes `getReward()` on adapter will make adapter to claim all its
       // reward from original contract and reset the earned number.
       const totalRewardAdapter = rewardAdapter.add(earnedAdapter);
       const earnedUser0 = await this.staking.earned.call(user0);
-      log('earnedUser0', earnedUser0);
       const earnedUser1 = await this.adapter.earned.call(user1);
-      log('earnedUser1', earnedUser1);
       const earnedUser2End = await this.adapter.earned.call(user2);
-      log('earnedUser2End', earnedUser2End);
       const earnedWhitelist = await this.adapter.earned.call(whitelist);
-      log('earnedWhitelist', earnedWhitelist);
 
       // Verify everyone being counted for reward
       expect(earnedUser0).to.be.bignumber.gt(ether('0'));
@@ -538,12 +503,6 @@ contract('StakingRewardsAdapter - Action For', function([
       const earnedUser1 = await this.adapter.earned.call(user1);
       const earnedNotWhitelist = await this.adapter.earned.call(notWhitelist);
 
-      log('earnedAdapter', earnedAdapter);
-      log('earnedUser0', earnedUser0);
-      log('earnedUser1', earnedUser1);
-      await printStateAdapter(this.adapter.address, user1);
-      await printStateOriginal(this.staking.address, user0);
-
       // Verify everyone gets reward
       expect(earnedUser0).to.be.bignumber.gt(ether('0'));
       expect(earnedUser1).to.be.bignumber.gt(ether('0'));
@@ -563,7 +522,6 @@ contract('StakingRewardsAdapter - Action For', function([
       // Verify 'earned <= rewardActuallyGot <= earned * 1.001' caused by timestamp differ
       expect(rewardUser1Got).to.be.bignumber.gte(earnedUser1);
       expect(rewardUser1Got).to.be.bignumber.lte(getBuffer(earnedUser1));
-      log('rewardUser1Got', rewardUser1Got);
     });
 
     it('should revert: exitFor by notWhitelist', async function() {
@@ -657,46 +615,4 @@ contract('StakingRewardsAdapter - Action For', function([
 
 function getBuffer(num) {
   return new BN(num).mul(new BN(1001)).div(new BN(1000));
-}
-
-function log(text, value) {
-  console.log(`>>> ${text}: ${value}`);
-}
-
-async function printStateAdapter(adapterAddr, user) {
-  const adapter = await StakingRewardsAdapter.at(adapterAddr);
-  const totalSupply = await adapter.totalSupply.call();
-  const balanceOfUser = await adapter.balanceOf.call(user);
-  const lastTimeRewardApplicable = await adapter.lastTimeRewardApplicable.call();
-  const lastUpdateTime = await adapter.lastUpdateTime.call();
-  const rewardPerToken = await adapter.rewardPerToken.call();
-  const rewardPerTokenStored = await adapter.rewardPerTokenStored.call();
-  const earnedUser = await adapter.earned.call(user);
-  log('==== printState', 'Adapter');
-  log('totalSupply', totalSupply);
-  log('balanceOfUser', balanceOfUser);
-  log('lastTimeRewardApplicable', lastTimeRewardApplicable);
-  log('lastUpdateTime', lastUpdateTime);
-  log('rewardPerToken', rewardPerToken);
-  log('rewardPerTokenStored', rewardPerTokenStored);
-  log('earnedUser', earnedUser);
-}
-
-async function printStateOriginal(contractAddr, user) {
-  const contract = await StakingRewardsAdapter.at(contractAddr);
-  const totalSupply = await contract.totalSupply.call();
-  const balanceOfUser = await contract.balanceOf.call(user);
-  const lastTimeRewardApplicable = await contract.lastTimeRewardApplicable.call();
-  const lastUpdateTime = await contract.lastUpdateTime.call();
-  const rewardPerToken = await contract.rewardPerToken.call();
-  const rewardPerTokenStored = await contract.rewardPerTokenStored.call();
-  const earnedUser = await contract.earned.call(user);
-  log('==== printState', 'Original');
-  log('totalSupply', totalSupply);
-  log('balanceOfUser', balanceOfUser);
-  log('lastTimeRewardApplicable', lastTimeRewardApplicable);
-  log('lastUpdateTime', lastUpdateTime);
-  log('rewardPerToken', rewardPerToken);
-  log('rewardPerTokenStored', rewardPerTokenStored);
-  log('earnedUser', earnedUser);
 }
