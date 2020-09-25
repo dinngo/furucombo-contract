@@ -22,7 +22,7 @@ const {
   STAKING_ADAPTER_REGISTRY,
   STAKING_ADAPTER_REGISTRY_OWNER,
 } = require('./utils/constants');
-const { evmRevert, evmSnapshot } = require('./utils/utils');
+const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
 
 const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('ProxyMock');
@@ -143,6 +143,7 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
       expect(await balanceUser.delta()).to.be.bignumber.eq(
         ether('0').sub(new BN(receipt.receipt.gasUsed))
       );
+      profileGas(receipt);
     });
 
     it('stake for others', async function() {
@@ -201,6 +202,7 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
       expect(await balanceUser.delta()).to.be.zero;
       // Check someone balance
       expect(await this.st.balanceOf(someone)).to.be.zero;
+      profileGas(receipt);
     });
   });
 
@@ -264,6 +266,7 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
       expect(await balanceUser.delta()).to.be.bignumber.eq(
         ether('0').sub(new BN(receipt.receipt.gasUsed))
       );
+      profileGas(receipt);
     });
 
     it('unauthorized', async function() {
@@ -365,6 +368,7 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
       expect(await balanceUser.delta()).to.be.bignumber.eq(
         ether('0').sub(new BN(receipt.receipt.gasUsed))
       );
+      profileGas(receipt);
     });
 
     it('unauthorized', async function() {
@@ -456,6 +460,7 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
       expect(await balanceUser.delta()).to.be.bignumber.eq(
         ether('0').sub(new BN(receipt.receipt.gasUsed))
       );
+      profileGas(receipt);
     });
 
     it('unauthorized', async function() {
