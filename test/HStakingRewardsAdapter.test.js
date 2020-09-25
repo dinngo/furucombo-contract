@@ -22,6 +22,7 @@ const {
   CREATE2_FACTORY,
   STAKING_REWARDS_ADAPTER_REGISTRY_SALT,
   STAKING_REWARDS_ADAPTER_REGISTRY,
+  STAKING_REWARDS_ADAPTER_REGISTRY_BYTECODE
 } = require('./utils/constants');
 const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
 
@@ -43,7 +44,8 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
   let id;
   let balanceUser;
   /// Get AdapterRegistry bytecode to deploy using CREATE2
-  const bytecode = StakingRewardsAdapterRegistry.bytecode;
+  // const bytecode = StakingRewardsAdapterRegistry.bytecode;
+  const bytecode = STAKING_REWARDS_ADAPTER_REGISTRY_BYTECODE;
   /// st = stakingToken
   /// rt = rewardToken
   const stAddress = DAI_TOKEN;
