@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 - Support CHI and GST2 gas tokens in `HGasTokens`.
+- Support Balancer multihop swapping in `HBalancerExchange`.
 
 ## [0.11.0] - 2020-09-21
 
