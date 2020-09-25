@@ -71,10 +71,14 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
     );
     // Use SingletonFactory to deploy AdapterRegistry using CREATE2
     this.singletonFactory = await ISingletonFactory.at(CREATE2_FACTORY);
-    await this.singletonFactory.deploy(
+    const tx = await this.singletonFactory.deploy(
       bytecode,
       STAKING_REWARDS_ADAPTER_REGISTRY_SALT
     );
+    const log = tx.receipt.rawLogs[1];
+    console.log(`user0 topics: ${log.topics[0]}`);
+    console.log(`user0 contract: ${log.address}`);
+
     this.adapter = await StakingRewardsAdapter.at(adapterAddr);
     this.adapterRegistry = await StakingRewardsAdapterRegistry.at(
       STAKING_REWARDS_ADAPTER_REGISTRY
