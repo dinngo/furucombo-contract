@@ -57,12 +57,7 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
     );
     this.st = await IToken.at(stAddress);
     this.rt = await IToken.at(rtAddress);
-    this.staking = await StakingRewards.new(
-      _,
-      _,
-      rtAddress,
-      stAddress
-    );
+    this.staking = await StakingRewards.new(_, _, rtAddress, stAddress);
     // Deploy new adapter through factory
     this.factory = await StakingRewardsAdapterFactory.new();
     await this.factory.newAdapter(this.staking.address);
@@ -71,8 +66,14 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
       0
     );
     this.adapter = await StakingRewardsAdapter.at(adapterAddr);
-    this.adapterRegistry = await StakingRewardsAdapterRegistry.at(STAKING_ADAPTER_REGISTRY);
-    await this.adapterRegistry.register(this.adapter.address, utils.asciiToHex('DAI-KNC'), {from: STAKING_ADAPTER_REGISTRY_OWNER});
+    this.adapterRegistry = await StakingRewardsAdapterRegistry.at(
+      STAKING_ADAPTER_REGISTRY
+    );
+    await this.adapterRegistry.register(
+      this.adapter.address,
+      utils.asciiToHex('DAI-KNC'),
+      { from: STAKING_ADAPTER_REGISTRY_OWNER }
+    );
   });
 
   beforeEach(async function() {
@@ -114,10 +115,7 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
       await this.rt.transfer(this.staking.address, rValue, {
         from: rtProviderAddress,
       });
-      await this.staking.notifyRewardAmount(
-        rValue,
-        { from: _ }
-      );
+      await this.staking.notifyRewardAmount(rValue, { from: _ });
 
       // Make time elapsed
       await increase(duration.days(1));
@@ -173,10 +171,7 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
       await this.rt.transfer(this.staking.address, rValue, {
         from: rtProviderAddress,
       });
-      await this.staking.notifyRewardAmount(
-        rValue,
-        { from: _ }
-      );
+      await this.staking.notifyRewardAmount(rValue, { from: _ });
 
       // Make time elapsed
       await increase(duration.days(1));
@@ -229,10 +224,7 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
       await this.rt.transfer(this.staking.address, rValue, {
         from: rtProviderAddress,
       });
-      await this.staking.notifyRewardAmount(
-        rValue,
-        { from: _ }
-      );
+      await this.staking.notifyRewardAmount(rValue, { from: _ });
 
       // Make time elapsed
       await increase(duration.days(1));
@@ -288,10 +280,7 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
       await this.rt.transfer(this.staking.address, rValue, {
         from: rtProviderAddress,
       });
-      await this.staking.notifyRewardAmount(
-        rValue,
-        { from: _ }
-      );
+      await this.staking.notifyRewardAmount(rValue, { from: _ });
 
       // Make time elapsed
       await increase(duration.days(1));
@@ -333,10 +322,7 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
       await this.rt.transfer(this.staking.address, rValue, {
         from: rtProviderAddress,
       });
-      await this.staking.notifyRewardAmount(
-        rValue,
-        { from: _ }
-      );
+      await this.staking.notifyRewardAmount(rValue, { from: _ });
 
       // Make time elapsed
       await increase(duration.days(1));
@@ -395,10 +381,7 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
       await this.rt.transfer(this.staking.address, rValue, {
         from: rtProviderAddress,
       });
-      await this.staking.notifyRewardAmount(
-        rValue,
-        { from: _ }
-      );
+      await this.staking.notifyRewardAmount(rValue, { from: _ });
 
       // Make time elapsed
       await increase(duration.days(1));
@@ -435,10 +418,7 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
       await this.rt.transfer(this.staking.address, rValue, {
         from: rtProviderAddress,
       });
-      await this.staking.notifyRewardAmount(
-        rValue,
-        { from: _ }
-      );
+      await this.staking.notifyRewardAmount(rValue, { from: _ });
 
       // Make time elapsed
       await increase(duration.days(1));
@@ -450,10 +430,7 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
       await this.adapter.setApproval(this.proxy.address, true, { from: user });
 
       // Proxy getRewardFor user
-      const data = abi.simpleEncode(
-        'getReward(address)',
-        this.adapter.address
-      );
+      const data = abi.simpleEncode('getReward(address)', this.adapter.address);
       await balanceUser.get();
       const receipt = await this.proxy.execMock(this.hAdapter.address, data, {
         from: user,
@@ -495,19 +472,13 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
       await this.rt.transfer(this.staking.address, rValue, {
         from: rtProviderAddress,
       });
-      await this.staking.notifyRewardAmount(
-        rValue,
-        { from: _ }
-      );
+      await this.staking.notifyRewardAmount(rValue, { from: _ });
 
       // Make time elapsed
       await increase(duration.days(1));
 
       // Proxy getRewardFor user
-      const data = abi.simpleEncode(
-        'getReward(address)',
-        this.adapter.address
-      );
+      const data = abi.simpleEncode('getReward(address)', this.adapter.address);
       await balanceUser.get();
       await expectRevert(
         this.proxy.execMock(this.hAdapter.address, data, {

@@ -18,9 +18,16 @@ const { expect } = require('chai');
 const { CETHER } = require('./utils/constants');
 const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
 
-const StakingRewardsAdapterRegistry = artifacts.require('StakingRewardsAdapterRegistry');
+const StakingRewardsAdapterRegistry = artifacts.require(
+  'StakingRewardsAdapterRegistry'
+);
 
-contract('StakingRewardsAdapterRegistry', function([_, handler1, handler2, someone]) {
+contract('StakingRewardsAdapterRegistry', function([
+  _,
+  handler1,
+  handler2,
+  someone,
+]) {
   let id;
 
   beforeEach(async function() {
@@ -115,12 +122,18 @@ contract('StakingRewardsAdapterRegistry', function([_, handler1, handler2, someo
     });
 
     it('no registration', async function() {
-      await expectRevert(this.registry.updateInfo(handler2, newInfo), 'no registration');
+      await expectRevert(
+        this.registry.updateInfo(handler2, newInfo),
+        'no registration'
+      );
     });
 
     it('unregistered', async function() {
       await this.registry.unregister(handler1);
-      await expectRevert(this.registry.updateInfo(handler1, newInfo), 'unregistered');
+      await expectRevert(
+        this.registry.updateInfo(handler1, newInfo),
+        'unregistered'
+      );
     });
   });
 

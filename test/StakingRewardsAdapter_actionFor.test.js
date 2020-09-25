@@ -54,12 +54,7 @@ contract('StakingRewardsAdapter - Action For', function([
   before(async function() {
     this.st = await IToken.at(stAddress);
     this.rt = await IToken.at(rtAddress);
-    this.staking = await StakingRewards.new(
-      _,
-      _,
-      rtAddress,
-      stAddress
-    );
+    this.staking = await StakingRewards.new(_, _, rtAddress, stAddress);
     // Deploy new adapter through factory
     this.factory = await StakingRewardsAdapterFactory.new();
     await this.factory.newAdapter(this.staking.address);
@@ -95,7 +90,7 @@ contract('StakingRewardsAdapter - Action For', function([
       // User0 stake to original
       await this.st.approve(this.staking.address, sValue, { from: user0 });
       await this.staking.stake(sValue, { from: user0 });
-      // This step is not necessary, just write to make sure there is no unexpected result when doing stakeFor with approval. 
+      // This step is not necessary, just write to make sure there is no unexpected result when doing stakeFor with approval.
       // And stakeFor without approval is also inclued in the 'Unauthorized' section.
       // User1 set approval to whitelist.
       await this.adapter.setApproval(whitelist, true, { from: user1 });
@@ -107,10 +102,7 @@ contract('StakingRewardsAdapter - Action For', function([
       await this.rt.transfer(this.staking.address, rValue, {
         from: rtProviderAddress,
       });
-      await this.staking.notifyRewardAmount(
-        rValue,
-        { from: _ }
-      );
+      await this.staking.notifyRewardAmount(rValue, { from: _ });
 
       // Make time elapsed
       await increase(duration.days(1));
@@ -156,7 +148,7 @@ contract('StakingRewardsAdapter - Action For', function([
       await this.staking.stake(sValue, { from: user0 });
       await this.st.approve(this.adapter.address, sValue, { from: user1 });
       await this.adapter.stake(sValue, { from: user1 });
-      // This step is not necessary, just write to make sure there is no unexpected result when doing stakeFor with approval. 
+      // This step is not necessary, just write to make sure there is no unexpected result when doing stakeFor with approval.
       // And stakeFor without approval is also inclued in the 'Unauthorized' section.
       // User2 set approval to whitelist.
       await this.adapter.setApproval(whitelist, true, { from: user2 });
@@ -168,10 +160,7 @@ contract('StakingRewardsAdapter - Action For', function([
       await this.rt.transfer(this.staking.address, rValue, {
         from: rtProviderAddress,
       });
-      await this.staking.notifyRewardAmount(
-        rValue,
-        { from: _ }
-      );
+      await this.staking.notifyRewardAmount(rValue, { from: _ });
 
       // Make time elapsed
       await increase(duration.days(1));
@@ -231,10 +220,7 @@ contract('StakingRewardsAdapter - Action For', function([
       await this.rt.transfer(this.staking.address, rValue, {
         from: rtProviderAddress,
       });
-      await this.staking.notifyRewardAmount(
-        rValue,
-        { from: _ }
-      );
+      await this.staking.notifyRewardAmount(rValue, { from: _ });
 
       // Make time elapsed
       await increase(duration.days(1));
@@ -291,10 +277,7 @@ contract('StakingRewardsAdapter - Action For', function([
       await this.rt.transfer(this.staking.address, rValue, {
         from: rtProviderAddress,
       });
-      await this.staking.notifyRewardAmount(
-        rValue,
-        { from: _ }
-      );
+      await this.staking.notifyRewardAmount(rValue, { from: _ });
 
       // Make time elapsed
       await increase(duration.days(1));
@@ -379,10 +362,7 @@ contract('StakingRewardsAdapter - Action For', function([
       await this.rt.transfer(this.staking.address, rValue, {
         from: rtProviderAddress,
       });
-      await this.staking.notifyRewardAmount(
-        rValue,
-        { from: _ }
-      );
+      await this.staking.notifyRewardAmount(rValue, { from: _ });
 
       // Make time elapsed
       await increase(duration.days(1));
@@ -488,10 +468,7 @@ contract('StakingRewardsAdapter - Action For', function([
       await this.rt.transfer(this.staking.address, rValue, {
         from: rtProviderAddress,
       });
-      await this.staking.notifyRewardAmount(
-        rValue,
-        { from: _ }
-      );
+      await this.staking.notifyRewardAmount(rValue, { from: _ });
 
       // Make time elapsed
       await increase(duration.days(1));
@@ -538,10 +515,7 @@ contract('StakingRewardsAdapter - Action For', function([
       await this.rt.transfer(this.staking.address, rValue, {
         from: rtProviderAddress,
       });
-      await this.staking.notifyRewardAmount(
-        rValue,
-        { from: _ }
-      );
+      await this.staking.notifyRewardAmount(rValue, { from: _ });
 
       // Make time elapsed
       await increase(duration.days(1));
@@ -567,10 +541,7 @@ contract('StakingRewardsAdapter - Action For', function([
       await this.rt.transfer(this.staking.address, rValue, {
         from: rtProviderAddress,
       });
-      await this.staking.notifyRewardAmount(
-        rValue,
-        { from: _ }
-      );
+      await this.staking.notifyRewardAmount(rValue, { from: _ });
 
       // Make time elapsed
       await increase(duration.days(1));
@@ -596,10 +567,7 @@ contract('StakingRewardsAdapter - Action For', function([
       await this.rt.transfer(this.staking.address, rValue, {
         from: rtProviderAddress,
       });
-      await this.staking.notifyRewardAmount(
-        rValue,
-        { from: _ }
-      );
+      await this.staking.notifyRewardAmount(rValue, { from: _ });
 
       // Make time elapsed
       await increase(duration.days(1));
