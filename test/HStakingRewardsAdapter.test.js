@@ -71,7 +71,10 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
     );
     // Use SingletonFactory to deploy AdapterRegistry using CREATE2
     this.singletonFactory = await ISingletonFactory.at(CREATE2_FACTORY);
-    await this.singletonFactory.deploy(bytecode, STAKING_REWARDS_ADAPTER_REGISTRY_SALT);
+    await this.singletonFactory.deploy(
+      bytecode,
+      STAKING_REWARDS_ADAPTER_REGISTRY_SALT
+    );
     this.adapter = await StakingRewardsAdapter.at(adapterAddr);
     this.adapterRegistry = await StakingRewardsAdapterRegistry.at(
       STAKING_REWARDS_ADAPTER_REGISTRY
@@ -79,7 +82,7 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
     // Register adapter to AdapterRegistry
     await this.adapterRegistry.register(
       this.adapter.address,
-      utils.asciiToHex('DAI-KNC'),
+      utils.asciiToHex('DAI-KNC')
     );
   });
 
