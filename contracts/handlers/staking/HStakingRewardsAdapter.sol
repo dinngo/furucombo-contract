@@ -8,12 +8,8 @@ import "../../staking/IStakingRewardsAdapterRegistry.sol";
 
 contract HStakingRewardsAdapter is HandlerBase {
     using SafeERC20 for IERC20;
-
-    // address constant public registry = 0xbeef;
-    // TODO: 
-    // Change the address to adapterRegistry when it is deployed on mainnet.
-    // The one below is handler registry address.
-    IStakingRewardsAdapterRegistry constant public registry = IStakingRewardsAdapterRegistry(0xAf1134A479c0d3eCae95CEc4490B97305Ac17970);
+    
+    IStakingRewardsAdapterRegistry constant public registry = IStakingRewardsAdapterRegistry(0x29336af58E2d5c8A94A02fEeF7Eb43ae4Df28122);
 
     modifier whenAdapterIsValid(address adapter) {
         require(registry.isValid(adapter), "Invalid adapter");

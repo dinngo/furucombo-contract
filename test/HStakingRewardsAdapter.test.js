@@ -19,8 +19,9 @@ const {
   DAI_PROVIDER,
   KNC_TOKEN,
   KNC_PROVIDER,
-  STAKING_ADAPTER_REGISTRY,
-  STAKING_ADAPTER_REGISTRY_OWNER,
+  CREATE2_FACTORY,
+  STAKING_REWARDS_ADAPTER_REGISTRY_SALT,
+  STAKING_REWARDS_ADAPTER_REGISTRY,
 } = require('./utils/constants');
 const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
 
@@ -36,10 +37,13 @@ const StakingRewardsAdapterRegistry = artifacts.require(
   'StakingRewardsAdapterRegistry'
 );
 const IToken = artifacts.require('IERC20');
+const ISingletonFactory = artifacts.require('ISingletonFactory');
 
 contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
   let id;
   let balanceUser;
+  /// Get AdapterRegistry bytecode to deploy using CREATE2
+  const bytecode = StakingRewardsAdapterRegistry.bytecode;
   /// st = stakingToken
   /// rt = rewardToken
   const stAddress = DAI_TOKEN;
@@ -65,14 +69,17 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
       this.staking.address,
       0
     );
+    // Use SingletonFactory to deploy AdapterRegistry using CREATE2
+    this.singletonFactory = await ISingletonFactory.at(CREATE2_FACTORY);
+    await this.singletonFactory.deploy(bytecode, STAKING_REWARDS_ADAPTER_REGISTRY_SALT);
     this.adapter = await StakingRewardsAdapter.at(adapterAddr);
     this.adapterRegistry = await StakingRewardsAdapterRegistry.at(
-      STAKING_ADAPTER_REGISTRY
+      STAKING_REWARDS_ADAPTER_REGISTRY
     );
+    // Register adapter to AdapterRegistry
     await this.adapterRegistry.register(
       this.adapter.address,
       utils.asciiToHex('DAI-KNC'),
-      { from: STAKING_ADAPTER_REGISTRY_OWNER }
     );
   });
 
