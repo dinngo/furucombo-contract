@@ -24,15 +24,6 @@ contract HGasTokens is HandlerBase {
         _updatePostProcess(params);
     }
 
-    function _freeCHI(uint256 gasStart, uint256 amount) internal {
-        uint256 gasSpent = 21000 + gasStart - gasleft() + 16 * msg.data.length;
-        uint256 maxAmount = (gasSpent + 14154) / 41947;
-        IGasTokens(CHI_TOKEN).freeFromUpTo(
-            cache.getSender(),
-            Math.min(amount, maxAmount)
-        );
-    }
-
     function freeGST2(uint256 amount) external payable {
         uint256 gasStart = gasleft();
 
@@ -42,15 +33,6 @@ contract HGasTokens is HandlerBase {
         params[1] = bytes32(amount);
 
         _updatePostProcess(params);
-    }
-
-    function _freeGST2(uint256 gasStart, uint256 amount) internal {
-        uint256 gasSpent = gasStart - gasleft();
-        uint256 maxAmount = (gasSpent + 14154) / (24000 * 2 - 6870);
-        IGasTokens(GST2_TOKEN).freeFromUpTo(
-            cache.getSender(),
-            Math.min(amount, maxAmount)
-        );
     }
 
     function postProcess() external payable {
@@ -63,5 +45,23 @@ contract HGasTokens is HandlerBase {
         } else if (sig == 0xcc608747) {
             _freeGST2(gasStart, amount);
         } else revert("Invalid post process");
+    }
+
+    function _freeCHI(uint256 gasStart, uint256 amount) internal {
+        uint256 gasSpent = 21000 + gasStart - gasleft() + 16 * msg.data.length;
+        uint256 maxAmount = (gasSpent + 14154) / 41947;
+        IGasTokens(CHI_TOKEN).freeFromUpTo(
+            cache.getSender(),
+            Math.min(amount, maxAmount)
+        );
+    }
+
+    function _freeGST2(uint256 gasStart, uint256 amount) internal {
+        uint256 gasSpent = gasStart - gasleft();
+        uint256 maxAmount = (gasSpent + 14154) / 41130;
+        IGasTokens(GST2_TOKEN).freeFromUpTo(
+            cache.getSender(),
+            Math.min(amount, maxAmount)
+        );
     }
 }
