@@ -63,28 +63,34 @@ contract('Create2', function([_, user1, user2]) {
 
   describe('contract address', function() {
     it('user0', async function() {
-      const receipt = await this.factory.deploy(bytecode, STAKING_REWARDS_ADAPTER_REGISTRY_SALT, { from: _ });
+      const deployer = _;
+      const receipt = await this.factory.deploy(bytecode, STAKING_REWARDS_ADAPTER_REGISTRY_SALT, { from: deployer });
       const log = receipt.receipt.rawLogs[1];
       console.log(`user0 topics: ${log.topics[0]}`);
       console.log(`user0 contract: ${log.address}`);
+      console.log(`tx.origin: ${deployer}`);
     });
 
     it('user1', async function() {
+      const deployer = user1;
       const receipt = await this.factory.deploy(bytecode, STAKING_REWARDS_ADAPTER_REGISTRY_SALT, {
-        from: user1,
+        from: deployer,
       });
       const log = receipt.receipt.rawLogs[1];
       console.log(`user1 topics: ${log.topics[0]}`);
       console.log(`user1 contract: ${log.address}`);
+      console.log(`tx.origin: ${deployer}`);
     });
 
     it('user2', async function() {
+      const deployer = user2;
       const receipt = await this.factory.deploy(bytecode, STAKING_REWARDS_ADAPTER_REGISTRY_SALT, {
-        from: user2,
+        from: deployer,
       });
       const log = receipt.receipt.rawLogs[1];
       console.log(`user2 topics: ${log.topics[0]}`);
       console.log(`user2 contract: ${log.address}`);
+      console.log(`tx.origin: ${deployer}`);
     });
   });
 });
