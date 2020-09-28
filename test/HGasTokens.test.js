@@ -19,7 +19,7 @@ const IGasTokens = artifacts.require('IGasTokens');
 const IToken = artifacts.require('IERC20');
 const HKyberNetwork = artifacts.require('HKyberNetwork');
 
-contract('GasTokens', function([_, user, someone]) {
+contract('GasTokens', function([_, user]) {
   let id;
 
   before(async function() {
