@@ -79,8 +79,8 @@ contract('Create2', function([_, user1, user2]) {
         useLiteralContent: true
       },
       outputSelection: {
-        '*': {
-          '*': ['*']
+        'StakingRewardsAdapterRegistry.sol': {
+          'StakingRewardsAdapterRegistry': ['*']
         }
       }
     }

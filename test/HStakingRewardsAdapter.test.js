@@ -13,6 +13,7 @@ const abi = require('ethereumjs-abi');
 const utils = web3.utils;
 
 const { expect } = require('chai');
+const solc = require('solc');
 
 const {
   DAI_TOKEN,
@@ -22,10 +23,11 @@ const {
   CREATE2_FACTORY,
   STAKING_REWARDS_ADAPTER_REGISTRY_SALT,
   STAKING_REWARDS_ADAPTER_REGISTRY,
-  STAKING_REWARDS_ADAPTER_REGISTRY_BYTECODE
 } = require('./utils/constants');
 const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
 
+const Ownable = artifacts.require('Ownable');
+const Context = artifacts.require('Context');
 const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('ProxyMock');
 const HStakingRewardsAdapter = artifacts.require('HStakingRewardsAdapter');
@@ -41,11 +43,37 @@ const IToken = artifacts.require('IERC20');
 const ISingletonFactory = artifacts.require('ISingletonFactory');
 
 contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
+  /// ======== Use solcjs to get AdapterRegistry bytecode for CREATE2 ========
+  const solcInput = {
+    language: 'Solidity',
+    sources: {
+      'StakingRewardsAdapterRegistry.sol': {
+        content: StakingRewardsAdapterRegistry.source
+      }
+    },
+    settings: {
+      remappings: [ ":g=/dir" ],
+      optimizer: {
+        enabled: true,
+        runs: 200,
+      },
+      metadata: {
+        // Use only literal content and not URLs (false by default)
+        useLiteralContent: true
+      },
+      outputSelection: {
+        'StakingRewardsAdapterRegistry.sol': {
+          'StakingRewardsAdapterRegistry': ['*']
+        }
+      }
+    }
+  };
+  const solcOutput = JSON.parse(solc.compile(JSON.stringify(solcInput), {import: findImports}));
+  const bytecodeStr = solcOutput.contracts['StakingRewardsAdapterRegistry.sol']['StakingRewardsAdapterRegistry'].evm.bytecode.object;
+  const bytecode = '0x' + bytecodeStr;
+  /// =======================================================================
   let id;
   let balanceUser;
-  /// Get AdapterRegistry bytecode to deploy using CREATE2
-  // const bytecode = StakingRewardsAdapterRegistry.bytecode;
-  const bytecode = STAKING_REWARDS_ADAPTER_REGISTRY_BYTECODE;
   /// st = stakingToken
   /// rt = rewardToken
   const stAddress = DAI_TOKEN;
@@ -514,4 +542,18 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
 
 function getBuffer(num) {
   return new BN(num).mul(new BN(1001)).div(new BN(1000));
+}
+
+function findImports(path) {
+  if (path === '@openzeppelin/contracts/ownership/Ownable.sol')
+    return {
+      contents:
+        Ownable.source
+    };
+  else if (path === '@openzeppelin/contracts/GSN/Context.sol')
+  return {
+    contents:
+        Context.source
+  };
+  else return { error: 'File not found' };
 }
