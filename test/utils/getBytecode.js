@@ -69,7 +69,7 @@ function getAdapterRegistryBytecodeBySolc() {
       },
       outputSelection: {
         'StakingRewardsAdapterRegistry.sol': {
-          'StakingRewardsAdapterRegistry': ['*'],
+          StakingRewardsAdapterRegistry: ['*'],
         },
       },
     },
