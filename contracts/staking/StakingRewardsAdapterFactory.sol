@@ -4,7 +4,6 @@ import "@openzeppelin/contracts/ownership/Ownable.sol";
 
 import "./StakingRewardsAdapter.sol";
 
-
 contract StakingRewardsAdapterFactory is Ownable {
     // List of adapters
     mapping(address => address[]) public adapters;

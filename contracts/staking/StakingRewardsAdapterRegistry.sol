@@ -9,8 +9,8 @@ contract StakingRewardsAdapterRegistry is Ownable {
     bytes32 constant DEPRECATED = bytes10(0x64657072656361746564);
 
     /**
-     * @notice Transfer ownership to tx.origin since we are 
-     * using a create2 factory to deploy contract, and the 
+     * @notice Transfer ownership to tx.origin since we are
+     * using a create2 factory to deploy contract, and the
      * owner will be the factory if we do not transfer.
      * Ref: https://eips.ethereum.org/EIPS/eip-2470
      */

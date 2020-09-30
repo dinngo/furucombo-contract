@@ -91,7 +91,9 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
       this.staking.address,
       1
     );
-    this.unregisteredAdapter = await StakingRewardsAdapter.at(unregisteredAdapterAddr);
+    this.unregisteredAdapter = await StakingRewardsAdapter.at(
+      unregisteredAdapterAddr
+    );
   });
 
   beforeEach(async function() {
@@ -238,10 +240,13 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
       );
 
       // Proxy stake to adapter for user
-      await expectRevert(this.proxy.execMock(this.hAdapter.address, data, {
-        from: user,
-        value: ether('0.1'),
-      }), "Invalid adapter");
+      await expectRevert(
+        this.proxy.execMock(this.hAdapter.address, data, {
+          from: user,
+          value: ether('0.1'),
+        }),
+        'Invalid adapter'
+      );
     });
 
     it('unregistered adapter: stakeFor', async function() {
@@ -260,10 +265,13 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
       );
 
       // Proxy stake to adapter for user initiated by someone
-      await expectRevert(this.proxy.execMock(this.hAdapter.address, data, {
-        from: someone,
-        value: ether('0.1'),
-      }), "Invalid adapter");
+      await expectRevert(
+        this.proxy.execMock(this.hAdapter.address, data, {
+          from: someone,
+          value: ether('0.1'),
+        }),
+        'Invalid adapter'
+      );
     });
   });
 
@@ -372,7 +380,9 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
       await this.st.transfer(user, sValue, { from: stProviderAddress });
 
       // Stake by user self and proxy will withdrawFor user later
-      await this.st.approve(this.unregisteredAdapter.address, sValue, { from: user });
+      await this.st.approve(this.unregisteredAdapter.address, sValue, {
+        from: user,
+      });
       await this.unregisteredAdapter.stake(sValue, { from: user });
 
       // Notify reward
@@ -382,7 +392,9 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
       await this.staking.notifyRewardAmount(rValue, { from: _ });
 
       // User approve proxy as agent
-      await this.unregisteredAdapter.setApproval(this.proxy.address, true, { from: user });
+      await this.unregisteredAdapter.setApproval(this.proxy.address, true, {
+        from: user,
+      });
 
       // Proxy withdrawFor user
       const data = abi.simpleEncode(
@@ -390,10 +402,13 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
         this.unregisteredAdapter.address,
         sValue
       );
-      await expectRevert(this.proxy.execMock(this.hAdapter.address, data, {
-        from: user,
-        value: ether('0.1'),
-      }), "Invalid adapter");
+      await expectRevert(
+        this.proxy.execMock(this.hAdapter.address, data, {
+          from: user,
+          value: ether('0.1'),
+        }),
+        'Invalid adapter'
+      );
     });
   });
 
@@ -500,7 +515,9 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
       await this.st.transfer(user, sValue, { from: stProviderAddress });
 
       // Stake by user self and proxy will exitFor user later
-      await this.st.approve(this.unregisteredAdapter.address, sValue, { from: user });
+      await this.st.approve(this.unregisteredAdapter.address, sValue, {
+        from: user,
+      });
       await this.unregisteredAdapter.stake(sValue, { from: user });
 
       // Notify reward
@@ -510,14 +527,22 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
       await this.staking.notifyRewardAmount(rValue, { from: _ });
 
       // User approve proxy as agent
-      await this.unregisteredAdapter.setApproval(this.proxy.address, true, { from: user });
+      await this.unregisteredAdapter.setApproval(this.proxy.address, true, {
+        from: user,
+      });
 
       // Proxy exitFor user
-      const data = abi.simpleEncode('exit(address)', this.unregisteredAdapter.address);
-      await expectRevert(this.proxy.execMock(this.hAdapter.address, data, {
-        from: user,
-        value: ether('0.1'),
-      }), "Invalid adapter");
+      const data = abi.simpleEncode(
+        'exit(address)',
+        this.unregisteredAdapter.address
+      );
+      await expectRevert(
+        this.proxy.execMock(this.hAdapter.address, data, {
+          from: user,
+          value: ether('0.1'),
+        }),
+        'Invalid adapter'
+      );
     });
   });
 
@@ -620,7 +645,9 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
       await this.st.transfer(user, sValue, { from: stProviderAddress });
 
       // Stake by user self and proxy will getRewardFor user later
-      await this.st.approve(this.unregisteredAdapter.address, sValue, { from: user });
+      await this.st.approve(this.unregisteredAdapter.address, sValue, {
+        from: user,
+      });
       await this.unregisteredAdapter.stake(sValue, { from: user });
 
       // Notify reward
@@ -630,14 +657,22 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
       await this.staking.notifyRewardAmount(rValue, { from: _ });
 
       // User approve proxy as agent
-      await this.unregisteredAdapter.setApproval(this.proxy.address, true, { from: user });
+      await this.unregisteredAdapter.setApproval(this.proxy.address, true, {
+        from: user,
+      });
 
       // Proxy getRewardFor user
-      const data = abi.simpleEncode('getReward(address)', this.unregisteredAdapter.address);
-      await expectRevert(this.proxy.execMock(this.hAdapter.address, data, {
-        from: user,
-        value: ether('0.1'),
-      }), "Invalid adapter");
+      const data = abi.simpleEncode(
+        'getReward(address)',
+        this.unregisteredAdapter.address
+      );
+      await expectRevert(
+        this.proxy.execMock(this.hAdapter.address, data, {
+          from: user,
+          value: ether('0.1'),
+        }),
+        'Invalid adapter'
+      );
     });
   });
 });
@@ -651,28 +686,33 @@ function getRegistryBytecodeBySolc() {
     language: 'Solidity',
     sources: {
       'StakingRewardsAdapterRegistry.sol': {
-        content: StakingRewardsAdapterRegistry.source
-      }
+        content: StakingRewardsAdapterRegistry.source,
+      },
     },
     settings: {
-      remappings: [ ":g=/dir" ],
+      remappings: [':g=/dir'],
       optimizer: {
         enabled: true,
         runs: 200,
       },
       metadata: {
         // Use only literal content and not URLs (false by default)
-        useLiteralContent: true
+        useLiteralContent: true,
       },
       outputSelection: {
         'StakingRewardsAdapterRegistry.sol': {
-          'StakingRewardsAdapterRegistry': ['*']
-        }
-      }
-    }
+          StakingRewardsAdapterRegistry: ['*'],
+        },
+      },
+    },
   };
-  const solcOutput = JSON.parse(solc.compile(JSON.stringify(solcInput), {import: findImports}));
-  const bytecodeStr = solcOutput.contracts['StakingRewardsAdapterRegistry.sol']['StakingRewardsAdapterRegistry'].evm.bytecode.object;
+  const solcOutput = JSON.parse(
+    solc.compile(JSON.stringify(solcInput), { import: findImports })
+  );
+  const bytecodeStr =
+    solcOutput.contracts['StakingRewardsAdapterRegistry.sol'][
+      'StakingRewardsAdapterRegistry'
+    ].evm.bytecode.object;
   const bytecode = '0x' + bytecodeStr;
   return bytecode;
 }
@@ -680,13 +720,11 @@ function getRegistryBytecodeBySolc() {
 function findImports(path) {
   if (path === '@openzeppelin/contracts/ownership/Ownable.sol')
     return {
-      contents:
-        Ownable.source
+      contents: Ownable.source,
     };
   else if (path === '@openzeppelin/contracts/GSN/Context.sol')
-  return {
-    contents:
-        Context.source
-  };
+    return {
+      contents: Context.source,
+    };
   else return { error: 'File not found' };
 }
