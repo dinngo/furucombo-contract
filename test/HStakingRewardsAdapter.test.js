@@ -43,35 +43,6 @@ const IToken = artifacts.require('IERC20');
 const ISingletonFactory = artifacts.require('ISingletonFactory');
 
 contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
-  /// ======== Use solcjs to get AdapterRegistry bytecode for CREATE2 ========
-  const solcInput = {
-    language: 'Solidity',
-    sources: {
-      'StakingRewardsAdapterRegistry.sol': {
-        content: StakingRewardsAdapterRegistry.source
-      }
-    },
-    settings: {
-      remappings: [ ":g=/dir" ],
-      optimizer: {
-        enabled: true,
-        runs: 200,
-      },
-      metadata: {
-        // Use only literal content and not URLs (false by default)
-        useLiteralContent: true
-      },
-      outputSelection: {
-        'StakingRewardsAdapterRegistry.sol': {
-          'StakingRewardsAdapterRegistry': ['*']
-        }
-      }
-    }
-  };
-  const solcOutput = JSON.parse(solc.compile(JSON.stringify(solcInput), {import: findImports}));
-  const bytecodeStr = solcOutput.contracts['StakingRewardsAdapterRegistry.sol']['StakingRewardsAdapterRegistry'].evm.bytecode.object;
-  const bytecode = '0x' + bytecodeStr;
-  /// =======================================================================
   let id;
   let balanceUser;
   /// st = stakingToken
@@ -101,14 +72,10 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
     );
     // Use SingletonFactory to deploy AdapterRegistry using CREATE2
     this.singletonFactory = await ISingletonFactory.at(CREATE2_FACTORY);
-    const tx = await this.singletonFactory.deploy(
-      bytecode,
+    await this.singletonFactory.deploy(
+      getRegistryBytecodeBySolc(),
       STAKING_REWARDS_ADAPTER_REGISTRY_SALT
     );
-    const log = tx.receipt.rawLogs[1];
-    console.log(`user0 topics: ${log.topics[0]}`);
-    console.log(`user0 contract: ${log.address}`);
-
     this.adapter = await StakingRewardsAdapter.at(adapterAddr);
     this.adapterRegistry = await StakingRewardsAdapterRegistry.at(
       STAKING_REWARDS_ADAPTER_REGISTRY
@@ -118,6 +85,13 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
       this.adapter.address,
       utils.asciiToHex('DAI-KNC')
     );
+    // Deploy another adapter which will not be registered in AdapterRegistry
+    await this.factory.newAdapter(this.staking.address);
+    const unregisteredAdapterAddr = await this.factory.adapters.call(
+      this.staking.address,
+      1
+    );
+    this.unregisteredAdapter = await StakingRewardsAdapter.at(unregisteredAdapterAddr);
   });
 
   beforeEach(async function() {
@@ -248,6 +222,49 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
       expect(await this.st.balanceOf(someone)).to.be.zero;
       profileGas(receipt);
     });
+
+    it('unregistered adapter: stake', async function() {
+      // Prepare staking data
+      const sValue = ether('100');
+      // Transfer stakingToken to proxy
+      await this.st.transfer(this.proxy.address, sValue, {
+        from: stProviderAddress,
+      });
+      await this.proxy.updateTokenMock(this.st.address);
+      const data = abi.simpleEncode(
+        'stake(address,uint256)',
+        this.unregisteredAdapter.address,
+        sValue
+      );
+
+      // Proxy stake to adapter for user
+      await expectRevert(this.proxy.execMock(this.hAdapter.address, data, {
+        from: user,
+        value: ether('0.1'),
+      }), "Invalid adapter");
+    });
+
+    it('unregistered adapter: stakeFor', async function() {
+      // Prepare staking data
+      const sValue = ether('100');
+      // Transfer stakingToken to proxy
+      await this.st.transfer(this.proxy.address, sValue, {
+        from: stProviderAddress,
+      });
+      await this.proxy.updateTokenMock(this.st.address);
+      const data = abi.simpleEncode(
+        'stakeFor(address,address,uint256)',
+        this.unregisteredAdapter.address,
+        user,
+        sValue
+      );
+
+      // Proxy stake to adapter for user initiated by someone
+      await expectRevert(this.proxy.execMock(this.hAdapter.address, data, {
+        from: someone,
+        value: ether('0.1'),
+      }), "Invalid adapter");
+    });
   });
 
   describe('Withdraw', function() {
@@ -347,6 +364,37 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
         'StakingRewardsAdapter: agent not been approved'
       );
     });
+
+    it('unregistered adapter', async function() {
+      // Prepare staking data
+      const sValue = ether('100');
+      const rValue = ether('6048');
+      await this.st.transfer(user, sValue, { from: stProviderAddress });
+
+      // Stake by user self and proxy will withdrawFor user later
+      await this.st.approve(this.unregisteredAdapter.address, sValue, { from: user });
+      await this.unregisteredAdapter.stake(sValue, { from: user });
+
+      // Notify reward
+      await this.rt.transfer(this.staking.address, rValue, {
+        from: rtProviderAddress,
+      });
+      await this.staking.notifyRewardAmount(rValue, { from: _ });
+
+      // User approve proxy as agent
+      await this.unregisteredAdapter.setApproval(this.proxy.address, true, { from: user });
+
+      // Proxy withdrawFor user
+      const data = abi.simpleEncode(
+        'withdraw(address,uint256)',
+        this.unregisteredAdapter.address,
+        sValue
+      );
+      await expectRevert(this.proxy.execMock(this.hAdapter.address, data, {
+        from: user,
+        value: ether('0.1'),
+      }), "Invalid adapter");
+    });
   });
 
   describe('Exit', function() {
@@ -444,6 +492,33 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
         'StakingRewardsAdapter: agent not been approved'
       );
     });
+
+    it('unregistered adapter', async function() {
+      // Prepare staking data
+      const sValue = ether('100');
+      const rValue = ether('6048');
+      await this.st.transfer(user, sValue, { from: stProviderAddress });
+
+      // Stake by user self and proxy will exitFor user later
+      await this.st.approve(this.unregisteredAdapter.address, sValue, { from: user });
+      await this.unregisteredAdapter.stake(sValue, { from: user });
+
+      // Notify reward
+      await this.rt.transfer(this.staking.address, rValue, {
+        from: rtProviderAddress,
+      });
+      await this.staking.notifyRewardAmount(rValue, { from: _ });
+
+      // User approve proxy as agent
+      await this.unregisteredAdapter.setApproval(this.proxy.address, true, { from: user });
+
+      // Proxy exitFor user
+      const data = abi.simpleEncode('exit(address)', this.unregisteredAdapter.address);
+      await expectRevert(this.proxy.execMock(this.hAdapter.address, data, {
+        from: user,
+        value: ether('0.1'),
+      }), "Invalid adapter");
+    });
   });
 
   describe('GetReward', function() {
@@ -537,11 +612,69 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
         'StakingRewardsAdapter: agent not been approved'
       );
     });
+
+    it('unregistered adapter', async function() {
+      // Prepare staking data
+      const sValue = ether('100');
+      const rValue = ether('6048');
+      await this.st.transfer(user, sValue, { from: stProviderAddress });
+
+      // Stake by user self and proxy will getRewardFor user later
+      await this.st.approve(this.unregisteredAdapter.address, sValue, { from: user });
+      await this.unregisteredAdapter.stake(sValue, { from: user });
+
+      // Notify reward
+      await this.rt.transfer(this.staking.address, rValue, {
+        from: rtProviderAddress,
+      });
+      await this.staking.notifyRewardAmount(rValue, { from: _ });
+
+      // User approve proxy as agent
+      await this.unregisteredAdapter.setApproval(this.proxy.address, true, { from: user });
+
+      // Proxy getRewardFor user
+      const data = abi.simpleEncode('getReward(address)', this.unregisteredAdapter.address);
+      await expectRevert(this.proxy.execMock(this.hAdapter.address, data, {
+        from: user,
+        value: ether('0.1'),
+      }), "Invalid adapter");
+    });
   });
 });
 
 function getBuffer(num) {
   return new BN(num).mul(new BN(1001)).div(new BN(1000));
+}
+
+function getRegistryBytecodeBySolc() {
+  const solcInput = {
+    language: 'Solidity',
+    sources: {
+      'StakingRewardsAdapterRegistry.sol': {
+        content: StakingRewardsAdapterRegistry.source
+      }
+    },
+    settings: {
+      remappings: [ ":g=/dir" ],
+      optimizer: {
+        enabled: true,
+        runs: 200,
+      },
+      metadata: {
+        // Use only literal content and not URLs (false by default)
+        useLiteralContent: true
+      },
+      outputSelection: {
+        'StakingRewardsAdapterRegistry.sol': {
+          'StakingRewardsAdapterRegistry': ['*']
+        }
+      }
+    }
+  };
+  const solcOutput = JSON.parse(solc.compile(JSON.stringify(solcInput), {import: findImports}));
+  const bytecodeStr = solcOutput.contracts['StakingRewardsAdapterRegistry.sol']['StakingRewardsAdapterRegistry'].evm.bytecode.object;
+  const bytecode = '0x' + bytecodeStr;
+  return bytecode;
 }
 
 function findImports(path) {
