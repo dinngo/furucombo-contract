@@ -64,6 +64,10 @@ contract('Create2', function([_, user1, user2]) {
         enabled: true,
         runs: 200,
       },
+      metadata: {
+        // Use only literal content and not URLs (false by default)
+        useLiteralContent: true
+      },
       outputSelection: {
         '*': {
           '*': ['*']
