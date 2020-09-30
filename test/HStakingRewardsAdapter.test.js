@@ -13,7 +13,6 @@ const abi = require('ethereumjs-abi');
 const utils = web3.utils;
 
 const { expect } = require('chai');
-const solc = require('solc');
 
 const {
   DAI_TOKEN,
@@ -25,9 +24,8 @@ const {
   STAKING_REWARDS_ADAPTER_REGISTRY,
 } = require('./utils/constants');
 const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
+const { getAdapterRegistryBytecodeBySolc } = require('./utils/getBytecode');
 
-const Ownable = artifacts.require('Ownable');
-const Context = artifacts.require('Context');
 const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('ProxyMock');
 const HStakingRewardsAdapter = artifacts.require('HStakingRewardsAdapter');
@@ -73,7 +71,7 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
     // Use SingletonFactory to deploy AdapterRegistry using CREATE2
     this.singletonFactory = await ISingletonFactory.at(CREATE2_FACTORY);
     await this.singletonFactory.deploy(
-      getRegistryBytecodeBySolc(),
+      getAdapterRegistryBytecodeBySolc(),
       STAKING_REWARDS_ADAPTER_REGISTRY_SALT
     );
     this.adapter = await StakingRewardsAdapter.at(adapterAddr);
@@ -679,52 +677,4 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
 
 function getBuffer(num) {
   return new BN(num).mul(new BN(1001)).div(new BN(1000));
-}
-
-function getRegistryBytecodeBySolc() {
-  const solcInput = {
-    language: 'Solidity',
-    sources: {
-      'StakingRewardsAdapterRegistry.sol': {
-        content: StakingRewardsAdapterRegistry.source,
-      },
-    },
-    settings: {
-      remappings: [':g=/dir'],
-      optimizer: {
-        enabled: true,
-        runs: 200,
-      },
-      metadata: {
-        // Use only literal content and not URLs (false by default)
-        useLiteralContent: true,
-      },
-      outputSelection: {
-        'StakingRewardsAdapterRegistry.sol': {
-          StakingRewardsAdapterRegistry: ['*'],
-        },
-      },
-    },
-  };
-  const solcOutput = JSON.parse(
-    solc.compile(JSON.stringify(solcInput), { import: findImports })
-  );
-  const bytecodeStr =
-    solcOutput.contracts['StakingRewardsAdapterRegistry.sol'][
-      'StakingRewardsAdapterRegistry'
-    ].evm.bytecode.object;
-  const bytecode = '0x' + bytecodeStr;
-  return bytecode;
-}
-
-function findImports(path) {
-  if (path === '@openzeppelin/contracts/ownership/Ownable.sol')
-    return {
-      contents: Ownable.source,
-    };
-  else if (path === '@openzeppelin/contracts/GSN/Context.sol')
-    return {
-      contents: Context.source,
-    };
-  else return { error: 'File not found' };
 }
