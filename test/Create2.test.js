@@ -13,6 +13,7 @@ const abi = require('ethereumjs-abi');
 const utils = web3.utils;
 
 const { expect } = require('chai');
+const solc = require('solc');
 
 const {
   DAI_TOKEN,
@@ -28,6 +29,8 @@ const {
 } = require('./utils/constants');
 const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
 
+const Ownable = artifacts.require('Ownable');
+const Context = artifacts.require('Context');
 const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('ProxyMock');
 const HStakingRewardsAdapter = artifacts.require('HStakingRewardsAdapter');
@@ -44,13 +47,41 @@ const ISingletonFactory = artifacts.require('ISingletonFactory');
 
 contract('Create2', function([_, user1, user2]) {
   let id;
-  const bytecode = StakingRewardsAdapterRegistry.bytecode;
-  console.log(`bytecode: ${bytecode}`);
-  const salt = utils.asciiToHex('StakingRewardsAdapterRegistry');
+  // const bytecode = StakingRewardsAdapterRegistry.bytecode;
+  // console.log(`bytecode: ${bytecode}`);
+  // const salt = utils.asciiToHex('StakingRewardsAdapterRegistry');
+
+  const input = {
+    language: 'Solidity',
+    sources: {
+      'StakingRewardsAdapterRegistry.sol': {
+        content: StakingRewardsAdapterRegistry.source
+      }
+    },
+    settings: {
+      remappings: [ ":g=/dir" ],
+      optimizer: {
+        enabled: true,
+        runs: 200,
+      },
+      outputSelection: {
+        '*': {
+          '*': ['*']
+        }
+      }
+    }
+  };
+
+  const output = JSON.parse(solc.compile(JSON.stringify(input), {import: findImports}));
+  const bytecodeStr = output.contracts['StakingRewardsAdapterRegistry.sol']['StakingRewardsAdapterRegistry'].evm.bytecode.object;
+  const bytecode = '0x' + bytecodeStr;
+  console.log(`========================================`);
+  console.log(output.contracts['StakingRewardsAdapterRegistry.sol']['StakingRewardsAdapterRegistry'].evm.bytecode.object);
+  // console.log(JSON.stringify(output));
 
   before(async function() {
     this.factory = await ISingletonFactory.at(CREATE2_FACTORY);
-    console.log(`salt: ${salt}`);
+    // console.log(`salt: ${salt}`);
   });
 
   beforeEach(async function() {
@@ -94,3 +125,17 @@ contract('Create2', function([_, user1, user2]) {
     });
   });
 });
+
+function findImports(path) {
+  if (path === '@openzeppelin/contracts/ownership/Ownable.sol')
+    return {
+      contents:
+        Ownable.source
+    };
+  else if (path === '@openzeppelin/contracts/GSN/Context.sol')
+  return {
+    contents:
+        Context.source
+  };
+  else return { error: 'File not found' };
+}
