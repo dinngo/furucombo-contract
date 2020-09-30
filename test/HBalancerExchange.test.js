@@ -8,6 +8,7 @@ const {
   time,
 } = require('@openzeppelin/test-helpers');
 const { tracker } = balance;
+const { MAX_UINT256 } = constants;
 const { latest } = time;
 const {
   filterPoolsWithTokensDirect,
@@ -38,7 +39,12 @@ const {
   WETH_PROVIDER,
   BALANCER_EXCHANGE_PROXY,
 } = require('./utils/constants');
-const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
+const {
+  evmRevert,
+  evmSnapshot,
+  mulPercent,
+  profileGas,
+} = require('./utils/utils');
 
 const HBalancerExchange = artifacts.require('HBalancerExchange');
 const Registry = artifacts.require('Registry');
@@ -47,6 +53,7 @@ const IToken = artifacts.require('IERC20');
 const IExchangeProxy = artifacts.require('IExchangeProxy');
 
 contract('BalancerExchange', function([_, user]) {
+  const slippage = new BN('3');
   let id;
   const token0 = DAI_TOKEN;
   const token1 = WETH_TOKEN;
@@ -109,9 +116,11 @@ contract('BalancerExchange', function([_, user]) {
 
   describe('Multihop swap', function() {
     let balanceUser;
+    let balanceProxy;
 
     beforeEach(async function() {
       balanceUser = await tracker(user);
+      balanceProxy = await tracker(this.proxy.address);
     });
 
     describe('Exact input', function() {
@@ -120,7 +129,15 @@ contract('BalancerExchange', function([_, user]) {
       describe('Ether to Token', function() {
         it('normal', async function() {
           const amount = ether('0.01');
-          const minAmount = ether('0');
+          [, baseAmount] = await getPath(
+            this.token1.address,
+            this.token0.address,
+            amount,
+            0,
+            noPools,
+            swapType
+          );
+          const minAmount = mulPercent(baseAmount, new BN('100').sub(slippage));
           let swaps;
           let totalReturnWei;
           [swaps, totalReturnWei] = await getPath(
@@ -144,21 +161,34 @@ contract('BalancerExchange', function([_, user]) {
             from: user,
             value: amount,
           });
+          expect(await balanceProxy.get()).to.be.zero;
+          expect(
+            await this.token0.balanceOf.call(this.proxy.address)
+          ).to.be.zero;
           expect(await balanceUser.delta()).to.be.bignumber.eq(
             ether('0')
               .sub(amount)
               .sub(new BN(receipt.receipt.gasUsed))
           );
           expect(await this.token0.balanceOf.call(user)).to.be.bignumber.eq(
-            utils.toBN(totalReturnWei)
+            totalReturnWei
           );
+          profileGas(receipt);
         });
       });
 
       describe('Token to Ether', function() {
         it('normal', async function() {
           const amount = ether('1');
-          const minAmount = ether('0');
+          [, baseAmount] = await getPath(
+            this.token0.address,
+            this.token1.address,
+            amount,
+            0,
+            noPools,
+            swapType
+          );
+          const minAmount = mulPercent(baseAmount, new BN('100').sub(slippage));
           let swaps;
           let totalReturnWei;
           [swaps, totalReturnWei] = await getPath(
@@ -186,17 +216,30 @@ contract('BalancerExchange', function([_, user]) {
             from: user,
             value: ether('0.1'),
           });
+          expect(await balanceProxy.get()).to.be.zero;
+          expect(
+            await this.token0.balanceOf.call(this.proxy.address)
+          ).to.be.zero;
           expect(await this.token0.balanceOf.call(user)).to.be.zero;
           expect(await balanceUser.delta()).to.be.bignumber.eq(
-            utils.toBN(totalReturnWei).sub(new BN(receipt.receipt.gasUsed))
+            totalReturnWei.sub(new BN(receipt.receipt.gasUsed))
           );
+          profileGas(receipt);
         });
       });
 
       describe('Token to Token', function() {
         it('normal', async function() {
           const amount = ether('1');
-          const minAmount = ether('0');
+          [, baseAmount] = await getPath(
+            this.token0.address,
+            this.token1.address,
+            amount,
+            0,
+            noPools,
+            swapType
+          );
+          const minAmount = mulPercent(baseAmount, new BN('100').sub(slippage));
           let swaps;
           let totalReturnWei;
           [swaps, totalReturnWei] = await getPath(
@@ -223,10 +266,18 @@ contract('BalancerExchange', function([_, user]) {
             from: user,
             value: ether('0.1'),
           });
+          expect(await balanceProxy.get()).to.be.zero;
+          expect(
+            await this.token0.balanceOf.call(this.proxy.address)
+          ).to.be.zero;
+          expect(
+            await this.token1.balanceOf.call(this.proxy.address)
+          ).to.be.zero;
           expect(await this.token0.balanceOf.call(user)).to.be.zero;
           expect(await this.token1.balanceOf.call(user)).to.be.bignumber.eq(
-            utils.toBN(totalReturnWei)
+            totalReturnWei
           );
+          profileGas(receipt);
         });
       });
     });
@@ -237,7 +288,15 @@ contract('BalancerExchange', function([_, user]) {
       describe('Ether to Token', function() {
         it('normal', async function() {
           const amount = ether('1');
-          const maxAmount = ether('0.1');
+          [, baseAmount] = await getPath(
+            this.token1.address,
+            this.token0.address,
+            amount,
+            MAX_UINT256,
+            noPools,
+            swapType
+          );
+          const maxAmount = mulPercent(baseAmount, new BN('100').add(slippage));
           let swaps;
           let totalReturnWei;
           [swaps, totalReturnWei] = await getPath(
@@ -260,21 +319,34 @@ contract('BalancerExchange', function([_, user]) {
             from: user,
             value: maxAmount,
           });
+          expect(await balanceProxy.get()).to.be.zero;
+          expect(
+            await this.token0.balanceOf.call(this.proxy.address)
+          ).to.be.zero;
           expect(await balanceUser.delta()).to.be.bignumber.eq(
             ether('0')
-              .sub(utils.toBN(totalReturnWei))
+              .sub(totalReturnWei)
               .sub(new BN(receipt.receipt.gasUsed))
           );
           expect(await this.token0.balanceOf.call(user)).to.be.bignumber.eq(
-            utils.toBN(amount)
+            amount
           );
+          profileGas(receipt);
         });
       });
 
       describe('Token to Ether', function() {
         it('normal', async function() {
           const amount = ether('0.01');
-          const maxAmount = ether('100');
+          [, baseAmount] = await getPath(
+            this.token0.address,
+            this.token1.address,
+            amount,
+            MAX_UINT256,
+            noPools,
+            swapType
+          );
+          const maxAmount = mulPercent(baseAmount, new BN('100').add(slippage));
           let swaps;
           let totalReturnWei;
           [swaps, totalReturnWei] = await getPath(
@@ -301,19 +373,32 @@ contract('BalancerExchange', function([_, user]) {
             from: user,
             value: ether('0.1'),
           });
+          expect(await balanceProxy.get()).to.be.zero;
+          expect(
+            await this.token0.balanceOf.call(this.proxy.address)
+          ).to.be.zero;
           expect(await this.token0.balanceOf.call(user)).to.be.bignumber.eq(
-            maxAmount.sub(utils.toBN(totalReturnWei))
+            maxAmount.sub(totalReturnWei)
           );
           expect(await balanceUser.delta()).to.be.bignumber.eq(
             amount.sub(new BN(receipt.receipt.gasUsed))
           );
+          profileGas(receipt);
         });
       });
 
       describe('Token to Token', function() {
         it('normal', async function() {
           const amount = ether('0.01');
-          const maxAmount = ether('100');
+          [, baseAmount] = await getPath(
+            this.token0.address,
+            this.token1.address,
+            amount,
+            MAX_UINT256,
+            noPools,
+            swapType
+          );
+          const maxAmount = mulPercent(baseAmount, new BN('100').add(slippage));
           let swaps;
           let totalReturnWei;
           [swaps, totalReturnWei] = await getPath(
@@ -339,12 +424,20 @@ contract('BalancerExchange', function([_, user]) {
             from: user,
             value: ether('0.1'),
           });
+          expect(await balanceProxy.get()).to.be.zero;
+          expect(
+            await this.token0.balanceOf.call(this.proxy.address)
+          ).to.be.zero;
+          expect(
+            await this.token1.balanceOf.call(this.proxy.address)
+          ).to.be.zero;
           expect(await this.token0.balanceOf.call(user)).to.be.bignumber.eq(
-            maxAmount.sub(utils.toBN(totalReturnWei))
+            maxAmount.sub(totalReturnWei)
           );
           expect(await this.token1.balanceOf.call(user)).to.be.bignumber.eq(
             amount
           );
+          profileGas(receipt);
         });
       });
     });
@@ -473,7 +566,9 @@ async function getPath(
   const paths = processPaths(pathData, pools, swapType);
   const epsOfInterest = processEpsOfInterestMultiHop(paths, swapType, noPools);
 
-  return smartOrderRouterMultiHopEpsOfInterest(
+  let swaps;
+  let totalReturnWei;
+  [swaps, totalReturnWei] = smartOrderRouterMultiHopEpsOfInterest(
     JSON.parse(JSON.stringify(pools)),
     paths,
     swapType,
@@ -482,4 +577,5 @@ async function getPath(
     new bignumber(costReturnToken),
     epsOfInterest
   );
+  return [swaps, utils.toBN(totalReturnWei)];
 }
