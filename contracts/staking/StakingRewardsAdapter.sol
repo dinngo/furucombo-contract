@@ -220,8 +220,8 @@ contract StakingRewardsAdapter is
 
     /* ========== EVENTS ========== */
 
-    event Staked(address sender, address onBehalfOf, uint256 amount);
-    event Withdrawn(address sender, address onBehalfOf, uint256 amount);
-    event ClaimedReward(address sender, address onBehalfOf, uint256 amount);
-    event Approval(address owner, address agent, bool approval);
+    event Staked(address indexed sender, address indexed onBehalfOf, uint256 amount);
+    event Withdrawn(address indexed sender, address indexed onBehalfOf, uint256 amount);
+    event ClaimedReward(address indexed sender, address indexed onBehalfOf, uint256 amount);
+    event Approval(address indexed owner, address indexed agent, bool approval);
 }
