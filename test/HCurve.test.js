@@ -348,7 +348,7 @@ contract('Curve', function([_, user]) {
       });
 
       it('remove from pool to WBTC by removeLiquidityOneCoin', async function() {
-        const poolTokenUser = ether('1');
+        const poolTokenUser = ether('0.1');
         const token1UserBefore = await this.token1.balanceOf.call(user);
         const answer = await this.sbtcSwap.calc_withdraw_one_coin.call(
           poolTokenUser,
