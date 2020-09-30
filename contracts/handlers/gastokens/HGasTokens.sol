@@ -14,7 +14,7 @@ contract HGasTokens is HandlerBase {
     address public constant GST2_TOKEN = 0x0000000000b3F879cb30FE243b4Dfee438691c04;
 
     function freeCHI(uint256 amount) external payable {
-        uint256 gasStart = gasleft();
+        uint256 gasStart = 21000 + gasleft() + 16 * msg.data.length;
 
         // Update post process
         bytes32[] memory params = new bytes32[](2);
@@ -25,7 +25,7 @@ contract HGasTokens is HandlerBase {
     }
 
     function freeGST2(uint256 amount) external payable {
-        uint256 gasStart = gasleft();
+        uint256 gasStart = 21000 + gasleft() + 16 * msg.data.length;
 
         // Update post process
         bytes32[] memory params = new bytes32[](2);
@@ -48,7 +48,7 @@ contract HGasTokens is HandlerBase {
     }
 
     function _freeCHI(uint256 gasStart, uint256 amount) internal {
-        uint256 gasSpent = 21000 + gasStart - gasleft() + 16 * msg.data.length;
+        uint256 gasSpent = gasStart - gasleft();
         uint256 maxAmount = (gasSpent + 14154) / 41947;
         IGasTokens(CHI_TOKEN).freeFromUpTo(
             cache.getSender(),
