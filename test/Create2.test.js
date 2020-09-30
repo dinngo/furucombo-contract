@@ -51,6 +51,16 @@ contract('Create2', function([_, user1, user2]) {
   // console.log(`bytecode: ${bytecode}`);
   // const salt = utils.asciiToHex('StakingRewardsAdapterRegistry');
 
+  solc.loadRemoteVersion('v0.5.16+commit.9c3226ce', function(err, solcSnapshot) {
+    if (err) {
+      console.log('shiiiiiiiiiiiit')
+    } else {
+      // NOTE: Use `solcSnapshot` here with the same interface `solc` has
+    }
+  });
+
+  console.log(`version: ${JSON.stringify(solc)}`);
+
   const input = {
     language: 'Solidity',
     sources: {
