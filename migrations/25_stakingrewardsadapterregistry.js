@@ -13,7 +13,7 @@ module.exports = async function(deployer) {
     getAdapterRegistryBytecodeBySolc(),
     STAKING_REWARDS_ADAPTER_REGISTRY_SALT
   );
-  // Check if deplpyed contract address is same to the predicted one
+  // Check if deployed contract address is same to the predicted one
   const log = tx.receipt.rawLogs[1];
   const registryAddr = log.address;
   if(registryAddr != STAKING_REWARDS_ADAPTER_REGISTRY) {

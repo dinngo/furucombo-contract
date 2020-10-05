@@ -32,9 +32,6 @@ contract('StakingRewardsAdapterRegistry', function([
 
   beforeEach(async function() {
     this.registry = await StakingRewardsAdapterRegistry.new();
-  });
-
-  beforeEach(async function() {
     id = await evmSnapshot();
   });
 
@@ -101,7 +98,7 @@ contract('StakingRewardsAdapterRegistry', function([
     });
   });
 
-  describe('updateInfo', function() {
+  describe('update info', function() {
     beforeEach(async function() {
       const info = utils.fromAscii('test');
       await this.registry.register(handler1, info);
