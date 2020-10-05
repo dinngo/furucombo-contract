@@ -19,7 +19,7 @@ contract StakingRewardsAdapterRegistry is Ownable {
     }
 
     /**
-     * @notice Register a adapter with a bytes32 information.
+     * @notice Register an adapter with a bytes32 information.
      * @param registration Adapter address.
      * @param info Info string.
      */
@@ -30,7 +30,7 @@ contract StakingRewardsAdapterRegistry is Ownable {
     }
 
     /**
-     * @notice Unregister a adapter. The adapter will be deprecated.
+     * @notice Unregister an adapter. The adapter will be deprecated.
      * @param registration The adapter to be unregistered.
      */
     function unregister(address registration) external onlyOwner {

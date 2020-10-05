@@ -9,7 +9,8 @@ import "../../staking/IStakingRewardsAdapterRegistry.sol";
 contract HStakingRewardsAdapter is HandlerBase {
     using SafeERC20 for IERC20;
     
-    IStakingRewardsAdapterRegistry constant public registry = IStakingRewardsAdapterRegistry(0xC06d79Ec1EB8D0E480095310835FFfc2D68299Bc);
+    // prettier-ignore
+    IStakingRewardsAdapterRegistry constant public registry = IStakingRewardsAdapterRegistry(0x288289d71DAAbe134fEA5bDc8a385578636b560e);
 
     modifier whenAdapterIsValid(address adapter) {
         require(registry.isValid(adapter), "Invalid adapter");
