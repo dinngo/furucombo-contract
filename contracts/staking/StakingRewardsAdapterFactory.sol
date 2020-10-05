@@ -8,7 +8,7 @@ contract StakingRewardsAdapterFactory is Ownable {
     // List of adapters
     mapping(address => address[]) public adapters;
 
-    event NewAdapter(address stakingContract, address adapter);
+    event NewAdapter(address indexed stakingContract, address indexed adapter);
 
     function newAdapter(address _stakingContract)
         external
