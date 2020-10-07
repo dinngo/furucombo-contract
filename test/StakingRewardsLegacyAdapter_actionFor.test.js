@@ -28,7 +28,9 @@ const StakingRewardsAdapterFactory = artifacts.require(
   'StakingRewardsAdapterFactory'
 );
 const IToken = artifacts.require('IERC20');
-const IRewardDistributionRecipient = artifacts.require('IRewardDistributionRecipient');
+const IRewardDistributionRecipient = artifacts.require(
+  'IRewardDistributionRecipient'
+);
 
 contract('StakingRewardsLegacyAdapter - Action For', function([
   _,

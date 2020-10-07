@@ -28,9 +28,17 @@ const StakingRewardsAdapterFactory = artifacts.require(
   'StakingRewardsAdapterFactory'
 );
 const IToken = artifacts.require('IERC20');
-const IRewardDistributionRecipient = artifacts.require('IRewardDistributionRecipient');
+const IRewardDistributionRecipient = artifacts.require(
+  'IRewardDistributionRecipient'
+);
 
-contract('StakingRewardsLagecyAdapter', function([_, user0, user1, user2, pauser]) {
+contract('StakingRewardsLagecyAdapter', function([
+  _,
+  user0,
+  user1,
+  user2,
+  pauser,
+]) {
   let id;
   /// user0 stake to the original staking contract
   /// user1 stake to the adapter contract

@@ -33,7 +33,11 @@ contract StakingRewardsAdapter is
 
     /* ========== CONSTRUCTOR ========== */
 
-    constructor(address _stakingContract, address _stakingToken, address _rewardsToken) public {
+    constructor(
+        address _stakingContract,
+        address _stakingToken,
+        address _rewardsToken
+    ) public {
         stakingContract = IStakingRewards(_stakingContract);
         stakingToken = IERC20(_stakingToken);
         rewardsToken = IERC20(_rewardsToken);
