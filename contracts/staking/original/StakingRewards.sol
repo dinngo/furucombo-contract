@@ -9,13 +9,13 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 // Inheritance
 import "../IStakingRewards.sol";
 import "./dependency/RewardsDistributionRecipient.sol";
-import "./dependency/Pausable.sol";
+import "./dependency/SynthetixPausable.sol";
 
 contract StakingRewards is
     IStakingRewards,
     RewardsDistributionRecipient,
     ReentrancyGuard,
-    Pausable
+    SynthetixPausable
 {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
