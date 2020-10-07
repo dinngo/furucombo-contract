@@ -4,7 +4,7 @@ import "@openzeppelin/contracts/ownership/Ownable.sol";
 
 /// @notice The stakingRewardsAdapter registry database for Furucombo
 contract StakingRewardsAdapterRegistry is Ownable {
-    mapping(address => bytes32) adapters;
+    mapping(address => bytes32) public adapters;
 
     bytes32 constant DEPRECATED = bytes10(0x64657072656361746564);
 
