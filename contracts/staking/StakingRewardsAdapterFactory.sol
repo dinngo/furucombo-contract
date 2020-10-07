@@ -10,14 +10,16 @@ contract StakingRewardsAdapterFactory is Ownable {
 
     event NewAdapter(address indexed stakingContract, address indexed adapter);
 
-    function newAdapter(address _stakingContract)
+    function newAdapter(address _stakingContract, address _stakingToken, address _rewardsToken)
         external
         onlyOwner
         returns (address)
     {
         // Deploy new adapter
         StakingRewardsAdapter adapter = new StakingRewardsAdapter(
-            _stakingContract
+            _stakingContract,
+            _stakingToken,
+            _rewardsToken
         );
         // Transfer pausership to factory owner and renounce
         adapter.addPauser(owner());
