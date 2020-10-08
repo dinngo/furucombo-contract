@@ -9,7 +9,7 @@ contract HStakingRewardsAdapter is HandlerBase {
     using SafeERC20 for IERC20;
 
     // prettier-ignore
-    IStakingRewardsAdapterRegistry constant public registry = IStakingRewardsAdapterRegistry(0xFad99cE8CA1ff29cb6fEe3Fc8c86975228b3f8cF);
+    IStakingRewardsAdapterRegistry constant public registry = IStakingRewardsAdapterRegistry(0xf60B06f7E41E1cF69eff2667eae88F60f62ae87B);
 
     modifier whenAdapterIsValid(address adapter) {
         require(registry.isValid(adapter), "Invalid adapter");
