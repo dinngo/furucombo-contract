@@ -47,6 +47,7 @@ contract StakingRewardsAdapterRegistry is Ownable {
      */
     function updateInfo(address adapter, bytes32 info) external onlyOwner {
         require(adapter != address(0), "zero address");
+        require(info != bytes32(0), "update info to 0 is prohibited");
         require(adapters[adapter] != bytes32(0), "no registration");
         require(adapters[adapter] != DEPRECATED, "unregistered");
         adapters[adapter] = info;

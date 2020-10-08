@@ -132,6 +132,13 @@ contract('StakingRewardsAdapterRegistry', function([
         'unregistered'
       );
     });
+
+    it('update to 0', async function() {
+      await expectRevert(
+        this.registry.updateInfo(handler1, constants.ZERO_BYTES32),
+        'update info to 0 is prohibited'
+      );
+    });
   });
 
   describe('get info', function() {
