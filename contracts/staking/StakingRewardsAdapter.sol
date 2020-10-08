@@ -39,8 +39,13 @@ contract StakingRewardsAdapter is
         address _rewardsToken
     ) public {
         stakingContract = IStakingRewards(_stakingContract);
-        stakingToken = IERC20(_stakingToken);
-        rewardsToken = IERC20(_rewardsToken);
+        if(_stakingToken == address(0) && _rewardsToken == address(0)){
+            stakingToken = stakingContract.stakingToken();
+            rewardsToken = stakingContract.rewardsToken();
+        }else {
+            stakingToken = IERC20(_stakingToken);
+            rewardsToken = IERC20(_rewardsToken);
+        }
     }
 
     /* ========== VIEWS ========== */

@@ -48,7 +48,7 @@ contract('StakingRewardsAdapter', function([_, user0, user1, user2, pauser]) {
     this.staking = await StakingRewards.new(_, _, rtAddress, stAddress);
     // Deploy new adapter through factory
     this.factory = await StakingRewardsAdapterFactory.new();
-    await this.factory.newAdapter(this.staking.address, stAddress, rtAddress);
+    await this.factory.newAdapter(this.staking.address, constants.ZERO_ADDRESS, constants.ZERO_ADDRESS);
     const adapterAddr = await this.factory.adapters.call(
       this.staking.address,
       0
