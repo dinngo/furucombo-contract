@@ -63,7 +63,11 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
     this.staking = await StakingRewards.new(_, _, rtAddress, stAddress);
     // Deploy new adapter through factory
     this.factory = await StakingRewardsAdapterFactory.new();
-    await this.factory.newAdapter(this.staking.address, constants.ZERO_ADDRESS, constants.ZERO_ADDRESS);
+    await this.factory.newAdapter(
+      this.staking.address,
+      constants.ZERO_ADDRESS,
+      constants.ZERO_ADDRESS
+    );
     const adapterAddr = await this.factory.adapters.call(
       this.staking.address,
       0
@@ -84,7 +88,11 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
       utils.asciiToHex('DAI-KNC')
     );
     // Deploy another adapter which will not be registered in AdapterRegistry
-    await this.factory.newAdapter(this.staking.address, constants.ZERO_ADDRESS, constants.ZERO_ADDRESS);
+    await this.factory.newAdapter(
+      this.staking.address,
+      constants.ZERO_ADDRESS,
+      constants.ZERO_ADDRESS
+    );
     const unregisteredAdapterAddr = await this.factory.adapters.call(
       this.staking.address,
       1
