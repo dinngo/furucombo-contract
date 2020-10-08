@@ -31,8 +31,8 @@ contract('StakingRewardsAdapterRegistry', function([
   let id;
 
   beforeEach(async function() {
-    this.registry = await StakingRewardsAdapterRegistry.new();
     id = await evmSnapshot();
+    this.registry = await StakingRewardsAdapterRegistry.new();
   });
 
   afterEach(async function() {
