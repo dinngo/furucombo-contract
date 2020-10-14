@@ -17,5 +17,9 @@ module.exports = async function(deployer) {
     const adapter = tx.logs[0].args.adapter;
     // Register
     await registry.register(adapter, web3.utils.fromAscii(mintr.info));
+    console.log(`deployed adapters[${i}]:`);
+    console.log(`>>> adapter address = ${adapter}`);
+    console.log(`>>> mintr   address = ${mintr.contract}`);
+    console.log(`>>> info            = ${mintr.info}`);
   }
 };

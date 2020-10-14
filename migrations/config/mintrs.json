@@ -1,6 +1,5 @@
 {
     "mintrs": [
-        {"contract": "0xDCB6A51eA3CA5d3Fd898Fd6564757c7aAeC3ca92", "info": "SCRV-SNX", "stakingToken": "0xc25a3a3b969415c80451098fa907ec722572917f", "rewardsToken": "0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f"},
-        {"contract": "0xC746bc860781DC90BBFCD381d6A058Dc16357F8d", "info": "IETH-SNX", "stakingToken": "0xa9859874e1743a32409f75bb11549892138bba1e", "rewardsToken": "0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f"}
+        {"contract": "0xDCB6A51eA3CA5d3Fd898Fd6564757c7aAeC3ca92", "info": "SCRV-SNX", "stakingToken": "0xc25a3a3b969415c80451098fa907ec722572917f", "rewardsToken": "0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f"}
     ]
 }
