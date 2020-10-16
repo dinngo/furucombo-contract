@@ -28,7 +28,7 @@
     "chai-bignumber": "^3.0.0",
     "ethereumjs-abi": "^0.6.8",
     "ethereumjs-util": "^6.2.0",
-    "ganache-cli": "^6.10.2-forking.0",
+    "ganache-cli": "6.11.0",
     "husky": "^4.2.5",
     "node-fetch": "^2.6.0",
     "prettier": "^1.19.1",

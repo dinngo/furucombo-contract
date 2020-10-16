@@ -70,7 +70,7 @@ contract('Balancer', function([_, user]) {
     this.tokenB = await IToken.at(tokenBAddress);
     this.tokenC = await IToken.at(tokenCAddress);
     this.balancerPoolToken = await IToken.at(balancerPoolAddress);
-    await this.tokenA.transfer(user, ether('100'), {
+    await this.tokenA.transfer(user, ether('10'), {
       from: tokenAProviderAddress,
     });
     await this.tokenB.transfer(user, ether('1000'), {
