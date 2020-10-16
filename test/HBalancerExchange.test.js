@@ -128,7 +128,7 @@ contract('BalancerExchange', function([_, user]) {
       const noPools = 4;
       describe('Ether to Token', function() {
         it('normal', async function() {
-          const amount = ether('0.01');
+          const amount = ether('0.00001');
           [, baseAmount] = await getPath(
             this.token1.address,
             this.token0.address,
@@ -179,7 +179,7 @@ contract('BalancerExchange', function([_, user]) {
 
       describe('Token to Ether', function() {
         it('normal', async function() {
-          const amount = ether('1');
+          const amount = ether('0.00001');
           [, baseAmount] = await getPath(
             this.token0.address,
             this.token1.address,
@@ -230,7 +230,7 @@ contract('BalancerExchange', function([_, user]) {
 
       describe('Token to Token', function() {
         it('normal', async function() {
-          const amount = ether('1');
+          const amount = ether('0.00001');
           [, baseAmount] = await getPath(
             this.token0.address,
             this.token1.address,
@@ -337,7 +337,7 @@ contract('BalancerExchange', function([_, user]) {
 
       describe('Token to Ether', function() {
         it('normal', async function() {
-          const amount = ether('0.01');
+          const amount = ether('0.00001');
           [, baseAmount] = await getPath(
             this.token0.address,
             this.token1.address,
@@ -389,7 +389,7 @@ contract('BalancerExchange', function([_, user]) {
 
       describe('Token to Token', function() {
         it('normal', async function() {
-          const amount = ether('0.01');
+          const amount = ether('0.0001');
           [, baseAmount] = await getPath(
             this.token0.address,
             this.token1.address,
@@ -550,8 +550,8 @@ async function getPath(
     hopTokens,
   ] = await filterPoolsWithTokensMultihop(
     allPoolsNonZeroBalances.pools,
-    tokenIn,
-    tokenOut,
+    tokenIn.toLowerCase(),
+    tokenOut.toLowerCase(),
     { isOverRide: true, disabledTokens: disabledTokens.tokens }
   );
   let pools, pathData;
