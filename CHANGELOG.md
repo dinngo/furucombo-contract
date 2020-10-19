@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+## [0.12.0] - 2020-10-19
+
 ### Added
 
 - Support CHI and GST2 gas tokens in `HGasTokens`.
