@@ -36,9 +36,11 @@ start_ganache() {
     CURVE_SBTCCRV_PROVIDER="0x2d407ddb06311396fe14d4b49da5f0471447d45c"
     CHI_PROVIDER="0x5B1fC2435B1f7C16c206e7968C0e8524eC29b786"
     GST2_PROVIDER="0xDB73875FB771b95d6FECf967c00E00862c133F32"
+    MUSD_PROVIDER="0xa0f75491720835b36edC92D06DDc468D201e9b73"
+    CURVE_MUSDCRV_PROVIDER="0xDA5aEF9f347E6C27Ff1a8d8a72C0b89E35e6Dff1"
 
     # node_modules/.bin/ganache-cli --gasLimit 0xfffffffffff -m "$TEST_MNEMONIC_PHRASE" > /dev/null &
-    node_modules/.bin/ganache-cli --gasLimit 0xfffffffffff --debug -f $ETH_MAINNET_NODE -m "$TEST_MNEMONIC_PHRASE" -u "$ETHER_PROVIDER" -u "$DAI_PROVIDER" -u "$MKR_PROVIDER" -u "$BAT_PROVIDER" -u "$USDT_PROVIDER" -u "$SUSD_PROVIDER" -u "$WBTC_PROVIDER" -u "$KNC_PROVIDER" -u "$WETH_PROVIDER" -u "$RENBTC_PROVIDER" -u "$YCRV_PROVIDER" -u "$TCRV_PROVIDER" -u "$YFI_PROVIDER" -u "$ALINK_PROVIDER" -u "$CURVE_SBTCCRV_PROVIDER" -u "$CHI_PROVIDER" -u "$GST2_PROVIDER" > /dev/null &
+    node_modules/.bin/ganache-cli --gasLimit 0xfffffffffff --debug -f $ETH_MAINNET_NODE -m "$TEST_MNEMONIC_PHRASE" -u "$ETHER_PROVIDER" -u "$DAI_PROVIDER" -u "$MKR_PROVIDER" -u "$BAT_PROVIDER" -u "$USDT_PROVIDER" -u "$SUSD_PROVIDER" -u "$WBTC_PROVIDER" -u "$KNC_PROVIDER" -u "$WETH_PROVIDER" -u "$RENBTC_PROVIDER" -u "$YCRV_PROVIDER" -u "$TCRV_PROVIDER" -u "$YFI_PROVIDER" -u "$ALINK_PROVIDER" -u "$CURVE_SBTCCRV_PROVIDER" -u "$CHI_PROVIDER" -u "$GST2_PROVIDER" -u "$MUSD_PROVIDER" -u "$CURVE_MUSDCRV_PROVIDER" > /dev/null &
 
     ganache_pid=$!
 }
@@ -51,6 +53,9 @@ else
 fi
 
 truffle version
+
+node_modules/.bin/truffle test "test/HCurve.test.js"
+exit
 
 # Execute rest test files with suffix `.test.js` with single `truffle test`
 node_modules/.bin/truffle test "$@"
