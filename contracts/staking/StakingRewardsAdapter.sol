@@ -63,9 +63,6 @@ contract StakingRewardsAdapter is
     }
 
     function rewardPerToken() public view returns (uint256) {
-        if (_totalSupply == 0) {
-            return rewardPerTokenStored;
-        }
         return stakingContract.rewardPerToken();
     }
 

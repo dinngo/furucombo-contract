@@ -75,6 +75,52 @@ contract('StakingRewardsAdapter', function([_, user0, user1, user2, pauser]) {
       rewardUser2Amount = await this.rt.balanceOf.call(user2);
     });
 
+    it('original begins first, then someone stake through adapter', async function() {
+      // Prepare staking data
+      const sValue = ether('100');
+      const rValue = ether('6048');
+      // User0 stakes to original to make `rewardPerToken` change
+      await this.st.transfer(user0, sValue, { from: stProviderAddress });
+      await this.st.approve(this.staking.address, sValue, { from: user0 });
+      await this.staking.stake(sValue, { from: user0 });
+
+      // Notify reward
+      await this.rt.transfer(this.staking.address, rValue, {
+        from: rtProviderAddress,
+      });
+      await this.staking.notifyRewardAmount(rValue, { from: _ });
+
+      // Make time elapsed for easier number verification
+      await increase(duration.days(1));
+
+      // Make sure `rewardPerToken` has started to accumulate
+      const rptOriginal = await this.staking.rewardPerToken.call();
+      expect(rptOriginal).to.be.bignumber.gt(ether('0'));
+
+      // User1 stakes through adapter after original already starts for a while
+      await this.st.transfer(user1, sValue, { from: stProviderAddress });
+      await this.st.approve(this.adapter.address, sValue, { from: user1 });
+      await this.adapter.stake(sValue, { from: user1 });
+
+      // Make time elapsed for easier number verification
+      await increase(duration.days(1));
+
+      // Verify user1 gets whole share of adapter
+      const earnedAdapter = await this.staking.earned.call(
+        this.adapter.address
+      );
+      const earnedUser1 = await this.adapter.earned.call(user1);
+      expect(earnedUser1).to.be.bignumber.eq(earnedAdapter);
+
+      // Actually invoke getReward and verify amount
+      await this.adapter.getReward({ from: user1 });
+      const rewardUser1AmountAfter = await this.rt.balanceOf(user1);
+      const rewardUser1Got = rewardUser1AmountAfter.sub(rewardUser1Amount);
+      // Verify 'earned <= rewardActuallyGot <= earned * 1.001' caused by timestamp differ
+      expect(rewardUser1Got).to.be.bignumber.gte(earnedUser1);
+      expect(rewardUser1Got).to.be.bignumber.lte(getBuffer(earnedUser1));
+    });
+
     it('1 on original - 1 on adapter', async function() {
       // Prepare staking data
       const sValue = ether('100');
