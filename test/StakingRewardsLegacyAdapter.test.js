@@ -32,7 +32,7 @@ const IRewardDistributionRecipient = artifacts.require(
   'IRewardDistributionRecipient'
 );
 
-contract('StakingRewardsLagecyAdapter', function([
+contract('StakingRewardsLegacyAdapter', function([
   _,
   user0,
   user1,
