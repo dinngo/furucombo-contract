@@ -2,8 +2,7 @@ pragma solidity ^0.5.0;
 
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "../HandlerBase.sol";
-import "./ICurveSwap.sol";
-import "./ICurveDeposit.sol";
+import "./ICurveHandler.sol";
 import "./IOneSplit.sol";
 
 contract HCurve is HandlerBase {
@@ -12,42 +11,40 @@ contract HCurve is HandlerBase {
     // prettier-ignore
     address public constant ONE_SPLIT = 0xC586BeF4a0992C495Cf22e1aeEE4E446CECDee0E;
 
-    // Curve fixed input used for susd, ren and sbtc pools
+    // Curve fixed input exchange
     function exchange(
-        address swap,
+        address handler,
+        address tokenI,
+        address tokenJ,
         int128 i,
         int128 j,
         uint256 dx,
         uint256 minDy
     ) external payable {
-        ICurveSwap curveSwap = ICurveSwap(swap);
-        IERC20(curveSwap.coins(i)).safeApprove(address(curveSwap), dx);
-        curveSwap.exchange(i, j, dx, minDy);
-        IERC20(curveSwap.coins(i)).safeApprove(address(curveSwap), 0);
+        ICurveHandler curveHandler = ICurveHandler(handler);
+        IERC20(tokenI).safeApprove(address(curveHandler), dx);
+        curveHandler.exchange(i, j, dx, minDy);
+        IERC20(tokenI).safeApprove(address(curveHandler), 0);
 
-        _updateToken(curveSwap.coins(j));
+        _updateToken(tokenJ);
     }
 
-    // Curve fixed input used for compound, y, busd and pax pools
+    // Curve fixed input underlying exchange
     function exchangeUnderlying(
-        address swap,
+        address handler,
+        address tokenI,
+        address tokenJ,
         int128 i,
         int128 j,
         uint256 dx,
         uint256 minDy
     ) external payable {
-        ICurveSwap curveSwap = ICurveSwap(swap);
-        IERC20(curveSwap.underlying_coins(i)).safeApprove(
-            address(curveSwap),
-            dx
-        );
-        curveSwap.exchange_underlying(i, j, dx, minDy);
-        IERC20(curveSwap.underlying_coins(i)).safeApprove(
-            address(curveSwap),
-            0
-        );
+        ICurveHandler curveHandler = ICurveHandler(handler);
+        IERC20(tokenI).safeApprove(address(curveHandler), dx);
+        curveHandler.exchange_underlying(i, j, dx, minDy);
+        IERC20(tokenI).safeApprove(address(curveHandler), 0);
 
-        _updateToken(curveSwap.underlying_coins(j));
+        _updateToken(tokenJ);
     }
 
     // OneSplit fixed input used for Curve swap
@@ -74,40 +71,56 @@ contract HCurve is HandlerBase {
         _updateToken(toToken);
     }
 
-    // Curve add liquidity used for susd, ren and sbtc pools which don't use
-    // underlying tokens.
+    // Curve add liquidity need exact array size for each pool
     function addLiquidity(
-        address swapAddress,
+        address handler,
         address pool,
+        address[] calldata tokens,
         uint256[] calldata amounts,
         uint256 minMintAmount
     ) external payable {
-        ICurveSwap curveSwap = ICurveSwap(swapAddress);
+        ICurveHandler curveHandler = ICurveHandler(handler);
 
         // Approve non-zero amount erc20 token
         for (uint256 i = 0; i < amounts.length; i++) {
             if (amounts[i] == 0) continue;
-            IERC20(curveSwap.coins(int128(i))).safeApprove(
-                address(curveSwap),
-                amounts[i]
-            );
+            IERC20(tokens[i]).safeApprove(address(curveHandler), amounts[i]);
         }
 
         // Execute add_liquidity according to amount array size
-        if (amounts.length == 4) {
+        if (amounts.length == 2) {
+            uint256[2] memory amts = [amounts[0], amounts[1]];
+            curveHandler.add_liquidity(amts, minMintAmount);
+        } else if (amounts.length == 3) {
+            uint256[3] memory amts = [amounts[0], amounts[1], amounts[2]];
+            curveHandler.add_liquidity(amts, minMintAmount);
+        } else if (amounts.length == 4) {
             uint256[4] memory amts = [
                 amounts[0],
                 amounts[1],
                 amounts[2],
                 amounts[3]
             ];
-            curveSwap.add_liquidity(amts, minMintAmount);
-        } else if (amounts.length == 3) {
-            uint256[3] memory amts = [amounts[0], amounts[1], amounts[2]];
-            curveSwap.add_liquidity(amts, minMintAmount);
-        } else if (amounts.length == 2) {
-            uint256[2] memory amts = [amounts[0], amounts[1]];
-            curveSwap.add_liquidity(amts, minMintAmount);
+            curveHandler.add_liquidity(amts, minMintAmount);
+        } else if (amounts.length == 5) {
+            uint256[5] memory amts = [
+                amounts[0],
+                amounts[1],
+                amounts[2],
+                amounts[3],
+                amounts[4]
+            ];
+            curveHandler.add_liquidity(amts, minMintAmount);
+        } else if (amounts.length == 6) {
+            uint256[6] memory amts = [
+                amounts[0],
+                amounts[1],
+                amounts[2],
+                amounts[3],
+                amounts[4],
+                amounts[5]
+            ];
+            curveHandler.add_liquidity(amts, minMintAmount);
         } else {
             revert("invalid amount array size");
         }
@@ -115,108 +128,51 @@ contract HCurve is HandlerBase {
         // Reset zero amount for approval
         for (uint256 i = 0; i < amounts.length; i++) {
             if (amounts[i] == 0) continue;
-            IERC20(curveSwap.coins(int128(i))).safeApprove(
-                address(curveSwap),
-                0
-            );
+            IERC20(tokens[i]).safeApprove(address(curveHandler), 0);
         }
 
         // Update post process
         _updateToken(address(pool));
     }
 
-    // Curve add liquidity used for compound, y, busd and pax pools using
-    // zap which is wrapped contract called deposit.
-    function addLiquidityZap(
-        address deposit,
-        uint256[] calldata uamounts,
-        uint256 minMintAmount
-    ) external payable {
-        ICurveDeposit curveDeposit = ICurveDeposit(deposit);
-
-        // Approve non-zero amount erc20 token
-        for (uint256 i = 0; i < uamounts.length; i++) {
-            if (uamounts[i] == 0) continue;
-            IERC20(curveDeposit.underlying_coins(int128(i))).safeApprove(
-                address(curveDeposit),
-                uamounts[i]
-            );
-        }
-
-        // Execute add_liquidity according to uamount array size
-        if (uamounts.length == 4) {
-            uint256[4] memory amts = [
-                uamounts[0],
-                uamounts[1],
-                uamounts[2],
-                uamounts[3]
-            ];
-            curveDeposit.add_liquidity(amts, minMintAmount);
-        } else if (uamounts.length == 3) {
-            uint256[3] memory amts = [uamounts[0], uamounts[1], uamounts[2]];
-            curveDeposit.add_liquidity(amts, minMintAmount);
-        } else if (uamounts.length == 2) {
-            uint256[2] memory amts = [uamounts[0], uamounts[1]];
-            curveDeposit.add_liquidity(amts, minMintAmount);
-        } else {
-            revert("invalid uamount array size");
-        }
-
-        // Reset zero amount for approval
-        for (uint256 i = 0; i < uamounts.length; i++) {
-            if (uamounts[i] == 0) continue;
-            IERC20(curveDeposit.underlying_coins(int128(i))).safeApprove(
-                address(curveDeposit),
-                0
-            );
-        }
-
-        // Update post process
-        _updateToken(curveDeposit.token());
-    }
-
-    // Curve remove liquidity one coin used for ren and sbtc pools which don't
-    // use underlying tokens.
+    // Curve remove liquidity one coin
     function removeLiquidityOneCoin(
-        address swapAddress,
+        address handler,
         address pool,
+        address tokenI,
         uint256 tokenAmount,
         int128 i,
         uint256 minAmount
     ) external payable {
-        ICurveSwap curveSwap = ICurveSwap(swapAddress);
-        IERC20(pool).safeApprove(address(curveSwap), tokenAmount);
-        curveSwap.remove_liquidity_one_coin(tokenAmount, i, minAmount);
-        IERC20(pool).safeApprove(address(curveSwap), 0);
+        ICurveHandler curveHandler = ICurveHandler(handler);
+        IERC20(pool).safeApprove(address(curveHandler), tokenAmount);
+        curveHandler.remove_liquidity_one_coin(tokenAmount, i, minAmount);
+        IERC20(pool).safeApprove(address(curveHandler), 0);
 
         // Update post process
-        _updateToken(curveSwap.coins(i));
+        _updateToken(tokenI);
     }
 
-    // Curve remove liquidity one coin used for compound, y, busd, pax and susd
-    // pools using zap which is wrapped contract called deposit. Note that if we
-    // use susd remove_liquidity_one_coin() it must be the one in deposit
-    // instead of swap contract.
-    function removeLiquidityOneCoinZap(
-        address deposit,
+    // Curve remove liquidity one coin and donate dust
+    function removeLiquidityOneCoinDust(
+        address handler,
+        address pool,
+        address tokenI,
         uint256 tokenAmount,
         int128 i,
-        uint256 minUamount
+        uint256 minAmount
     ) external payable {
-        ICurveDeposit curveDeposit = ICurveDeposit(deposit);
-        IERC20(curveDeposit.token()).safeApprove(
-            address(curveDeposit),
-            tokenAmount
-        );
-        curveDeposit.remove_liquidity_one_coin(
+        ICurveHandler curveHandler = ICurveHandler(handler);
+        IERC20(pool).safeApprove(address(curveHandler), tokenAmount);
+        curveHandler.remove_liquidity_one_coin(
             tokenAmount,
             i,
-            minUamount,
-            true
+            minAmount,
+            true // donate_dust
         );
-        IERC20(curveDeposit.token()).safeApprove(address(curveDeposit), 0);
+        IERC20(pool).safeApprove(address(curveHandler), 0);
 
         // Update post process
-        _updateToken(curveDeposit.underlying_coins(i));
+        _updateToken(tokenI);
     }
 }
