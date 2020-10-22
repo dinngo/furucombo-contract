@@ -6,6 +6,7 @@ import "@openzeppelin/contracts/utils/Address.sol";
 import "./interface/IRegistry.sol";
 import "./Cache.sol";
 import "./Config.sol";
+import "./lib/LibParam.sol";
 
 /**
  * @title The entrance of Furucombo
@@ -14,10 +15,13 @@ import "./Config.sol";
 contract Proxy is Cache, Config {
     using Address for address;
     using SafeERC20 for IERC20;
+    using LibParam for bytes32;
 
     // keccak256 hash of "furucombo.handler.registry"
     // prettier-ignore
     bytes32 private constant HANDLER_REGISTRY = 0x6874162fd62902201ea0f4bf541086067b3b88bd802fac9e150fd2d1db584e19;
+
+    uint256 private constant PERCENTAGE_BASE = 1 ether;
 
     constructor(address registry) public {
         bytes32 slot = HANDLER_REGISTRY;
@@ -52,12 +56,13 @@ contract Proxy is Cache, Config {
      * @param tos The handlers of combo.
      * @param datas The combo datas.
      */
-    function batchExec(address[] memory tos, bytes[] memory datas)
-        public
-        payable
-    {
+    function batchExec(
+        address[] memory tos,
+        bytes32[] memory configs,
+        bytes[] memory datas
+    ) public payable {
         _preProcess();
-        _execs(tos, datas);
+        _execs(tos, configs, datas);
         _postProcess();
     }
 
@@ -66,9 +71,13 @@ contract Proxy is Cache, Config {
      * @dev This function can only be called through the handler, which makes
      * the caller become proxy itself.
      */
-    function execs(address[] memory tos, bytes[] memory datas) public payable {
+    function execs(
+        address[] memory tos,
+        bytes32[] memory configs,
+        bytes[] memory datas
+    ) public payable {
         require(msg.sender == address(this), "Does not allow external calls");
-        _execs(tos, datas);
+        _execs(tos, configs, datas);
     }
 
     /**
@@ -76,16 +85,74 @@ contract Proxy is Cache, Config {
      * @param tos The handlers of combo.
      * @param datas The combo datas.
      */
-    function _execs(address[] memory tos, bytes[] memory datas) internal {
+    function _execs(
+        address[] memory tos,
+        bytes32[] memory configs,
+        bytes[] memory datas
+    ) internal {
+        bytes32[256] memory localStack;
+        uint256 index = 0;
+
         require(
             tos.length == datas.length,
             "Tos and datas length inconsistent"
         );
         for (uint256 i = 0; i < tos.length; i++) {
-            _exec(tos[i], datas[i]);
+            if (!configs[i].isStatic()) {
+                _trim(datas[i], configs[i], localStack);
+            }
+            bytes memory returnData = _exec(tos[i], datas[i]);
+            if (configs[i].isReferenced()) {
+                index = _parse(localStack, returnData, index);
+            }
             // Setup the process to be triggered in the post-process phase
             _setPostProcess(tos[i]);
         }
+    }
+
+    function _trim(
+        bytes memory data,
+        bytes32 config,
+        bytes32[256] memory localStack
+    ) internal {
+        (uint256[] memory refs, uint256[] memory params) = config.getParams();
+        for (uint256 i = 0; i < refs.length; i++) {
+            bytes32 ref = localStack[refs[i]];
+            uint256 offset = params[i];
+            uint256 base = PERCENTAGE_BASE;
+            assembly {
+                let loc := add(add(data, 0x20), offset)
+                let m := mload(loc)
+                if iszero(iszero(m)) {
+                    ref := div(mul(mload(loc), ref), base)
+                }
+                mstore(loc, ref)
+            }
+        }
+    }
+
+    function _parse(
+        bytes32[256] memory localStack,
+        bytes memory ret,
+        uint256 index
+    ) internal returns (uint256 newIndex) {
+        uint256 len = ret.length;
+        newIndex = index + len / 32;
+        require(newIndex <= 256, "stack overflow");
+        assembly {
+            let offset := shl(5, index)
+            for {
+                let i := 0
+            } lt(i, len) {
+                i := add(i, 0x20)
+            } {
+                mstore(
+                    add(localStack, add(i, offset)),
+                    mload(add(add(ret, i), 0x20))
+                )
+            }
+        }
+        return (index + len / 32);
     }
 
     /**
