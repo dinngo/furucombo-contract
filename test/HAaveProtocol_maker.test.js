@@ -8,6 +8,7 @@ const {
   time,
 } = require('@openzeppelin/test-helpers');
 const { tracker } = balance;
+const { ZERO_BYTES32 } = constants;
 const { latest } = time;
 const abi = require('ethereumjs-abi');
 const util = require('ethereumjs-util');
@@ -155,6 +156,7 @@ contract('Aave flashloan', function([_, user]) {
       balanceUser = await tracker(user);
       const wad = ether('1');
       const testTo = [this.hMaker.address];
+      const testConfig = [ZERO_BYTES32];
       const testData = [
         '0x' +
           abi
@@ -167,8 +169,8 @@ contract('Aave flashloan', function([_, user]) {
             .toString('hex'),
       ];
       const test = web3.eth.abi.encodeParameters(
-        ['address[]', 'bytes[]'],
-        [testTo, testData]
+        ['address[]', 'bytes32[]', 'bytes[]'],
+        [testTo, testConfig, testData]
       );
       const to = this.hAave.address;
       const value = ether('0.1');

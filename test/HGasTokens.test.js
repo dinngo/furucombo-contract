@@ -1,4 +1,5 @@
-const { balance, BN, ether } = require('@openzeppelin/test-helpers');
+const { balance, BN, constants, ether } = require('@openzeppelin/test-helpers');
+const { ZERO_BYTES32 } = constants;
 const { tracker } = balance;
 const { expect } = require('chai');
 const abi = require('ethereumjs-abi');
@@ -51,6 +52,7 @@ contract('GasTokens', function([_, user]) {
 
       // Firstly get gas cost when consume 0 gas token
       const value = ether('1');
+      const config = [ZERO_BYTES32, ZERO_BYTES32];
       const toBefore = [this.hGasTokens.address, this.hKyberNetwork.address];
       const dataBefore = [
         abi.simpleEncode('freeCHI(uint256)', 0),
@@ -62,10 +64,15 @@ contract('GasTokens', function([_, user]) {
         ),
       ];
       const balanceUserBefore = await tracker(user);
-      const receiptBefore = await this.proxy.batchExec(toBefore, dataBefore, {
-        from: user,
-        value: value,
-      });
+      const receiptBefore = await this.proxy.batchExec(
+        toBefore,
+        config,
+        dataBefore,
+        {
+          from: user,
+          value: value,
+        }
+      );
       const gasUsedBefore = new BN(receiptBefore.receipt.gasUsed);
       expect(await balanceUserBefore.delta()).to.be.bignumber.eq(
         ether('0')
@@ -93,7 +100,7 @@ contract('GasTokens', function([_, user]) {
       ];
       const balanceUser = await tracker(user);
       const tokenBalanceBefore = await token.balanceOf.call(user);
-      const receipt = await this.proxy.batchExec(to, data, {
+      const receipt = await this.proxy.batchExec(to, config, data, {
         from: user,
         value: value,
       });
@@ -123,6 +130,7 @@ contract('GasTokens', function([_, user]) {
 
       // Firstly get gas cost when consume 0 gas token
       const value = ether('1');
+      const config = [ZERO_BYTES32, ZERO_BYTES32, ZERO_BYTES32];
       const toBefore = [
         this.hGasTokens.address,
         this.hKyberNetwork.address,
@@ -144,10 +152,15 @@ contract('GasTokens', function([_, user]) {
         ),
       ];
       const balanceUserBefore = await tracker(user);
-      const receiptBefore = await this.proxy.batchExec(toBefore, dataBefore, {
-        from: user,
-        value: value,
-      });
+      const receiptBefore = await this.proxy.batchExec(
+        toBefore,
+        config,
+        dataBefore,
+        {
+          from: user,
+          value: value,
+        }
+      );
       const gasUsedBefore = new BN(receiptBefore.receipt.gasUsed);
       expect(await balanceUserBefore.delta()).to.be.bignumber.eq(
         ether('0')
@@ -185,7 +198,7 @@ contract('GasTokens', function([_, user]) {
       ];
       const balanceUser = await tracker(user);
       const tokenBalanceBefore = await token.balanceOf.call(user);
-      const receipt = await this.proxy.batchExec(to, data, {
+      const receipt = await this.proxy.batchExec(to, config, data, {
         from: user,
         value: value,
       });

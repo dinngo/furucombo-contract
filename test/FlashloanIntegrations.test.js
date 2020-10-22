@@ -8,6 +8,7 @@ const {
   time,
 } = require('@openzeppelin/test-helpers');
 const { tracker } = balance;
+const { ZERO_BYTES32 } = constants;
 const { latest } = time;
 const abi = require('ethereumjs-abi');
 const util = require('ethereumjs-util');
@@ -88,6 +89,7 @@ contract('Aave flashloan', function([_, user]) {
         { from: user, value: value[0] }
       );
       const flashTo = [this.hUniswap.address, this.hUniswap.address];
+      const flashConfig = [ZERO_BYTES32, ZERO_BYTES32];
       const flashData = [
         abi.simpleEncode(
           'ethToTokenSwapInput(uint256,address,uint256):(uint256)',
@@ -104,8 +106,8 @@ contract('Aave flashloan', function([_, user]) {
       ];
       const flashTx = util.toBuffer(
         web3.eth.abi.encodeParameters(
-          ['address[]', 'bytes[]'],
-          [flashTo, flashData]
+          ['address[]', 'bytes32[]', 'bytes[]'],
+          [flashTo, flashConfig, flashData]
         )
       );
       const to = this.hAave.address;
