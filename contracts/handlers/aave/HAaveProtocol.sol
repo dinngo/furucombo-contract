@@ -13,6 +13,7 @@ import "../../interface/IProxy.sol";
 
 contract HAaveProtocol is HandlerBase, FlashLoanReceiverBase {
     using SafeERC20 for IERC20;
+    using SafeMath for uint256;
 
     uint16 constant REFERRAL_CODE = 56;
 
@@ -47,7 +48,7 @@ contract HAaveProtocol is HandlerBase, FlashLoanReceiverBase {
     function deposit(address _reserve, uint256 _amount)
         external
         payable
-        returns (uint256 atoken_amount)
+        returns (uint256 aTokenAmount)
     {
         ILendingPool lendingPool = ILendingPool(
             ILendingPoolAddressesProvider(PROVIDER).getLendingPool()
@@ -74,13 +75,40 @@ contract HAaveProtocol is HandlerBase, FlashLoanReceiverBase {
         // Get AToken after depositing
         uint256 afterATokenBalance = IERC20(aToken).balanceOf(address(this));
         _updateToken(aToken);
-        return (afterATokenBalance - beforeATokenBalance);
+        return (afterATokenBalance.sub(beforeATokenBalance));
     }
 
-    function redeem(address _aToken, uint256 _amount) external payable {
-        IAToken(_aToken).redeem(_amount);
+    function redeem(address _aToken, uint256 _amount)
+        external
+        payable
+        returns (uint256 underlyingAssetAmount)
+    {
+        // Get proxy balance before redeem
+        uint256 beforeUnderlyingAssetAmount;
         address underlyingAsset = IAToken(_aToken).underlyingAssetAddress();
-        if (underlyingAsset != ETHADDRESS) _updateToken(underlyingAsset);
+        if (underlyingAsset != ETHADDRESS) {
+            beforeUnderlyingAssetAmount = IERC20(underlyingAsset).balanceOf(
+                address(this)
+            );
+        } else {
+            beforeUnderlyingAssetAmount = address(this).balance;
+        }
+
+        // Call redeem function
+        IAToken(_aToken).redeem(_amount);
+
+        // Get redeem amount and update token
+        uint256 afterUnderlyingAssetAmount;
+        if (underlyingAsset != ETHADDRESS) {
+            afterUnderlyingAssetAmount = IERC20(underlyingAsset).balanceOf(
+                address(this)
+            );
+            _updateToken(underlyingAsset);
+        } else {
+            afterUnderlyingAssetAmount = address(this).balance;
+        }
+
+        return (afterUnderlyingAssetAmount.sub(beforeUnderlyingAssetAmount));
     }
 
     function _getAToken(address _reserve) internal view returns (address) {

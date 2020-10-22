@@ -162,10 +162,14 @@ contract('Aave', function([_, user]) {
       await this.proxy.updateTokenMock(this.aEther.address);
       await balanceUser.get();
 
+      const handlerAmount = await this.proxy.execMock.call(to, data, {
+        from: user,
+      });
       const receipt = await this.proxy.execMock(to, data, { from: user });
 
       const aEtherUserAfter = await this.aEther.balanceOf.call(user);
       const interestMax = value.mul(new BN(1)).div(new BN(10000));
+      expect(value).to.be.bignumber.eq(utils.toBN(handlerAmount));
       expect(aEtherUserAfter).to.be.bignumber.lt(
         aEtherUserBefore.sub(value).add(interestMax)
       );
@@ -200,11 +204,15 @@ contract('Aave', function([_, user]) {
       await this.proxy.updateTokenMock(this.aToken.address);
       await balanceUser.get();
 
+      const handlerAmount = await this.proxy.execMock.call(to, data, {
+        from: user,
+      });
       const receipt = await this.proxy.execMock(to, data, { from: user });
       const aTokenUserAfter = await this.aToken.balanceOf.call(user);
       const tokenUserAfter = await this.token.balanceOf.call(user);
 
       const interestMax = value.mul(new BN(1)).div(new BN(10000));
+      expect(value).to.be.bignumber.eq(utils.toBN(handlerAmount));
       expect(aTokenUserAfter).to.be.bignumber.lt(
         aTokenUserBefore.sub(value).add(interestMax)
       );
