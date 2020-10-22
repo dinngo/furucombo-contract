@@ -1,4 +1,4 @@
-pragma solidity ^0.5.0;
+pragma solidity ^0.6.0;
 
 library LibCache {
     function setAddress(bytes32[] storage _cache, address _input) internal {

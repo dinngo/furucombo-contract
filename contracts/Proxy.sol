@@ -1,4 +1,4 @@
-pragma solidity ^0.5.0;
+pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
@@ -30,7 +30,7 @@ contract Proxy is Cache, Config {
      * @notice Direct transfer from EOA should be reverted.
      * @dev Callback function will be handled here.
      */
-    function() external payable {
+    fallback() external payable {
         require(Address.isContract(msg.sender), "Not allowed from EOA");
 
         // If triggered by a function call, caller should be registered in registry.
@@ -100,14 +100,14 @@ contract Proxy is Cache, Config {
         require(_isValid(_to), "Invalid handler");
         assembly {
             let succeeded := delegatecall(
-                sub(gas, 5000),
+                sub(gas(), 5000),
                 _to,
                 add(_data, 0x20),
                 mload(_data),
                 0,
                 0
             )
-            let size := returndatasize
+            let size := returndatasize()
 
             result := mload(0x40)
             mstore(
@@ -143,7 +143,7 @@ contract Proxy is Cache, Config {
     }
 
     /// @notice The pre-process phase.
-    function _preProcess() internal isCacheEmpty {
+    function _preProcess() internal virtual isCacheEmpty {
         // Set the sender on the top of cache.
         cache.setSender(msg.sender);
     }

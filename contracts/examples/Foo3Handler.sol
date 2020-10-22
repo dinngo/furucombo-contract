@@ -1,4 +1,4 @@
-pragma solidity ^0.5.0;
+pragma solidity ^0.6.0;
 
 import "../handlers/HandlerBase.sol";
 
@@ -33,7 +33,7 @@ contract Foo3Handler is HandlerBase {
         _updatePostProcess(params);
     }
 
-    function postProcess() external payable {
+    function postProcess() external payable override {
         bytes4 sig = cache.getSig();
         if (sig == bytes4(keccak256(bytes("bar1(address)")))) {
             address foo = cache.getAddress();

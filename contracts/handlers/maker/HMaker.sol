@@ -1,4 +1,4 @@
-pragma solidity ^0.5.0;
+pragma solidity ^0.6.0;
 
 import "./IDSProxy.sol";
 import "./IMaker.sol";
@@ -242,7 +242,7 @@ contract HMaker is HandlerBase {
         IERC20(DAI_TOKEN).safeApprove(address(proxy), 0);
     }
 
-    function postProcess() external payable {
+    function postProcess() external payable override {
         bytes4 sig = cache.getSig();
         // selector of openLockETHAndDraw(uint256,address,address,bytes32,uint256)
         // and openLockGemAndDraw(address,address,bytes32,uint256,uint256)

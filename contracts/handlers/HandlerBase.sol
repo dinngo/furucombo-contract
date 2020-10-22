@@ -1,10 +1,10 @@
-pragma solidity ^0.5.0;
+pragma solidity ^0.6.0;
 
 import "../Cache.sol";
 import "../Config.sol";
 
 contract HandlerBase is Cache, Config {
-    function postProcess() external payable {
+    function postProcess() external payable virtual {
         revert("Invalid post process");
         /* Implementation template
         bytes4 sig = cache.getSig();

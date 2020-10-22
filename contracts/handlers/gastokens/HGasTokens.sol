@@ -1,4 +1,4 @@
-pragma solidity ^0.5.0;
+pragma solidity ^0.6.0;
 
 import "@openzeppelin/contracts/math/Math.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
@@ -35,7 +35,7 @@ contract HGasTokens is HandlerBase {
         _updatePostProcess(params);
     }
 
-    function postProcess() external payable {
+    function postProcess() external payable override {
         bytes4 sig = cache.getSig();
         uint256 gasStart = uint256(cache.get());
         uint256 amount = uint256(cache.get());

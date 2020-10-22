@@ -1,4 +1,4 @@
-pragma solidity ^0.5.0;
+pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
 import "../Proxy.sol";
@@ -21,7 +21,7 @@ contract ProxyMock is Proxy, GasProfiler {
         return result;
     }
 
-    function _preProcess() internal {
+    function _preProcess() internal override {
         // Set the sender on the top of cache.
         if (cache.length != 0) {
             cache.set(cache.peek());
