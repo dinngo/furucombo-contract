@@ -81,6 +81,13 @@ contract('Aave', function([_, user]) {
         ETH_TOKEN,
         value
       );
+
+      // Get handler Return
+      const handlerAmount = await this.proxy.execMock.call(to, data, {
+        from: user,
+        value: value,
+      });
+
       const receipt = await this.proxy.execMock(to, data, {
         from: user,
         value: value,
@@ -88,6 +95,7 @@ contract('Aave', function([_, user]) {
       const aEtherUser = await this.aEther.balanceOf.call(user);
 
       expect(aEtherUser).to.be.bignumber.eq(value);
+      expect(aEtherUser).to.be.bignumber.eq(utils.toBN(handlerAmount));
       expect(await balanceUser.delta()).to.be.bignumber.eq(
         ether('0')
           .sub(value)
@@ -110,10 +118,15 @@ contract('Aave', function([_, user]) {
       });
       await this.proxy.updateTokenMock(this.token.address);
 
+      const handlerAmount = await this.proxy.execMock.call(to, data, {
+        from: user,
+      });
+
       const receipt = await this.proxy.execMock(to, data, { from: user });
       const aTokenUser = await this.aToken.balanceOf.call(user);
 
       expect(aTokenUser).to.be.bignumber.eq(new BN(value));
+      expect(aTokenUser).to.be.bignumber.eq(utils.toBN(handlerAmount));
       expect(await balanceUser.delta()).to.be.bignumber.eq(
         ether('0').sub(new BN(receipt.receipt.gasUsed))
       );
