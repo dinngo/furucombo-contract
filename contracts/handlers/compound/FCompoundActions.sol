@@ -22,14 +22,14 @@ contract FCompoundActions {
     /// @dev User needs to approve the DSProxy to pull the _tokenAddr tokens
     /// @param _tokenAddr The address of the token to be deposited
     /// @param _amount Amount of tokens to be deposited
-    function deposit(address _tokenAddr, uint _amount) public {
+    function deposit(address _tokenAddr, uint256 _amount) public {
         IERC20(_tokenAddr).safeTransferFrom(msg.sender, address(this), _amount);
     }
 
     /// @notice User withdraws tokens from the DSProxy
     /// @param _tokenAddr The address of the token to be withdrawn
     /// @param _amount Amount of tokens to be withdrawn
-    function withdraw(address _tokenAddr, uint _amount) public {
+    function withdraw(address _tokenAddr, uint256 _amount) public {
         if (_tokenAddr == ETH_ADDR) {
             msg.sender.transfer(_amount);
         } else {
@@ -40,7 +40,7 @@ contract FCompoundActions {
     /// @notice DSProxy borrows tokens from the Compound protocol
     /// @param _cTokenAddr CTokens to be borrowed
     /// @param _amount Amount of tokens to be borrowed
-    function borrow(address _cTokenAddr, uint _amount) public {
+    function borrow(address _cTokenAddr, uint256 _amount) public {
         require(ICToken(_cTokenAddr).borrow(_amount) == 0, "FCompoundActions: borrow failed");
     }
 
@@ -48,7 +48,7 @@ contract FCompoundActions {
     /// @notice User paybacks tokens to the Compound protocol
     /// @param _cTokenAddr CTokens to be paybacked
     /// @param _amount Amount of tokens to be payedback
-    function repayBorrow(address _cTokenAddr, uint _amount) public payable {
+    function repayBorrow(address _cTokenAddr, uint256 _amount) public payable {
         uint256 debt = ICToken(_cTokenAddr).borrowBalanceCurrent(address(this));
         // If given `_amount` is greater than current debt, set `_amount` to current debt otherwise repay will fail
         if (_amount > debt) {
