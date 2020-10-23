@@ -1,138 +1,97 @@
-/// This is inspired by CompoundBasicProxy.sol by DeFi Saver
+/// This is inspired by and based on CompoundBasicProxy.sol by DeFi Saver
 /// reference: https://etherscan.io/address/0x336b3919a10ced553c75db18cd285335b8e8ed38#code
 
 pragma solidity 0.5.16;
 
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 
+import "./IComptroller.sol";
+import "./ICToken.sol";
+import "./ICEther.sol";
+
 contract FCompoundActions {
 
     address public constant ETH_ADDR = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
+    address public constant CETH_ADDR = 0x4Ddc2D193948926D02f9B1fE9e1daa0718270ED5;
     address public constant COMPTROLLER_ADDR = 0x3d9819210A31b4961b30EF54bE2aeD79B9c9Cd3B;
 
+    using SafeMath for uint256;
     using SafeERC20 for IERC20;
 
-    /// @notice User deposits tokens to the Compound protocol
+    /// @notice User deposits tokens to the DSProxy
     /// @dev User needs to approve the DSProxy to pull the _tokenAddr tokens
     /// @param _tokenAddr The address of the token to be deposited
-    /// @param _cTokenAddr CTokens to be deposited
     /// @param _amount Amount of tokens to be deposited
-    /// @param _inMarket True if the token is already in market for that address
-    function deposit(address _tokenAddr, address _cTokenAddr, uint _amount, bool _inMarket) public burnGas(5) payable {
-        if (_tokenAddr != ETH_ADDR) {
-            IERC20(_tokenAddr).safeTransferFrom(msg.sender, address(this), _amount);
-        }
-
-        approveToken(_tokenAddr, _cTokenAddr);
-
-        if (!_inMarket) {
-            enterMarket(_cTokenAddr);
-        }
-
-        if (_tokenAddr != ETH_ADDR) {
-            require(CTokenInterface(_cTokenAddr).mint(_amount) == 0);
-        } else {
-            CEtherInterface(_cTokenAddr).mint{value: msg.value}(); // reverts on fail
-        }
+    function deposit(address _tokenAddr, uint _amount) public {
+        IERC20(_tokenAddr).safeTransferFrom(msg.sender, address(this), _amount);
     }
 
-    /// @notice User withdraws tokens to the Compound protocol
+    /// @notice User withdraws tokens from the DSProxy
     /// @param _tokenAddr The address of the token to be withdrawn
-    /// @param _cTokenAddr CTokens to be withdrawn
     /// @param _amount Amount of tokens to be withdrawn
-    /// @param _isCAmount If true _amount is cTokens if falls _amount is underlying tokens
-    function withdraw(address _tokenAddr, address _cTokenAddr, uint _amount, bool _isCAmount) public burnGas(5) {
-
-        if (_isCAmount) {
-            require(CTokenInterface(_cTokenAddr).redeem(_amount) == 0);
+    function withdraw(address _tokenAddr, uint _amount) public {
+        if (_tokenAddr == ETH_ADDR) {
+            msg.sender.transfer(_amount);
         } else {
-            require(CTokenInterface(_cTokenAddr).redeemUnderlying(_amount) == 0);
+            IERC20(_tokenAddr).safeTransfer(msg.sender, _amount);
         }
-
-        // withdraw funds to msg.sender
-        if (_tokenAddr != ETH_ADDR) {
-            IERC20(_tokenAddr).safeTransfer(msg.sender, IERC20(_tokenAddr).balanceOf(address(this)));
-        } else {
-            msg.sender.transfer(address(this).balance);
-        }
-
     }
 
-    /// @notice User borrows tokens to the Compound protocol
-    /// @param _tokenAddr The address of the token to be borrowed
+    /// @notice DSProxy borrows tokens from the Compound protocol
     /// @param _cTokenAddr CTokens to be borrowed
     /// @param _amount Amount of tokens to be borrowed
-    /// @param _inMarket True if the token is already in market for that address
-    function borrow(address _tokenAddr, address _cTokenAddr, uint _amount, bool _inMarket) public burnGas(8) {
-        if (!_inMarket) {
-            enterMarket(_cTokenAddr);
-        }
-
-        require(CTokenInterface(_cTokenAddr).borrow(_amount) == 0);
-
-        // withdraw funds to msg.sender
-        if (_tokenAddr != ETH_ADDR) {
-            IERC20(_tokenAddr).safeTransfer(msg.sender, IERC20(_tokenAddr).balanceOf(address(this)));
-        } else {
-            msg.sender.transfer(address(this).balance);
-        }
+    function borrow(address _cTokenAddr, uint _amount) public {
+        require(ICToken(_cTokenAddr).borrow(_amount) == 0, "FCompoundActions: borrow failed");
     }
 
     /// @dev User needs to approve the DSProxy to pull the _tokenAddr tokens
     /// @notice User paybacks tokens to the Compound protocol
-    /// @param _tokenAddr The address of the token to be paybacked
     /// @param _cTokenAddr CTokens to be paybacked
     /// @param _amount Amount of tokens to be payedback
-    /// @param _wholeDebt If true the _amount will be set to the whole amount of the debt
-    function payback(address _tokenAddr, address _cTokenAddr, uint _amount, bool _wholeDebt) public burnGas(5) payable {
-        approveToken(_tokenAddr, _cTokenAddr);
-
-        if (_wholeDebt) {
-            _amount = CTokenInterface(_cTokenAddr).borrowBalanceCurrent(address(this));
+    function repayBorrow(address _cTokenAddr, uint _amount) public payable {
+        uint256 debt = ICToken(_cTokenAddr).borrowBalanceCurrent(address(this));
+        // If given `_amount` is greater than current debt, set `_amount` to current debt otherwise repay will fail
+        if (_amount > debt) {
+            _amount = debt;
         }
-
-        if (_tokenAddr != ETH_ADDR) {
-            IERC20(_tokenAddr).safeTransferFrom(msg.sender, address(this), _amount);
-
-            require(CTokenInterface(_cTokenAddr).repayBorrow(_amount) == 0);
+        
+        if(_cTokenAddr == CETH_ADDR) {
+            uint256 ethReceived = msg.value;
+            ICEther(_cTokenAddr).repayBorrow.value(_amount)();
+            // send back the extra eth
+            if(ethReceived > _amount) {
+                msg.sender.transfer(ethReceived.sub(_amount));
+            }
         } else {
-            CEtherInterface(_cTokenAddr).repayBorrow{value: msg.value}();
-            msg.sender.transfer(address(this).balance); // send back the extra eth
+            address tokenAddr = ICToken(_cTokenAddr).underlying();
+            IERC20(tokenAddr).safeTransferFrom(msg.sender, address(this), _amount);
+            IERC20(tokenAddr).safeApprove(_cTokenAddr, _amount);
+            require(ICToken(_cTokenAddr).repayBorrow(_amount) == 0, "FCompoundActions: repay token failed");
+            IERC20(tokenAddr).safeApprove(_cTokenAddr, 0);
         }
     }
 
-    /// @notice Helper method to withdraw tokens from the DSProxy
-    /// @param _tokenAddr Address of the token to be withdrawn
-    function withdrawTokens(address _tokenAddr) public {
-        if (_tokenAddr != ETH_ADDR) {
-            IERC20(_tokenAddr).safeTransfer(msg.sender, IERC20(_tokenAddr).balanceOf(address(this)));
-        } else {
-            msg.sender.transfer(address(this).balance);
-        }
-    }
-
-    /// @notice Enters the Compound market so it can be deposited/borrowed
+    /// @notice Enters the Compound market so it can be used as collateral
     /// @param _cTokenAddr CToken address of the token
     function enterMarket(address _cTokenAddr) public {
         address[] memory markets = new address[](1);
         markets[0] = _cTokenAddr;
+        enterMarkets(markets);
+    }
 
-        ComptrollerInterface(COMPTROLLER_ADDR).enterMarkets(markets);
+    /// @notice Enters the Compound market so these token can be used as collateral
+    /// @param _cTokenAddrs CToken address array to enter market
+    function enterMarkets(address[] memory _cTokenAddrs) public {
+        uint256[] memory errors = IComptroller(COMPTROLLER_ADDR).enterMarkets(_cTokenAddrs);
+        for(uint256 i = 0; i < errors.length; i++) {
+            require(errors[i] == 0, "FCompoundActions: enter markets failed");
+        }
     }
 
     /// @notice Exits the Compound market so it can't be deposited/borrowed
     /// @param _cTokenAddr CToken address of the token
     function exitMarket(address _cTokenAddr) public {
-        ComptrollerInterface(COMPTROLLER_ADDR).exitMarket(_cTokenAddr);
+        require(IComptroller(COMPTROLLER_ADDR).exitMarket(_cTokenAddr) == 0, "FCompoundActions: exit market failed");
     }
 
-    /// @notice Approves CToken contract to pull underlying tokens from the DSProxy
-    /// @param _tokenAddr Token we are trying to approve
-    /// @param _cTokenAddr Address which will gain the approval
-    function approveToken(address _tokenAddr, address _cTokenAddr) internal {
-        if (_tokenAddr != ETH_ADDR) {
-            IERC20(_tokenAddr).safeApprove(_cTokenAddr, 0);
-            IERC20(_tokenAddr).safeApprove(_cTokenAddr, uint(-1));
-        }
-    }
 }
