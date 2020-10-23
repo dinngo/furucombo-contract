@@ -6,7 +6,6 @@ import "../HandlerBase.sol";
 import "../maker/IDSProxy.sol";
 import "../compound/ICToken.sol";
 
-
 contract HSCompound is HandlerBase {
     using SafeERC20 for IERC20;
 
@@ -52,17 +51,17 @@ contract HSCompound is HandlerBase {
         uint256 uBorrowAmount,
         bool enterMarket
     ) external payable isDSProxyOwner(dsProxy) {
-        if(cAmountIn > 0) {
+        if (cAmountIn > 0) {
             _depositToken(dsProxy, cTokenIn, cAmountIn);
         }
 
-        if(enterMarket) {
+        if (enterMarket) {
             _enterMarket(dsProxy, cTokenIn);
         }
 
-        if(uBorrowAmount > 0) {
+        if (uBorrowAmount > 0) {
             address underlying;
-            if(cTokenBorrow == CETH_ADDRESS) {
+            if (cTokenBorrow == CETH_ADDRESS) {
                 underlying = ETH_ADDRESS;
             } else {
                 underlying = _getToken(cTokenBorrow);
@@ -81,7 +80,7 @@ contract HSCompound is HandlerBase {
             _withdrawToken(dsProxy, underlying, uBorrowAmount);
 
             // Update borrowed token
-            if(underlying != ETH_ADDRESS) _updateToken(underlying);
+            if (underlying != ETH_ADDRESS) _updateToken(underlying);
         }
     }
 
@@ -93,8 +92,8 @@ contract HSCompound is HandlerBase {
         uint256 cWithdrawAmount
     ) external payable isDSProxyOwner(dsProxy) {
         // Execute repay only when `uRepayAmount` is greater than 0
-        if(uRepayAmount > 0) {
-            if(cTokenRepay == CETH_ADDRESS) {
+        if (uRepayAmount > 0) {
+            if (cTokenRepay == CETH_ADDRESS) {
                 // Execute ether repay
                 IDSProxy(dsProxy).execute.value(uRepayAmount)(
                     FCOMPOUND_ACTIONS,
@@ -122,8 +121,8 @@ contract HSCompound is HandlerBase {
                 IERC20(underlying).safeApprove(dsProxy, 0);
             }
         }
-        
-        if(cWithdrawAmount > 0) {
+
+        if (cWithdrawAmount > 0) {
             // Withdraw borrowed token from DSProxy
             _withdrawToken(dsProxy, cTokenWithdraw, cWithdrawAmount);
             // Update borrowed token
@@ -169,5 +168,4 @@ contract HSCompound is HandlerBase {
     function _getToken(address token) internal view returns (address) {
         return ICToken(token).underlying();
     }
-
 }

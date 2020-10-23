@@ -20,13 +20,21 @@ pragma solidity >0.5.0;
 import "./DSGuard.sol";
 
 contract DSGuardFactory {
-    mapping (address => bool) public isGuard;
+    mapping(address => bool) public isGuard;
 
-    function newGuard(bool permitFurucombo, address furucombo, address dsProxy) public returns (DSGuard guard) {
+    function newGuard(
+        bool permitFurucombo,
+        address furucombo,
+        address dsProxy
+    ) public returns (DSGuard guard) {
         guard = new DSGuard();
         guard.setOwner(msg.sender);
-        if(permitFurucombo) {
-            guard.permit(furucombo, dsProxy, bytes4(keccak256("execute(address,bytes)")));
+        if (permitFurucombo) {
+            guard.permit(
+                furucombo,
+                dsProxy,
+                bytes4(keccak256("execute(address,bytes)"))
+            );
         }
         isGuard[address(guard)] = true;
     }

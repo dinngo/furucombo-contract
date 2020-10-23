@@ -29,7 +29,7 @@ function getFCompoundActionsBytecodeBySolc() {
       },
       outputSelection: {
         'FCompoundActions.sol': {
-            FCompoundActions: ['*'],
+          FCompoundActions: ['*'],
         },
       },
     },
@@ -38,7 +38,8 @@ function getFCompoundActionsBytecodeBySolc() {
     solc.compile(JSON.stringify(solcInput), { import: findImports })
   );
   const bytecodeStr =
-    solcOutput.contracts['FCompoundActions.sol']['FCompoundActions'].evm.bytecode.object;
+    solcOutput.contracts['FCompoundActions.sol']['FCompoundActions'].evm
+      .bytecode.object;
   const bytecode = '0x' + bytecodeStr;
   return bytecode;
 }
@@ -51,30 +52,30 @@ function findImports(path) {
   else if (path === '@openzeppelin/contracts/token/ERC20/IERC20.sol')
     return {
       contents: IERC20.source,
-    }; 
+    };
   else if (path === '@openzeppelin/contracts/math/SafeMath.sol')
     return {
       contents: SafeMath.source,
-    }; 
+    };
   else if (path === '@openzeppelin/contracts/utils/Address.sol')
     return {
       contents: Address.source,
-    }; 
+    };
   else if (path === 'IComptroller.sol')
     return {
       contents: IComptroller.source,
-    }; 
+    };
   else if (path === 'ICToken.sol')
     return {
       contents: ICToken.source,
-    }; 
+    };
   else if (path === 'ICEther.sol')
     return {
       contents: ICEther.source,
-    }; 
+    };
   else return { error: 'File not found' };
 }
 
 module.exports = {
-    getFCompoundActionsBytecodeBySolc,
+  getFCompoundActionsBytecodeBySolc,
 };

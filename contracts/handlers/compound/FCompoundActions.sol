@@ -10,10 +10,12 @@ import "./ICToken.sol";
 import "./ICEther.sol";
 
 contract FCompoundActions {
-
-    address public constant ETH_ADDR = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
-    address public constant CETH_ADDR = 0x4Ddc2D193948926D02f9B1fE9e1daa0718270ED5;
-    address public constant COMPTROLLER_ADDR = 0x3d9819210A31b4961b30EF54bE2aeD79B9c9Cd3B;
+    address
+        public constant ETH_ADDR = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
+    address
+        public constant CETH_ADDR = 0x4Ddc2D193948926D02f9B1fE9e1daa0718270ED5;
+    address
+        public constant COMPTROLLER_ADDR = 0x3d9819210A31b4961b30EF54bE2aeD79B9c9Cd3B;
 
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
@@ -41,7 +43,10 @@ contract FCompoundActions {
     /// @param _cTokenAddr CTokens to be borrowed
     /// @param _amount Amount of tokens to be borrowed
     function borrow(address _cTokenAddr, uint256 _amount) public {
-        require(ICToken(_cTokenAddr).borrow(_amount) == 0, "FCompoundActions: borrow failed");
+        require(
+            ICToken(_cTokenAddr).borrow(_amount) == 0,
+            "FCompoundActions: borrow failed"
+        );
     }
 
     /// @dev User needs to approve the DSProxy to pull the _tokenAddr tokens
@@ -54,19 +59,26 @@ contract FCompoundActions {
         if (_amount > debt) {
             _amount = debt;
         }
-        
-        if(_cTokenAddr == CETH_ADDR) {
+
+        if (_cTokenAddr == CETH_ADDR) {
             uint256 ethReceived = msg.value;
             ICEther(_cTokenAddr).repayBorrow.value(_amount)();
             // send back the extra eth
-            if(ethReceived > _amount) {
+            if (ethReceived > _amount) {
                 msg.sender.transfer(ethReceived.sub(_amount));
             }
         } else {
             address tokenAddr = ICToken(_cTokenAddr).underlying();
-            IERC20(tokenAddr).safeTransferFrom(msg.sender, address(this), _amount);
+            IERC20(tokenAddr).safeTransferFrom(
+                msg.sender,
+                address(this),
+                _amount
+            );
             IERC20(tokenAddr).safeApprove(_cTokenAddr, _amount);
-            require(ICToken(_cTokenAddr).repayBorrow(_amount) == 0, "FCompoundActions: repay token failed");
+            require(
+                ICToken(_cTokenAddr).repayBorrow(_amount) == 0,
+                "FCompoundActions: repay token failed"
+            );
             IERC20(tokenAddr).safeApprove(_cTokenAddr, 0);
         }
     }
@@ -82,8 +94,10 @@ contract FCompoundActions {
     /// @notice Enters the Compound market so these token can be used as collateral
     /// @param _cTokenAddrs CToken address array to enter market
     function enterMarkets(address[] memory _cTokenAddrs) public {
-        uint256[] memory errors = IComptroller(COMPTROLLER_ADDR).enterMarkets(_cTokenAddrs);
-        for(uint256 i = 0; i < errors.length; i++) {
+        uint256[] memory errors = IComptroller(COMPTROLLER_ADDR).enterMarkets(
+            _cTokenAddrs
+        );
+        for (uint256 i = 0; i < errors.length; i++) {
             require(errors[i] == 0, "FCompoundActions: enter markets failed");
         }
     }
@@ -91,7 +105,9 @@ contract FCompoundActions {
     /// @notice Exits the Compound market so it can't be deposited/borrowed
     /// @param _cTokenAddr CToken address of the token
     function exitMarket(address _cTokenAddr) public {
-        require(IComptroller(COMPTROLLER_ADDR).exitMarket(_cTokenAddr) == 0, "FCompoundActions: exit market failed");
+        require(
+            IComptroller(COMPTROLLER_ADDR).exitMarket(_cTokenAddr) == 0,
+            "FCompoundActions: exit market failed"
+        );
     }
-
 }
