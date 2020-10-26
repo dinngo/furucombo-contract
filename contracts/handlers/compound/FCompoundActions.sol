@@ -80,6 +80,7 @@ contract FCompoundActions {
                 "FCompoundActions: repay token failed"
             );
             IERC20(tokenAddr).safeApprove(_cTokenAddr, 0);
+            if (msg.value > 0) msg.sender.transfer(msg.value);
         }
     }
 
