@@ -52,6 +52,7 @@ contract Proxy is Cache, Config {
      * @notice Combo execution function. Including three phases: pre-process,
      * exection and post-process.
      * @param tos The handlers of combo.
+     * @param configs The configurations of executing cubes.
      * @param datas The combo datas.
      */
     function batchExec(
@@ -81,6 +82,7 @@ contract Proxy is Cache, Config {
     /**
      * @notice The execution phase.
      * @param tos The handlers of combo.
+     * @param configs The configurations of executing cubes.
      * @param datas The combo datas.
      */
     function _execs(
@@ -96,10 +98,14 @@ contract Proxy is Cache, Config {
             "Tos and datas length inconsistent"
         );
         for (uint256 i = 0; i < tos.length; i++) {
+            // Check if the data contains dynamic parameter
             if (!configs[i].isStatic()) {
+                // If so, trim the exectution data base on the configuration and stack content
                 _trim(datas[i], configs[i], localStack);
             }
+            // Check if the output will be referenced afterwards
             if (configs[i].isReferenced()) {
+                // If so, parse the output and place it into local stack
                 index = _parse(localStack, _exec(tos[i], datas[i]), index);
             } else {
                 _exec(tos[i], datas[i]);
@@ -109,12 +115,20 @@ contract Proxy is Cache, Config {
         }
     }
 
+    /**
+     * @notice Trimming the execution data.
+     * @param data The execution data.
+     * @param config The configuration.
+     * @param localStack The stack the be referenced.
+     */
     function _trim(
         bytes memory data,
         bytes32 config,
         bytes32[256] memory localStack
     ) internal pure {
+        // Fetch the parameter configuration from config
         (uint256[] memory refs, uint256[] memory params) = config.getParams();
+        // Trim the data with the reference and parameters
         for (uint256 i = 0; i < refs.length; i++) {
             bytes32 ref = localStack[refs[i]];
             uint256 offset = params[i];
@@ -122,6 +136,7 @@ contract Proxy is Cache, Config {
             assembly {
                 let loc := add(add(data, 0x20), offset)
                 let m := mload(loc)
+                // Adjust the value by multiplier if a dynamic parameter is not zero
                 if iszero(iszero(m)) {
                     ref := div(mul(mload(loc), ref), base)
                 }
@@ -130,16 +145,24 @@ contract Proxy is Cache, Config {
         }
     }
 
+    /**
+     * @notice Parse the return data to the local stack.
+     * @param localStack The local stack to place the return values.
+     * @param ret The return data.
+     * @param index The current tail.
+     */
     function _parse(
         bytes32[256] memory localStack,
         bytes memory ret,
         uint256 index
     ) internal pure returns (uint256 newIndex) {
         uint256 len = ret.length;
+        // Estimate the tail after the process.
         newIndex = index + len / 32;
         require(newIndex <= 256, "stack overflow");
         assembly {
             let offset := shl(5, index)
+            // Store the data into localStack
             for {
                 let i := 0
             } lt(i, len) {
