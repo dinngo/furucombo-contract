@@ -31,7 +31,6 @@ const {
 const { evmRevert, evmSnapshot, profileGas, mulPercent } = require('./utils/utils');
 const { getFCompoundActionsBytecodeBySolc } = require('./utils/getBytecode');
 
-const FCompoundActions = artifacts.require('FCompoundActions');
 const IDSProxyRegistry = artifacts.require('IDSProxyRegistry');
 const IDSProxy = artifacts.require('IDSProxy');
 const ISingletonFactory = artifacts.require('ISingletonFactory');

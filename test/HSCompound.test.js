@@ -34,7 +34,6 @@ const { getFCompoundActionsBytecodeBySolc } = require('./utils/getBytecode');
 const HSCompound = artifacts.require('HSCompound');
 const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('ProxyMock');
-const FCompoundActions = artifacts.require('FCompoundActions');
 const DSGuardFactory = artifacts.require('DSGuardFactory');
 const IDSProxyRegistry = artifacts.require('IDSProxyRegistry');
 const IDSProxy = artifacts.require('IDSProxy');
@@ -102,8 +101,101 @@ contract('Compound x Smart Wallet', function([_, user0, someone]) {
       });
     });
 
-    /// We only test `enterMarket = true` here since collateral and debt are both cEther in this case, 
-    /// and leave the `enterMarket = false` test in `borrow token` section
+    it('only input (deposit collateral)', async function() {
+      const cAmountIn = cUnit('300');
+      const borrowAmount = ether('0');
+      const to = this.hsCompound.address;
+      const data = abi.simpleEncode(
+        'borrow(address,address,address,uint256,uint256,bool)',
+        this.user0Proxy.address,
+        this.cEther.address,
+        this.cEther.address,
+        cAmountIn,
+        borrowAmount,
+        true
+      );
+      // Inject collateral cToken to Proxy
+      await this.cEther.transfer(this.proxy.address, cAmountIn, {
+        from: user0,
+      });
+      await this.proxy.updateTokenMock(this.cEther.address);
+      const ethUser0Before = await balance.current(user0);
+      // Check collateral has not entered market before
+      expect(await this.comptroller.checkMembership.call(this.user0Proxy.address, this.cEther.address)).to.be.false;
+      // Execute borrow
+      const receipt = await this.proxy.execMock(to, data, {
+        from: user0,
+        value: ether('0.1'),
+      });
+      const collateralUser0ProxyAfter = await this.cEther.balanceOf.call(this.user0Proxy.address);
+      const ethUser0ProxyAfter = await balance.current(this.user0Proxy.address);
+      const ethUser0After = await balance.current(user0);
+      const ethProxyAfter = await balance.current(this.proxy.address);
+      const borrowBalanceAfter = await this.cEther.borrowBalanceStored.call(this.user0Proxy.address);
+      // expect(await this.comptroller.checkMembership.call(this.user0Proxy.address, this.cEther.address)).to.be.true;
+      expect(collateralUser0ProxyAfter).to.be.bignumber.eq(cAmountIn);
+      expect(ethUser0ProxyAfter).to.be.zero;
+      expect(ethProxyAfter).to.be.zero;
+      expect(ethUser0After).to.be.bignumber.eq(
+        ethUser0Before
+          .sub(new BN(receipt.receipt.gasUsed))
+      );
+      expect(borrowBalanceAfter).to.be.zero;
+    });
+
+    it('only output (borrow without new collateral)', async function() {
+      const collateralAmount = cUnit('300');
+      // Directly transfer collateral to DSProxy first
+      await this.cEther.transfer(this.user0Proxy.address, collateralAmount, {
+        from: user0,
+      });
+      // And enter market for collateral
+      const dataEnter = abi.simpleEncode(
+        'enterMarket(address)',
+        this.cEther.address
+      );
+      await this.user0Proxy.execute(FCOMPOUND_ACTIONS, dataEnter, { from: user0 });
+      // Check collateral amount already in dsproxy, has entered market, 0 borrow
+      expect(await this.cEther.balanceOf.call(this.user0Proxy.address)).to.be.bignumber.eq(collateralAmount);
+      expect(await this.comptroller.checkMembership.call(this.user0Proxy.address, this.cEther.address)).to.be.true;
+      expect(await this.cEther.borrowBalanceStored.call(this.user0Proxy.address)).to.be.zero;
+
+      const cAmountIn = cUnit('0');
+      const borrowAmount = ether('1');
+      const to = this.hsCompound.address;
+      const data = abi.simpleEncode(
+        'borrow(address,address,address,uint256,uint256,bool)',
+        this.user0Proxy.address,
+        this.cEther.address,
+        this.cEther.address,
+        cAmountIn,
+        borrowAmount,
+        true
+      );
+      const ethUser0Before = await balance.current(user0);
+      // Execute borrow
+      const receipt = await this.proxy.execMock(to, data, {
+        from: user0,
+        value: ether('0.1'), // check handler function is payable
+      });
+      const collateralUser0ProxyAfter = await this.cEther.balanceOf.call(this.user0Proxy.address);
+      const ethUser0ProxyAfter = await balance.current(this.user0Proxy.address);
+      const ethUser0After = await balance.current(user0);
+      const ethProxyAfter = await balance.current(this.proxy.address);
+      const borrowBalanceAfter = await this.cEther.borrowBalanceStored.call(this.user0Proxy.address);
+      expect(collateralUser0ProxyAfter).to.be.bignumber.eq(collateralAmount);
+      expect(ethUser0ProxyAfter).to.be.zero;
+      expect(ethProxyAfter).to.be.zero;
+      expect(ethUser0After).to.be.bignumber.eq(
+        ethUser0Before
+          .add(borrowAmount)
+          .sub(new BN(receipt.receipt.gasUsed))
+      );
+      expect(borrowBalanceAfter).to.be.bignumber.eq(borrowAmount);
+    });
+
+    // We only test `enterMarket = true` here since collateral and debt are both cEther in this case, 
+    // and leave the `enterMarket = false` test in `borrow token` section
     it('borrow ether', async function() {
       const cAmountIn = cUnit('300');
       const borrowAmount = ether('1');
@@ -293,7 +385,6 @@ contract('Compound x Smart Wallet', function([_, user0, someone]) {
           repayAmount,
           cWithdrawAmount
         );
-  
         const ethUser0Before = await balance.current(user0);
         const borrowBalanceBefore = await this.cEther.borrowBalanceCurrent.call(this.user0Proxy.address);
   
@@ -419,6 +510,29 @@ contract('Compound x Smart Wallet', function([_, user0, someone]) {
         );
         expect(cTokenUser0After).to.be.bignumber.eq(cWithdrawAmount);
         expect(borrowBalanceAfter).to.be.zero;
+      });
+
+      it('should revert: not dsproxy owner', async function() {
+        const repayAmount = ether('200'); // token
+        const cWithdrawAmount = cUnit('450'); // cEther
+        const to = this.hsCompound.address;
+        const data = abi.simpleEncode(
+          'repayBorrow(address,address,address,uint256,uint256)',
+          this.user0Proxy.address,
+          this.cToken.address,
+          this.cEther.address,
+          repayAmount,
+          cWithdrawAmount
+        );
+        await this.token.transfer(this.proxy.address, repayAmount, {
+          from: providerAddress,
+        });
+        await this.proxy.updateTokenMock(this.token.address);
+        await expectRevert.unspecified(
+          this.proxy.execMock(to, data, {
+            from: someone,
+          })
+        );
       });
 
     });

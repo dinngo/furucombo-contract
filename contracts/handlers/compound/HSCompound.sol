@@ -42,6 +42,7 @@ contract HSCompound is HandlerBase {
 
     //TODO: enterMarket interface
     //TODO: enterMarkets interface
+    //TODO: exitMarket
 
     function borrow(
         address dsProxy,
