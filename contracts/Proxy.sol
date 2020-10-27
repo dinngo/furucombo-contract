@@ -21,8 +21,6 @@ contract Proxy is Cache, Config {
     // prettier-ignore
     bytes32 private constant HANDLER_REGISTRY = 0x6874162fd62902201ea0f4bf541086067b3b88bd802fac9e150fd2d1db584e19;
 
-    uint256 private constant PERCENTAGE_BASE = 1 ether;
-
     constructor(address registry) public {
         bytes32 slot = HANDLER_REGISTRY;
         assembly {
@@ -101,9 +99,10 @@ contract Proxy is Cache, Config {
             if (!configs[i].isStatic()) {
                 _trim(datas[i], configs[i], localStack);
             }
-            bytes memory returnData = _exec(tos[i], datas[i]);
             if (configs[i].isReferenced()) {
-                index = _parse(localStack, returnData, index);
+                index = _parse(localStack, _exec(tos[i], datas[i]), index);
+            } else {
+                _exec(tos[i], datas[i]);
             }
             // Setup the process to be triggered in the post-process phase
             _setPostProcess(tos[i]);
@@ -114,7 +113,7 @@ contract Proxy is Cache, Config {
         bytes memory data,
         bytes32 config,
         bytes32[256] memory localStack
-    ) internal {
+    ) internal pure {
         (uint256[] memory refs, uint256[] memory params) = config.getParams();
         for (uint256 i = 0; i < refs.length; i++) {
             bytes32 ref = localStack[refs[i]];
@@ -135,7 +134,7 @@ contract Proxy is Cache, Config {
         bytes32[256] memory localStack,
         bytes memory ret,
         uint256 index
-    ) internal returns (uint256 newIndex) {
+    ) internal pure returns (uint256 newIndex) {
         uint256 len = ret.length;
         newIndex = index + len / 32;
         require(newIndex <= 256, "stack overflow");
@@ -152,7 +151,6 @@ contract Proxy is Cache, Config {
                 )
             }
         }
-        return (index + len / 32);
     }
 
     /**
