@@ -60,7 +60,6 @@ contract('FCompoundActions', function([_, user0]) {
       getFCompoundActionsBytecodeBySolc(),
       FCOMPOUND_ACTIONS_SALT
     );
-    this.actions = await FCompoundActions.at(FCOMPOUND_ACTIONS);
     this.dsRegistry = await IDSProxyRegistry.at(MAKER_PROXY_REGISTRY);
     await this.dsRegistry.build(user0);
     this.user0Proxy = await IDSProxy.at(
@@ -428,7 +427,7 @@ contract('FCompoundActions', function([_, user0]) {
             .sub(mulPercent(borrowBalanceBefore, 101))
             .sub(new BN(receipt.receipt.gasUsed))
         );
-        expect(borrowBalanceAfter).to.be.bignumber.eq(ether('0'));
+        expect(borrowBalanceAfter).to.be.zero;
       });
     });
 
@@ -470,7 +469,7 @@ contract('FCompoundActions', function([_, user0]) {
         await this.user0Proxy.execute(FCOMPOUND_ACTIONS, dataWithdraw, {
           from: user0,
         });
-        expect(await this.token.balanceOf.call(this.user0Proxy.address)).to.be.bignumber.eq(ether('0'));
+        expect(await this.token.balanceOf.call(this.user0Proxy.address)).to.be.zero;
       });
   
       it('repay token partial', async function() {
@@ -556,7 +555,7 @@ contract('FCompoundActions', function([_, user0]) {
           tokenUser0Before
             .sub(mulPercent(borrowBalanceBefore, 101))
         );
-        expect(borrowBalanceAfter).to.be.bignumber.eq(ether('0'));
+        expect(borrowBalanceAfter).to.be.zero;
       });
 
     });
