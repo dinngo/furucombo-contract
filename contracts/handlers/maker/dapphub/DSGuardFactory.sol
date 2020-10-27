@@ -21,6 +21,7 @@ import "./DSGuard.sol";
 
 contract DSGuardFactory {
     mapping(address => bool) public isGuard;
+    mapping(address => address) public guards;
 
     function newGuard(
         bool permitFurucombo,
@@ -28,7 +29,6 @@ contract DSGuardFactory {
         address dsProxy
     ) public returns (DSGuard guard) {
         guard = new DSGuard();
-        guard.setOwner(msg.sender);
         if (permitFurucombo) {
             guard.permit(
                 furucombo,
@@ -36,6 +36,8 @@ contract DSGuardFactory {
                 bytes4(keccak256("execute(address,bytes)"))
             );
         }
+        guard.setOwner(msg.sender);
         isGuard[address(guard)] = true;
+        guards[msg.sender] = address(guard);
     }
 }

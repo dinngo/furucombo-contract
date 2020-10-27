@@ -263,6 +263,7 @@ contract('FCompoundActions', function([_, user0]) {
 
   describe('Borrow', function() {
     beforeEach(async function() {
+      // Mint
       await this.cEther.mint({
         from: _,
         value: ether('10'),
@@ -271,11 +272,11 @@ contract('FCompoundActions', function([_, user0]) {
       await this.cEther.transfer(this.user0Proxy.address, mintBalance, {
         from: _,
       });
+      // Enter
       const data = abi.simpleEncode(
         'enterMarket(address)',
         this.cEther.address
       );
-      // User DSProxy enter market
       await this.user0Proxy.execute(FCOMPOUND_ACTIONS, data, { from: user0 });
     });
 

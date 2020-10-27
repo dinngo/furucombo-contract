@@ -10,7 +10,7 @@ contract HSCompound is HandlerBase {
     using SafeERC20 for IERC20;
 
     address constant PROXY_REGISTRY = 0x4678f0a6958e4D2Bc4F1BAF7Bc52E8F3564f3fE4;
-    address constant FCOMPOUND_ACTIONS = address(0xbeef); // TODO: predict and fill
+    address constant FCOMPOUND_ACTIONS = 0x54B598B61a3eBfbc11D40cb5A0388083b379A11a; // TODO: predict and fill
     address constant ETH_ADDRESS = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
     address constant CETH_ADDRESS = 0x4Ddc2D193948926D02f9B1fE9e1daa0718270ED5;
 
