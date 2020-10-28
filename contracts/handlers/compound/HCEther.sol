@@ -13,10 +13,15 @@ contract HCEther is HandlerBase {
     address public constant CETHER = 0x4Ddc2D193948926D02f9B1fE9e1daa0718270ED5;
 
     function mint(uint256 value) external payable returns (uint256) {
-        // uint256 beforeCEtherAmount = IERC20(CETHER).balanceOf(address(this));
         ICEther compound = ICEther(CETHER);
+
+        // Get cether balance of proxy before mint
         uint256 beforeCEtherAmount = compound.balanceOf(address(this));
+
+        // Execute mint
         compound.mint.value(value)();
+
+        // Get cether balance of proxy after mint
         uint256 afterCEtherAmount = compound.balanceOf(address(this));
 
         // Update involved token
@@ -25,16 +30,20 @@ contract HCEther is HandlerBase {
     }
 
     function redeem(uint256 redeemTokens) external payable returns (uint256) {
-        // Get balance of proxy before redeem
+        // Get ether balance of proxy before redeem
         uint256 beforeRedeemAmount = address(this).balance;
 
-        // Execute compound redeem function
+        // Approve cether
         ICEther compound = ICEther(CETHER);
         IERC20(CETHER).safeApprove(CETHER, redeemTokens);
+
+        // Execute redeem
         require(compound.redeem(redeemTokens) == 0, "compound redeem failed");
+
+        // Approve cether to zero
         IERC20(CETHER).safeApprove(CETHER, 0);
 
-        // Get balance of proxy after redeem
+        // Get ether balance of proxy after redeem
         uint256 afterRedeemAmount = address(this).balance;
         return (afterRedeemAmount.sub(beforeRedeemAmount));
     }
@@ -44,10 +53,10 @@ contract HCEther is HandlerBase {
         payable
         returns (uint256)
     {
-        // Get balance of proxy before redeem
-        uint256 beforeCEtherAmount = IERC20(CETHER).balanceOf(address(this));
-
+        // Get cether balance of proxy before redeemUnderlying
         ICEther compound = ICEther(CETHER);
+        uint256 beforeCEtherAmount = compound.balanceOf(address(this));
+
         IERC20(CETHER).safeApprove(
             CETHER,
             0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
@@ -58,8 +67,8 @@ contract HCEther is HandlerBase {
         );
         IERC20(CETHER).safeApprove(CETHER, 0);
 
-        // Get balance of proxy after redeem
-        uint256 afterCEtherAmount = IERC20(CETHER).balanceOf(address(this));
+        // Get cether balance of proxy after redeemUnderlying
+        uint256 afterCEtherAmount = compound.balanceOf(address(this));
         return (beforeCEtherAmount.sub(afterCEtherAmount));
     }
 
@@ -72,6 +81,7 @@ contract HCEther is HandlerBase {
         uint256 debt = compound.borrowBalanceCurrent(borrower);
         uint256 remainingAmount;
         if (amount < debt) {
+            // Get remaining debt amount
             remainingAmount = debt.sub(amount);
             debt = amount;
         }

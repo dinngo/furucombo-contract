@@ -21,6 +21,7 @@ const {
   DAI_TOKEN,
   DAI_PROVIDER,
   COMPOUND_COMPTROLLER,
+  RecordHandlerResultSig,
 } = require('./utils/constants');
 const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
 
@@ -78,13 +79,30 @@ contract('CToken', function([_, user]) {
         from: providerAddress,
       });
       await this.proxy.updateTokenMock(this.token.address);
+      cTokenUser = await this.cToken.balanceOf.call(user);
 
       const rate = await this.cToken.exchangeRateStored.call();
       const result = value.mul(ether('1')).div(rate);
       const receipt = await this.proxy.execMock(to, data, { from: user });
-      cTokenUser = await this.cToken.balanceOf.call(user);
+
+      // Get handler return result
+      var handlerResult;
+      receipt.receipt.rawLogs.forEach(element => {
+        if (element.topics[0] === RecordHandlerResultSig) {
+          // handler return result start from the third args
+          handlerResult = utils.toBN(
+            web3.eth.abi.decodeParameters(
+              ['uint256', 'uint256', 'uint256'],
+              element.data
+            )[2]
+          );
+        }
+      });
+
+      cTokenUserEnd = await this.cToken.balanceOf.call(user);
+      expect(cTokenUserEnd.sub(cTokenUser)).to.be.bignumber.eq(handlerResult);
       expect(
-        cTokenUser.mul(new BN('1000')).divRound(result)
+        cTokenUserEnd.mul(new BN('1000')).divRound(result)
       ).to.be.bignumber.eq(new BN('1000'));
       expect(await balanceUser.delta()).to.be.bignumber.eq(
         ether('0').sub(new BN(receipt.receipt.gasUsed))
@@ -129,11 +147,30 @@ contract('CToken', function([_, user]) {
       const result = value.mul(rate).div(ether('1'));
       await this.cToken.transfer(this.proxy.address, value, { from: user });
       await this.proxy.updateTokenMock(this.cToken.address);
+      tokenUser = await this.token.balanceOf.call(user);
       cTokenUser = await this.cToken.balanceOf.call(user);
       const receipt = await this.proxy.execMock(to, data, {
         from: user,
         value: ether('0.1'),
       });
+
+      // Get handler return result
+      var handlerResult;
+      receipt.receipt.rawLogs.forEach(element => {
+        if (element.topics[0] === RecordHandlerResultSig) {
+          // handler return result start from the third args
+          handlerResult = utils.toBN(
+            web3.eth.abi.decodeParameters(
+              ['uint256', 'uint256', 'uint256'],
+              element.data
+            )[2]
+          );
+        }
+      });
+
+      tokenUserEnd = await this.token.balanceOf.call(user);
+      expect(tokenUserEnd.sub(tokenUser)).to.be.bignumber.eq(handlerResult);
+
       expect(await this.cToken.balanceOf.call(user)).to.be.bignumber.eq(
         ether('0')
       );
@@ -190,11 +227,27 @@ contract('CToken', function([_, user]) {
         from: user,
       });
       await this.proxy.updateTokenMock(this.cToken.address);
-      cTokenUser = await this.cToken.balanceOf.call(user);
       const receipt = await this.proxy.execMock(to, data, {
         from: user,
         value: ether('0.1'),
       });
+
+      // Get handler return result
+      var handlerResult;
+      receipt.receipt.rawLogs.forEach(element => {
+        if (element.topics[0] === RecordHandlerResultSig) {
+          // handler return result start from the third args
+          handlerResult = utils.toBN(
+            web3.eth.abi.decodeParameters(
+              ['uint256', 'uint256', 'uint256'],
+              element.data
+            )[2]
+          );
+        }
+      });
+      const cTokenUserEnd = await this.cToken.balanceOf.call(user);
+      expect(handlerResult).to.be.bignumber.eq(cTokenUser.sub(cTokenUserEnd));
+
       expect(
         (await this.token.balanceOf.call(user)).sub(tokenUser)
       ).to.be.bignumber.eq(value);
@@ -254,6 +307,24 @@ contract('CToken', function([_, user]) {
         from: user,
         value: ether('0.1'),
       });
+      // Get handler return result
+      var handlerResult;
+      receipt.receipt.rawLogs.forEach(element => {
+        if (element.topics[0] === RecordHandlerResultSig) {
+          // handler return result start from the third args
+          handlerResult = utils.toBN(
+            web3.eth.abi.decodeParameters(
+              ['uint256', 'uint256', 'uint256'],
+              element.data
+            )[2]
+          );
+        }
+      });
+
+      expect(
+        await this.cToken.borrowBalanceCurrent.call(user)
+      ).to.be.bignumber.eq(handlerResult);
+
       expect(
         await this.cToken.borrowBalanceCurrent.call(user)
       ).to.be.bignumber.eq(ether('0'));
