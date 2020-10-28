@@ -216,7 +216,7 @@ contract('Maker', function([_, user1, user2, someone]) {
 
           const to = this.hMaker.address;
           const ilkKnc = utils.padRight(utils.asciiToHex('KNC-A'), 64);
-          const wadC = ether('200');
+          const wadC = ether('300');
           const wadD = ether('100');
           const data = abi.simpleEncode(
             'openLockGemAndDraw(address,address,bytes32,uint256,uint256)',
@@ -254,7 +254,7 @@ contract('Maker', function([_, user1, user2, someone]) {
         it('User has proxy', async function() {
           const to = this.hMaker.address;
           const ilkKnc = utils.padRight(utils.asciiToHex('KNC-A'), 64);
-          const wadC = ether('200');
+          const wadC = ether('300');
           const wadD = ether('100');
           const data = abi.simpleEncode(
             'openLockGemAndDraw(address,address,bytes32,uint256,uint256)',
