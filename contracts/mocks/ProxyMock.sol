@@ -7,6 +7,8 @@ import "./debug/GasProfiler.sol";
 contract ProxyMock is Proxy, GasProfiler {
     constructor(address registry) public Proxy(registry) {}
 
+    event RecordHandlerResult(bytes value);
+
     function execMock(address to, bytes memory data)
         public
         payable
@@ -18,6 +20,7 @@ contract ProxyMock is Proxy, GasProfiler {
         _setPostProcess(to);
         _deltaGas("Gas");
         _postProcess();
+        emit RecordHandlerResult(result);
         return result;
     }
 

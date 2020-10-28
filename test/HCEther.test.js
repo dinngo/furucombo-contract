@@ -21,6 +21,7 @@ const {
   DAI_TOKEN,
   DAI_PROVIDER,
   COMPOUND_COMPTROLLER,
+  RecordHandlerResultSig,
 } = require('./utils/constants');
 const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
 
@@ -47,6 +48,8 @@ contract('CEther', function([_, user]) {
     );
     this.cEther = await ICEther.at(CETHER);
     this.proxy = await Proxy.new(this.registry.address);
+    console.log('user', user);
+    console.log('proxy', this.proxy.address);
   });
 
   beforeEach(async function() {
@@ -67,22 +70,40 @@ contract('CEther', function([_, user]) {
       const rate = await this.cEther.exchangeRateStored.call();
       const result = value.mul(ether('1')).div(rate);
       const cEtherUser = await this.cEther.balanceOf.call(user);
+
       const receipt = await this.proxy.execMock(to, data, {
         from: user,
         value: ether('0.1'),
       });
+
+      // Get handler return result
+      var handlerResult;
+      receipt.receipt.rawLogs.forEach(element => {
+        if (element.topics[0] === RecordHandlerResultSig) {
+          // handler return result start from the third args
+          handlerResult = utils.toBN(
+            web3.eth.abi.decodeParameters(
+              ['uint256', 'uint256', 'uint256'],
+              element.data
+            )[2]
+          );
+        }
+      });
       const cEtherUserEnd = await this.cEther.balanceOf.call(user);
+      expect(cEtherUserEnd.sub(cEtherUser)).to.be.bignumber.eq(handlerResult);
       expect(
         cEtherUserEnd
           .sub(cEtherUser)
           .mul(new BN('1000'))
           .divRound(result)
       ).to.be.bignumber.eq(new BN('1000'));
+
       expect(await balanceUser.delta()).to.be.bignumber.eq(
         ether('0')
           .sub(ether('0.1'))
           .sub(new BN(receipt.receipt.gasUsed))
       );
+
       profileGas(receipt);
     });
   });
@@ -105,18 +126,40 @@ contract('CEther', function([_, user]) {
       await this.cEther.transfer(this.proxy.address, value, { from: user });
       await this.proxy.updateTokenMock(this.cEther.address);
       await balanceUser.get();
+
       const receipt = await this.proxy.execMock(to, data, {
         from: user,
         value: ether('0.1'),
       });
+
+      // Get handler return result
+      var handlerResult;
+      receipt.receipt.rawLogs.forEach(element => {
+        if (element.topics[0] === RecordHandlerResultSig) {
+          // handler return result start from the third args
+          handlerResult = utils.toBN(
+            web3.eth.abi.decodeParameters(
+              ['uint256', 'uint256', 'uint256'],
+              element.data
+            )[2]
+          );
+        }
+      });
+
+      const balanceDelta = await balanceUser.delta();
+      expect(balanceDelta).to.be.bignumber.eq(
+        handlerResult.sub(new BN(receipt.receipt.gasUsed))
+      );
+
       expect(await this.cEther.balanceOf.call(user)).to.be.bignumber.eq(
         ether('0')
       );
       expect(
-        (await balanceUser.delta())
+        balanceDelta
           .mul(new BN('1000'))
           .divRound(result.sub(new BN(receipt.receipt.gasUsed)))
       ).to.be.bignumber.eq(new BN('1000'));
+
       profileGas(receipt);
     });
 
@@ -156,10 +199,31 @@ contract('CEther', function([_, user]) {
       });
       await this.proxy.updateTokenMock(this.cEther.address);
       await balanceUser.get();
+
       const receipt = await this.proxy.execMock(to, data, {
         from: user,
         value: ether('0.1'),
       });
+
+      // Get handler return result
+      var handlerResult;
+      receipt.receipt.rawLogs.forEach(element => {
+        if (element.topics[0] === RecordHandlerResultSig) {
+          // handler return result start from the third args
+          handlerResult = utils.toBN(
+            web3.eth.abi.decodeParameters(
+              ['uint256', 'uint256', 'uint256'],
+              element.data
+            )[2]
+          );
+        }
+      });
+
+      const cEtherUserAmountEnd = await this.cEther.balanceOf.call(user);
+      expect(handlerResult).to.be.bignumber.eq(
+        cEtherUser.sub(cEtherUserAmountEnd)
+      );
+
       expect(await balanceUser.delta()).to.be.bignumber.eq(
         value.sub(new BN(receipt.receipt.gasUsed))
       );
@@ -206,10 +270,30 @@ contract('CEther', function([_, user]) {
         value,
         user
       );
+
       const receipt = await this.proxy.execMock(to, data, {
         from: user,
         value: value,
       });
+
+      // Get handler return result
+      var handlerResult;
+      receipt.receipt.rawLogs.forEach(element => {
+        if (element.topics[0] === RecordHandlerResultSig) {
+          // handler return result start from the third args
+          handlerResult = utils.toBN(
+            web3.eth.abi.decodeParameters(
+              ['uint256', 'uint256', 'uint256'],
+              element.data
+            )[2]
+          );
+        }
+      });
+
+      expect(
+        await this.cEther.borrowBalanceCurrent.call(user)
+      ).to.be.bignumber.eq(handlerResult);
+
       expect(
         await this.cEther.borrowBalanceCurrent.call(user)
       ).to.be.bignumber.eq(ether('0'));
