@@ -19,6 +19,7 @@ const {
   COMP_TOKEN,
   COMPOUND_COMPTROLLER,
   COMPOUND_LENS,
+  RecordHandlerResultSig,
 } = require('./utils/constants');
 const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
 
@@ -112,10 +113,26 @@ contract('Comptroller', function([_, user, someone]) {
           from: user,
           value: ether('0.1'),
         });
+        // Get handler return result
+        var handlerResult;
+        receipt.receipt.rawLogs.forEach(element => {
+          if (element.topics[0] === RecordHandlerResultSig) {
+            // handler return result start from the third args
+            handlerResult = utils.toBN(
+              web3.eth.abi.decodeParameters(
+                ['uint256', 'uint256', 'uint256'],
+                element.data
+              )[2]
+            );
+          }
+        });
+
         const compUserEnd = await this.comp.balanceOf.call(user);
+        expect(compUserEnd.sub(compUser)).to.be.bignumber.eq(handlerResult);
         // TODO: Get the ground truth
         // expect(compUserEnd.sub(compUser)).to.be.bignumber.eq(result);
         expect(compUserEnd.sub(compUser)).to.be.bignumber.gt(ether('0'));
+        profileGas(receipt);
       });
     });
 
@@ -128,10 +145,25 @@ contract('Comptroller', function([_, user, someone]) {
           from: someone,
           value: ether('0.1'),
         });
+        // Get handler return result
+        var handlerResult;
+        receipt.receipt.rawLogs.forEach(element => {
+          if (element.topics[0] === RecordHandlerResultSig) {
+            // handler return result start from the third args
+            handlerResult = utils.toBN(
+              web3.eth.abi.decodeParameters(
+                ['uint256', 'uint256', 'uint256'],
+                element.data
+              )[2]
+            );
+          }
+        });
         const compUserEnd = await this.comp.balanceOf.call(user);
+        expect(compUserEnd.sub(compUser)).to.be.bignumber.eq(handlerResult);
         // TODO: Get the ground truth
         // expect(compUserEnd.sub(compUser)).to.be.bignumber.eq(result);
         expect(compUserEnd.sub(compUser)).to.be.bignumber.gt(ether('0'));
+        profileGas(receipt);
       });
     });
   });
