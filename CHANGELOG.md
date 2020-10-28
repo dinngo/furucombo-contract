@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+## [0.12.1] - 2020-10-28
+
 ### Changed
 
 - Refine Curve handler supporting hbtc, 3pool and meta pools.
