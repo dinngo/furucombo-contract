@@ -13,7 +13,12 @@ const {
   CURVE_TCRV_GAUGE,
   CURVE_MINTER,
 } = require('./utils/constants');
-const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
+const {
+  evmRevert,
+  evmSnapshot,
+  profileGas,
+  getHandlerReturn,
+} = require('./utils/utils');
 
 const Proxy = artifacts.require('ProxyMock');
 const Registry = artifacts.require('Registry');
@@ -78,6 +83,7 @@ contract('Curve DAO', function([_, user]) {
         from: user,
         value: ether('0.1'),
       });
+
       const depositUserEnd = await this.gauge0.balanceOf.call(user);
       expect(depositUserEnd.sub(depositUser)).to.be.bignumber.eq(gauge0Amount);
       expect(
@@ -141,7 +147,13 @@ contract('Curve DAO', function([_, user]) {
           value: ether('0.1'),
         });
 
+        // Get handler return result
+        const handlerReturn = utils.toBN(
+          getHandlerReturn(receipt, ['uint256'])[0]
+        );
         const crvUserEnd = await this.crv.balanceOf.call(user);
+        expect(handlerReturn).to.be.bignumber.eq(crvUserEnd.sub(crvUser));
+
         expect(crvUserEnd.sub(crvUser)).to.be.bignumber.gte(claimableToken);
         expect(
           await this.token0.balanceOf.call(this.proxy.address)
@@ -215,7 +227,13 @@ contract('Curve DAO', function([_, user]) {
           value: ether('0.1'),
         });
 
-        const crvUserEnd = await this.crv.balanceOf(user);
+        // Get handler return result
+        const handlerReturn = utils.toBN(
+          getHandlerReturn(receipt, ['uint256'])[0]
+        );
+        const crvUserEnd = await this.crv.balanceOf.call(user);
+        expect(handlerReturn).to.be.bignumber.eq(crvUserEnd.sub(crvUser));
+
         expect(crvUserEnd.sub(crvUser)).to.be.bignumber.gte(
           claimableToken0.add(claimableToken1)
         );

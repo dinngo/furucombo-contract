@@ -30,6 +30,7 @@ const {
   evmSnapshot,
   mulPercent,
   profileGas,
+  getHandlerReturn,
 } = require('./utils/utils');
 
 const Proxy = artifacts.require('ProxyMock');
@@ -107,6 +108,13 @@ contract('Curve', function([_, user]) {
           from: user,
           value: ether('1'), // Ensure handler can correctly deal with ether
         });
+        // Get handler return result
+        const handlerReturn = utils.toBN(
+          getHandlerReturn(receipt, ['uint256'])[0]
+        );
+        const token1UserEnd = await this.token1.balanceOf.call(user);
+        expect(handlerReturn).to.be.bignumber.eq(token1UserEnd.sub(token1User));
+
         expect(
           await this.token0.balanceOf.call(this.proxy.address)
         ).to.be.bignumber.eq(ether('0'));
@@ -171,6 +179,14 @@ contract('Curve', function([_, user]) {
           from: user,
           value: ether('1'), // Ensure handler can correctly deal with ether
         });
+
+        // Get handler return result
+        const handlerReturn = utils.toBN(
+          getHandlerReturn(receipt, ['uint256'])[0]
+        );
+        const token1UserEnd = await this.token1.balanceOf.call(user);
+        expect(handlerReturn).to.be.bignumber.eq(token1UserEnd.sub(token1User));
+
         expect(
           await this.token0.balanceOf.call(this.proxy.address)
         ).to.be.bignumber.eq(ether('0'));
@@ -243,6 +259,14 @@ contract('Curve', function([_, user]) {
           from: user,
           value: ether('1'), // Ensure handler can correctly deal with ether
         });
+
+        // Get handler return result
+        const handlerReturn = utils.toBN(
+          getHandlerReturn(receipt, ['uint256'])[0]
+        );
+        const token1UserEnd = await this.token1.balanceOf.call(user);
+        expect(handlerReturn).to.be.bignumber.eq(token1UserEnd.sub(token1User));
+
         expect(
           await this.token0.balanceOf.call(this.proxy.address)
         ).to.be.bignumber.eq(ether('0'));
@@ -287,6 +311,7 @@ contract('Curve', function([_, user]) {
     beforeEach(async function() {
       token0User = await this.token0.balanceOf.call(user);
       token1User = await this.token1.balanceOf.call(user);
+      poolTokenUser = await this.poolToken.balanceOf.call(user);
     });
 
     describe('sbtc pool', function() {
@@ -327,6 +352,15 @@ contract('Curve', function([_, user]) {
           from: user,
           value: ether('1'),
         });
+
+        // Get handler return result
+        const handlerReturn = utils.toBN(
+          getHandlerReturn(receipt, ['uint256'])[0]
+        );
+        const poolTokenUserEnd = await this.poolToken.balanceOf.call(user);
+        expect(handlerReturn).to.be.bignumber.eq(
+          poolTokenUserEnd.sub(poolTokenUser)
+        );
 
         // Check proxy balance
         expect(
@@ -382,6 +416,15 @@ contract('Curve', function([_, user]) {
           value: ether('1'),
         });
 
+        // Get handler return result
+        const handlerReturn = utils.toBN(
+          getHandlerReturn(receipt, ['uint256'])[0]
+        );
+        const token1UserEnd = await this.token1.balanceOf.call(user);
+        expect(handlerReturn).to.be.bignumber.eq(
+          token1UserEnd.sub(token1UserBefore)
+        );
+
         // Check proxy balance
         expect(
           await this.token1.balanceOf.call(this.proxy.address)
@@ -428,6 +471,7 @@ contract('Curve', function([_, user]) {
     beforeEach(async function() {
       token0User = await this.token0.balanceOf.call(user);
       token1User = await this.token1.balanceOf.call(user);
+      poolTokenUser = await this.poolToken.balanceOf.call(user);
     });
 
     describe('y pool', function() {
@@ -498,6 +542,15 @@ contract('Curve', function([_, user]) {
           value: ether('1'),
         });
 
+        // Get handler return result
+        const handlerReturn = utils.toBN(
+          getHandlerReturn(receipt, ['uint256'])[0]
+        );
+        const poolTokenUserEnd = await this.poolToken.balanceOf.call(user);
+        expect(handlerReturn).to.be.bignumber.eq(
+          poolTokenUserEnd.sub(poolTokenUser)
+        );
+
         // Check proxy balance
         expect(
           await this.token0.balanceOf.call(this.proxy.address)
@@ -551,6 +604,13 @@ contract('Curve', function([_, user]) {
           from: user,
           value: ether('1'),
         });
+
+        // Get handler return result
+        const handlerReturn = utils.toBN(
+          getHandlerReturn(receipt, ['uint256'])[0]
+        );
+        const token1UserEnd = await this.token1.balanceOf.call(user);
+        expect(handlerReturn).to.be.bignumber.eq(token1UserEnd.sub(token1User));
 
         // Check proxy balance
         expect(

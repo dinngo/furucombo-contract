@@ -1,12 +1,14 @@
 pragma solidity ^0.6.0;
 
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
+import "@openzeppelin/contracts/math/SafeMath.sol";
 import "../HandlerBase.sol";
 import "./ICurveHandler.sol";
 import "./IOneSplit.sol";
 
 contract HCurve is HandlerBase {
     using SafeERC20 for IERC20;
+    using SafeMath for uint256;
 
     // prettier-ignore
     address public constant ONE_SPLIT = 0xC586BeF4a0992C495Cf22e1aeEE4E446CECDee0E;
@@ -20,13 +22,16 @@ contract HCurve is HandlerBase {
         int128 j,
         uint256 dx,
         uint256 minDy
-    ) external payable {
+    ) external payable returns (uint256) {
         ICurveHandler curveHandler = ICurveHandler(handler);
+        uint256 beforeTokenJBalance = IERC20(tokenJ).balanceOf(address(this));
         IERC20(tokenI).safeApprove(address(curveHandler), dx);
         curveHandler.exchange(i, j, dx, minDy);
         IERC20(tokenI).safeApprove(address(curveHandler), 0);
+        uint256 afterTokenJBalance = IERC20(tokenJ).balanceOf(address(this));
 
         _updateToken(tokenJ);
+        return afterTokenJBalance.sub(beforeTokenJBalance);
     }
 
     // Curve fixed input underlying exchange
@@ -38,13 +43,16 @@ contract HCurve is HandlerBase {
         int128 j,
         uint256 dx,
         uint256 minDy
-    ) external payable {
+    ) external payable returns (uint256) {
         ICurveHandler curveHandler = ICurveHandler(handler);
+        uint256 beforeTokenJBalance = IERC20(tokenJ).balanceOf(address(this));
         IERC20(tokenI).safeApprove(address(curveHandler), dx);
         curveHandler.exchange_underlying(i, j, dx, minDy);
         IERC20(tokenI).safeApprove(address(curveHandler), 0);
+        uint256 afterTokenJBalance = IERC20(tokenJ).balanceOf(address(this));
 
         _updateToken(tokenJ);
+        return afterTokenJBalance.sub(beforeTokenJBalance);
     }
 
     // OneSplit fixed input used for Curve swap
@@ -55,8 +63,9 @@ contract HCurve is HandlerBase {
         uint256 minReturn,
         uint256[] calldata distribution,
         uint256 featureFlags
-    ) external payable {
+    ) external payable returns (uint256) {
         IOneSplit oneSplit = IOneSplit(ONE_SPLIT);
+        uint256 beforeToTokenBalance = IERC20(toToken).balanceOf(address(this));
         IERC20(fromToken).safeApprove(address(oneSplit), amount);
         oneSplit.swap(
             fromToken,
@@ -67,8 +76,10 @@ contract HCurve is HandlerBase {
             featureFlags
         );
         IERC20(fromToken).safeApprove(address(oneSplit), 0);
+        uint256 afterToTokenBalance = IERC20(toToken).balanceOf(address(this));
 
         _updateToken(toToken);
+        return afterToTokenBalance.sub(beforeToTokenBalance);
     }
 
     // Curve add liquidity need exact array size for each pool
@@ -78,8 +89,9 @@ contract HCurve is HandlerBase {
         address[] calldata tokens,
         uint256[] calldata amounts,
         uint256 minMintAmount
-    ) external payable {
+    ) external payable returns (uint256) {
         ICurveHandler curveHandler = ICurveHandler(handler);
+        uint256 beforePoolBalance = IERC20(pool).balanceOf(address(this));
 
         // Approve non-zero amount erc20 token
         for (uint256 i = 0; i < amounts.length; i++) {
@@ -131,8 +143,11 @@ contract HCurve is HandlerBase {
             IERC20(tokens[i]).safeApprove(address(curveHandler), 0);
         }
 
+        uint256 afterPoolBalance = IERC20(pool).balanceOf(address(this));
+
         // Update post process
         _updateToken(address(pool));
+        return afterPoolBalance.sub(beforePoolBalance);
     }
 
     // Curve remove liquidity one coin
@@ -143,14 +158,17 @@ contract HCurve is HandlerBase {
         uint256 tokenAmount,
         int128 i,
         uint256 minAmount
-    ) external payable {
+    ) external payable returns (uint256) {
         ICurveHandler curveHandler = ICurveHandler(handler);
+        uint256 beforeTokenIBalance = IERC20(tokenI).balanceOf(address(this));
         IERC20(pool).safeApprove(address(curveHandler), tokenAmount);
         curveHandler.remove_liquidity_one_coin(tokenAmount, i, minAmount);
         IERC20(pool).safeApprove(address(curveHandler), 0);
+        uint256 afterTokenIBalance = IERC20(tokenI).balanceOf(address(this));
 
         // Update post process
         _updateToken(tokenI);
+        return afterTokenIBalance.sub(beforeTokenIBalance);
     }
 
     // Curve remove liquidity one coin and donate dust
@@ -161,8 +179,9 @@ contract HCurve is HandlerBase {
         uint256 tokenAmount,
         int128 i,
         uint256 minAmount
-    ) external payable {
+    ) external payable returns (uint256) {
         ICurveHandler curveHandler = ICurveHandler(handler);
+        uint256 beforeTokenIBalance = IERC20(tokenI).balanceOf(address(this));
         IERC20(pool).safeApprove(address(curveHandler), tokenAmount);
         curveHandler.remove_liquidity_one_coin(
             tokenAmount,
@@ -171,8 +190,10 @@ contract HCurve is HandlerBase {
             true // donate_dust
         );
         IERC20(pool).safeApprove(address(curveHandler), 0);
+        uint256 afterTokenIBalance = IERC20(tokenI).balanceOf(address(this));
 
         // Update post process
         _updateToken(tokenI);
+        return afterTokenIBalance.sub(beforeTokenIBalance);
     }
 }
