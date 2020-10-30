@@ -23,9 +23,13 @@ const {
   AAVEPROTOCOL_PROVIDER,
   AETHER,
   ADAI,
-  RecordHandlerResultSig,
 } = require('./utils/constants');
-const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
+const {
+  evmRevert,
+  evmSnapshot,
+  profileGas,
+  getHandlerReturn,
+} = require('./utils/utils');
 
 const HAave = artifacts.require('HAaveProtocol');
 const Registry = artifacts.require('Registry');
@@ -88,23 +92,13 @@ contract('Aave', function([_, user]) {
         value: value,
       });
       // Get handler return result
-      var handlerResult;
-      receipt.receipt.rawLogs.forEach(element => {
-        if (element.topics[0] === RecordHandlerResultSig) {
-          // handler return result start from the third args
-          handlerResult = utils.toBN(
-            web3.eth.abi.decodeParameters(
-              ['uint256', 'uint256', 'uint256'],
-              element.data
-            )[2]
-          );
-        }
-      });
-
+      const handlerReturn = utils.toBN(
+        getHandlerReturn(receipt, ['uint256'])[0]
+      );
       const aEtherUser = await this.aEther.balanceOf.call(user);
 
       expect(aEtherUser).to.be.bignumber.eq(value);
-      expect(aEtherUser).to.be.bignumber.eq(handlerResult);
+      expect(aEtherUser).to.be.bignumber.eq(handlerReturn);
       expect(await balanceUser.delta()).to.be.bignumber.eq(
         ether('0')
           .sub(value)
@@ -129,23 +123,13 @@ contract('Aave', function([_, user]) {
 
       const receipt = await this.proxy.execMock(to, data, { from: user });
       // Get handler return result
-      var handlerResult;
-      receipt.receipt.rawLogs.forEach(element => {
-        if (element.topics[0] === RecordHandlerResultSig) {
-          // handler return result start from the third args
-          handlerResult = utils.toBN(
-            web3.eth.abi.decodeParameters(
-              ['uint256', 'uint256', 'uint256'],
-              element.data
-            )[2]
-          );
-        }
-      });
-
+      const handlerReturn = utils.toBN(
+        getHandlerReturn(receipt, ['uint256'])[0]
+      );
       const aTokenUser = await this.aToken.balanceOf.call(user);
 
       expect(aTokenUser).to.be.bignumber.eq(new BN(value));
-      expect(aTokenUser).to.be.bignumber.eq(handlerResult);
+      expect(aTokenUser).to.be.bignumber.eq(handlerReturn);
       expect(await balanceUser.delta()).to.be.bignumber.eq(
         ether('0').sub(new BN(receipt.receipt.gasUsed))
       );
@@ -184,22 +168,12 @@ contract('Aave', function([_, user]) {
       const receipt = await this.proxy.execMock(to, data, { from: user });
 
       // Get handler return result
-      var handlerResult;
-      receipt.receipt.rawLogs.forEach(element => {
-        if (element.topics[0] === RecordHandlerResultSig) {
-          // handler return result start from the third args
-          handlerResult = utils.toBN(
-            web3.eth.abi.decodeParameters(
-              ['uint256', 'uint256', 'uint256'],
-              element.data
-            )[2]
-          );
-        }
-      });
-
+      const handlerReturn = utils.toBN(
+        getHandlerReturn(receipt, ['uint256'])[0]
+      );
       const aEtherUserAfter = await this.aEther.balanceOf.call(user);
       const interestMax = value.mul(new BN(1)).div(new BN(10000));
-      expect(value).to.be.bignumber.eq(handlerResult);
+      expect(value).to.be.bignumber.eq(handlerReturn);
       expect(aEtherUserAfter).to.be.bignumber.lt(
         aEtherUserBefore.sub(value).add(interestMax)
       );
@@ -237,24 +211,14 @@ contract('Aave', function([_, user]) {
       const receipt = await this.proxy.execMock(to, data, { from: user });
 
       // Get handler return result
-      var handlerResult;
-      receipt.receipt.rawLogs.forEach(element => {
-        if (element.topics[0] === RecordHandlerResultSig) {
-          // handler return result start from the third args
-          handlerResult = utils.toBN(
-            web3.eth.abi.decodeParameters(
-              ['uint256', 'uint256', 'uint256'],
-              element.data
-            )[2]
-          );
-        }
-      });
-
+      const handlerReturn = utils.toBN(
+        getHandlerReturn(receipt, ['uint256'])[0]
+      );
       const aTokenUserAfter = await this.aToken.balanceOf.call(user);
       const tokenUserAfter = await this.token.balanceOf.call(user);
 
       const interestMax = value.mul(new BN(1)).div(new BN(10000));
-      expect(value).to.be.bignumber.eq(handlerResult);
+      expect(value).to.be.bignumber.eq(handlerReturn);
       expect(aTokenUserAfter).to.be.bignumber.lt(
         aTokenUserBefore.sub(value).add(interestMax)
       );

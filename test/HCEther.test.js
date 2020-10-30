@@ -21,9 +21,13 @@ const {
   DAI_TOKEN,
   DAI_PROVIDER,
   COMPOUND_COMPTROLLER,
-  RecordHandlerResultSig,
 } = require('./utils/constants');
-const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
+const {
+  evmRevert,
+  evmSnapshot,
+  profileGas,
+  getHandlerReturn,
+} = require('./utils/utils');
 
 const HCEther = artifacts.require('HCEther');
 const Registry = artifacts.require('Registry');
@@ -77,20 +81,11 @@ contract('CEther', function([_, user]) {
       });
 
       // Get handler return result
-      var handlerResult;
-      receipt.receipt.rawLogs.forEach(element => {
-        if (element.topics[0] === RecordHandlerResultSig) {
-          // handler return result start from the third args
-          handlerResult = utils.toBN(
-            web3.eth.abi.decodeParameters(
-              ['uint256', 'uint256', 'uint256'],
-              element.data
-            )[2]
-          );
-        }
-      });
+      const handlerReturn = utils.toBN(
+        getHandlerReturn(receipt, ['uint256'])[0]
+      );
       const cEtherUserEnd = await this.cEther.balanceOf.call(user);
-      expect(cEtherUserEnd.sub(cEtherUser)).to.be.bignumber.eq(handlerResult);
+      expect(cEtherUserEnd.sub(cEtherUser)).to.be.bignumber.eq(handlerReturn);
       expect(
         cEtherUserEnd
           .sub(cEtherUser)
@@ -133,22 +128,13 @@ contract('CEther', function([_, user]) {
       });
 
       // Get handler return result
-      var handlerResult;
-      receipt.receipt.rawLogs.forEach(element => {
-        if (element.topics[0] === RecordHandlerResultSig) {
-          // handler return result start from the third args
-          handlerResult = utils.toBN(
-            web3.eth.abi.decodeParameters(
-              ['uint256', 'uint256', 'uint256'],
-              element.data
-            )[2]
-          );
-        }
-      });
+      const handlerReturn = utils.toBN(
+        getHandlerReturn(receipt, ['uint256'])[0]
+      );
 
       const balanceDelta = await balanceUser.delta();
       expect(balanceDelta).to.be.bignumber.eq(
-        handlerResult.sub(new BN(receipt.receipt.gasUsed))
+        handlerReturn.sub(new BN(receipt.receipt.gasUsed))
       );
 
       expect(await this.cEther.balanceOf.call(user)).to.be.bignumber.eq(
@@ -206,21 +192,12 @@ contract('CEther', function([_, user]) {
       });
 
       // Get handler return result
-      var handlerResult;
-      receipt.receipt.rawLogs.forEach(element => {
-        if (element.topics[0] === RecordHandlerResultSig) {
-          // handler return result start from the third args
-          handlerResult = utils.toBN(
-            web3.eth.abi.decodeParameters(
-              ['uint256', 'uint256', 'uint256'],
-              element.data
-            )[2]
-          );
-        }
-      });
+      const handlerReturn = utils.toBN(
+        getHandlerReturn(receipt, ['uint256'])[0]
+      );
 
       const cEtherUserAmountEnd = await this.cEther.balanceOf.call(user);
-      expect(handlerResult).to.be.bignumber.eq(
+      expect(handlerReturn).to.be.bignumber.eq(
         cEtherUser.sub(cEtherUserAmountEnd)
       );
 
@@ -277,26 +254,18 @@ contract('CEther', function([_, user]) {
       });
 
       // Get handler return result
-      var handlerResult;
-      receipt.receipt.rawLogs.forEach(element => {
-        if (element.topics[0] === RecordHandlerResultSig) {
-          // handler return result start from the third args
-          handlerResult = utils.toBN(
-            web3.eth.abi.decodeParameters(
-              ['uint256', 'uint256', 'uint256'],
-              element.data
-            )[2]
-          );
-        }
-      });
+      const handlerReturn = utils.toBN(
+        getHandlerReturn(receipt, ['uint256'])[0]
+      );
 
       expect(
         await this.cEther.borrowBalanceCurrent.call(user)
-      ).to.be.bignumber.eq(handlerResult);
+      ).to.be.bignumber.eq(handlerReturn);
 
       expect(
         await this.cEther.borrowBalanceCurrent.call(user)
       ).to.be.bignumber.eq(ether('0'));
+      profileGas(receipt);
     });
 
     it('insufficient ether', async function() {

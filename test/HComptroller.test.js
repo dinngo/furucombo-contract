@@ -19,9 +19,13 @@ const {
   COMP_TOKEN,
   COMPOUND_COMPTROLLER,
   COMPOUND_LENS,
-  RecordHandlerResultSig,
 } = require('./utils/constants');
-const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
+const {
+  evmRevert,
+  evmSnapshot,
+  profileGas,
+  getHandlerReturn,
+} = require('./utils/utils');
 
 const HComptroller = artifacts.require('HComptroller');
 const Registry = artifacts.require('Registry');
@@ -114,21 +118,12 @@ contract('Comptroller', function([_, user, someone]) {
           value: ether('0.1'),
         });
         // Get handler return result
-        var handlerResult;
-        receipt.receipt.rawLogs.forEach(element => {
-          if (element.topics[0] === RecordHandlerResultSig) {
-            // handler return result start from the third args
-            handlerResult = utils.toBN(
-              web3.eth.abi.decodeParameters(
-                ['uint256', 'uint256', 'uint256'],
-                element.data
-              )[2]
-            );
-          }
-        });
+        const handlerReturn = utils.toBN(
+          getHandlerReturn(receipt, ['uint256'])[0]
+        );
 
         const compUserEnd = await this.comp.balanceOf.call(user);
-        expect(compUserEnd.sub(compUser)).to.be.bignumber.eq(handlerResult);
+        expect(compUserEnd.sub(compUser)).to.be.bignumber.eq(handlerReturn);
         // TODO: Get the ground truth
         // expect(compUserEnd.sub(compUser)).to.be.bignumber.eq(result);
         expect(compUserEnd.sub(compUser)).to.be.bignumber.gt(ether('0'));
@@ -146,20 +141,11 @@ contract('Comptroller', function([_, user, someone]) {
           value: ether('0.1'),
         });
         // Get handler return result
-        var handlerResult;
-        receipt.receipt.rawLogs.forEach(element => {
-          if (element.topics[0] === RecordHandlerResultSig) {
-            // handler return result start from the third args
-            handlerResult = utils.toBN(
-              web3.eth.abi.decodeParameters(
-                ['uint256', 'uint256', 'uint256'],
-                element.data
-              )[2]
-            );
-          }
-        });
+        const handlerReturn = utils.toBN(
+          getHandlerReturn(receipt, ['uint256'])[0]
+        );
         const compUserEnd = await this.comp.balanceOf.call(user);
-        expect(compUserEnd.sub(compUser)).to.be.bignumber.eq(handlerResult);
+        expect(compUserEnd.sub(compUser)).to.be.bignumber.eq(handlerReturn);
         // TODO: Get the ground truth
         // expect(compUserEnd.sub(compUser)).to.be.bignumber.eq(result);
         expect(compUserEnd.sub(compUser)).to.be.bignumber.gt(ether('0'));

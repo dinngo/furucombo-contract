@@ -21,9 +21,13 @@ const {
   DAI_TOKEN,
   DAI_PROVIDER,
   COMPOUND_COMPTROLLER,
-  RecordHandlerResultSig,
 } = require('./utils/constants');
-const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
+const {
+  evmRevert,
+  evmSnapshot,
+  profileGas,
+  getHandlerReturn,
+} = require('./utils/utils');
 
 const HCToken = artifacts.require('HCToken');
 const Registry = artifacts.require('Registry');
@@ -86,21 +90,12 @@ contract('CToken', function([_, user]) {
       const receipt = await this.proxy.execMock(to, data, { from: user });
 
       // Get handler return result
-      var handlerResult;
-      receipt.receipt.rawLogs.forEach(element => {
-        if (element.topics[0] === RecordHandlerResultSig) {
-          // handler return result start from the third args
-          handlerResult = utils.toBN(
-            web3.eth.abi.decodeParameters(
-              ['uint256', 'uint256', 'uint256'],
-              element.data
-            )[2]
-          );
-        }
-      });
+      const handlerReturn = utils.toBN(
+        getHandlerReturn(receipt, ['uint256'])[0]
+      );
 
       cTokenUserEnd = await this.cToken.balanceOf.call(user);
-      expect(cTokenUserEnd.sub(cTokenUser)).to.be.bignumber.eq(handlerResult);
+      expect(cTokenUserEnd.sub(cTokenUser)).to.be.bignumber.eq(handlerReturn);
       expect(
         cTokenUserEnd.mul(new BN('1000')).divRound(result)
       ).to.be.bignumber.eq(new BN('1000'));
@@ -155,21 +150,12 @@ contract('CToken', function([_, user]) {
       });
 
       // Get handler return result
-      var handlerResult;
-      receipt.receipt.rawLogs.forEach(element => {
-        if (element.topics[0] === RecordHandlerResultSig) {
-          // handler return result start from the third args
-          handlerResult = utils.toBN(
-            web3.eth.abi.decodeParameters(
-              ['uint256', 'uint256', 'uint256'],
-              element.data
-            )[2]
-          );
-        }
-      });
+      const handlerReturn = utils.toBN(
+        getHandlerReturn(receipt, ['uint256'])[0]
+      );
 
       tokenUserEnd = await this.token.balanceOf.call(user);
-      expect(tokenUserEnd.sub(tokenUser)).to.be.bignumber.eq(handlerResult);
+      expect(tokenUserEnd.sub(tokenUser)).to.be.bignumber.eq(handlerReturn);
 
       expect(await this.cToken.balanceOf.call(user)).to.be.bignumber.eq(
         ether('0')
@@ -233,20 +219,11 @@ contract('CToken', function([_, user]) {
       });
 
       // Get handler return result
-      var handlerResult;
-      receipt.receipt.rawLogs.forEach(element => {
-        if (element.topics[0] === RecordHandlerResultSig) {
-          // handler return result start from the third args
-          handlerResult = utils.toBN(
-            web3.eth.abi.decodeParameters(
-              ['uint256', 'uint256', 'uint256'],
-              element.data
-            )[2]
-          );
-        }
-      });
+      const handlerReturn = utils.toBN(
+        getHandlerReturn(receipt, ['uint256'])[0]
+      );
       const cTokenUserEnd = await this.cToken.balanceOf.call(user);
-      expect(handlerResult).to.be.bignumber.eq(cTokenUser.sub(cTokenUserEnd));
+      expect(handlerReturn).to.be.bignumber.eq(cTokenUser.sub(cTokenUserEnd));
 
       expect(
         (await this.token.balanceOf.call(user)).sub(tokenUser)
@@ -308,22 +285,13 @@ contract('CToken', function([_, user]) {
         value: ether('0.1'),
       });
       // Get handler return result
-      var handlerResult;
-      receipt.receipt.rawLogs.forEach(element => {
-        if (element.topics[0] === RecordHandlerResultSig) {
-          // handler return result start from the third args
-          handlerResult = utils.toBN(
-            web3.eth.abi.decodeParameters(
-              ['uint256', 'uint256', 'uint256'],
-              element.data
-            )[2]
-          );
-        }
-      });
+      const handlerReturn = utils.toBN(
+        getHandlerReturn(receipt, ['uint256'])[0]
+      );
 
       expect(
         await this.cToken.borrowBalanceCurrent.call(user)
-      ).to.be.bignumber.eq(handlerResult);
+      ).to.be.bignumber.eq(handlerReturn);
 
       expect(
         await this.cToken.borrowBalanceCurrent.call(user)
