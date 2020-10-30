@@ -1,6 +1,7 @@
 pragma solidity ^0.6.0;
 
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
+import "@openzeppelin/contracts/math/SafeMath.sol";
 
 import "../HandlerBase.sol";
 import "./IMooniFactory.sol";
@@ -8,6 +9,7 @@ import "./IMooniswap.sol";
 
 contract HMooniswap is HandlerBase {
     using SafeERC20 for IERC20;
+    using SafeMath for uint256;
 
     // prettier-ignore
     address payable public constant MooniFactory = 0x71CD6666064C3A1354a3B4dca5fA1E2D3ee7D303;
@@ -49,19 +51,34 @@ contract HMooniswap is HandlerBase {
         address pool,
         uint256 amount,
         uint256[] calldata minReturns
-    ) external payable {
+    ) external payable returns (uint256[] memory) {
         // Get mooniswap
         IMooniswap mooniswap = IMooniswap(pool);
+        address[] memory tokens = mooniswap.getTokens();
+        uint256[] memory amountsOut = new uint256[](tokens.length);
+
+        for (uint256 i = 0; i < tokens.length; i++) {
+            if (tokens[i] != address(0)) {
+                amountsOut[i] = IERC20(tokens[i]).balanceOf(address(this));
+            } else {
+                amountsOut[i] = address(this).balance;
+            }
+        }
 
         // Remove liquidity
         mooniswap.withdraw(amount, minReturns);
 
         // Update involved token except ETH
-        address[] memory tokens = mooniswap.getTokens();
         for (uint256 i = 0; i < tokens.length; i++) {
             if (tokens[i] != address(0)) {
                 _updateToken(address(tokens[i]));
+                amountsOut[i] = IERC20(tokens[i]).balanceOf(address(this)).sub(
+                    amountsOut[i]
+                );
+            } else {
+                amountsOut[i] = address(this).balance.sub(amountsOut[i]);
             }
         }
+        return amountsOut;
     }
 }
