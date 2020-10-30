@@ -22,7 +22,12 @@ const {
   BALANCER_WETH_MKR_DAI,
   MAKER_PROXY_REGISTRY,
 } = require('./utils/constants');
-const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
+const {
+  evmRevert,
+  evmSnapshot,
+  profileGas,
+  getHandlerReturn,
+} = require('./utils/utils');
 
 const HBalancer = artifacts.require('HBalancer');
 const Registry = artifacts.require('Registry');
@@ -110,7 +115,6 @@ contract('Balancer', function([_, user]) {
           tokenAAmount,
           minPoolAmountOut
         );
-
         // Simulate Balancer contract behavior
         await this.tokenA.approve(this.bPool.address, tokenAAmount, {
           from: user,
@@ -121,25 +125,27 @@ contract('Balancer', function([_, user]) {
           minPoolAmountOut,
           { from: user }
         );
-
         // Send tokens to proxy
         await this.tokenA.transfer(this.proxy.address, tokenAAmount, {
           from: user,
         });
         await this.proxy.updateTokenMock(this.tokenA.address);
-
         // Execute handler
         const receipt = await this.proxy.execMock(to, data, {
           from: user,
           value: ether('0.1'),
         });
-
+        // Get handler return result
+        const handlerReturn = utils.toBN(
+          getHandlerReturn(receipt, ['uint256'])[0]
+        );
+        // Verify handler return amount
+        expect(handlerReturn).to.be.bignumber.eq(expectedPoolAmountOut);
         // Verify proxy balance should be zero
         expect(await balanceProxy.get()).to.be.bignumber.eq(ether('0'));
         expect(
           await this.tokenA.balanceOf.call(this.proxy.address)
         ).to.be.bignumber.eq(ether('0'));
-
         // Verify user balance
         expect(await this.tokenA.balanceOf.call(user)).to.be.bignumber.eq(
           tokenAUserAmount.sub(tokenAAmount)
@@ -149,7 +155,6 @@ contract('Balancer', function([_, user]) {
         ).to.be.bignumber.eq(
           balancerPoolTokenUserAmount.add(expectedPoolAmountOut)
         );
-
         // Gas profile
         profileGas(receipt);
       });
@@ -168,12 +173,10 @@ contract('Balancer', function([_, user]) {
           tokenCAddress
         );
         const poolTotalSupply = await this.bPool.totalSupply.call();
-
         // Prepare handler data
         const to = this.hBalancer.address;
         const poolAmountPercent = new BN('1000'); // poolAmountPercent is 0.1%
         const poolAmountOut = poolTotalSupply.divRound(poolAmountPercent); // Expected receive pool token amount
-
         // Calculate expected token input amount
         const ratio = getRatio(poolAmountOut, poolTotalSupply);
         const maxTokenAAmount = calcExpectedTokenAmount(
@@ -193,7 +196,6 @@ contract('Balancer', function([_, user]) {
           maxTokenBAmount,
           maxTokenCAmount,
         ];
-
         // Encode handler data
         const data = abi.simpleEncode(
           'joinPool(address,uint256,uint256[])',
@@ -201,7 +203,6 @@ contract('Balancer', function([_, user]) {
           poolAmountOut,
           maxAmountsIn
         );
-
         // Send tokens from user to proxy
         await this.tokenA.transfer(this.proxy.address, maxTokenAAmount, {
           from: user,
@@ -215,12 +216,25 @@ contract('Balancer', function([_, user]) {
         await this.proxy.updateTokenMock(this.tokenA.address);
         await this.proxy.updateTokenMock(this.tokenB.address);
         await this.proxy.updateTokenMock(this.tokenC.address);
-
         // Execute handler
         const receipt = await this.proxy.execMock(to, data, {
           from: user,
           value: ether('0.1'),
         });
+
+        const handlerReturn = getHandlerReturn(receipt, ['uint256[]'])[0];
+        const tokenAUserAmountEnd = await this.tokenA.balanceOf.call(user);
+        const tokenBUserAmountEnd = await this.tokenB.balanceOf.call(user);
+        const tokenCUserAmountEnd = await this.tokenC.balanceOf.call(user);
+        expect(utils.toBN(handlerReturn[0])).to.be.bignumber.eq(
+          tokenAUserAmount.sub(tokenAUserAmountEnd)
+        );
+        expect(utils.toBN(handlerReturn[1])).to.be.bignumber.eq(
+          tokenBUserAmount.sub(tokenBUserAmountEnd)
+        );
+        expect(utils.toBN(handlerReturn[2])).to.be.bignumber.eq(
+          tokenCUserAmount.sub(tokenCUserAmountEnd)
+        );
 
         // Verify proxy balance should be zero
         expect(await balanceProxy.get()).to.be.bignumber.eq(ether('0'));
@@ -233,21 +247,19 @@ contract('Balancer', function([_, user]) {
         expect(
           await this.tokenC.balanceOf.call(this.proxy.address)
         ).to.be.bignumber.eq(ether('0'));
-
         // Verify user balance
-        expect(await this.tokenA.balanceOf.call(user)).to.be.bignumber.lte(
+        expect(tokenAUserAmountEnd).to.be.bignumber.lte(
           tokenAUserAmount.sub(maxTokenAAmount)
         );
-        expect(await this.tokenB.balanceOf.call(user)).to.be.bignumber.lte(
+        expect(tokenBUserAmountEnd).to.be.bignumber.lte(
           tokenBUserAmount.sub(maxTokenBAmount)
         );
-        expect(await this.tokenC.balanceOf.call(user)).to.be.bignumber.lte(
+        expect(tokenCUserAmountEnd).to.be.bignumber.lte(
           tokenCUserAmount.sub(maxTokenCAmount)
         );
         expect(
           await this.balancerPoolToken.balanceOf.call(user)
         ).to.be.bignumber.eq(balancerPoolTokenUserAmount.add(poolAmountOut));
-
         // Gas profile
         profileGas(receipt);
       });
@@ -257,7 +269,6 @@ contract('Balancer', function([_, user]) {
         const to = this.hBalancer.address;
         const poolAmountOut = new BN('100000');
         const maxAmountsIn = [new BN('100'), new BN('100')];
-
         // Encode handler data
         const data = abi.simpleEncode(
           'joinPool(address,uint256,uint256[])',
@@ -265,7 +276,6 @@ contract('Balancer', function([_, user]) {
           poolAmountOut,
           maxAmountsIn
         );
-
         // Execute handler
         await expectRevert(
           this.proxy.execMock(to, data, {
@@ -290,14 +300,12 @@ contract('Balancer', function([_, user]) {
           new BN('1'),
           { from: user }
         );
-
         // Update token amount
         balancerPoolTokenUserAmount = await this.balancerPoolToken.balanceOf.call(
           user
         );
         tokenAUserAmount = await this.tokenA.balanceOf.call(user);
       });
-
       it('normal', async function() {
         // Prepare handler data
         const poolAmountIn = balancerPoolTokenUserAmount.divRound(new BN('10'));
@@ -310,7 +318,6 @@ contract('Balancer', function([_, user]) {
           poolAmountIn,
           minTokenAAmount
         );
-
         // Simulate Balancer contract behavior
         const expectedTokenAmountOut = await this.bPool.exitswapPoolAmountIn.call(
           tokenAAddress,
@@ -318,7 +325,6 @@ contract('Balancer', function([_, user]) {
           minTokenAAmount,
           { from: user }
         );
-
         // Send token to proxy
         await this.balancerPoolToken.transfer(
           this.proxy.address,
@@ -328,12 +334,17 @@ contract('Balancer', function([_, user]) {
           }
         );
         await this.proxy.updateTokenMock(this.tokenA.address);
-
         // Execute handler
         const receipt = await this.proxy.execMock(to, data, {
           from: user,
           value: ether('0.1'),
         });
+
+        // Get handler return result
+        const handlerReturn = utils.toBN(
+          getHandlerReturn(receipt, ['uint256'])[0]
+        );
+        expect(handlerReturn).to.be.bignumber.eq(expectedTokenAmountOut);
 
         // Verify proxy balance should be zero
         expect(await balanceProxy.get()).to.be.bignumber.eq(ether('0'));
@@ -343,7 +354,6 @@ contract('Balancer', function([_, user]) {
         expect(
           await this.balancerPoolToken.balanceOf.call(this.proxy.address)
         ).to.be.bignumber.eq(ether('0'));
-
         // Verify user balance
         expect(await this.tokenA.balanceOf.call(user)).to.be.bignumber.eq(
           tokenAUserAmount.add(expectedTokenAmountOut)
@@ -351,12 +361,10 @@ contract('Balancer', function([_, user]) {
         expect(
           await this.balancerPoolToken.balanceOf.call(user)
         ).to.be.bignumber.eq(balancerPoolTokenUserAmount.sub(poolAmountIn));
-
         // Gas profile
         profileGas(receipt);
       });
     });
-
     describe('Remove Liquidity All Assets', function() {
       beforeEach(async function() {
         // Add liquidity before removing liquidity
@@ -370,7 +378,6 @@ contract('Balancer', function([_, user]) {
           new BN('1'),
           { from: user }
         );
-
         balancerPoolTokenUserAmount = await this.balancerPoolToken.balanceOf.call(
           user
         );
@@ -378,7 +385,6 @@ contract('Balancer', function([_, user]) {
         tokenBUserAmount = await this.tokenB.balanceOf.call(user);
         tokenCUserAmount = await this.tokenC.balanceOf.call(user);
       });
-
       it('normal', async function() {
         // Get BPool Information
         const poolTokenABalance = await this.bPool.getBalance.call(
@@ -391,7 +397,6 @@ contract('Balancer', function([_, user]) {
           tokenCAddress
         );
         const poolTotalSupply = await this.bPool.totalSupply.call();
-
         // Prepare handler data
         const poolAmountPercent = new BN('100'); // poolAmountPercent is 1%
         const poolAmountIn = balancerPoolTokenUserAmount.divRound(
@@ -405,7 +410,6 @@ contract('Balancer', function([_, user]) {
           poolAmountIn,
           minAmountsOut
         );
-
         // Send tokens to proxy
         await this.balancerPoolToken.transfer(
           this.proxy.address,
@@ -415,12 +419,28 @@ contract('Balancer', function([_, user]) {
           }
         );
         await this.proxy.updateTokenMock(this.tokenA.address);
-
         // Execute handler
         const receipt = await this.proxy.execMock(to, data, {
           from: user,
           value: ether('0.1'),
         });
+
+        const handlerReturn = getHandlerReturn(receipt, ['uint256[]'])[0];
+        const tokenAUserAmountEnd = await this.tokenA.balanceOf.call(user);
+        const tokenBUserAmountEnd = await this.tokenB.balanceOf.call(user);
+        const tokenCUserAmountEnd = await this.tokenC.balanceOf.call(user);
+
+        // Check handler return
+        expect(utils.toBN(handlerReturn[0])).to.be.bignumber.eq(
+          tokenAUserAmountEnd.sub(tokenAUserAmount)
+        );
+
+        expect(utils.toBN(handlerReturn[1])).to.be.bignumber.eq(
+          tokenBUserAmountEnd.sub(tokenBUserAmount)
+        );
+        expect(utils.toBN(handlerReturn[2])).to.be.bignumber.eq(
+          tokenCUserAmountEnd.sub(tokenCUserAmount)
+        );
 
         // Calculate expected token output amount
         const ratio = getRatio(poolAmountIn, poolTotalSupply);
@@ -451,7 +471,6 @@ contract('Balancer', function([_, user]) {
         expect(
           await this.balancerPoolToken.balanceOf.call(this.proxy.address)
         ).to.be.bignumber.eq(ether('0'));
-
         // Verify user token balance
         expect(await this.tokenA.balanceOf.call(user)).to.be.bignumber.eq(
           tokenAUserAmount.add(expectedTokenAAmountOut)
@@ -465,11 +484,9 @@ contract('Balancer', function([_, user]) {
         expect(
           await this.balancerPoolToken.balanceOf.call(user)
         ).to.be.bignumber.eq(balancerPoolTokenUserAmount.sub(poolAmountIn));
-
         // Gas profile
         profileGas(receipt);
       });
-
       it('Amounts not match', async function() {
         // Prepare handler data
         const poolAmountPercent = new BN('100'); // poolAmountPercent is 1%
@@ -484,7 +501,6 @@ contract('Balancer', function([_, user]) {
           poolAmountIn,
           minAmountsOut
         );
-
         // Execute handler
         await expectRevert(
           this.proxy.execMock(to, data, {
