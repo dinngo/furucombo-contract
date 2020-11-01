@@ -1,6 +1,7 @@
 pragma solidity ^0.6.0;
 
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
+import "@openzeppelin/contracts/math/SafeMath.sol";
 
 import "../HandlerBase.sol";
 import "./libraries/UniswapV2Library.sol";
@@ -8,6 +9,7 @@ import "./IUniswapV2Router02.sol";
 
 contract HUniswapV2 is HandlerBase {
     using SafeERC20 for IERC20;
+    using SafeMath for uint256;
 
     address constant UNISWAPV2_ROUTER = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D;
 
@@ -179,14 +181,13 @@ contract HUniswapV2 is HandlerBase {
         uint256 value,
         uint256 amountOutMin,
         address[] calldata path
-    ) external payable returns (uint256[] memory amounts) {
+    ) external payable returns (uint256) {
         require(path.length >= 2, "invalid path");
         address tokenOut = path[path.length - 1];
 
         // Get uniswapV2 router
         IUniswapV2Router02 router = IUniswapV2Router02(UNISWAPV2_ROUTER);
-
-        amounts = router.swapExactETHForTokens.value(value)(
+        uint256[] memory amounts = router.swapExactETHForTokens.value(value)(
             amountOutMin,
             path,
             address(this),
@@ -194,20 +195,22 @@ contract HUniswapV2 is HandlerBase {
         );
 
         _updateToken(tokenOut);
+
+        return amounts[amounts.length - 1];
     }
 
     function swapETHForExactTokens(
         uint256 value,
         uint256 amountOut,
         address[] calldata path
-    ) external payable returns (uint256[] memory amounts) {
+    ) external payable returns (uint256) {
         require(path.length >= 2, "invalid path");
         address tokenOut = path[path.length - 1];
 
         // Get uniswapV2 router
         IUniswapV2Router02 router = IUniswapV2Router02(UNISWAPV2_ROUTER);
 
-        amounts = router.swapETHForExactTokens.value(value)(
+        uint256[] memory amounts = router.swapETHForExactTokens.value(value)(
             amountOut,
             path,
             address(this),
@@ -215,13 +218,14 @@ contract HUniswapV2 is HandlerBase {
         );
 
         _updateToken(tokenOut);
+        return amounts[0];
     }
 
     function swapExactTokensForETH(
         uint256 amountIn,
         uint256 amountOutMin,
         address[] calldata path
-    ) external payable returns (uint256[] memory amounts) {
+    ) external payable returns (uint256) {
         require(path.length >= 2, "invalid path");
         address tokenIn = path[0];
 
@@ -231,7 +235,7 @@ contract HUniswapV2 is HandlerBase {
         // Approve token
         IERC20(tokenIn).safeApprove(UNISWAPV2_ROUTER, amountIn);
 
-        amounts = router.swapExactTokensForETH(
+        uint256[] memory amounts = router.swapExactTokensForETH(
             amountIn,
             amountOutMin,
             path,
@@ -241,13 +245,15 @@ contract HUniswapV2 is HandlerBase {
 
         // Approve token 0
         IERC20(tokenIn).safeApprove(UNISWAPV2_ROUTER, 0);
+
+        return amounts[amounts.length - 1];
     }
 
     function swapTokensForExactETH(
         uint256 amountOut,
         uint256 amountInMax,
         address[] calldata path
-    ) external payable returns (uint256[] memory amounts) {
+    ) external payable returns (uint256) {
         require(path.length >= 2, "invalid path");
         address tokenIn = path[0];
 
@@ -257,7 +263,7 @@ contract HUniswapV2 is HandlerBase {
         // Approve token
         IERC20(tokenIn).safeApprove(UNISWAPV2_ROUTER, amountInMax);
 
-        amounts = router.swapTokensForExactETH(
+        uint256[] memory amounts = router.swapTokensForExactETH(
             amountOut,
             amountInMax,
             path,
@@ -267,13 +273,14 @@ contract HUniswapV2 is HandlerBase {
 
         // Approve token 0
         IERC20(tokenIn).safeApprove(UNISWAPV2_ROUTER, 0);
+        return amounts[0];
     }
 
     function swapExactTokensForTokens(
         uint256 amountIn,
         uint256 amountOutMin,
         address[] calldata path
-    ) external payable returns (uint256[] memory amounts) {
+    ) external payable returns (uint256) {
         require(path.length >= 2, "invalid path");
         address tokenIn = path[0];
         address tokenOut = path[path.length - 1];
@@ -284,7 +291,7 @@ contract HUniswapV2 is HandlerBase {
         // Approve token
         IERC20(tokenIn).safeApprove(UNISWAPV2_ROUTER, amountIn);
 
-        amounts = router.swapExactTokensForTokens(
+        uint256[] memory amounts = router.swapExactTokensForTokens(
             amountIn,
             amountOutMin,
             path,
@@ -296,13 +303,14 @@ contract HUniswapV2 is HandlerBase {
         IERC20(tokenIn).safeApprove(UNISWAPV2_ROUTER, 0);
 
         _updateToken(tokenOut);
+        return amounts[amounts.length - 1];
     }
 
     function swapTokensForExactTokens(
         uint256 amountOut,
         uint256 amountInMax,
         address[] calldata path
-    ) external payable returns (uint256[] memory amounts) {
+    ) external payable returns (uint256) {
         require(path.length >= 2, "invalid path");
         address tokenIn = path[0];
         address tokenOut = path[path.length - 1];
@@ -313,7 +321,7 @@ contract HUniswapV2 is HandlerBase {
         // Approve token
         IERC20(tokenIn).safeApprove(UNISWAPV2_ROUTER, amountInMax);
 
-        amounts = router.swapTokensForExactTokens(
+        uint256[] memory amounts = router.swapTokensForExactTokens(
             amountOut,
             amountInMax,
             path,
@@ -325,5 +333,6 @@ contract HUniswapV2 is HandlerBase {
         IERC20(tokenIn).safeApprove(UNISWAPV2_ROUTER, 0);
 
         _updateToken(tokenOut);
+        return amounts[0];
     }
 }
