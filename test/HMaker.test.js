@@ -33,7 +33,12 @@ const {
   MAKER_MCD_JOIN_KNC_A,
   MAKER_MCD_JOIN_DAI,
 } = require('./utils/constants');
-const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
+const {
+  evmRevert,
+  evmSnapshot,
+  profileGas,
+  getHandlerReturn,
+} = require('./utils/utils');
 
 const HMaker = artifacts.require('HMaker');
 const Registry = artifacts.require('Registry');
@@ -148,6 +153,10 @@ contract('Maker', function([_, user1, user2, someone]) {
             from: someone,
             value: ether('10'),
           });
+          const handlerReturn = utils.toBN(
+            getHandlerReturn(receipt, ['uint256'])[0]
+          );
+
           expect(
             await this.cdpManager.count.call(this.dsProxy.address)
           ).to.be.bignumber.eq(new BN('0'));
@@ -156,6 +165,7 @@ contract('Maker', function([_, user1, user2, someone]) {
 
           const [ilk, debt, lock] = await getCdpInfo(cdp);
 
+          expect(cdp).to.be.bignumber.eq(handlerReturn);
           expect(ilk).eq(ilkEth);
           expect(debt).to.be.bignumber.gte(wadD.mul(RAY));
           expect(lock).to.be.bignumber.eq(value);
@@ -182,6 +192,9 @@ contract('Maker', function([_, user1, user2, someone]) {
             from: user1,
             value: ether('10'),
           });
+          const handlerReturn = utils.toBN(
+            getHandlerReturn(receipt, ['uint256'])[0]
+          );
           expect(
             await this.cdpManager.count.call(this.dsProxy.address)
           ).to.be.bignumber.eq(new BN('0'));
@@ -190,6 +203,7 @@ contract('Maker', function([_, user1, user2, someone]) {
 
           const [ilk, debt, lock] = await getCdpInfo(cdp);
 
+          expect(cdp).to.be.bignumber.eq(handlerReturn);
           expect(ilk).eq(ilkEth);
           expect(debt).to.be.bignumber.gte(wadD.mul(RAY));
           expect(lock).to.be.bignumber.eq(value);
@@ -234,6 +248,10 @@ contract('Maker', function([_, user1, user2, someone]) {
             from: someone,
             value: ether('1'),
           });
+          const handlerReturn = utils.toBN(
+            getHandlerReturn(receipt, ['uint256'])[0]
+          );
+
           expect(
             await this.cdpManager.count.call(this.dsProxy.address)
           ).to.be.bignumber.eq(new BN('0'));
@@ -242,6 +260,7 @@ contract('Maker', function([_, user1, user2, someone]) {
 
           const [ilk, debt, lock] = await getCdpInfo(cdp);
 
+          expect(cdp).to.be.bignumber.eq(handlerReturn);
           expect(ilk).eq(ilkKnc);
           expect(debt).to.be.bignumber.gte(wadD.mul(RAY));
           expect(lock).to.be.bignumber.eq(wadC);
@@ -272,6 +291,9 @@ contract('Maker', function([_, user1, user2, someone]) {
             from: user1,
             value: ether('1'),
           });
+          const handlerReturn = utils.toBN(
+            getHandlerReturn(receipt, ['uint256'])[0]
+          );
           expect(
             await this.cdpManager.count.call(this.dsProxy.address)
           ).to.be.bignumber.eq(new BN('0'));
@@ -280,6 +302,7 @@ contract('Maker', function([_, user1, user2, someone]) {
 
           const [ilk, debt, lock] = await getCdpInfo(cdp);
 
+          expect(cdp).to.be.bignumber.eq(handlerReturn);
           expect(ilk).eq(ilkKnc);
           expect(debt).to.be.bignumber.gte(wadD.mul(RAY));
           expect(lock).to.be.bignumber.eq(wadC);
