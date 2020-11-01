@@ -22,7 +22,12 @@ const {
   USDT_TOKEN,
   USDT_PROVIDER,
 } = require('./utils/constants');
-const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
+const {
+  evmRevert,
+  evmSnapshot,
+  profileGas,
+  getHandlerReturn,
+} = require('./utils/utils');
 
 const HFunds = artifacts.require('HFunds');
 const Registry = artifacts.require('Registry');
@@ -302,6 +307,65 @@ contract('Funds', function([_, user, someone]) {
             value: value.sub(ether('0.1')),
           })
         );
+      });
+    });
+  });
+
+  describe('get balance', function() {
+    before(async function() {
+      this.token = await IToken.at(tokenAddresses[0]);
+      this.usdt = await IUsdt.at(USDT_TOKEN);
+    });
+    describe('Ether', async function() {
+      it('normal', async function() {
+        const token = constants.ZERO_ADDRESS;
+        const value = ether('1');
+        const providerAddress = providerAddresses[0];
+        const to = this.hFunds.address;
+        const data = abi.simpleEncode(
+          'getBalance(address):(uint256)',
+          constants.ZERO_ADDRESS
+        );
+
+        await this.proxy.updateTokenMock(this.token.address);
+        const receipt = await this.proxy.execMock(to, data, {
+          from: user,
+          value: value,
+        });
+
+        const handlerReturn = utils.toBN(
+          getHandlerReturn(receipt, ['uint256'])[0]
+        );
+        console.log('handler', handlerReturn.toString());
+        console.log('value', value.toString());
+        expect(handlerReturn).to.be.bignumber.eq(value);
+        profileGas(receipt);
+      });
+
+      describe('token', function() {
+        it('normal', async function() {
+          const token = this.token.address;
+          const value = ether('1');
+          const providerAddress = providerAddresses[0];
+          const to = this.hFunds.address;
+          const data = abi.simpleEncode('getBalance(address):(uint256)', token);
+          await this.token.transfer(this.proxy.address, value, {
+            from: providerAddress,
+          });
+          await this.proxy.updateTokenMock(this.token.address);
+          const receipt = await this.proxy.execMock(to, data, {
+            from: user,
+            value: ether('0.1'),
+          });
+
+          const handlerReturn = utils.toBN(
+            getHandlerReturn(receipt, ['uint256'])[0]
+          );
+          console.log('handler', handlerReturn.toString());
+          console.log('value', value.toString());
+          expect(handlerReturn).to.be.bignumber.eq(value);
+          profileGas(receipt);
+        });
       });
     });
   });
