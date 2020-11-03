@@ -28,7 +28,12 @@ const {
   FCOMPOUND_ACTIONS,
   COMPOUND_COMPTROLLER,
 } = require('./utils/constants');
-const { evmRevert, evmSnapshot, profileGas, mulPercent } = require('./utils/utils');
+const {
+  evmRevert,
+  evmSnapshot,
+  profileGas,
+  mulPercent,
+} = require('./utils/utils');
 const { getFCompoundActionsBytecodeBySolc } = require('./utils/getBytecode');
 
 const IDSProxyRegistry = artifacts.require('IDSProxyRegistry');
@@ -191,10 +196,10 @@ contract('FCompoundActions', function([_, user]) {
       );
       expect(isEnteredBefore0).to.be.false;
       expect(isEnteredBefore1).to.be.false;
-      const data = abi.simpleEncode(
-        'enterMarkets(address[])',
-        [this.cToken.address, CWBTC]
-      );
+      const data = abi.simpleEncode('enterMarkets(address[])', [
+        this.cToken.address,
+        CWBTC,
+      ]);
       // User DSProxy enter market
       await this.userProxy.execute(FCOMPOUND_ACTIONS, data, { from: user });
       const isEnteredAfter0 = await this.comptroller.checkMembership.call(
@@ -210,14 +215,12 @@ contract('FCompoundActions', function([_, user]) {
     });
 
     it('should revert: non cToken enter', async function() {
-      const data = abi.simpleEncode(
-        'enterMarket(address)',
-        this.token.address
-      );
+      const data = abi.simpleEncode('enterMarket(address)', this.token.address);
       // User DSProxy enter market
-      await expectRevert.unspecified( // TODO: check how to be specified and remove `.unspecified`
+      await expectRevert.unspecified(
+        // TODO: check how to be specified and remove `.unspecified`
         this.userProxy.execute(FCOMPOUND_ACTIONS, data, { from: user }),
-        "FCompoundActions: enter markets failed"
+        'FCompoundActions: enter markets failed'
       );
     });
 
@@ -227,16 +230,15 @@ contract('FCompoundActions', function([_, user]) {
         this.cToken.address
       );
       // User DSProxy enter market
-      await this.userProxy.execute(FCOMPOUND_ACTIONS, dataEnter, { from: user });
+      await this.userProxy.execute(FCOMPOUND_ACTIONS, dataEnter, {
+        from: user,
+      });
       const isEnteredBefore = await this.comptroller.checkMembership.call(
         this.userProxy.address,
         this.cToken.address
       );
       expect(isEnteredBefore).to.be.true;
-      const data = abi.simpleEncode(
-        'exitMarket(address)',
-        this.cToken.address
-      );
+      const data = abi.simpleEncode('exitMarket(address)', this.cToken.address);
       // User DSProxy exit market
       await this.userProxy.execute(FCOMPOUND_ACTIONS, data, { from: user });
       const isEnteredAfter = await this.comptroller.checkMembership.call(
@@ -247,14 +249,12 @@ contract('FCompoundActions', function([_, user]) {
     });
 
     it('should revert: non cToken exit', async function() {
-      const data = abi.simpleEncode(
-        'exitMarket(address)',
-        this.token.address
-      );
+      const data = abi.simpleEncode('exitMarket(address)', this.token.address);
       // User DSProxy exit market
-      await expectRevert.unspecified( // TODO: check how to be specified and remove `.unspecified`
+      await expectRevert.unspecified(
+        // TODO: check how to be specified and remove `.unspecified`
         this.userProxy.execute(FCOMPOUND_ACTIONS, data, { from: user }),
-        "FCompoundActions: exit markets failed"
+        'FCompoundActions: exit markets failed'
       );
     });
   });
@@ -348,7 +348,9 @@ contract('FCompoundActions', function([_, user]) {
           'enterMarket(address)',
           this.cEther.address
         );
-        await this.userProxy.execute(FCOMPOUND_ACTIONS, dataEnter, { from: user });
+        await this.userProxy.execute(FCOMPOUND_ACTIONS, dataEnter, {
+          from: user,
+        });
         // Borrow
         const dataBorrow = abi.simpleEncode(
           'borrow(address,uint256)',
@@ -358,9 +360,11 @@ contract('FCompoundActions', function([_, user]) {
         await this.userProxy.execute(FCOMPOUND_ACTIONS, dataBorrow, {
           from: user,
         });
-        expect(await this.cEther.borrowBalanceStored.call(this.userProxy.address)).to.be.bignumber.eq(borrowAmount);
+        expect(
+          await this.cEther.borrowBalanceStored.call(this.userProxy.address)
+        ).to.be.bignumber.eq(borrowAmount);
       });
-  
+
       it('repay ether partial', async function() {
         const amount = ether('0.5');
         const data = abi.simpleEncode(
@@ -368,25 +372,27 @@ contract('FCompoundActions', function([_, user]) {
           this.cEther.address,
           amount
         );
-  
+
         const ethProxyBefore = await balance.current(this.userProxy.address);
         const ethUserBefore = await balance.current(user);
-        const borrowBalanceBefore = await this.cEther.borrowBalanceCurrent.call(this.userProxy.address);
-  
+        const borrowBalanceBefore = await this.cEther.borrowBalanceCurrent.call(
+          this.userProxy.address
+        );
+
         const receipt = await this.userProxy.execute(FCOMPOUND_ACTIONS, data, {
           from: user,
           value: amount,
         });
-  
+
         const ethProxyAfter = await balance.current(this.userProxy.address);
         const ethUserAfter = await balance.current(user);
-        const borrowBalanceAfter = await this.cEther.borrowBalanceCurrent.call(this.userProxy.address);
+        const borrowBalanceAfter = await this.cEther.borrowBalanceCurrent.call(
+          this.userProxy.address
+        );
         const borrowBalanceDiff = borrowBalanceBefore.sub(borrowBalanceAfter);
         expect(ethProxyAfter).to.be.bignumber.eq(ethProxyBefore);
         expect(ethUserAfter).to.be.bignumber.eq(
-          ethUserBefore
-            .sub(amount)
-            .sub(new BN(receipt.receipt.gasUsed))
+          ethUserBefore.sub(amount).sub(new BN(receipt.receipt.gasUsed))
         );
         // amount * 0.99 <= borrowBalanceDiff <= amount * 1.01, inaccurateness caused by interest
         expect(borrowBalanceDiff).to.be.bignumber.lte(mulPercent(amount, 101));
@@ -400,19 +406,23 @@ contract('FCompoundActions', function([_, user]) {
           this.cEther.address,
           amount
         );
-  
+
         const ethProxyBefore = await balance.current(this.userProxy.address);
         const ethUserBefore = await balance.current(user);
-        const borrowBalanceBefore = await this.cEther.borrowBalanceCurrent.call(this.userProxy.address);
-  
+        const borrowBalanceBefore = await this.cEther.borrowBalanceCurrent.call(
+          this.userProxy.address
+        );
+
         const receipt = await this.userProxy.execute(FCOMPOUND_ACTIONS, data, {
           from: user,
           value: amount,
         });
-  
+
         const ethProxyAfter = await balance.current(this.userProxy.address);
         const ethUserAfter = await balance.current(user);
-        const borrowBalanceAfter = await this.cEther.borrowBalanceCurrent.call(this.userProxy.address);
+        const borrowBalanceAfter = await this.cEther.borrowBalanceCurrent.call(
+          this.userProxy.address
+        );
         expect(ethProxyAfter).to.be.bignumber.eq(ethProxyBefore);
         // balance might less than expected since debt might be slightly higher than borrowBalanceStored we got
         expect(ethUserAfter).to.be.bignumber.lte(
@@ -448,7 +458,9 @@ contract('FCompoundActions', function([_, user]) {
           'enterMarket(address)',
           this.cEther.address
         );
-        await this.userProxy.execute(FCOMPOUND_ACTIONS, dataEnter, { from: user });
+        await this.userProxy.execute(FCOMPOUND_ACTIONS, dataEnter, {
+          from: user,
+        });
         // Borrow
         const dataBorrow = abi.simpleEncode(
           'borrow(address,uint256)',
@@ -458,7 +470,9 @@ contract('FCompoundActions', function([_, user]) {
         await this.userProxy.execute(FCOMPOUND_ACTIONS, dataBorrow, {
           from: user,
         });
-        expect(await this.cToken.borrowBalanceStored.call(this.userProxy.address)).to.be.bignumber.eq(borrowAmount);
+        expect(
+          await this.cToken.borrowBalanceStored.call(this.userProxy.address)
+        ).to.be.bignumber.eq(borrowAmount);
         // Withdraw borrowed token from DSProxy
         const dataWithdraw = abi.simpleEncode(
           'withdraw(address,uint256)',
@@ -468,9 +482,11 @@ contract('FCompoundActions', function([_, user]) {
         await this.userProxy.execute(FCOMPOUND_ACTIONS, dataWithdraw, {
           from: user,
         });
-        expect(await this.token.balanceOf.call(this.userProxy.address)).to.be.zero;
+        expect(
+          await this.token.balanceOf.call(this.userProxy.address)
+        ).to.be.zero;
       });
-  
+
       it('repay token partial', async function() {
         const amount = ether('50');
         const data = abi.simpleEncode(
@@ -478,35 +494,42 @@ contract('FCompoundActions', function([_, user]) {
           this.cToken.address,
           amount
         );
-        await this.token.approve(this.userProxy.address, amount, {from: user});
-  
-        const tokenProxyBefore = await this.token.balanceOf.call(this.userProxy.address);
+        await this.token.approve(this.userProxy.address, amount, {
+          from: user,
+        });
+
+        const tokenProxyBefore = await this.token.balanceOf.call(
+          this.userProxy.address
+        );
         const tokenUserBefore = await this.token.balanceOf.call(user);
         const ethProxyBefore = await balance.current(this.userProxy.address);
         const ethUserBefore = await balance.current(user);
-        const borrowBalanceBefore = await this.cToken.borrowBalanceCurrent.call(this.userProxy.address);
-  
+        const borrowBalanceBefore = await this.cToken.borrowBalanceCurrent.call(
+          this.userProxy.address
+        );
+
         const receipt = await this.userProxy.execute(FCOMPOUND_ACTIONS, data, {
           from: user,
           // Send ether with tx when repay token and should be fully send back
           value: ether('1'),
         });
-  
-        const tokenProxyAfter = await this.token.balanceOf.call(this.userProxy.address);
+
+        const tokenProxyAfter = await this.token.balanceOf.call(
+          this.userProxy.address
+        );
         const tokenUserAfter = await this.token.balanceOf.call(user);
         const ethProxyAfter = await balance.current(this.userProxy.address);
         const ethUserAfter = await balance.current(user);
-        const borrowBalanceAfter = await this.cToken.borrowBalanceCurrent.call(this.userProxy.address);
+        const borrowBalanceAfter = await this.cToken.borrowBalanceCurrent.call(
+          this.userProxy.address
+        );
         const borrowBalanceDiff = borrowBalanceBefore.sub(borrowBalanceAfter);
         expect(ethProxyAfter).to.be.bignumber.eq(ethProxyBefore);
         expect(ethUserAfter).to.be.bignumber.eq(
           ethUserBefore.sub(new BN(receipt.receipt.gasUsed))
         );
         expect(tokenProxyAfter).to.be.bignumber.eq(tokenProxyBefore);
-        expect(tokenUserAfter).to.be.bignumber.eq(
-          tokenUserBefore
-            .sub(amount)
-        );
+        expect(tokenUserAfter).to.be.bignumber.eq(tokenUserBefore.sub(amount));
         // amount * 0.99 <= borrowBalanceDiff <= amount * 1.01, inaccurateness caused by interest
         expect(borrowBalanceDiff).to.be.bignumber.lte(mulPercent(amount, 101));
         expect(borrowBalanceDiff).to.be.bignumber.gte(mulPercent(amount, 99));
@@ -519,26 +542,36 @@ contract('FCompoundActions', function([_, user]) {
           this.cToken.address,
           amount
         );
-        await this.token.transfer(user, amount, {from: providerAddress});
-        await this.token.approve(this.userProxy.address, amount, {from: user});
-  
-        const tokenProxyBefore = await this.token.balanceOf.call(this.userProxy.address);
+        await this.token.transfer(user, amount, { from: providerAddress });
+        await this.token.approve(this.userProxy.address, amount, {
+          from: user,
+        });
+
+        const tokenProxyBefore = await this.token.balanceOf.call(
+          this.userProxy.address
+        );
         const tokenUserBefore = await this.token.balanceOf.call(user);
         const ethProxyBefore = await balance.current(this.userProxy.address);
         const ethUserBefore = await balance.current(user);
-        const borrowBalanceBefore = await this.cToken.borrowBalanceCurrent.call(this.userProxy.address);
-  
+        const borrowBalanceBefore = await this.cToken.borrowBalanceCurrent.call(
+          this.userProxy.address
+        );
+
         const receipt = await this.userProxy.execute(FCOMPOUND_ACTIONS, data, {
           from: user,
           // Send ether with tx when repay token and should be fully send back
           value: ether('1'),
         });
-  
-        const tokenProxyAfter = await this.token.balanceOf.call(this.userProxy.address);
+
+        const tokenProxyAfter = await this.token.balanceOf.call(
+          this.userProxy.address
+        );
         const tokenUserAfter = await this.token.balanceOf.call(user);
         const ethProxyAfter = await balance.current(this.userProxy.address);
         const ethUserAfter = await balance.current(user);
-        const borrowBalanceAfter = await this.cToken.borrowBalanceCurrent.call(this.userProxy.address);
+        const borrowBalanceAfter = await this.cToken.borrowBalanceCurrent.call(
+          this.userProxy.address
+        );
         expect(ethProxyAfter).to.be.bignumber.eq(ethProxyBefore);
         expect(ethUserAfter).to.be.bignumber.eq(
           ethUserBefore.sub(new BN(receipt.receipt.gasUsed))
@@ -546,18 +579,14 @@ contract('FCompoundActions', function([_, user]) {
         expect(tokenProxyAfter).to.be.bignumber.eq(tokenProxyBefore);
         // balance might less than expected since debt might be slightly higher than borrowBalanceStored we got
         expect(tokenUserAfter).to.be.bignumber.lte(
-          tokenUserBefore
-            .sub(borrowBalanceBefore)
+          tokenUserBefore.sub(borrowBalanceBefore)
         );
         // assume maximum interest is 1% and the balance left after repay should be greater than this
         expect(tokenUserAfter).to.be.bignumber.gte(
-          tokenUserBefore
-            .sub(mulPercent(borrowBalanceBefore, 101))
+          tokenUserBefore.sub(mulPercent(borrowBalanceBefore, 101))
         );
         expect(borrowBalanceAfter).to.be.zero;
       });
-
     });
-    
   });
 });

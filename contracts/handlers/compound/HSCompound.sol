@@ -130,17 +130,19 @@ contract HSCompound is HandlerBase {
         }
     }
 
-    function enterMarket(
-        address dsProxy,
-        address cToken
-    ) external payable isDSProxyOwner(dsProxy) {
+    function enterMarket(address dsProxy, address cToken)
+        external
+        payable
+        isDSProxyOwner(dsProxy)
+    {
         _enterMarket(dsProxy, cToken);
     }
 
-    function enterMarkets(
-        address dsProxy,
-        address[] calldata cTokens
-    ) external payable isDSProxyOwner(dsProxy) {
+    function enterMarkets(address dsProxy, address[] calldata cTokens)
+        external
+        payable
+        isDSProxyOwner(dsProxy)
+    {
         IDSProxy(dsProxy).execute(
             FCOMPOUND_ACTIONS,
             abi.encodeWithSelector(
@@ -151,10 +153,11 @@ contract HSCompound is HandlerBase {
         );
     }
 
-    function exitMarket(
-        address dsProxy,
-        address cToken
-    ) external payable isDSProxyOwner(dsProxy) {
+    function exitMarket(address dsProxy, address cToken)
+        external
+        payable
+        isDSProxyOwner(dsProxy)
+    {
         IDSProxy(dsProxy).execute(
             FCOMPOUND_ACTIONS,
             abi.encodeWithSelector(
@@ -165,9 +168,11 @@ contract HSCompound is HandlerBase {
         );
     }
 
-    function claimComp(
-        address dsProxy
-    ) external payable isDSProxyOwner(dsProxy) {
+    function claimComp(address dsProxy)
+        external
+        payable
+        isDSProxyOwner(dsProxy)
+    {
         IComptroller(COMPTROLLER).claimComp(dsProxy);
         uint256 balance = IERC20(COMP_ADDRESS).balanceOf(dsProxy);
         // Withdraw whole COMP balance of DSProxy
