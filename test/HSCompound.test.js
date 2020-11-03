@@ -16,17 +16,19 @@ const utils = web3.utils;
 const { expect } = require('chai');
 
 const {
+  ETH_TOKEN,
+  COMP_TOKEN,
   DAI_TOKEN,
   DAI_PROVIDER,
   CDAI,
   CWBTC,
   CETHER,
-  ETH_TOKEN,
   MAKER_PROXY_REGISTRY,
   CREATE2_FACTORY,
   FCOMPOUND_ACTIONS_SALT,
   FCOMPOUND_ACTIONS,
   COMPOUND_COMPTROLLER,
+  COMPOUND_LENS,
 } = require('./utils/constants');
 const { evmRevert, evmSnapshot, profileGas, mulPercent } = require('./utils/utils');
 const { getFCompoundActionsBytecodeBySolc } = require('./utils/getBytecode');
@@ -77,6 +79,7 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
     this.token = await IToken.at(tokenAddress);
     this.cToken = await ICToken.at(cTokenAddress);
     this.cEther = await ICEther.at(CETHER);
+    this.comp = await IToken.at(COMP_TOKEN);
     this.comptroller = await IComptroller.at(COMPOUND_COMPTROLLER);
   });
 
@@ -86,6 +89,271 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
 
   afterEach(async function() {
     await evmRevert(id);
+  });
+
+  // Since DSProxy has a payable fallback function, deposit ether is simply 
+  // ether transfer, so we only test deposit token here
+  describe('Deposit', function() {
+    it('normal', async function() {
+      const amount = ether('50');
+      const to = this.hsCompound.address;
+      const data = abi.simpleEncode(
+        'deposit(address,address,uint256)',
+        this.userProxy.address,
+        this.token.address,
+        amount
+      );
+      // Inject token to Proxy
+      await this.token.transfer(this.proxy.address, amount, {
+        from: providerAddress,
+      });
+      await this.proxy.updateTokenMock(this.token.address);
+      
+      const receipt = await this.proxy.execMock(to, data, {
+        from: user,
+        value: ether('0.1'),
+      });
+      const tokenUserProxyAfter = await this.token.balanceOf.call(this.userProxy.address);
+      const tokenProxyAfter = await this.token.balanceOf.call(this.proxy.address);
+      const tokenUserAfter = await this.token.balanceOf.call(user);
+      expect(tokenUserProxyAfter).to.be.bignumber.eq(amount);
+      expect(tokenProxyAfter).to.be.zero;
+      expect(tokenUserAfter).to.be.zero;
+    });
+
+    it('should revert: not dsproxy owner', async function() {
+      const amount = ether('50');
+      const to = this.hsCompound.address;
+      const data = abi.simpleEncode(
+        'deposit(address,address,uint256)',
+        this.userProxy.address,
+        this.token.address,
+        amount
+      );
+      // Inject token to Proxy
+      await this.token.transfer(this.proxy.address, amount, {
+        from: providerAddress,
+      });
+      await this.proxy.updateTokenMock(this.token.address);
+      
+      await expectRevert.unspecified(
+        this.proxy.execMock(to, data, {
+          from: someone,
+        }),
+        "Not owner of the DSProxy"
+      );
+    });
+  });
+
+  describe('Withdraw', function() {
+    it('ether', async function() {
+      const amount = ether('5');
+      const to = this.hsCompound.address;
+      const data = abi.simpleEncode(
+        'withdraw(address,address,uint256)',
+        this.userProxy.address,
+        ETH_TOKEN,
+        amount
+      );
+      // Transfer ether to DSProxy for withdrawal
+      await send.ether(_, this.userProxy.address, amount);
+      const ethUserBefore = await balance.current(user);
+      
+      const receipt = await this.proxy.execMock(to, data, {
+        from: user,
+        value: ether('0.1'),
+      });
+      const ethUserProxyAfter = await balance.current(this.userProxy.address);
+      const ethProxyAfter = await balance.current(this.proxy.address);
+      const ethUserAfter = await balance.current(user);
+      expect(ethUserProxyAfter).to.be.zero;
+      expect(ethProxyAfter).to.be.zero;
+      expect(ethUserAfter).to.be.bignumber.eq(
+        ethUserBefore.add(amount).sub(new BN(receipt.receipt.gasUsed))
+      );
+    });
+
+    it('token', async function() {
+      const amount = ether('50');
+      const to = this.hsCompound.address;
+      const data = abi.simpleEncode(
+        'withdraw(address,address,uint256)',
+        this.userProxy.address,
+        this.token.address,
+        amount
+      );
+      // Transfer token to DSProxy for withdrawal
+      await this.token.transfer(this.userProxy.address, amount, {from: providerAddress});
+      
+      const receipt = await this.proxy.execMock(to, data, {
+        from: user,
+        value: ether('0.1'),
+      });
+      const tokenUserProxyAfter = await this.token.balanceOf.call(this.userProxy.address);
+      const tokenProxyAfter = await this.token.balanceOf.call(this.proxy.address);
+      const tokenUserAfter = await this.token.balanceOf.call(user);
+      expect(tokenUserProxyAfter).to.be.zero;
+      expect(tokenProxyAfter).to.be.zero;
+      expect(tokenUserAfter).to.be.bignumber.eq(amount);
+    });
+
+    it('should revert: not dsproxy owner', async function() {
+      const amount = ether('50');
+      const to = this.hsCompound.address;
+      const data = abi.simpleEncode(
+        'withdraw(address,address,uint256)',
+        this.userProxy.address,
+        this.token.address,
+        amount
+      );
+      // Transfer token to DSProxy for withdrawal
+      await this.token.transfer(this.userProxy.address, amount, {from: providerAddress});
+      
+      await expectRevert.unspecified(
+        this.proxy.execMock(to, data, {
+          from: someone,
+        })
+      );
+    });
+  });
+
+  describe('Market', function() {
+    it('enter single', async function() {
+      const tokenToEnter = this.cToken.address;
+      const to = this.hsCompound.address;
+      const data = abi.simpleEncode(
+        'enterMarket(address,address)',
+        this.userProxy.address,
+        tokenToEnter
+      );
+      // Check token has not entered market before
+      expect(await this.comptroller.checkMembership.call(this.userProxy.address, tokenToEnter)).to.be.false;
+      
+      await this.proxy.execMock(to, data, {
+        from: user,
+        value: ether('0.1'),
+      });
+      expect(await this.comptroller.checkMembership.call(this.userProxy.address, tokenToEnter)).to.be.true;
+    });
+
+    it('enter multiple', async function() {
+      const tokensToEnter = [this.cToken.address, CWBTC];
+      const to = this.hsCompound.address;
+      const data = abi.simpleEncode(
+        'enterMarkets(address,address[])',
+        this.userProxy.address,
+        tokensToEnter
+      );
+      // Check tokens has not entered market before
+      expect(await this.comptroller.checkMembership.call(this.userProxy.address, tokensToEnter[0])).to.be.false;
+      expect(await this.comptroller.checkMembership.call(this.userProxy.address, tokensToEnter[1])).to.be.false;
+      
+      await this.proxy.execMock(to, data, {
+        from: user,
+        value: ether('0.1'),
+      });
+      expect(await this.comptroller.checkMembership.call(this.userProxy.address, tokensToEnter[0])).to.be.true;
+      expect(await this.comptroller.checkMembership.call(this.userProxy.address, tokensToEnter[1])).to.be.true;
+    });
+
+    it('exit', async function() {
+      const tokenToExit = this.cToken.address;
+      const to = this.hsCompound.address;
+      // Enter market first
+      const dataEnter = abi.simpleEncode(
+        'enterMarket(address,address)',
+        this.userProxy.address,
+        tokenToExit
+      );
+      await this.proxy.execMock(to, dataEnter, {
+        from: user,
+        value: ether('0.1'),
+      });
+      expect(await this.comptroller.checkMembership.call(this.userProxy.address, tokenToExit)).to.be.true;
+      // Prepare exit data
+      const data = abi.simpleEncode(
+        'exitMarket(address,address)',
+        this.userProxy.address,
+        tokenToExit
+      );
+      // Exit
+      await this.proxy.execMock(to, data, {
+        from: user,
+        value: ether('0.1'),
+      });
+      expect(await this.comptroller.checkMembership.call(this.userProxy.address, tokenToExit)).to.be.false;
+    });
+
+    it('should revert: not dsproxy owner - enter single', async function() {
+      const tokenToEnter = this.cToken.address;
+      const to = this.hsCompound.address;
+      const data = abi.simpleEncode(
+        'enterMarket(address,address)',
+        this.userProxy.address,
+        tokenToEnter
+      );
+      // Check token has not entered market before
+      expect(await this.comptroller.checkMembership.call(this.userProxy.address, tokenToEnter)).to.be.false;
+      
+      await expectRevert.unspecified(
+        this.proxy.execMock(to, data, {
+          from: someone,
+          value: ether('0.1'),
+        }),
+        "Not owner of the DSProxy"
+      );
+    });
+
+    it('should revert: not dsproxy owner - enter multiple', async function() {
+      const tokensToEnter = [this.cToken.address, CWBTC];
+      const to = this.hsCompound.address;
+      const data = abi.simpleEncode(
+        'enterMarkets(address,address[])',
+        this.userProxy.address,
+        tokensToEnter
+      );
+      // Check tokens has not entered market before
+      expect(await this.comptroller.checkMembership.call(this.userProxy.address, tokensToEnter[0])).to.be.false;
+      expect(await this.comptroller.checkMembership.call(this.userProxy.address, tokensToEnter[1])).to.be.false;
+      
+      await expectRevert.unspecified(
+        this.proxy.execMock(to, data, {
+          from: someone,
+          value: ether('0.1'),
+        }),
+        "Not owner of the DSProxy"
+      );
+    });
+
+    it('should revert: not dsproxy owner - exit', async function() {
+      const tokenToExit = this.cToken.address;
+      const to = this.hsCompound.address;
+      // Enter market first
+      const dataEnter = abi.simpleEncode(
+        'enterMarket(address,address)',
+        this.userProxy.address,
+        tokenToExit
+      );
+      await this.proxy.execMock(to, dataEnter, {
+        from: user,
+        value: ether('0.1'),
+      });
+      expect(await this.comptroller.checkMembership.call(this.userProxy.address, tokenToExit)).to.be.true;
+      // Prepare exit data
+      const data = abi.simpleEncode(
+        'exitMarket(address,address)',
+        this.userProxy.address,
+        tokenToExit
+      );
+      // Exit
+      await expectRevert.unspecified(
+        this.proxy.execMock(to, data, {
+          from: someone,
+          value: ether('0.1'),
+        }),
+        "Not owner of the DSProxy"
+      );
+    });
   });
 
   describe('Borrow', function() {
@@ -645,8 +913,57 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
       });
 
     });
-    
   });
+
+  describe('Claim COMP', function() {
+    let compUserProxyBefore;
+    before(async function() {
+      await this.comptroller.claimComp(this.userProxy.address);
+    });
+
+    beforeEach(async function() {
+      await this.cEther.mint({
+        from: _,
+        value: ether('10'),
+      });
+      const mintBalance = await this.cEther.balanceOf.call(_);
+      await this.cEther.transfer(this.userProxy.address, mintBalance, {
+        from: _,
+      });
+      await increase(duration.days(1));
+      compUserProxyBefore = await this.comp.balanceOf.call(this.userProxy.address);
+    });
+
+    it('normal', async function() {
+      const to = this.hsCompound.address;
+      const data = abi.simpleEncode('claimComp(address)', this.userProxy.address);
+      const compUserBefore = await this.comp.balanceOf.call(user);
+      const receipt = await this.proxy.execMock(to, data, {
+        from: user,
+        value: ether('0.1'),
+      });
+      const compUserAfter = await this.comp.balanceOf.call(user);
+      const compUserProxyAfter = await this.comp.balanceOf.call(this.userProxy.address);
+      const compProxyAfter = await this.comp.balanceOf.call(this.proxy.address);
+      expect(compUserProxyAfter).to.be.zero;
+      expect(compProxyAfter).to.be.zero;
+      // Can't get the exact result so we only check if the amount is greater than before
+      expect(compUserAfter).to.be.bignumber.gt(compUserBefore);
+    });
+
+    it('should revert: not dsproxy owner', async function() {
+      const to = this.hsCompound.address;
+      const data = abi.simpleEncode('claimComp(address)', this.userProxy.address);
+      const compUserBefore = await this.comp.balanceOf.call(user);
+      await expectRevert.unspecified(
+        this.proxy.execMock(to, data, {
+          from: someone,
+        }),
+        "Not owner of the DSProxy"
+      );
+    });
+  });
+
 });
 
 function cUnit(amount) {

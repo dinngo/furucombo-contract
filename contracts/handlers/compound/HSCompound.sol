@@ -4,15 +4,18 @@ import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 
 import "../HandlerBase.sol";
 import "../maker/IDSProxy.sol";
-import "../compound/ICToken.sol";
+import "./ICToken.sol";
+import "./IComptroller.sol";
 
 contract HSCompound is HandlerBase {
     using SafeERC20 for IERC20;
 
     address constant PROXY_REGISTRY = 0x4678f0a6958e4D2Bc4F1BAF7Bc52E8F3564f3fE4;
-    address constant FCOMPOUND_ACTIONS = 0x54B598B61a3eBfbc11D40cb5A0388083b379A11a; // TODO: predict and fill
+    address constant FCOMPOUND_ACTIONS = 0x54B598B61a3eBfbc11D40cb5A0388083b379A11a;
+    address constant COMPTROLLER = 0x3d9819210A31b4961b30EF54bE2aeD79B9c9Cd3B;
     address constant ETH_ADDRESS = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
     address constant CETH_ADDRESS = 0x4Ddc2D193948926D02f9B1fE9e1daa0718270ED5;
+    address constant COMP_ADDRESS = 0xc00e94Cb662C3520282E6f5717214004A7f26888;
 
     modifier isDSProxyOwner(address dsProxy) {
         address sender = cache.getSender();
@@ -23,26 +26,22 @@ contract HSCompound is HandlerBase {
         _;
     }
 
-    // function depositToken(
-    //     address dsProxy,
-    //     address token,
-    //     uint256 amount,
-    //     bool isCTokenAndEnterMarket
-    // ) public payable isDSProxyOwner(dsProxy) {
-    //     _depositToken(dsProxy, token, amount, isCTokenAndEnterMarket);
-    // }
+    function deposit(
+        address dsProxy,
+        address token,
+        uint256 amount
+    ) external payable isDSProxyOwner(dsProxy) {
+        _deposit(dsProxy, token, amount);
+    }
 
-    // function withdrawToken(
-    //     address dsProxy,
-    //     address token,
-    //     uint256 amount
-    // ) public payable isDSProxyOwner(dsProxy) {
-    //     _withdrawToken(dsProxy, token, amount);
-    // }
-
-    //TODO: enterMarket interface
-    //TODO: enterMarkets interface
-    //TODO: exitMarket
+    function withdraw(
+        address dsProxy,
+        address token,
+        uint256 amount
+    ) external payable isDSProxyOwner(dsProxy) {
+        _withdraw(dsProxy, token, amount);
+        if (token != ETH_ADDRESS) _updateToken(token);
+    }
 
     function borrow(
         address dsProxy,
@@ -53,7 +52,7 @@ contract HSCompound is HandlerBase {
         bool enterMarket
     ) external payable isDSProxyOwner(dsProxy) {
         if (cAmountIn > 0) {
-            _depositToken(dsProxy, cTokenIn, cAmountIn);
+            _deposit(dsProxy, cTokenIn, cAmountIn);
         }
 
         if (enterMarket) {
@@ -78,7 +77,7 @@ contract HSCompound is HandlerBase {
                 )
             );
             // Withdraw borrowed token from the DSProxy
-            _withdrawToken(dsProxy, underlying, uBorrowAmount);
+            _withdraw(dsProxy, underlying, uBorrowAmount);
 
             // Update borrowed token
             if (underlying != ETH_ADDRESS) _updateToken(underlying);
@@ -124,14 +123,61 @@ contract HSCompound is HandlerBase {
         }
 
         if (cWithdrawAmount > 0) {
-            // Withdraw borrowed token from DSProxy
-            _withdrawToken(dsProxy, cTokenWithdraw, cWithdrawAmount);
-            // Update borrowed token
+            // Withdraw collateral from DSProxy
+            _withdraw(dsProxy, cTokenWithdraw, cWithdrawAmount);
+            // Update collateral token
             _updateToken(cTokenWithdraw);
         }
     }
 
-    function _depositToken(
+    function enterMarket(
+        address dsProxy,
+        address cToken
+    ) external payable isDSProxyOwner(dsProxy) {
+        _enterMarket(dsProxy, cToken);
+    }
+
+    function enterMarkets(
+        address dsProxy,
+        address[] calldata cTokens
+    ) external payable isDSProxyOwner(dsProxy) {
+        IDSProxy(dsProxy).execute(
+            FCOMPOUND_ACTIONS,
+            abi.encodeWithSelector(
+                // selector of "enterMarkets(address[])"
+                0xc2998238,
+                cTokens
+            )
+        );
+    }
+
+    function exitMarket(
+        address dsProxy,
+        address cToken
+    ) external payable isDSProxyOwner(dsProxy) {
+        IDSProxy(dsProxy).execute(
+            FCOMPOUND_ACTIONS,
+            abi.encodeWithSelector(
+                // selector of "exitMarket(address)"
+                0xede4edd0,
+                cToken
+            )
+        );
+    }
+
+    function claimComp(
+        address dsProxy
+    ) external payable isDSProxyOwner(dsProxy) {
+        IComptroller(COMPTROLLER).claimComp(dsProxy);
+        uint256 balance = IERC20(COMP_ADDRESS).balanceOf(dsProxy);
+        // Withdraw whole COMP balance of DSProxy
+        _withdraw(dsProxy, COMP_ADDRESS, balance);
+        _updateToken(COMP_ADDRESS);
+    }
+
+    /* ========== INTERNAL FUNCTIONS ========== */
+
+    function _deposit(
         address dsProxy,
         address token,
         uint256 amount
@@ -139,7 +185,7 @@ contract HSCompound is HandlerBase {
         IERC20(token).safeTransfer(dsProxy, amount);
     }
 
-    function _withdrawToken(
+    function _withdraw(
         address dsProxy,
         address token,
         uint256 amount
