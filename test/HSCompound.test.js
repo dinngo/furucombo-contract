@@ -512,6 +512,115 @@ contract('Compound x Smart Wallet', function([_, user0, someone]) {
         expect(borrowBalanceAfter).to.be.zero;
       });
 
+      it('only input (repay but not withdraw)', async function() {
+        const repayAmount = ether('200'); // token
+        const cWithdrawAmount = cUnit('0'); // cEther
+        const to = this.hsCompound.address;
+        const data = abi.simpleEncode(
+          'repayBorrow(address,address,address,uint256,uint256)',
+          this.user0Proxy.address,
+          this.cToken.address,
+          this.cEther.address,
+          repayAmount,
+          cWithdrawAmount
+        );
+        await this.token.transfer(this.proxy.address, repayAmount, {
+          from: providerAddress,
+        });
+        await this.proxy.updateTokenMock(this.token.address);
+
+        const tokenUser0Before = await this.token.balanceOf.call(user0);
+        const ethUser0Before = await balance.current(user0);
+        const borrowBalanceBefore = await this.cToken.borrowBalanceCurrent.call(this.user0Proxy.address);
+        const cTokenUser0ProxyBefore = await this.cEther.balanceOf.call(this.user0Proxy.address);
+  
+        const receipt = await this.proxy.execMock(to, data, {
+          from: user0,
+          value: ether('0.1'),
+        });
+
+        const tokenProxyAfter = await this.token.balanceOf.call(this.proxy.address);
+        const tokenUser0ProxyAfter = await this.token.balanceOf.call(this.user0Proxy.address);
+        const tokenUser0After = await this.token.balanceOf.call(user0);
+        const ethProxyAfter = await balance.current(this.proxy.address);
+        const ethUser0ProxyAfter = await balance.current(this.user0Proxy.address);
+        const ethUser0After = await balance.current(user0);
+        const cTokenUser0ProxyAfter = await this.cEther.balanceOf.call(this.user0Proxy.address);
+        const borrowBalanceAfter = await this.cToken.borrowBalanceCurrent.call(this.user0Proxy.address);
+        expect(ethProxyAfter).to.be.zero;
+        expect(ethUser0ProxyAfter).to.be.zero;
+        expect(tokenProxyAfter).to.be.zero;
+        expect(tokenUser0ProxyAfter).to.be.zero;
+        expect(ethUser0After).to.be.bignumber.eq(
+          ethUser0Before.sub(new BN(receipt.receipt.gasUsed))
+        );
+        // balance might less than expected since debt might be slightly higher than borrowBalanceStored we got
+        expect(tokenUser0After.sub(tokenUser0Before)).to.be.bignumber.lte(
+          repayAmount.sub(borrowBalanceBefore)
+        );
+        // assume maximum interest is 1% and the balance left after repay should be greater than this
+        expect(tokenUser0After.sub(tokenUser0Before)).to.be.bignumber.gte(
+          repayAmount
+            .sub(mulPercent(borrowBalanceBefore, 101))
+        );
+        // collateral cToken amount in DSProxy should not change
+        expect(cTokenUser0ProxyAfter).to.be.bignumber.eq(cTokenUser0ProxyBefore);
+        expect(borrowBalanceAfter).to.be.zero;
+      });
+
+      it('only output (withdraw token)', async function() {
+        const repayAmount = ether('0'); // token
+        const cWithdrawAmount = cUnit('50'); // cEther
+        const to = this.hsCompound.address;
+        const data = abi.simpleEncode(
+          'repayBorrow(address,address,address,uint256,uint256)',
+          this.user0Proxy.address,
+          this.cToken.address,
+          this.cEther.address,
+          repayAmount,
+          cWithdrawAmount
+        );
+        const tokenUser0Before = await this.token.balanceOf.call(user0);
+        const ethUser0Before = await balance.current(user0);
+        const borrowBalanceBefore = await this.cToken.borrowBalanceCurrent.call(this.user0Proxy.address);
+        const cTokenUser0ProxyBefore = await this.cEther.balanceOf.call(this.user0Proxy.address);
+        const cTokenUser0Before = await this.cEther.balanceOf.call(user0);
+  
+        const receipt = await this.proxy.execMock(to, data, {
+          from: user0,
+          value: ether('0.1'),
+        });
+
+        const tokenProxyAfter = await this.token.balanceOf.call(this.proxy.address);
+        const tokenUser0ProxyAfter = await this.token.balanceOf.call(this.user0Proxy.address);
+        const tokenUser0After = await this.token.balanceOf.call(user0);
+        const ethProxyAfter = await balance.current(this.proxy.address);
+        const ethUser0ProxyAfter = await balance.current(this.user0Proxy.address);
+        const ethUser0After = await balance.current(user0);
+        const cTokenUser0ProxyAfter = await this.cEther.balanceOf.call(this.user0Proxy.address);
+        const cTokenUser0After = await this.cEther.balanceOf.call(user0);
+        const borrowBalanceAfter = await this.cToken.borrowBalanceCurrent.call(this.user0Proxy.address);
+        expect(ethProxyAfter).to.be.zero;
+        expect(ethUser0ProxyAfter).to.be.zero;
+        expect(tokenProxyAfter).to.be.zero;
+        expect(tokenUser0ProxyAfter).to.be.zero;
+        expect(ethUser0After).to.be.bignumber.eq(
+          ethUser0Before.sub(new BN(receipt.receipt.gasUsed))
+        );
+        // token balance of user should not change
+        expect(tokenUser0After).to.be.bignumber.eq(tokenUser0Before);
+        // withdrawn cToken should be in user's wallet
+        expect(cTokenUser0After).to.be.bignumber.eq(
+          cTokenUser0Before.add(cWithdrawAmount)
+        );
+        // cToken amount in DSProxy should decrease
+        expect(cTokenUser0ProxyAfter).to.be.bignumber.eq(
+          cTokenUser0ProxyBefore.sub(cWithdrawAmount)
+        );
+        // borrorw balance should not decrease, but may increase slightly
+        expect(borrowBalanceAfter).to.be.bignumber.not.lt(borrowBalanceBefore);
+      });
+
       it('should revert: not dsproxy owner', async function() {
         const repayAmount = ether('200'); // token
         const cWithdrawAmount = cUnit('450'); // cEther
