@@ -53,13 +53,6 @@ contract('FCompoundActions', function([_, user]) {
   before(async function() {
     // Use SingletonFactory to deploy FCompoundActions using CREATE2
     this.singletonFactory = await ISingletonFactory.at(CREATE2_FACTORY);
-
-    //   const addr = await this.singletonFactory.deploy.call(
-    //     getFCompoundActionsBytecodeBySolc(),
-    //     FCOMPOUND_ACTIONS_SALT
-    //   );
-    //   console.log(`addrs = ${addr}`);
-
     await this.singletonFactory.deploy(
       getFCompoundActionsBytecodeBySolc(),
       FCOMPOUND_ACTIONS_SALT
