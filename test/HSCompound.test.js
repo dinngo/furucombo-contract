@@ -100,10 +100,34 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
     await evmRevert(id);
   });
 
-  // Since DSProxy has a payable fallback function, deposit ether is simply
-  // ether transfer, so we only test deposit token here
   describe('Deposit', function() {
-    it('normal', async function() {
+    it('ether', async function() {
+      const amount = ether('1');
+      const to = this.hsCompound.address;
+      const data = abi.simpleEncode(
+        'deposit(address,address,uint256)',
+        this.userProxy.address,
+        ETH_TOKEN,
+        amount
+      );
+      const ethUserBefore = await balance.current(user);
+
+      const receipt = await this.proxy.execMock(to, data, {
+        from: user,
+        value: amount,
+      });
+      const ethUserProxyAfter = await balance.current(this.userProxy.address);
+      const ethProxyAfter = await balance.current(this.proxy.address);
+      const ethUserAfter = await balance.current(user);
+      expect(ethUserProxyAfter).to.be.bignumber.eq(amount);
+      expect(ethProxyAfter).to.be.zero;
+      expect(ethUserAfter).to.be.bignumber.eq(
+        ethUserBefore.sub(amount).sub(new BN(receipt.receipt.gasUsed))
+      );
+      profileGas(receipt);
+    });
+
+    it('token', async function() {
       const amount = ether('50');
       const to = this.hsCompound.address;
       const data = abi.simpleEncode(
