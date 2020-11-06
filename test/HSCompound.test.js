@@ -34,6 +34,7 @@ const {
   evmSnapshot,
   profileGas,
   mulPercent,
+  cUnit,
 } = require('./utils/utils');
 const { getFCompoundActionsBytecodeBySolc } = require('./utils/getBytecode');
 
@@ -174,7 +175,7 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
       });
       await this.proxy.updateTokenMock(this.token.address);
 
-      await expectRevert.unspecified(
+      await expectRevert(
         this.proxy.execMock(to, data, {
           from: someone,
         }),
@@ -257,10 +258,11 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
         from: providerAddress,
       });
 
-      await expectRevert.unspecified(
+      await expectRevert(
         this.proxy.execMock(to, data, {
           from: someone,
-        })
+        }),
+        'Not owner of the DSProxy'
       );
     });
   });
@@ -312,10 +314,9 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
           )
         ).to.be.false;
 
-        await expectRevert.unspecified(
+        await expectRevert(
           this.proxy.execMock(to, data, {
             from: someone,
-            value: ether('0.1'),
           }),
           'Not owner of the DSProxy'
         );
@@ -386,10 +387,9 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
           )
         ).to.be.false;
 
-        await expectRevert.unspecified(
+        await expectRevert(
           this.proxy.execMock(to, data, {
             from: someone,
-            value: ether('0.1'),
           }),
           'Not owner of the DSProxy'
         );
@@ -462,10 +462,9 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
           tokenToExit
         );
         // Exit
-        await expectRevert.unspecified(
+        await expectRevert(
           this.proxy.execMock(to, data, {
             from: someone,
-            value: ether('0.1'),
           }),
           'Not owner of the DSProxy'
         );
@@ -529,7 +528,12 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
         const borrowBalanceAfter = await this.cEther.borrowBalanceStored.call(
           this.userProxy.address
         );
-        // expect(await this.comptroller.checkMembership.call(this.userProxy.address, this.cEther.address)).to.be.true;
+        expect(
+          await this.comptroller.checkMembership.call(
+            this.userProxy.address,
+            this.cEther.address
+          )
+        ).to.be.true;
         expect(collateralUserProxyAfter).to.be.bignumber.eq(cAmountIn);
         expect(ethUserProxyAfter).to.be.zero;
         expect(ethProxyAfter).to.be.zero;
@@ -580,7 +584,12 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
         const borrowBalanceAfter = await this.cEther.borrowBalanceStored.call(
           this.userProxy.address
         );
-        // expect(await this.comptroller.checkMembership.call(this.userProxy.address, this.cEther.address)).to.be.true;
+        expect(
+          await this.comptroller.checkMembership.call(
+            this.userProxy.address,
+            this.cEther.address
+          )
+        ).to.be.true;
         expect(collateralUserProxyAfter).to.be.bignumber.eq(cAmountIn);
         expect(ethUserProxyAfter).to.be.zero;
         expect(ethProxyAfter).to.be.zero;
@@ -743,7 +752,8 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
         await expectRevert.unspecified(
           this.proxy.execMock(to, data, {
             from: user,
-          })
+          }),
+          'FCompoundActions: borrow failed'
         );
       });
 
@@ -773,10 +783,11 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
           )
         ).to.be.false;
         // Expect to be reverted since collateral not enter market
-        await expectRevert.unspecified(
+        await expectRevert(
           this.proxy.execMock(to, data, {
             from: someone,
-          })
+          }),
+          'Not owner of the DSProxy'
         );
       });
     });
@@ -1126,10 +1137,11 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
           from: providerAddress,
         });
         await this.proxy.updateTokenMock(this.token.address);
-        await expectRevert.unspecified(
+        await expectRevert(
           this.proxy.execMock(to, data, {
             from: someone,
-          })
+          }),
+          'Not owner of the DSProxy'
         );
       });
     });
@@ -1162,7 +1174,6 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
         'claimComp(address)',
         this.userProxy.address
       );
-      const compUserBefore = await this.comp.balanceOf.call(user);
       const receipt = await this.proxy.execMock(to, data, {
         from: user,
         value: ether('0.1'),
@@ -1175,7 +1186,7 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
       expect(compUserProxyAfter).to.be.zero;
       expect(compProxyAfter).to.be.zero;
       // Can't get the exact result so we only check if the amount is greater than before
-      expect(compUserAfter).to.be.bignumber.gt(compUserBefore);
+      expect(compUserAfter).to.be.bignumber.gt(compUserProxyBefore);
       profileGas(receipt);
     });
 
@@ -1185,8 +1196,7 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
         'claimComp(address)',
         this.userProxy.address
       );
-      const compUserBefore = await this.comp.balanceOf.call(user);
-      await expectRevert.unspecified(
+      await expectRevert(
         this.proxy.execMock(to, data, {
           from: someone,
         }),
@@ -1195,7 +1205,3 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
     });
   });
 });
-
-function cUnit(amount) {
-  return new BN(amount).mul(new BN('100000000'));
-}

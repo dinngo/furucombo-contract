@@ -10,12 +10,12 @@ import "./ICToken.sol";
 import "./ICEther.sol";
 
 contract FCompoundActions {
-    address
-        public constant ETH_ADDR = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
-    address
-        public constant CETH_ADDR = 0x4Ddc2D193948926D02f9B1fE9e1daa0718270ED5;
-    address
-        public constant COMPTROLLER_ADDR = 0x3d9819210A31b4961b30EF54bE2aeD79B9c9Cd3B;
+    // prettier-ignore
+    address public constant ETH_ADDR = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
+    // prettier-ignore
+    address public constant CETH_ADDR = 0x4Ddc2D193948926D02f9B1fE9e1daa0718270ED5;
+    // prettier-ignore
+    address public constant COMPTROLLER_ADDR = 0x3d9819210A31b4961b30EF54bE2aeD79B9c9Cd3B;
 
     using SafeMath for uint256;
     using SafeERC20 for IERC20;

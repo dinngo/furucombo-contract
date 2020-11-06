@@ -25,5 +25,5 @@ module.exports = async function(deployer) {
     getFCompoundActionsBytecodeBySolc(),
     FCOMPOUND_ACTIONS_SALT
   );
-  console.error(`Deployed FCompoundActions: ${deployAddr}`);
+  console.log(`Deployed FCompoundActions: ${deployAddr}`);
 };

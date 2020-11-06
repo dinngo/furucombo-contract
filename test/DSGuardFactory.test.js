@@ -67,11 +67,7 @@ contract('DSGuardFactory', function([_, furucombo, user, someone]) {
       ).to.be.false;
       // Verify others do not have permission to call the function
       expect(
-        await this.guard.canCall.call(
-          someone,
-          this.userProxy.address,
-          sigNotPermit
-        )
+        await this.guard.canCall.call(someone, this.userProxy.address, sig)
       ).to.be.false;
     });
 

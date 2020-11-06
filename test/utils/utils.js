@@ -70,10 +70,15 @@ function mulPercent(num, percentage) {
   return new BN(num).mul(new BN(percentage)).div(new BN(100));
 }
 
+function cUnit(amount) {
+  return new BN(amount).mul(new BN('100000000'));
+}
+
 module.exports = {
   profileGas,
   evmSnapshot,
   evmRevert,
   evmRevertAndSnapshot,
   mulPercent,
+  cUnit,
 };
