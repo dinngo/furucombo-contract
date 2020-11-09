@@ -34,6 +34,7 @@
     "prettier": "^1.19.1",
     "prettier-plugin-solidity": "^1.0.0-alpha.57",
     "query-string": "^6.13.1",
+    "solc": "0.5.16",
     "solhint": "^3.0.0",
     "truffle": "^5.1.42",
     "web3-provider-engine": "^15.0.12"
