@@ -68,18 +68,15 @@ contract FCompoundActions {
                 msg.sender.transfer(ethReceived.sub(_amount));
             }
         } else {
-            address tokenAddr = ICToken(_cTokenAddr).underlying();
-            IERC20(tokenAddr).safeTransferFrom(
-                msg.sender,
-                address(this),
-                _amount
-            );
-            IERC20(tokenAddr).safeApprove(_cTokenAddr, _amount);
+            IERC20 token = IERC20(ICToken(_cTokenAddr).underlying());
+            token.safeTransferFrom(msg.sender, address(this), _amount);
+            if (token.allowance(address(this), _cTokenAddr) < _amount) {
+                token.approve(_cTokenAddr, _amount);
+            }
             require(
                 ICToken(_cTokenAddr).repayBorrow(_amount) == 0,
                 "FCompoundActions: repay token failed"
             );
-            IERC20(tokenAddr).safeApprove(_cTokenAddr, 0);
             if (msg.value > 0) msg.sender.transfer(msg.value);
         }
     }

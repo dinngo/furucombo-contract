@@ -43,6 +43,7 @@ const IComptroller = artifacts.require('IComptroller');
 const ICEther = artifacts.require('ICEther');
 const ICToken = artifacts.require('ICToken');
 const IToken = artifacts.require('IERC20');
+const ActionsMock = artifacts.require('ActionsMock');
 
 contract('FCompoundActions', function([_, user]) {
   let id;
@@ -66,6 +67,7 @@ contract('FCompoundActions', function([_, user]) {
     this.cToken = await ICToken.at(cTokenAddress);
     this.cEther = await ICEther.at(CETHER);
     this.comptroller = await IComptroller.at(COMPOUND_COMPTROLLER);
+    this.actionsMock = await ActionsMock.new();
   });
 
   beforeEach(async function() {
@@ -579,6 +581,85 @@ contract('FCompoundActions', function([_, user]) {
           tokenUserBefore.sub(mulPercent(borrowBalanceBefore, 101))
         );
         expect(borrowBalanceAfter).to.be.zero;
+      });
+
+      it('repay token whole - dsproxy pre approve partial token', async function() {
+        // Make DSProxy to pre-approve partial token that is going to be repaid
+        const preApproveAmount = mulPercent(borrowAmount, 90);
+        const dataPreApprove = abi.simpleEncode(
+          'approveToken(address,address,uint256)',
+          this.token.address,
+          this.cToken.address,
+          preApproveAmount
+        );
+        await this.userProxy.execute(this.actionsMock.address, dataPreApprove, {
+          from: user,
+        });
+        expect(
+          await this.token.allowance(
+            this.userProxy.address,
+            this.cToken.address
+          )
+        ).to.be.bignumber.eq(preApproveAmount);
+        // Prepare repay data
+        const amount = ether('500');
+        const data = abi.simpleEncode(
+          'repayBorrow(address,uint256)',
+          this.cToken.address,
+          amount
+        );
+
+        await this.token.transfer(user, amount, { from: providerAddress });
+        await this.token.approve(this.userProxy.address, amount, {
+          from: user,
+        });
+
+        const tokenProxyBefore = await this.token.balanceOf.call(
+          this.userProxy.address
+        );
+        const tokenUserBefore = await this.token.balanceOf.call(user);
+        const ethProxyBefore = await balance.current(this.userProxy.address);
+        const ethUserBefore = await balance.current(user);
+        const borrowBalanceBefore = await this.cToken.borrowBalanceCurrent.call(
+          this.userProxy.address
+        );
+
+        const receipt = await this.userProxy.execute(FCOMPOUND_ACTIONS, data, {
+          from: user,
+          // Send ether with tx when repay token and should be fully send back
+          value: ether('1'),
+        });
+
+        const tokenProxyAfter = await this.token.balanceOf.call(
+          this.userProxy.address
+        );
+        const tokenUserAfter = await this.token.balanceOf.call(user);
+        const ethProxyAfter = await balance.current(this.userProxy.address);
+        const ethUserAfter = await balance.current(user);
+        const borrowBalanceAfter = await this.cToken.borrowBalanceCurrent.call(
+          this.userProxy.address
+        );
+        expect(ethProxyAfter).to.be.bignumber.eq(ethProxyBefore);
+        expect(ethUserAfter).to.be.bignumber.eq(
+          ethUserBefore.sub(new BN(receipt.receipt.gasUsed))
+        );
+        expect(tokenProxyAfter).to.be.bignumber.eq(tokenProxyBefore);
+        // balance might less than expected since debt might be slightly higher than borrowBalanceStored we got
+        expect(tokenUserAfter).to.be.bignumber.lte(
+          tokenUserBefore.sub(borrowBalanceBefore)
+        );
+        // assume maximum interest is 1% and the balance left after repay should be greater than this
+        expect(tokenUserAfter).to.be.bignumber.gte(
+          tokenUserBefore.sub(mulPercent(borrowBalanceBefore, 101))
+        );
+        expect(borrowBalanceAfter).to.be.zero;
+        // verify no token allowance left in this case
+        expect(
+          await this.token.allowance(
+            this.userProxy.address,
+            this.cToken.address
+          )
+        ).to.be.zero;
       });
     });
   });

@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+- Support Compound borrow, repayBorrow and claimComp with DSProxy in `HSCompound` and `FCompoundActions`.
+
 ## [0.12.1] - 2020-10-28
 
 ### Changed
