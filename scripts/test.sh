@@ -58,8 +58,5 @@ fi
 
 truffle version
 
-node_modules/.bin/truffle test "test/HCurve.test.js"
-exit
-
 # Execute rest test files with suffix `.test.js` with single `truffle test`
 node_modules/.bin/truffle test "$@"
