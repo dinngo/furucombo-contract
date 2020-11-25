@@ -1,7 +1,7 @@
 /// This is inspired by and based on CompoundBasicProxy.sol by DeFi Saver
 /// reference: https://etherscan.io/address/0x336b3919a10ced553c75db18cd285335b8e8ed38#code
 
-pragma solidity 0.5.16;
+pragma solidity 0.6.12;
 
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 

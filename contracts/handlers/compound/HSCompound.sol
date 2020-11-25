@@ -1,4 +1,4 @@
-pragma solidity ^0.5.0;
+pragma solidity ^0.6.0;
 
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 
@@ -11,7 +11,7 @@ contract HSCompound is HandlerBase {
     using SafeERC20 for IERC20;
 
     // prettier-ignore
-    address public constant FCOMPOUND_ACTIONS = 0xa3a30f51fd45B9B568948a23b81Dcfe5e267c2F3;
+    address public constant FCOMPOUND_ACTIONS = 0x2617518b6194323D85663D7b141423846C92fB34;
     // prettier-ignore
     address public constant COMPTROLLER = 0x3d9819210A31b4961b30EF54bE2aeD79B9c9Cd3B;
     // prettier-ignore
