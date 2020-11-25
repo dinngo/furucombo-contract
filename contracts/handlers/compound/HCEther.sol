@@ -12,6 +12,10 @@ contract HCEther is HandlerBase {
 
     address public constant CETHER = 0x4Ddc2D193948926D02f9B1fE9e1daa0718270ED5;
 
+    function getContractName() public override pure returns (string memory) {
+        return "HCEther";
+    }
+
     function mint(uint256 value) external payable returns (uint256) {
         ICEther compound = ICEther(CETHER);
 

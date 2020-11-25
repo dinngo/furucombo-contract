@@ -11,6 +11,10 @@ contract HUniswap is HandlerBase {
 
     address constant UNISWAP_FACTORY = 0xc0a47dFe034B400B47bDaD5FecDa2621de6c4d95;
 
+    function getContractName() public override pure returns (string memory) {
+        return "HUniswap";
+    }
+
     function addLiquidity(
         uint256 value,
         address token,

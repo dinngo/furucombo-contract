@@ -144,8 +144,9 @@ contract('Aave', function([_, user]) {
         constants.ZERO_ADDRESS,
         value
       );
-      await expectRevert.unspecified(
-        this.proxy.execMock(to, data, { from: user, value: value })
+      await expectRevert(
+        this.proxy.execMock(to, data, { from: user, value: value }),
+        'HAaveProtocol_General: aToken should not be zero address'
       );
     });
   });
@@ -233,8 +234,9 @@ contract('Aave', function([_, user]) {
       const value = ether('10');
       const to = this.hAave.address;
       const data = abi.simpleEncode('redeem(address,uint256)', AETHER, value);
-      await expectRevert.unspecified(
-        this.proxy.execMock(to, data, { from: user, value: value })
+      await expectRevert(
+        this.proxy.execMock(to, data, { from: user, value: value }),
+        'HAaveProtocol_redeem: User cannot redeem more than the available balance'
       );
     });
   });

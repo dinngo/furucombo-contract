@@ -27,6 +27,10 @@ contract HMaker is HandlerBase {
         _;
     }
 
+    function getContractName() public override pure returns (string memory) {
+        return "HMaker";
+    }
+
     function openLockETHAndDraw(
         uint256 value,
         address ethJoin,
@@ -242,7 +246,7 @@ contract HMaker is HandlerBase {
         IERC20(DAI_TOKEN).safeApprove(address(proxy), 0);
     }
 
-    function postProcess() external payable override {
+    function postProcess() external override payable {
         bytes4 sig = cache.getSig();
         // selector of openLockETHAndDraw(uint256,address,address,bytes32,uint256)
         // and openLockGemAndDraw(address,address,bytes32,uint256,uint256)

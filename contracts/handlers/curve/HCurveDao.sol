@@ -15,6 +15,10 @@ contract HCurveDao is HandlerBase {
     // prettier-ignore
     address public constant CRV_TOKEN = 0xD533a949740bb3306d119CC777fa900bA034cd52;
 
+    function getContractName() public override pure returns (string memory) {
+        return "HCurveDao";
+    }
+
     function mint(address gauge_addr) external payable returns (uint256) {
         IMinter minter = IMinter(CURVE_MINTER);
         address user = cache.getSender();

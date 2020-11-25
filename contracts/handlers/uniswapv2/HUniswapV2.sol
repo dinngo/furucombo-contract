@@ -13,6 +13,10 @@ contract HUniswapV2 is HandlerBase {
 
     address constant UNISWAPV2_ROUTER = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D;
 
+    function getContractName() public override pure returns (string memory) {
+        return "HUniswapV2";
+    }
+
     function addLiquidityETH(
         uint256 value,
         address token,

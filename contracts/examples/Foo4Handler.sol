@@ -7,6 +7,10 @@ contract Foo4Handler is HandlerBase {
     event FooBytes32(bytes32 a);
     event FooUint256(uint256 b);
 
+    function getContractName() public override pure returns (string memory) {
+        return "Foo3Handler";
+    }
+
     function bar(address to) external payable returns (bytes32 ret) {
         ret = Foo4(to).bar();
     }

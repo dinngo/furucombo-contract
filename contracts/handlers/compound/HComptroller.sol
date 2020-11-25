@@ -10,6 +10,10 @@ contract HComptroller is HandlerBase {
     using SafeMath for uint256;
     address constant COMPTROLLER = 0x3d9819210A31b4961b30EF54bE2aeD79B9c9Cd3B;
 
+    function getContractName() public override pure returns (string memory) {
+        return "HComptroller";
+    }
+
     function claimComp() external payable returns (uint256) {
         IComptroller comptroller = IComptroller(COMPTROLLER);
         address comp = comptroller.getCompAddress();

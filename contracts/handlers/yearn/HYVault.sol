@@ -9,6 +9,10 @@ contract HYVault is HandlerBase {
     using SafeERC20 for IERC20;
     using SafeMath for uint256;
 
+    function getContractName() public override pure returns (string memory) {
+        return "HYVault";
+    }
+
     function deposit(address vault, uint256 _amount)
         external
         payable

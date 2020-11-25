@@ -11,6 +11,10 @@ contract HOasis is HandlerBase {
     address constant MAKER_OTC = 0x794e6e91555438aFc3ccF1c5076A74F42133d08D;
     address constant OASIS_DIRECT_PROXY = 0x793EbBe21607e4F04788F89c7a9b97320773Ec59;
 
+    function getContractName() public override pure returns (string memory) {
+        return "HOasis";
+    }
+
     // Fixed Input - Token to Token
     function sellAllAmount(
         address payToken,

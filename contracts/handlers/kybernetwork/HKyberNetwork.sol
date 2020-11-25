@@ -12,6 +12,10 @@ contract HKyberNetwork is HandlerBase {
     address constant ETH_TOKEN_ADDRESS = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
     address constant KYBERNETWORK_PROXY = 0x818E6FECD516Ecc3849DAf6845e3EC868087B755;
 
+    function getContractName() public override pure returns (string memory) {
+        return "HKyberNetwork";
+    }
+
     function swapEtherToToken(
         uint256 value,
         address token,

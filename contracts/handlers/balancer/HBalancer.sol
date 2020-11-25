@@ -16,6 +16,10 @@ contract HBalancer is HandlerBase {
     // prettier-ignore
     address public constant PROXY_REGISTRY = 0x4678f0a6958e4D2Bc4F1BAF7Bc52E8F3564f3fE4;
 
+    function getContractName() public override pure returns (string memory) {
+        return "HBalancer";
+    }
+
     function joinswapExternAmountIn(
         address pool,
         address tokenIn,

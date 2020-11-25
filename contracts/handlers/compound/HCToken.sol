@@ -10,6 +10,10 @@ contract HCToken is HandlerBase {
     using SafeERC20 for IERC20;
     using SafeMath for uint256;
 
+    function getContractName() public override pure returns (string memory) {
+        return "HCToken";
+    }
+
     function mint(address cToken, uint256 mintAmount)
         external
         payable

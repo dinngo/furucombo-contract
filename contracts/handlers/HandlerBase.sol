@@ -3,8 +3,8 @@ pragma solidity ^0.6.0;
 import "../Cache.sol";
 import "../Config.sol";
 
-contract HandlerBase is Cache, Config {
-    function postProcess() external payable virtual {
+abstract contract HandlerBase is Cache, Config {
+    function postProcess() external virtual payable {
         revert("Invalid post process");
         /* Implementation template
         bytes4 sig = cache.getSig();
@@ -29,5 +29,28 @@ contract HandlerBase is Cache, Config {
         }
         cache.set(msg.sig);
         cache.setHandlerType(uint256(HandlerType.Custom));
+    }
+
+    function getContractName() public virtual pure returns (string memory);
+
+    function _revertMsg(string memory functionName, string memory reason)
+        internal
+        pure
+    {
+        revert(
+            string(
+                abi.encodePacked(
+                    getContractName(),
+                    "_",
+                    functionName,
+                    ": ",
+                    reason
+                )
+            )
+        );
+    }
+
+    function _revertMsg(string memory functionName) internal pure {
+        _revertMsg(functionName, "Unspecified");
     }
 }

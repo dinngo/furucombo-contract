@@ -7,6 +7,10 @@ import "../HandlerBase.sol";
 contract HFunds is HandlerBase {
     using SafeERC20 for IERC20;
 
+    function getContractName() public override pure returns (string memory) {
+        return "HFunds";
+    }
+
     function inject(address[] calldata tokens, uint256[] calldata amounts)
         external
         payable

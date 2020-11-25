@@ -21,6 +21,10 @@ contract HSCompound is HandlerBase {
     // prettier-ignore
     address public constant COMP_ADDRESS = 0xc00e94Cb662C3520282E6f5717214004A7f26888;
 
+    function getContractName() public override pure returns (string memory) {
+        return "HSCompound";
+    }
+
     modifier isDSProxyOwner(address dsProxy) {
         address sender = cache.getSender();
         require(

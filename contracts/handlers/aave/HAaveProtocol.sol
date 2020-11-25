@@ -17,6 +17,10 @@ contract HAaveProtocol is HandlerBase, FlashLoanReceiverBase {
 
     uint16 constant REFERRAL_CODE = 56;
 
+    function getContractName() public override pure returns (string memory) {
+        return "HAaveProtocol";
+    }
+
     function flashLoan(
         address _reserve,
         uint256 _amount,
@@ -25,7 +29,13 @@ contract HAaveProtocol is HandlerBase, FlashLoanReceiverBase {
         ILendingPool lendingPool = ILendingPool(
             ILendingPoolAddressesProvider(PROVIDER).getLendingPool()
         );
-        lendingPool.flashLoan(address(this), _reserve, _amount, _params);
+        try
+            lendingPool.flashLoan(address(this), _reserve, _amount, _params)
+         {} catch Error(string memory reason) {
+            _revertMsg("flashLoan", reason);
+        } catch {
+            _revertMsg("flashLoan");
+        }
 
         // Update involved token
         if (_reserve != ETHADDRESS) _updateToken(_reserve);
@@ -60,16 +70,28 @@ contract HAaveProtocol is HandlerBase, FlashLoanReceiverBase {
         uint256 beforeATokenBalance = IERC20(aToken).balanceOf(address(this));
 
         if (_reserve == ETHADDRESS) {
-            lendingPool.deposit.value(_amount)(
-                _reserve,
-                _amount,
-                REFERRAL_CODE
-            );
+            try
+                lendingPool.deposit.value(_amount)(
+                    _reserve,
+                    _amount,
+                    REFERRAL_CODE
+                )
+             {} catch Error(string memory reason) {
+                _revertMsg("deposit", reason);
+            } catch {
+                _revertMsg("deposit");
+            }
         } else {
             address lendingPoolCore = ILendingPoolAddressesProvider(PROVIDER)
                 .getLendingPoolCore();
             IERC20(_reserve).safeApprove(lendingPoolCore, _amount);
-            lendingPool.deposit(_reserve, _amount, REFERRAL_CODE);
+            try
+                lendingPool.deposit(_reserve, _amount, REFERRAL_CODE)
+             {} catch Error(string memory reason) {
+                _revertMsg("deposit", reason);
+            } catch {
+                _revertMsg("deposit");
+            }
             IERC20(_reserve).safeApprove(lendingPoolCore, 0);
         }
 
@@ -96,7 +118,13 @@ contract HAaveProtocol is HandlerBase, FlashLoanReceiverBase {
         }
 
         // Call redeem function
-        IAToken(_aToken).redeem(_amount);
+        try IAToken(_aToken).redeem(_amount)  {} catch Error(
+            string memory reason
+        ) {
+            _revertMsg("redeem", reason);
+        } catch {
+            _revertMsg("redeem");
+        }
 
         // Get redeem amount and update token
         uint256 afterUnderlyingAssetAmount;
@@ -116,9 +144,16 @@ contract HAaveProtocol is HandlerBase, FlashLoanReceiverBase {
         ILendingPoolCore lendingPoolCore = ILendingPoolCore(
             ILendingPoolAddressesProvider(PROVIDER).getLendingPoolCore()
         );
-        address aToken = lendingPoolCore.getReserveATokenAddress(_reserve);
-        require(aToken != address(0), "aToken should not be zero address");
-
-        return aToken;
+        try lendingPoolCore.getReserveATokenAddress(_reserve) returns (
+            address aToken
+        ) {
+            if (aToken == address(0))
+                _revertMsg("General", "aToken should not be zero address");
+            else return aToken;
+        } catch Error(string memory reason) {
+            _revertMsg("General", reason);
+        } catch {
+            _revertMsg("General");
+        }
     }
 }

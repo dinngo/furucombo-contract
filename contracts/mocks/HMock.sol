@@ -12,6 +12,10 @@ interface IFaucet {
 contract HMock is HandlerBase {
     using SafeERC20 for IERC20;
 
+    function getContractName() public override pure returns (string memory) {
+        return "HMock";
+    }
+
     function drain(address target, uint256 v) external payable {
         IFaucet(target).drain.value(v)();
     }

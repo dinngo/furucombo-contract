@@ -13,6 +13,10 @@ contract HGasTokens is HandlerBase {
     // prettier-ignore
     address public constant GST2_TOKEN = 0x0000000000b3F879cb30FE243b4Dfee438691c04;
 
+    function getContractName() public override pure returns (string memory) {
+        return "HGasToken";
+    }
+
     function freeCHI(uint256 amount) external payable {
         uint256 gasStart = 21000 + gasleft() + 16 * msg.data.length;
 
@@ -35,7 +39,7 @@ contract HGasTokens is HandlerBase {
         _updatePostProcess(params);
     }
 
-    function postProcess() external payable override {
+    function postProcess() external override payable {
         bytes4 sig = cache.getSig();
         uint256 gasStart = uint256(cache.get());
         uint256 amount = uint256(cache.get());

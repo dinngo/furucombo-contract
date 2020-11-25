@@ -17,6 +17,10 @@ contract HOneInch is HandlerBase {
     // prettier-ignore
     address public constant ETH_ADDRESS = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
+    function getContractName() public override pure returns (string memory) {
+        return "HOneInch";
+    }
+
     function swap(
         IERC20 fromToken,
         IERC20 toToken,

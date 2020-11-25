@@ -14,6 +14,10 @@ contract HMooniswap is HandlerBase {
     // prettier-ignore
     address payable public constant MooniFactory = 0x71CD6666064C3A1354a3B4dca5fA1E2D3ee7D303;
 
+    function getContractName() public override pure returns (string memory) {
+        return "HMooniswap";
+    }
+
     function deposit(
         address[2] calldata tokens,
         uint256[] calldata amounts,

@@ -14,6 +14,10 @@ contract HBalancerExchange is HandlerBase {
     // prettier-ignore
     address public constant ETH_ADDRESS = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
+    function getContractName() public override pure returns (string memory) {
+        return "HBalancerExchange";
+    }
+
     function batchSwapExactIn(
         IExchangeProxy.Swap[] calldata swaps,
         address tokenIn,

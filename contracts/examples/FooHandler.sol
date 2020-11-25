@@ -13,6 +13,10 @@ interface IFooFactory {
 }
 
 contract FooHandler is HandlerBase {
+    function getContractName() public override pure returns (string memory) {
+        return "Foo2Handler";
+    }
+
     function getFooFactory() public pure returns (address target) {
         return 0xFdd454EA7BF7ca88C1B7a824c3FB0951Fb8a1318;
     }
