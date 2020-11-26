@@ -13,7 +13,7 @@ contract HGasTokens is HandlerBase {
     // prettier-ignore
     address public constant GST2_TOKEN = 0x0000000000b3F879cb30FE243b4Dfee438691c04;
 
-    function getContractName() public override pure returns (string memory) {
+    function getContractName() public pure override returns (string memory) {
         return "HGasToken";
     }
 
@@ -39,7 +39,7 @@ contract HGasTokens is HandlerBase {
         _updatePostProcess(params);
     }
 
-    function postProcess() external override payable {
+    function postProcess() external payable override {
         bytes4 sig = stack.getSig();
         uint256 gasStart = uint256(stack.get());
         uint256 amount = uint256(stack.get());
@@ -59,7 +59,7 @@ contract HGasTokens is HandlerBase {
                 _getSender(),
                 Math.min(amount, maxAmount)
             )
-         {} catch Error(string memory reason) {
+        {} catch Error(string memory reason) {
             _revertMsg("_freeCHI", reason);
         } catch {
             _revertMsg("_freeCHI");
@@ -74,7 +74,7 @@ contract HGasTokens is HandlerBase {
                 _getSender(),
                 Math.min(amount, maxAmount)
             )
-         {} catch Error(string memory reason) {
+        {} catch Error(string memory reason) {
             _revertMsg("_freeGST2", reason);
         } catch {
             _revertMsg("_freeGST2");

@@ -31,7 +31,7 @@ contract HMaker is HandlerBase {
         _;
     }
 
-    function getContractName() public override pure returns (string memory) {
+    function getContractName() public pure override returns (string memory) {
         return "HMaker";
     }
 
@@ -131,7 +131,7 @@ contract HMaker is HandlerBase {
                     owner
                 )
             )
-         {} catch Error(string memory reason) {
+        {} catch Error(string memory reason) {
             _revertMsg("safeLockETH", reason);
         } catch {
             _revertMsg("safeLockETH");
@@ -161,7 +161,7 @@ contract HMaker is HandlerBase {
                     owner
                 )
             )
-         {} catch Error(string memory reason) {
+        {} catch Error(string memory reason) {
             _revertMsg("safeLockGem", reason);
         } catch {
             _revertMsg("safeLockGem");
@@ -188,7 +188,7 @@ contract HMaker is HandlerBase {
                     wad
                 )
             )
-         {} catch Error(string memory reason) {
+        {} catch Error(string memory reason) {
             _revertMsg("freeETH", reason);
         } catch {
             _revertMsg("freeETH");
@@ -215,7 +215,7 @@ contract HMaker is HandlerBase {
                     wad
                 )
             )
-         {} catch Error(string memory reason) {
+        {} catch Error(string memory reason) {
             _revertMsg("freeGem", reason);
         } catch {
             _revertMsg("freeGem");
@@ -245,7 +245,7 @@ contract HMaker is HandlerBase {
                     wad
                 )
             )
-         {} catch Error(string memory reason) {
+        {} catch Error(string memory reason) {
             _revertMsg("draw", reason);
         } catch {
             _revertMsg("draw");
@@ -274,7 +274,7 @@ contract HMaker is HandlerBase {
                     wad
                 )
             )
-         {} catch Error(string memory reason) {
+        {} catch Error(string memory reason) {
             _revertMsg("wipe", reason);
         } catch {
             _revertMsg("wipe");
@@ -296,7 +296,7 @@ contract HMaker is HandlerBase {
                     cdp
                 )
             )
-         {} catch Error(string memory reason) {
+        {} catch Error(string memory reason) {
             _revertMsg("wipeAll", reason);
         } catch {
             _revertMsg("wipeAll");
@@ -304,7 +304,7 @@ contract HMaker is HandlerBase {
         IERC20(DAI_TOKEN).safeApprove(address(proxy), 0);
     }
 
-    function postProcess() external override payable {
+    function postProcess() external payable override {
         bytes4 sig = stack.getSig();
         // selector of openLockETHAndDraw(uint256,address,address,bytes32,uint256)
         // and openLockGemAndDraw(address,address,bytes32,uint256,uint256)
@@ -334,7 +334,7 @@ contract HMaker is HandlerBase {
                     _getSender()
                 )
             )
-         {} catch Error(string memory reason) {
+        {} catch Error(string memory reason) {
             _revertMsg("_transferCdp", reason);
         } catch {
             _revertMsg("_transferCdp");

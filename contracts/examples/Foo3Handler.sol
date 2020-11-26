@@ -13,7 +13,7 @@ interface IFoo3 {
 }
 
 contract Foo3Handler is HandlerBase {
-    function getContractName() public override pure returns (string memory) {
+    function getContractName() public pure override returns (string memory) {
         return "Foo3Handler";
     }
 
@@ -37,7 +37,7 @@ contract Foo3Handler is HandlerBase {
         _updatePostProcess(params);
     }
 
-    function postProcess() external override payable {
+    function postProcess() external payable override {
         bytes4 sig = stack.getSig();
         if (sig == bytes4(keccak256(bytes("bar1(address)")))) {
             address foo = stack.getAddress();

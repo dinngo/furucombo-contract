@@ -4,7 +4,7 @@ import "../Config.sol";
 import "../Storage.sol";
 
 abstract contract HandlerBase is Storage, Config {
-    function postProcess() external virtual payable {
+    function postProcess() external payable virtual {
         revert("Invalid post process");
         /* Implementation template
         bytes4 sig = stack.getSig();
@@ -31,7 +31,7 @@ abstract contract HandlerBase is Storage, Config {
         stack.setHandlerType(uint256(HandlerType.Custom));
     }
 
-    function getContractName() public virtual pure returns (string memory);
+    function getContractName() public pure virtual returns (string memory);
 
     function _revertMsg(string memory functionName, string memory reason)
         internal

@@ -13,7 +13,7 @@ contract HOasis is HandlerBase {
     // prettier-ignore
     address public constant OASIS_DIRECT_PROXY = 0x793EbBe21607e4F04788F89c7a9b97320773Ec59;
 
-    function getContractName() public override pure returns (string memory) {
+    function getContractName() public pure override returns (string memory) {
         return "HOasis";
     }
 

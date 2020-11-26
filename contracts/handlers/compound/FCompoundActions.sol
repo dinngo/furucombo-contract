@@ -92,9 +92,8 @@ contract FCompoundActions {
     /// @notice Enters the Compound market so these token can be used as collateral
     /// @param _cTokenAddrs CToken address array to enter market
     function enterMarkets(address[] memory _cTokenAddrs) public {
-        uint256[] memory errors = IComptroller(COMPTROLLER_ADDR).enterMarkets(
-            _cTokenAddrs
-        );
+        uint256[] memory errors =
+            IComptroller(COMPTROLLER_ADDR).enterMarkets(_cTokenAddrs);
         for (uint256 i = 0; i < errors.length; i++) {
             require(errors[i] == 0, "FCompoundActions: enter markets failed");
         }

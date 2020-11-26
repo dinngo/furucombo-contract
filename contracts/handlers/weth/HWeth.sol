@@ -8,12 +8,12 @@ contract HWeth is HandlerBase {
     // prettier-ignore
     address payable public constant WETH = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
 
-    function getContractName() public override pure returns (string memory) {
+    function getContractName() public pure override returns (string memory) {
         return "HWeth";
     }
 
     function deposit(uint256 value) external payable {
-        try IWETH9(WETH).deposit.value(value)()  {} catch Error(
+        try IWETH9(WETH).deposit.value(value)() {} catch Error(
             string memory reason
         ) {
             _revertMsg("deposit", reason);
@@ -24,7 +24,7 @@ contract HWeth is HandlerBase {
     }
 
     function withdraw(uint256 wad) external payable {
-        try IWETH9(WETH).withdraw(wad)  {} catch Error(string memory reason) {
+        try IWETH9(WETH).withdraw(wad) {} catch Error(string memory reason) {
             _revertMsg("withdraw", reason);
         } catch {
             _revertMsg("withdraw");

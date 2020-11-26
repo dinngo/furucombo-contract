@@ -12,7 +12,7 @@ contract HUniswap is HandlerBase {
     // prettier-ignore
     address public constant UNISWAP_FACTORY = 0xc0a47dFe034B400B47bDaD5FecDa2621de6c4d95;
 
-    function getContractName() public override pure returns (string memory) {
+    function getContractName() public pure override returns (string memory) {
         return "HUniswap";
     }
 

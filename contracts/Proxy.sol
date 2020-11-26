@@ -41,9 +41,8 @@ contract Proxy is Storage, Config {
         if (msg.data.length != 0) {
             require(_isValid(msg.sender), "Invalid caller");
 
-            address target = address(
-                bytes20(IRegistry(_getRegistry()).getInfo(msg.sender))
-            );
+            address target =
+                address(bytes20(IRegistry(_getRegistry()).getInfo(msg.sender)));
             _exec(target, msg.data);
         }
     }

@@ -17,7 +17,7 @@ contract HAaveProtocol is HandlerBase, FlashLoanReceiverBase {
 
     uint16 public constant REFERRAL_CODE = 56;
 
-    function getContractName() public override pure returns (string memory) {
+    function getContractName() public pure override returns (string memory) {
         return "HAaveProtocol";
     }
 
@@ -26,12 +26,13 @@ contract HAaveProtocol is HandlerBase, FlashLoanReceiverBase {
         uint256 _amount,
         bytes calldata _params
     ) external payable {
-        ILendingPool lendingPool = ILendingPool(
-            ILendingPoolAddressesProvider(PROVIDER).getLendingPool()
-        );
+        ILendingPool lendingPool =
+            ILendingPool(
+                ILendingPoolAddressesProvider(PROVIDER).getLendingPool()
+            );
         try
             lendingPool.flashLoan(address(this), _reserve, _amount, _params)
-         {} catch Error(string memory reason) {
+        {} catch Error(string memory reason) {
             _revertMsg("flashLoan", reason);
         } catch {
             _revertMsg("flashLoan");
@@ -47,11 +48,8 @@ contract HAaveProtocol is HandlerBase, FlashLoanReceiverBase {
         uint256 _fee,
         bytes calldata _params
     ) external payable {
-        (
-            address[] memory tos,
-            bytes32[] memory configs,
-            bytes[] memory datas
-        ) = abi.decode(_params, (address[], bytes32[], bytes[]));
+        (address[] memory tos, bytes32[] memory configs, bytes[] memory datas) =
+            abi.decode(_params, (address[], bytes32[], bytes[]));
         IProxy(address(this)).execs(tos, configs, datas);
         transferFundsBackToPoolInternal(_reserve, _amount.add(_fee));
     }
@@ -61,9 +59,10 @@ contract HAaveProtocol is HandlerBase, FlashLoanReceiverBase {
         payable
         returns (uint256 aTokenAmount)
     {
-        ILendingPool lendingPool = ILendingPool(
-            ILendingPoolAddressesProvider(PROVIDER).getLendingPool()
-        );
+        ILendingPool lendingPool =
+            ILendingPool(
+                ILendingPoolAddressesProvider(PROVIDER).getLendingPool()
+            );
 
         // Get AToken before depositing
         address aToken = _getAToken(_reserve);
@@ -76,18 +75,18 @@ contract HAaveProtocol is HandlerBase, FlashLoanReceiverBase {
                     _amount,
                     REFERRAL_CODE
                 )
-             {} catch Error(string memory reason) {
+            {} catch Error(string memory reason) {
                 _revertMsg("deposit", reason);
             } catch {
                 _revertMsg("deposit");
             }
         } else {
-            address lendingPoolCore = ILendingPoolAddressesProvider(PROVIDER)
-                .getLendingPoolCore();
+            address lendingPoolCore =
+                ILendingPoolAddressesProvider(PROVIDER).getLendingPoolCore();
             IERC20(_reserve).safeApprove(lendingPoolCore, _amount);
             try
                 lendingPool.deposit(_reserve, _amount, REFERRAL_CODE)
-             {} catch Error(string memory reason) {
+            {} catch Error(string memory reason) {
                 _revertMsg("deposit", reason);
             } catch {
                 _revertMsg("deposit");
@@ -118,7 +117,7 @@ contract HAaveProtocol is HandlerBase, FlashLoanReceiverBase {
         }
 
         // Call redeem function
-        try IAToken(_aToken).redeem(_amount)  {} catch Error(
+        try IAToken(_aToken).redeem(_amount) {} catch Error(
             string memory reason
         ) {
             _revertMsg("redeem", reason);
@@ -141,9 +140,10 @@ contract HAaveProtocol is HandlerBase, FlashLoanReceiverBase {
     }
 
     function _getAToken(address _reserve) internal view returns (address) {
-        ILendingPoolCore lendingPoolCore = ILendingPoolCore(
-            ILendingPoolAddressesProvider(PROVIDER).getLendingPoolCore()
-        );
+        ILendingPoolCore lendingPoolCore =
+            ILendingPoolCore(
+                ILendingPoolAddressesProvider(PROVIDER).getLendingPoolCore()
+            );
         try lendingPoolCore.getReserveATokenAddress(_reserve) returns (
             address aToken
         ) {

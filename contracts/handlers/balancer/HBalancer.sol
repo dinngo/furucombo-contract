@@ -16,7 +16,7 @@ contract HBalancer is HandlerBase {
     // prettier-ignore
     address public constant PROXY_REGISTRY = 0x4678f0a6958e4D2Bc4F1BAF7Bc52E8F3564f3fE4;
 
-    function getContractName() public override pure returns (string memory) {
+    function getContractName() public pure override returns (string memory) {
         return "HBalancer";
     }
 
@@ -44,7 +44,7 @@ contract HBalancer is HandlerBase {
                     minPoolAmountOut
                 )
             )
-         {} catch Error(string memory reason) {
+        {} catch Error(string memory reason) {
             _revertMsg("joinswapExternAmountIn", reason);
         } catch {
             _revertMsg("joinswapExternAmountIn");
@@ -90,7 +90,7 @@ contract HBalancer is HandlerBase {
                     maxAmountsIn
                 )
             )
-         {} catch Error(string memory reason) {
+        {} catch Error(string memory reason) {
             _revertMsg("joinPool", reason);
         } catch {
             _revertMsg("joinPool");
@@ -152,7 +152,7 @@ contract HBalancer is HandlerBase {
         }
 
         // Call exitPool function of balancer pool
-        try bPool.exitPool(poolAmountIn, minAmountsOut)  {} catch Error(
+        try bPool.exitPool(poolAmountIn, minAmountsOut) {} catch Error(
             string memory reason
         ) {
             _revertMsg("exitPool", reason);

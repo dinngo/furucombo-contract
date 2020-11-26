@@ -21,7 +21,7 @@ contract HSCompound is HandlerBase {
     // prettier-ignore
     address public constant COMP_ADDRESS = 0xc00e94Cb662C3520282E6f5717214004A7f26888;
 
-    function getContractName() public override pure returns (string memory) {
+    function getContractName() public pure override returns (string memory) {
         return "HSCompound";
     }
 
@@ -83,7 +83,7 @@ contract HSCompound is HandlerBase {
                         uBorrowAmount
                     )
                 )
-             {} catch Error(string memory reason) {
+            {} catch Error(string memory reason) {
                 _revertMsg("borrow", reason);
             } catch {
                 _revertMsg("borrow");
@@ -117,7 +117,7 @@ contract HSCompound is HandlerBase {
                             uRepayAmount
                         )
                     )
-                 {} catch Error(string memory reason) {
+                {} catch Error(string memory reason) {
                     _revertMsg("repayBorrow", reason);
                 } catch {
                     _revertMsg("repayBorrow");
@@ -137,7 +137,7 @@ contract HSCompound is HandlerBase {
                             uRepayAmount
                         )
                     )
-                 {} catch Error(string memory reason) {
+                {} catch Error(string memory reason) {
                     _revertMsg("repayBorrow", reason);
                 } catch {
                     _revertMsg("repayBorrow");
@@ -176,7 +176,7 @@ contract HSCompound is HandlerBase {
                     cTokens
                 )
             )
-         {} catch Error(string memory reason) {
+        {} catch Error(string memory reason) {
             _revertMsg("enterMarkets", reason);
         } catch {
             _revertMsg("enterMarkets");
@@ -197,7 +197,7 @@ contract HSCompound is HandlerBase {
                     cToken
                 )
             )
-         {} catch Error(string memory reason) {
+        {} catch Error(string memory reason) {
             _revertMsg("exitMarket", reason);
         } catch {
             _revertMsg("exitMarket");
@@ -209,7 +209,7 @@ contract HSCompound is HandlerBase {
         payable
         isDSProxyOwner(dsProxy)
     {
-        try IComptroller(COMPTROLLER).claimComp(dsProxy)  {} catch Error(
+        try IComptroller(COMPTROLLER).claimComp(dsProxy) {} catch Error(
             string memory reason
         ) {
             _revertMsg("claimComp", reason);
@@ -252,7 +252,7 @@ contract HSCompound is HandlerBase {
                     amount
                 )
             )
-         {} catch Error(string memory reason) {
+        {} catch Error(string memory reason) {
             _revertMsg("_withdraw", reason);
         } catch {
             _revertMsg("_withdraw");
@@ -269,7 +269,7 @@ contract HSCompound is HandlerBase {
                     cToken
                 )
             )
-         {} catch Error(string memory reason) {
+        {} catch Error(string memory reason) {
             _revertMsg("_enterMarket", reason);
         } catch {
             _revertMsg("_enterMarket");

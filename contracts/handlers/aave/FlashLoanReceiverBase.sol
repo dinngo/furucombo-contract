@@ -15,8 +15,8 @@ contract FlashLoanReceiverBase {
     function transferFundsBackToPoolInternal(address _reserve, uint256 _amount)
         internal
     {
-        address payable core = ILendingPoolAddressesProvider(PROVIDER)
-            .getLendingPoolCore();
+        address payable core =
+            ILendingPoolAddressesProvider(PROVIDER).getLendingPoolCore();
 
         transferInternal(core, _reserve, _amount);
     }

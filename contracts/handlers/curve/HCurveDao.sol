@@ -15,7 +15,7 @@ contract HCurveDao is HandlerBase {
     // prettier-ignore
     address public constant CRV_TOKEN = 0xD533a949740bb3306d119CC777fa900bA034cd52;
 
-    function getContractName() public override pure returns (string memory) {
+    function getContractName() public pure override returns (string memory) {
         return "HCurveDao";
     }
 
@@ -26,7 +26,7 @@ contract HCurveDao is HandlerBase {
         if (minter.allowed_to_mint_for(address(this), user) == false)
             _revertMsg("mint", "not allowed to mint");
 
-        try minter.mint_for(gaugeAddr, user)  {} catch Error(
+        try minter.mint_for(gaugeAddr, user) {} catch Error(
             string memory reason
         ) {
             _revertMsg("mint", reason);
@@ -51,7 +51,7 @@ contract HCurveDao is HandlerBase {
             _revertMsg("mintMany", "not allowed to mint");
 
         for (uint256 i = 0; i < gaugeAddrs.length; i++) {
-            try minter.mint_for(gaugeAddrs[i], user)  {} catch Error(
+            try minter.mint_for(gaugeAddrs[i], user) {} catch Error(
                 string memory reason
             ) {
                 _revertMsg(
@@ -76,7 +76,7 @@ contract HCurveDao is HandlerBase {
         address user = _getSender();
 
         IERC20(token).safeApprove(gaugeAddress, _value);
-        try gauge.deposit(_value, user)  {} catch Error(string memory reason) {
+        try gauge.deposit(_value, user) {} catch Error(string memory reason) {
             _revertMsg("deposit", reason);
         } catch {
             _revertMsg("deposit");

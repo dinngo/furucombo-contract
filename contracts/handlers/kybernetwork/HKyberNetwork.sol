@@ -14,7 +14,7 @@ contract HKyberNetwork is HandlerBase {
     // prettier-ignore
     address public constant KYBERNETWORK_PROXY = 0x818E6FECD516Ecc3849DAf6845e3EC868087B755;
 
-    function getContractName() public override pure returns (string memory) {
+    function getContractName() public pure override returns (string memory) {
         return "HKyberNetwork";
     }
 

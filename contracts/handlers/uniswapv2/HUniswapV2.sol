@@ -11,9 +11,10 @@ contract HUniswapV2 is HandlerBase {
     using SafeERC20 for IERC20;
     using SafeMath for uint256;
 
-    address constant UNISWAPV2_ROUTER = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D;
+    address constant UNISWAPV2_ROUTER =
+        0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D;
 
-    function getContractName() public override pure returns (string memory) {
+    function getContractName() public pure override returns (string memory) {
         return "HUniswapV2";
     }
 
@@ -62,11 +63,8 @@ contract HUniswapV2 is HandlerBase {
         IERC20(token).safeApprove(UNISWAPV2_ROUTER, 0);
 
         // Update involved token
-        address pair = UniswapV2Library.pairFor(
-            router.factory(),
-            token,
-            router.WETH()
-        );
+        address pair =
+            UniswapV2Library.pairFor(router.factory(), token, router.WETH());
         _updateToken(pair);
     }
 
@@ -120,11 +118,8 @@ contract HUniswapV2 is HandlerBase {
         IERC20(tokenB).safeApprove(UNISWAPV2_ROUTER, 0);
 
         // Update involved token
-        address pair = UniswapV2Library.pairFor(
-            router.factory(),
-            tokenA,
-            tokenB
-        );
+        address pair =
+            UniswapV2Library.pairFor(router.factory(), tokenA, tokenB);
         _updateToken(pair);
     }
 
@@ -136,11 +131,8 @@ contract HUniswapV2 is HandlerBase {
     ) external payable returns (uint256 amountToken, uint256 amountETH) {
         // Get uniswapV2 router
         IUniswapV2Router02 router = IUniswapV2Router02(UNISWAPV2_ROUTER);
-        address pair = UniswapV2Library.pairFor(
-            router.factory(),
-            token,
-            router.WETH()
-        );
+        address pair =
+            UniswapV2Library.pairFor(router.factory(), token, router.WETH());
 
         // Approve token
         IERC20(pair).safeApprove(UNISWAPV2_ROUTER, liquidity);
@@ -180,11 +172,8 @@ contract HUniswapV2 is HandlerBase {
     ) external payable returns (uint256 amountA, uint256 amountB) {
         // Get uniswapV2 router
         IUniswapV2Router02 router = IUniswapV2Router02(UNISWAPV2_ROUTER);
-        address pair = UniswapV2Library.pairFor(
-            router.factory(),
-            tokenA,
-            tokenB
-        );
+        address pair =
+            UniswapV2Library.pairFor(router.factory(), tokenA, tokenB);
 
         // Approve token
         IERC20(pair).safeApprove(UNISWAPV2_ROUTER, liquidity);

@@ -12,7 +12,7 @@ interface IFaucet {
 contract HMock is HandlerBase {
     using SafeERC20 for IERC20;
 
-    function getContractName() public override pure returns (string memory) {
+    function getContractName() public pure override returns (string memory) {
         return "HMock";
     }
 
