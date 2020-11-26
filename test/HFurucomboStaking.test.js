@@ -83,7 +83,6 @@ contract('Furucombo', function([_, user, someone]) {
       await this.proxy.updateTokenMock(this.token.address);
 
       // Execute proxy handler
-      await balanceUser.get();
       const receipt = await this.proxy.execMock(to, data, {
         from: user,
         value: ether('0.1'),

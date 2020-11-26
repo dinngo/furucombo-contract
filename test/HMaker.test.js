@@ -133,9 +133,9 @@ contract('Maker', function([_, user1, user2, someone]) {
           expect(await this.dsRegistry.proxies.call(someone)).eq(ZERO_ADDRESS);
 
           const to = this.hMaker.address;
-          const value = ether('1');
+          const value = ether('5');
           const ilkEth = utils.padRight(utils.asciiToHex('ETH-A'), 64);
-          const wadD = ether('100');
+          const wadD = ether('500');
           const data = abi.simpleEncode(
             'openLockETHAndDraw(uint256,address,address,bytes32,uint256)',
             value,
@@ -167,9 +167,9 @@ contract('Maker', function([_, user1, user2, someone]) {
 
         it('User has proxy', async function() {
           const to = this.hMaker.address;
-          const value = ether('1');
+          const value = ether('5');
           const ilkEth = utils.padRight(utils.asciiToHex('ETH-A'), 64);
-          const wadD = ether('100');
+          const wadD = ether('500');
           const data = abi.simpleEncode(
             'openLockETHAndDraw(uint256,address,address,bytes32,uint256)',
             value,
@@ -216,8 +216,8 @@ contract('Maker', function([_, user1, user2, someone]) {
 
           const to = this.hMaker.address;
           const ilkKnc = utils.padRight(utils.asciiToHex('KNC-A'), 64);
-          const wadC = ether('300');
-          const wadD = ether('100');
+          const wadC = ether('1500');
+          const wadD = ether('500');
           const data = abi.simpleEncode(
             'openLockGemAndDraw(address,address,bytes32,uint256,uint256)',
             MAKER_MCD_JOIN_KNC_A,
@@ -254,8 +254,8 @@ contract('Maker', function([_, user1, user2, someone]) {
         it('User has proxy', async function() {
           const to = this.hMaker.address;
           const ilkKnc = utils.padRight(utils.asciiToHex('KNC-A'), 64);
-          const wadC = ether('300');
-          const wadD = ether('100');
+          const wadC = ether('1500');
+          const wadD = ether('500');
           const data = abi.simpleEncode(
             'openLockGemAndDraw(address,address,bytes32,uint256,uint256)',
             MAKER_MCD_JOIN_KNC_A,
@@ -371,7 +371,7 @@ contract('Maker', function([_, user1, user2, someone]) {
 
       it('normal', async function() {
         const to = this.hMaker.address;
-        const wad = ether('100');
+        const wad = ether('500');
         const data = abi.simpleEncode(
           'safeLockGem(address,uint256,uint256)',
           MAKER_MCD_JOIN_KNC_A,
@@ -576,7 +576,7 @@ contract('Maker', function([_, user1, user2, someone]) {
       let daiUser;
 
       beforeEach(async function() {
-        const etherAmount = ether('1');
+        const etherAmount = ether('10');
         const new1 = abi.simpleEncode(
           'openLockETHAndDraw(address,address,address,address,bytes32,uint256)',
           MAKER_CDP_MANAGER,
@@ -598,7 +598,7 @@ contract('Maker', function([_, user1, user2, someone]) {
       it('normal', async function() {
         await approveCdp(cdp, user1, this.dsProxy.address);
         const to = this.hMaker.address;
-        const wad = ether('100');
+        const wad = ether('500');
         const data = abi.simpleEncode(
           'draw(address,uint256,uint256)',
           MAKER_MCD_JOIN_DAI,
@@ -617,7 +617,7 @@ contract('Maker', function([_, user1, user2, someone]) {
 
       it('without cdp approval', async function() {
         const to = this.hMaker.address;
-        const wad = ether('100');
+        const wad = ether('500');
         const data = abi.simpleEncode(
           'draw(address,uint256,uint256)',
           MAKER_MCD_JOIN_DAI,
@@ -634,7 +634,7 @@ contract('Maker', function([_, user1, user2, someone]) {
       it('approved but triggered by unauthorized user', async function() {
         await approveCdp(cdp, user1, this.dsProxy.address);
         const to = this.hMaker.address;
-        const wad = ether('100');
+        const wad = ether('500');
         const data = abi.simpleEncode(
           'draw(address,uint256,uint256)',
           MAKER_MCD_JOIN_DAI,
@@ -656,7 +656,7 @@ contract('Maker', function([_, user1, user2, someone]) {
       let daiUser;
 
       beforeEach(async function() {
-        const tokenAmount = ether('1000');
+        const tokenAmount = ether('1500');
         const new2 = abi.simpleEncode(
           'openLockGemAndDraw(address,address,address,address,bytes32,uint256,uint256,bool)',
           MAKER_CDP_MANAGER,
@@ -685,7 +685,7 @@ contract('Maker', function([_, user1, user2, someone]) {
       it('normal', async function() {
         await approveCdp(cdp, user1, this.dsProxy.address);
         const to = this.hMaker.address;
-        const wad = ether('100');
+        const wad = ether('500');
         const data = abi.simpleEncode(
           'draw(address,uint256,uint256)',
           MAKER_MCD_JOIN_DAI,
@@ -704,7 +704,7 @@ contract('Maker', function([_, user1, user2, someone]) {
 
       it('without cdp approval', async function() {
         const to = this.hMaker.address;
-        const wad = ether('100');
+        const wad = ether('500');
         const data = abi.simpleEncode(
           'draw(address,uint256,uint256)',
           MAKER_MCD_JOIN_DAI,
@@ -721,7 +721,7 @@ contract('Maker', function([_, user1, user2, someone]) {
       it('approved but triggered by unauthorized user', async function() {
         await approveCdp(cdp, user1, this.dsProxy.address);
         const to = this.hMaker.address;
-        const wad = ether('100');
+        const wad = ether('500');
         const data = abi.simpleEncode(
           'draw(address,uint256,uint256)',
           MAKER_MCD_JOIN_DAI,
@@ -745,8 +745,8 @@ contract('Maker', function([_, user1, user2, someone]) {
       let daiUser;
 
       beforeEach(async function() {
-        const etherAmount = ether('1');
-        const daiAmount = ether('110');
+        const etherAmount = ether('10');
+        const daiAmount = ether('510');
         const new1 = abi.simpleEncode(
           'openLockETHAndDraw(address,address,address,address,bytes32,uint256)',
           MAKER_CDP_MANAGER,
@@ -802,7 +802,7 @@ contract('Maker', function([_, user1, user2, someone]) {
           from: DAI_PROVIDER,
         });
         daiUser = await this.dai.balanceOf.call(user1);
-        await this.dai.transfer(this.proxy.address, ether('120'), {
+        await this.dai.transfer(this.proxy.address, ether('520'), {
           from: user1,
         });
         await this.proxy.updateTokenMock(this.dai.address);
@@ -829,7 +829,7 @@ contract('Maker', function([_, user1, user2, someone]) {
 
       beforeEach(async function() {
         const tokenAmount = ether('1000');
-        const daiAmount = ether('110');
+        const daiAmount = ether('510');
         const new2 = abi.simpleEncode(
           'openLockGemAndDraw(address,address,address,address,bytes32,uint256,uint256,bool)',
           MAKER_CDP_MANAGER,
@@ -892,7 +892,7 @@ contract('Maker', function([_, user1, user2, someone]) {
           from: DAI_PROVIDER,
         });
         daiUser = await this.dai.balanceOf.call(user1);
-        await this.dai.transfer(this.proxy.address, ether('120'), {
+        await this.dai.transfer(this.proxy.address, ether('520'), {
           from: user1,
         });
         await this.proxy.updateTokenMock(this.dai.address);
