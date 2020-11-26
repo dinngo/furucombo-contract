@@ -17,7 +17,7 @@ contract HComptroller is HandlerBase {
     function claimComp() external payable returns (uint256) {
         IComptroller comptroller = IComptroller(COMPTROLLER);
         address comp = comptroller.getCompAddress();
-        address sender = cache.getSender();
+        address sender = _getSender();
 
         uint256 beforeCompBalance = IERC20(comp).balanceOf(sender);
         try comptroller.claimComp(sender)  {} catch Error(

@@ -18,7 +18,7 @@ contract HMaker is HandlerBase {
     modifier cdpAllowed(uint256 cdp) {
         IMakerManager manager = IMakerManager(CDP_MANAGER);
         address owner = manager.owns(cdp);
-        address sender = cache.getSender();
+        address sender = _getSender();
         if (
             IDSProxyRegistry(PROXY_REGISTRY).proxies(sender) != owner &&
             manager.cdpCan(owner, cdp, sender) != 1
@@ -113,7 +113,7 @@ contract HMaker is HandlerBase {
         uint256 cdp
     ) external payable {
         IDSProxy proxy = IDSProxy(_getProxy(address(this)));
-        address owner = _getProxy(cache.getSender());
+        address owner = _getProxy(_getSender());
         try
             proxy.execute.value(value)(
                 PROXY_ACTIONS,
@@ -139,7 +139,7 @@ contract HMaker is HandlerBase {
         uint256 wad
     ) external payable {
         IDSProxy proxy = IDSProxy(_getProxy(address(this)));
-        address owner = _getProxy(cache.getSender());
+        address owner = _getProxy(_getSender());
         address token = IMakerGemJoin(gemJoin).gem();
         IERC20(token).safeApprove(address(proxy), wad);
         try
@@ -300,14 +300,14 @@ contract HMaker is HandlerBase {
     }
 
     function postProcess() external override payable {
-        bytes4 sig = cache.getSig();
+        bytes4 sig = stack.getSig();
         // selector of openLockETHAndDraw(uint256,address,address,bytes32,uint256)
         // and openLockGemAndDraw(address,address,bytes32,uint256,uint256)
         if (sig == 0x5481e4a4 || sig == 0x73af24e7) {
-            _transferCdp(uint256(cache.get()));
+            _transferCdp(uint256(stack.get()));
             uint256 amount = IERC20(DAI_TOKEN).balanceOf(address(this));
             if (amount > 0)
-                IERC20(DAI_TOKEN).safeTransfer(cache.getSender(), amount);
+                IERC20(DAI_TOKEN).safeTransfer(_getSender(), amount);
         } else revert("Invalid post process");
     }
 
@@ -326,7 +326,7 @@ contract HMaker is HandlerBase {
                     PROXY_REGISTRY,
                     CDP_MANAGER,
                     cdp,
-                    cache.getSender()
+                    _getSender()
                 )
             )
          {} catch Error(string memory reason) {

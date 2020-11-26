@@ -17,7 +17,7 @@ contract HFunds is HandlerBase {
     {
         if (tokens.length != amounts.length)
             _revertMsg("inject", "token and amount does not match");
-        address sender = cache.getSender();
+        address sender = _getSender();
         for (uint256 i = 0; i < tokens.length; i++) {
             IERC20(tokens[i]).safeTransferFrom(
                 sender,

@@ -21,7 +21,7 @@ contract HCurveDao is HandlerBase {
 
     function mint(address gauge_addr) external payable returns (uint256) {
         IMinter minter = IMinter(CURVE_MINTER);
-        address user = cache.getSender();
+        address user = _getSender();
         uint256 beforeCRVBalance = IERC20(CRV_TOKEN).balanceOf(user);
         if (minter.allowed_to_mint_for(address(this), user) == false)
             _revertMsg("mint", "not allowed to mint");
@@ -45,7 +45,7 @@ contract HCurveDao is HandlerBase {
         returns (uint256)
     {
         IMinter minter = IMinter(CURVE_MINTER);
-        address user = cache.getSender();
+        address user = _getSender();
         uint256 beforeCRVBalance = IERC20(CRV_TOKEN).balanceOf(user);
         if (minter.allowed_to_mint_for(address(this), user) == false)
             _revertMsg("mintMany", "not allowed to mint");
@@ -73,7 +73,7 @@ contract HCurveDao is HandlerBase {
     function deposit(address gaugeAddress, uint256 _value) external payable {
         ILiquidityGauge gauge = ILiquidityGauge(gaugeAddress);
         address token = gauge.lp_token();
-        address user = cache.getSender();
+        address user = _getSender();
 
         IERC20(token).safeApprove(gaugeAddress, _value);
         try gauge.deposit(_value, user)  {} catch Error(string memory reason) {

@@ -40,9 +40,9 @@ contract HGasTokens is HandlerBase {
     }
 
     function postProcess() external override payable {
-        bytes4 sig = cache.getSig();
-        uint256 gasStart = uint256(cache.get());
-        uint256 amount = uint256(cache.get());
+        bytes4 sig = stack.getSig();
+        uint256 gasStart = uint256(stack.get());
+        uint256 amount = uint256(stack.get());
         // selector of freeCHI(uint256) and freeGST2(uint256)
         if (sig == 0x4cc943c0) {
             _freeCHI(gasStart, amount);
@@ -56,7 +56,7 @@ contract HGasTokens is HandlerBase {
         uint256 maxAmount = (gasSpent + 14154) / 41947;
         try
             IGasTokens(CHI_TOKEN).freeFromUpTo(
-                cache.getSender(),
+                _getSender(),
                 Math.min(amount, maxAmount)
             )
          {} catch Error(string memory reason) {
@@ -71,7 +71,7 @@ contract HGasTokens is HandlerBase {
         uint256 maxAmount = (gasSpent + 14154) / 41130; // 41130 = (24000*2-6870)
         try
             IGasTokens(GST2_TOKEN).freeFromUpTo(
-                cache.getSender(),
+                _getSender(),
                 Math.min(amount, maxAmount)
             )
          {} catch Error(string memory reason) {

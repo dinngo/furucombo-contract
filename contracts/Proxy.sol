@@ -4,15 +4,15 @@ pragma experimental ABIEncoderV2;
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "./interface/IRegistry.sol";
-import "./Cache.sol";
 import "./Config.sol";
+import "./Storage.sol";
 import "./lib/LibParam.sol";
 
 /**
  * @title The entrance of Furucombo
  * @author Ben Huang
  */
-contract Proxy is Cache, Config {
+contract Proxy is Storage, Config {
     using Address for address;
     using SafeERC20 for IERC20;
     using LibParam for bytes32;
@@ -217,35 +217,34 @@ contract Proxy is Cache, Config {
      * @param _to The handler of post-process.
      */
     function _setPostProcess(address _to) internal {
-        // If the cache length equals 1, just skip
+        // If the stack length equals 0, just skip
         // If the top is a custom post-process, replace it with the handler
         // address.
-        require(cache.length > 0, "cache empty");
-        if (cache.length == 1) return;
-        else if (cache.peek() == bytes32(bytes12(uint96(HandlerType.Custom)))) {
-            cache.pop();
+        if (stack.length == 0) return;
+        else if (stack.peek() == bytes32(bytes12(uint96(HandlerType.Custom)))) {
+            stack.pop();
             // Check if the handler is already set.
-            if (bytes4(cache.peek()) != 0x00000000) cache.setAddress(_to);
-            cache.setHandlerType(uint256(HandlerType.Custom));
+            if (bytes4(stack.peek()) != 0x00000000) stack.setAddress(_to);
+            stack.setHandlerType(uint256(HandlerType.Custom));
         }
     }
 
     /// @notice The pre-process phase.
-    function _preProcess() internal virtual isCacheEmpty {
-        // Set the sender on the top of cache.
-        cache.setSender(msg.sender);
+    function _preProcess() internal virtual isStackEmpty {
+        // Set the sender.
+        _setSender();
     }
 
     /// @notice The post-process phase.
     function _postProcess() internal {
-        // If the top of cache is HandlerType.Custom (which makes it being zero
-        // address when `cache.getAddress()`), get the handler address and execute
+        // If the top of stack is HandlerType.Custom (which makes it being zero
+        // address when `stack.getAddress()`), get the handler address and execute
         // the handler with it and the post-process function selector.
         // If not, use it as token address and send the token back to user.
-        while (cache.length > 1) {
-            address addr = cache.getAddress();
+        while (stack.length > 0) {
+            address addr = stack.getAddress();
             if (addr == address(0)) {
-                addr = cache.getAddress();
+                addr = stack.getAddress();
                 _exec(addr, abi.encodeWithSelector(POSTPROCESS_SIG));
             } else {
                 uint256 amount = IERC20(addr).balanceOf(address(this));
@@ -257,8 +256,8 @@ contract Proxy is Cache, Config {
         uint256 amount = address(this).balance;
         if (amount > 0) msg.sender.transfer(amount);
 
-        // Pop the msg.sender
-        cache.pop();
+        // Reset the msg.sender
+        cache.setAddress(keccak256("msg.sender"), address(0));
     }
 
     /// @notice Get the registry contract address.
