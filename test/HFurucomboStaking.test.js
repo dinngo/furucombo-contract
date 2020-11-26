@@ -25,7 +25,7 @@ const {
 } = require('./utils/constants');
 const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
 
-const HFurucombo = artifacts.require('HFurucombo');
+const HFurucombo = artifacts.require('HFurucomboStaking');
 const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('ProxyMock');
 const IToken = artifacts.require('IERC20');
@@ -71,9 +71,8 @@ contract('Furucombo', function([_, user, someone]) {
       const stakeAmount = ether('100');
       const to = this.hFurucombo.address;
       const data = abi.simpleEncode(
-        'stakeFor(address,address,uint256)',
+        'stake(address,uint256)',
         this.staking.address,
-        user,
         stakeAmount
       );
 
@@ -115,9 +114,8 @@ contract('Furucombo', function([_, user, someone]) {
       const stakeAmount = ether('100');
       const to = this.hFurucombo.address;
       const data = abi.simpleEncode(
-        'stakeFor(address,address,uint256)',
+        'stake(address,uint256)',
         this.staking.address,
-        user,
         stakeAmount
       );
 
@@ -140,9 +138,8 @@ contract('Furucombo', function([_, user, someone]) {
       const stakeAmount = ether('0');
       const to = this.hFurucombo.address;
       const data = abi.simpleEncode(
-        'stakeFor(address,address,uint256)',
+        'stake(address,uint256)',
         this.staking.address,
-        user,
         stakeAmount
       );
 
@@ -189,9 +186,8 @@ contract('Furucombo', function([_, user, someone]) {
       const unstakeAmount = ether('10');
       const to = this.hFurucombo.address;
       const data = abi.simpleEncode(
-        'unstakeFor(address,address,uint256)',
+        'unstake(address,uint256)',
         this.staking.address,
-        user,
         unstakeAmount
       );
 
@@ -234,9 +230,8 @@ contract('Furucombo', function([_, user, someone]) {
       const unstakeAmount = stakeAmount;
       const to = this.hFurucombo.address;
       const data = abi.simpleEncode(
-        'unstakeFor(address,address,uint256)',
+        'unstake(address,uint256)',
         this.staking.address,
-        user,
         unstakeAmount
       );
 
@@ -277,9 +272,8 @@ contract('Furucombo', function([_, user, someone]) {
       const unstakeAmount = stakeAmount;
       const to = this.hFurucombo.address;
       const data = abi.simpleEncode(
-        'unstakeFor(address,address,uint256)',
+        'unstake(address,uint256)',
         this.staking.address,
-        user,
         unstakeAmount
       );
 
@@ -297,9 +291,8 @@ contract('Furucombo', function([_, user, someone]) {
       const unstakeAmount = ether('0');
       const to = this.hFurucombo.address;
       const data = abi.simpleEncode(
-        'unstakeFor(address,address,uint256)',
+        'unstake(address,uint256)',
         this.staking.address,
-        user,
         unstakeAmount
       );
 
@@ -363,7 +356,7 @@ contract('Furucombo', function([_, user, someone]) {
     var root;
 
     beforeEach(async function() {
-      balanceUser = await tracker(user);
+      balanceUser = await tracker(COMBO_CLAIM_USER);
       balanceProxy = await tracker(this.proxy.address);
       week = utils.toBN(1);
       supply = ether(COMBO_TOTAL_SUPPLY);
@@ -386,6 +379,13 @@ contract('Furucombo', function([_, user, someone]) {
         from: _,
       });
       expect(await this.stakingRedeem.weekMerkleRoots.call(week)).eq(root);
+
+      // Send ether to claimUser
+      await web3.eth.sendTransaction({
+        from: _,
+        to: COMBO_CLAIM_USER,
+        value: 5,
+      });
     });
 
     it('claim from the first week', async function() {
@@ -406,10 +406,12 @@ contract('Furucombo', function([_, user, someone]) {
       const rewardUserBefore = await this.rewardToken.balanceOf.call(claimUser);
       await balanceUser.get();
       const receipt = await this.proxy.execMock(to, data, {
-        from: user,
+        from: claimUser,
         value: ether('0.1'),
       });
       const rewardUserAfter = await this.rewardToken.balanceOf.call(claimUser);
+
+      // Verify
       expect(rewardUserAfter.sub(rewardUserBefore)).to.be.bignumber.eq(
         claimAmount.add(claimAmount)
       );
@@ -457,7 +459,7 @@ contract('Furucombo', function([_, user, someone]) {
       const rewardUserBefore = await this.rewardToken.balanceOf.call(claimUser);
       await balanceUser.get();
       const receipt = await this.proxy.execMock(to, data, {
-        from: user,
+        from: claimUser,
         value: ether('0.1'),
       });
       const rewardUserAfter = await this.rewardToken.balanceOf.call(claimUser);
@@ -525,7 +527,7 @@ contract('Furucombo', function([_, user, someone]) {
       // Execute proxy handler
       await expectRevert(
         this.proxy.execMock(to, data, {
-          from: user,
+          from: claimUser,
           value: ether('0.1'),
         }),
         'Incorrect merkle proof'
@@ -546,7 +548,7 @@ contract('Furucombo', function([_, user, someone]) {
       // Execute proxy handler
       await expectRevert(
         this.proxy.execMock(to, data, {
-          from: user,
+          from: claimUser,
           value: ether('0.1'),
         }),
         'Incorrect merkle proof'
@@ -567,7 +569,7 @@ contract('Furucombo', function([_, user, someone]) {
       // Execute proxy handler
       await expectRevert(
         this.proxy.execMock(to, data, {
-          from: someone,
+          from: claimUser,
           value: ether('0.1'),
         }),
         'Incorrect merkle proof'
@@ -588,7 +590,7 @@ contract('Furucombo', function([_, user, someone]) {
       // Execute proxy handler
       await expectRevert(
         this.proxy.execMock(to, data, {
-          from: someone,
+          from: claimUser,
           value: ether('0.1'),
         }),
         'HFurucombo: claims length = 0'
@@ -609,7 +611,7 @@ contract('Furucombo', function([_, user, someone]) {
       // Execute proxy handler
       await expectRevert(
         this.proxy.execMock(to, data, {
-          from: user,
+          from: claimUser,
           value: ether('0.1'),
         }),
         'HFurucombo: pools length != claims length'
