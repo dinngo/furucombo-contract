@@ -288,6 +288,7 @@ contract('BalancerExchange', function([_, user]) {
       describe('Ether to Token', function() {
         it('normal', async function() {
           const amount = ether('0.01');
+          console.log('1');
           [, baseAmount] = await getPath(
             this.token1.address,
             this.token0.address,
@@ -296,6 +297,7 @@ contract('BalancerExchange', function([_, user]) {
             noPools,
             swapType
           );
+          console.log('2');
           const maxAmount = mulPercent(baseAmount, new BN('100').add(slippage));
           let swaps;
           let totalReturnWei;
@@ -307,6 +309,7 @@ contract('BalancerExchange', function([_, user]) {
             noPools,
             swapType
           );
+          console.log('3');
           const to = this.hBalancerExchange.address;
           const data = abi.encodeFunctionCall(multihopBatchSwapExactOutAbi, [
             swaps,
