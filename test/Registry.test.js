@@ -55,9 +55,11 @@ contract('Registry', function([_, handler1, handler2, someone]) {
       );
     });
 
-    it('registered', async function() {
+    it('set info', async function() {
       await this.registry.register(handler1, info);
-      await expectRevert(this.registry.register(handler1, info), 'registered');
+      const info2 = utils.fromAscii('test2');
+      await this.registry.register(handler1, info2);
+      expect(await this.registry.isValid.call(handler1)).to.be.true;
     });
 
     it('unregistered', async function() {

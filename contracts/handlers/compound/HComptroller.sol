@@ -8,7 +8,9 @@ import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 contract HComptroller is HandlerBase {
     using SafeERC20 for IERC20;
     using SafeMath for uint256;
-    address constant COMPTROLLER = 0x3d9819210A31b4961b30EF54bE2aeD79B9c9Cd3B;
+
+    // prettier-ignore
+    address public constant COMPTROLLER = 0x3d9819210A31b4961b30EF54bE2aeD79B9c9Cd3B;
 
     function getContractName() public override pure returns (string memory) {
         return "HComptroller";

@@ -63,8 +63,8 @@ contract HBalancer is HandlerBase {
         uint256[] calldata maxAmountsIn
     ) external payable returns (uint256[] memory) {
         // Get all tokens of pool
-        IBPool BPool = IBPool(pool);
-        address[] memory tokens = BPool.getFinalTokens();
+        IBPool bPool = IBPool(pool);
+        address[] memory tokens = bPool.getFinalTokens();
         if (tokens.length != maxAmountsIn.length)
             _revertMsg("joinPool", "token and amount does not match");
 
@@ -116,11 +116,11 @@ contract HBalancer is HandlerBase {
         uint256 minAmountOut
     ) external payable returns (uint256 tokenAmountOut) {
         // Get pool of balancer
-        IBPool BPool = IBPool(pool);
+        IBPool bPool = IBPool(pool);
 
         // Call exitswapPoolAmountIn function of balancer pool
         try
-            BPool.exitswapPoolAmountIn(tokenOut, poolAmountIn, minAmountOut)
+            bPool.exitswapPoolAmountIn(tokenOut, poolAmountIn, minAmountOut)
         returns (uint256 amount) {
             tokenAmountOut = amount;
         } catch Error(string memory reason) {
@@ -139,9 +139,9 @@ contract HBalancer is HandlerBase {
         uint256[] calldata minAmountsOut
     ) external payable returns (uint256[] memory) {
         // Get all tokens of pool
-        IBPool BPool = IBPool(pool);
+        IBPool bPool = IBPool(pool);
 
-        address[] memory tokens = BPool.getFinalTokens();
+        address[] memory tokens = bPool.getFinalTokens();
         // uint256[tokens.length] memory tokenAmounts;
         if (minAmountsOut.length != tokens.length)
             _revertMsg("exitPool", "token and amount does not match");
@@ -152,7 +152,7 @@ contract HBalancer is HandlerBase {
         }
 
         // Call exitPool function of balancer pool
-        try BPool.exitPool(poolAmountIn, minAmountsOut)  {} catch Error(
+        try bPool.exitPool(poolAmountIn, minAmountsOut)  {} catch Error(
             string memory reason
         ) {
             _revertMsg("exitPool", reason);

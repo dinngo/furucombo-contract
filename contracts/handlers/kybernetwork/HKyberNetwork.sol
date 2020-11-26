@@ -9,8 +9,10 @@ import "./IKyberNetworkProxy.sol";
 contract HKyberNetwork is HandlerBase {
     using SafeERC20 for IERC20;
 
-    address constant ETH_TOKEN_ADDRESS = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
-    address constant KYBERNETWORK_PROXY = 0x818E6FECD516Ecc3849DAf6845e3EC868087B755;
+    // prettier-ignore
+    address public constant ETH_TOKEN_ADDRESS = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
+    // prettier-ignore
+    address public constant KYBERNETWORK_PROXY = 0x818E6FECD516Ecc3849DAf6845e3EC868087B755;
 
     function getContractName() public override pure returns (string memory) {
         return "HKyberNetwork";

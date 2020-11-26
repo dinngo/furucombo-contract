@@ -15,7 +15,7 @@ contract HAaveProtocol is HandlerBase, FlashLoanReceiverBase {
     using SafeERC20 for IERC20;
     using SafeMath for uint256;
 
-    uint16 constant REFERRAL_CODE = 56;
+    uint16 public constant REFERRAL_CODE = 56;
 
     function getContractName() public override pure returns (string memory) {
         return "HAaveProtocol";

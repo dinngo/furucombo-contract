@@ -26,7 +26,7 @@ const IToken = artifacts.require('IERC20');
 const ICToken = artifacts.require('ICToken');
 const IUniswapExchange = artifacts.require('IUniswapExchange');
 
-contract('SwapIntegration', function([_, user]) {
+contract('CubeCounting', function([_, user]) {
   const tokenAddress = DAI_TOKEN;
 
   let id;
@@ -98,8 +98,8 @@ contract('SwapIntegration', function([_, user]) {
         ];
         const rate = await this.cToken.exchangeRateStored.call();
         const result = value[1].mul(ether('1')).div(rate);
-        expectRevert(
-          await this.proxy.batchExec(to, config, data, {
+        await expectRevert(
+          this.proxy.batchExec(to, config, data, {
             from: user,
             value: ether('1'),
           }),

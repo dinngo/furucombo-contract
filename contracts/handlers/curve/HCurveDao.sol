@@ -19,14 +19,14 @@ contract HCurveDao is HandlerBase {
         return "HCurveDao";
     }
 
-    function mint(address gauge_addr) external payable returns (uint256) {
+    function mint(address gaugeAddr) external payable returns (uint256) {
         IMinter minter = IMinter(CURVE_MINTER);
         address user = _getSender();
         uint256 beforeCRVBalance = IERC20(CRV_TOKEN).balanceOf(user);
         if (minter.allowed_to_mint_for(address(this), user) == false)
             _revertMsg("mint", "not allowed to mint");
 
-        try minter.mint_for(gauge_addr, user)  {} catch Error(
+        try minter.mint_for(gaugeAddr, user)  {} catch Error(
             string memory reason
         ) {
             _revertMsg("mint", reason);
@@ -39,7 +39,7 @@ contract HCurveDao is HandlerBase {
         return afterCRVBalance.sub(beforeCRVBalance);
     }
 
-    function mintMany(address[] calldata gauge_addrs)
+    function mintMany(address[] calldata gaugeAddrs)
         external
         payable
         returns (uint256)
@@ -50,8 +50,8 @@ contract HCurveDao is HandlerBase {
         if (minter.allowed_to_mint_for(address(this), user) == false)
             _revertMsg("mintMany", "not allowed to mint");
 
-        for (uint256 i = 0; i < gauge_addrs.length; i++) {
-            try minter.mint_for(gauge_addrs[i], user)  {} catch Error(
+        for (uint256 i = 0; i < gaugeAddrs.length; i++) {
+            try minter.mint_for(gaugeAddrs[i], user)  {} catch Error(
                 string memory reason
             ) {
                 _revertMsg(

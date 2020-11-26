@@ -9,11 +9,16 @@ import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 contract HMaker is HandlerBase {
     using SafeERC20 for IERC20;
 
-    address constant PROXY_ACTIONS = 0x82ecD135Dce65Fbc6DbdD0e4237E0AF93FFD5038;
-    address constant CDP_MANAGER = 0x5ef30b9986345249bc32d8928B7ee64DE9435E39;
-    address constant PROXY_REGISTRY = 0x4678f0a6958e4D2Bc4F1BAF7Bc52E8F3564f3fE4;
-    address constant MCD_JUG = 0x19c0976f590D67707E62397C87829d896Dc0f1F1;
-    address constant DAI_TOKEN = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
+    // prettier-ignore
+    address public constant PROXY_ACTIONS = 0x82ecD135Dce65Fbc6DbdD0e4237E0AF93FFD5038;
+    // prettier-ignore
+    address public constant CDP_MANAGER = 0x5ef30b9986345249bc32d8928B7ee64DE9435E39;
+    // prettier-ignore
+    address public constant PROXY_REGISTRY = 0x4678f0a6958e4D2Bc4F1BAF7Bc52E8F3564f3fE4;
+    // prettier-ignore
+    address public constant MCD_JUG = 0x19c0976f590D67707E62397C87829d896Dc0f1F1;
+    // prettier-ignore
+    address public constant DAI_TOKEN = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
 
     modifier cdpAllowed(uint256 cdp) {
         IMakerManager manager = IMakerManager(CDP_MANAGER);
