@@ -186,6 +186,7 @@ contract Proxy is Storage, Config {
         returns (bytes memory result)
     {
         require(_isValid(_to), "Invalid handler");
+        _addCubeCounter();
         assembly {
             let succeeded := delegatecall(
                 sub(gas(), 5000),
@@ -230,7 +231,7 @@ contract Proxy is Storage, Config {
     }
 
     /// @notice The pre-process phase.
-    function _preProcess() internal virtual isStackEmpty {
+    function _preProcess() internal virtual isStackEmpty isCubeCounterZero {
         // Set the sender.
         _setSender();
     }
@@ -256,8 +257,9 @@ contract Proxy is Storage, Config {
         uint256 amount = address(this).balance;
         if (amount > 0) msg.sender.transfer(amount);
 
-        // Reset the msg.sender
-        cache.setAddress(MSG_SENDER_KEY, address(0));
+        // Reset the msg.sender and cube counter
+        _resetSender();
+        _resetCubeCounter();
     }
 
     /// @notice Get the registry contract address.
