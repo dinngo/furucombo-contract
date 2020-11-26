@@ -23,12 +23,16 @@ contract HCurveDao is HandlerBase {
         IMinter minter = IMinter(CURVE_MINTER);
         address user = cache.getSender();
         uint256 beforeCRVBalance = IERC20(CRV_TOKEN).balanceOf(user);
-        require(
-            minter.allowed_to_mint_for(address(this), user),
-            "not allowed to mint"
-        );
+        if (minter.allowed_to_mint_for(address(this), user) == false)
+            _revertMsg("mint", "not allowed to mint");
 
-        minter.mint_for(gauge_addr, user);
+        try minter.mint_for(gauge_addr, user)  {} catch Error(
+            string memory reason
+        ) {
+            _revertMsg("mint", reason);
+        } catch {
+            _revertMsg("mint");
+        }
         uint256 afterCRVBalance = IERC20(CRV_TOKEN).balanceOf(user);
 
         _updateToken(CRV_TOKEN);
@@ -43,13 +47,23 @@ contract HCurveDao is HandlerBase {
         IMinter minter = IMinter(CURVE_MINTER);
         address user = cache.getSender();
         uint256 beforeCRVBalance = IERC20(CRV_TOKEN).balanceOf(user);
-        require(
-            minter.allowed_to_mint_for(address(this), user),
-            "not allowed to mint"
-        );
+        if (minter.allowed_to_mint_for(address(this), user) == false)
+            _revertMsg("mintMany", "not allowed to mint");
 
         for (uint256 i = 0; i < gauge_addrs.length; i++) {
-            minter.mint_for(gauge_addrs[i], user);
+            try minter.mint_for(gauge_addrs[i], user)  {} catch Error(
+                string memory reason
+            ) {
+                _revertMsg(
+                    "mintMany",
+                    string(abi.encodePacked(reason, " on ", _uint2String(i)))
+                );
+            } catch {
+                _revertMsg(
+                    "mintMany",
+                    string(abi.encodePacked("Unspecified on ", _uint2String(i)))
+                );
+            }
         }
 
         _updateToken(CRV_TOKEN);
@@ -62,7 +76,11 @@ contract HCurveDao is HandlerBase {
         address user = cache.getSender();
 
         IERC20(token).safeApprove(gaugeAddress, _value);
-        gauge.deposit(_value, user);
+        try gauge.deposit(_value, user)  {} catch Error(string memory reason) {
+            _revertMsg("deposit", reason);
+        } catch {
+            _revertMsg("deposit");
+        }
         IERC20(token).safeApprove(gaugeAddress, 0);
     }
 }

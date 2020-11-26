@@ -24,13 +24,21 @@ contract HOasis is HandlerBase {
     ) external payable returns (uint256 buyAmt) {
         IOasisDirectProxy oasis = IOasisDirectProxy(OASIS_DIRECT_PROXY);
         IERC20(payToken).safeApprove(address(oasis), payAmt);
-        buyAmt = oasis.sellAllAmount(
-            MAKER_OTC,
-            payToken,
-            payAmt,
-            buyToken,
-            minBuyAmt
-        );
+        try
+            oasis.sellAllAmount(
+                MAKER_OTC,
+                payToken,
+                payAmt,
+                buyToken,
+                minBuyAmt
+            )
+        returns (uint256 ret) {
+            buyAmt = ret;
+        } catch Error(string memory reason) {
+            _revertMsg("sellAllAmount", reason);
+        } catch {
+            _revertMsg("sellAllAmount");
+        }
         IERC20(payToken).safeApprove(address(oasis), 0);
 
         _updateToken(buyToken);
@@ -44,12 +52,20 @@ contract HOasis is HandlerBase {
         uint256 minBuyAmt
     ) external payable returns (uint256 buyAmt) {
         IOasisDirectProxy oasis = IOasisDirectProxy(OASIS_DIRECT_PROXY);
-        buyAmt = oasis.sellAllAmountPayEth.value(value)(
-            MAKER_OTC,
-            wethToken,
-            buyToken,
-            minBuyAmt
-        );
+        try
+            oasis.sellAllAmountPayEth.value(value)(
+                MAKER_OTC,
+                wethToken,
+                buyToken,
+                minBuyAmt
+            )
+        returns (uint256 ret) {
+            buyAmt = ret;
+        } catch Error(string memory reason) {
+            _revertMsg("sellAllAmountPayEth", reason);
+        } catch {
+            _revertMsg("sellAllAmountPayEth");
+        }
 
         _updateToken(buyToken);
     }
@@ -63,13 +79,21 @@ contract HOasis is HandlerBase {
     ) external payable returns (uint256 wethAmt) {
         IOasisDirectProxy oasis = IOasisDirectProxy(OASIS_DIRECT_PROXY);
         IERC20(payToken).safeApprove(address(oasis), payAmt);
-        wethAmt = oasis.sellAllAmountBuyEth(
-            MAKER_OTC,
-            payToken,
-            payAmt,
-            wethToken,
-            minBuyAmt
-        );
+        try
+            oasis.sellAllAmountBuyEth(
+                MAKER_OTC,
+                payToken,
+                payAmt,
+                wethToken,
+                minBuyAmt
+            )
+        returns (uint256 ret) {
+            wethAmt = ret;
+        } catch Error(string memory reason) {
+            _revertMsg("sellAllAmountBuyEth", reason);
+        } catch {
+            _revertMsg("sellAllAmountBuyEth");
+        }
         IERC20(payToken).safeApprove(address(oasis), 0);
     }
 
@@ -82,13 +106,15 @@ contract HOasis is HandlerBase {
     ) external payable returns (uint256 payAmt) {
         IOasisDirectProxy oasis = IOasisDirectProxy(OASIS_DIRECT_PROXY);
         IERC20(payToken).safeApprove(address(oasis), maxPayAmt);
-        payAmt = oasis.buyAllAmount(
-            MAKER_OTC,
-            buyToken,
-            buyAmt,
-            payToken,
-            maxPayAmt
-        );
+        try
+            oasis.buyAllAmount(MAKER_OTC, buyToken, buyAmt, payToken, maxPayAmt)
+        returns (uint256 ret) {
+            payAmt = ret;
+        } catch Error(string memory reason) {
+            _revertMsg("buyAllAmount", reason);
+        } catch {
+            _revertMsg("buyAllAmount");
+        }
         IERC20(payToken).safeApprove(address(oasis), 0);
 
         _updateToken(buyToken);
@@ -102,12 +128,20 @@ contract HOasis is HandlerBase {
         address wethToken
     ) external payable returns (uint256 wethAmt) {
         IOasisDirectProxy oasis = IOasisDirectProxy(OASIS_DIRECT_PROXY);
-        wethAmt = oasis.buyAllAmountPayEth.value(value)(
-            MAKER_OTC,
-            buyToken,
-            buyAmt,
-            wethToken
-        );
+        try
+            oasis.buyAllAmountPayEth.value(value)(
+                MAKER_OTC,
+                buyToken,
+                buyAmt,
+                wethToken
+            )
+        returns (uint256 ret) {
+            wethAmt = ret;
+        } catch Error(string memory reason) {
+            _revertMsg("buyAllAmountPayEth", reason);
+        } catch {
+            _revertMsg("buyAllAmountPayEth");
+        }
 
         _updateToken(buyToken);
     }
@@ -121,13 +155,21 @@ contract HOasis is HandlerBase {
     ) external payable returns (uint256 payAmt) {
         IOasisDirectProxy oasis = IOasisDirectProxy(OASIS_DIRECT_PROXY);
         IERC20(payToken).safeApprove(address(oasis), maxPayAmt);
-        payAmt = oasis.buyAllAmountBuyEth(
-            MAKER_OTC,
-            wethToken,
-            wethAmt,
-            payToken,
-            maxPayAmt
-        );
+        try
+            oasis.buyAllAmountBuyEth(
+                MAKER_OTC,
+                wethToken,
+                wethAmt,
+                payToken,
+                maxPayAmt
+            )
+        returns (uint256 ret) {
+            payAmt = ret;
+        } catch Error(string memory reason) {
+            _revertMsg("buyAllAmountBuyEth", reason);
+        } catch {
+            _revertMsg("buyAllAmountBuyEth");
+        }
         IERC20(payToken).safeApprove(address(oasis), 0);
     }
 }

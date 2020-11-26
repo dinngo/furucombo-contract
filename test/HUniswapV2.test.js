@@ -132,7 +132,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
 
         await expectRevert(
           this.proxy.execMock(to, data, { from: user, value: value }),
-          'UniswapV2Router: INSUFFICIENT_OUTPUT_AMOUNT'
+          'HUniswapV2_swapExactETHForTokens: UniswapV2Router: INSUFFICIENT_OUTPUT_AMOUNT'
         );
         expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
           tokenUser
@@ -155,7 +155,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
         );
         await expectRevert(
           this.proxy.execMock(to, data, { from: user, value: value }),
-          'UniswapV2Router: INVALID_PATH'
+          'HUniswapV2_swapExactETHForTokens: UniswapV2Router: INVALID_PATH'
         );
       });
     });
@@ -225,7 +225,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
             from: user,
             value: value,
           }),
-          'UniswapV2Router: EXCESSIVE_INPUT_AMOUNT'
+          'HUniswapV2_swapETHForExactTokens: UniswapV2Router: EXCESSIVE_INPUT_AMOUNT'
         );
       });
 
@@ -245,7 +245,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
             from: user,
             value: value,
           }),
-          'UniswapV2Router: INVALID_PATH'
+          'HUniswapV2_swapETHForExactTokens: UniswapV2Router: INVALID_PATH'
         );
       });
     });
@@ -336,7 +336,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
         );
         await expectRevert(
           this.proxy.execMock(to, data, { from: user }),
-          'UniswapV2Router: INSUFFICIENT_OUTPUT_AMOUNT'
+          'HUniswapV2_swapExactTokensForETH: UniswapV2Router: INSUFFICIENT_OUTPUT_AMOUNT'
         );
       });
 
@@ -356,7 +356,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
         await this.proxy.updateTokenMock(this.token.address);
         await expectRevert(
           this.proxy.execMock(to, data, { from: user }),
-          'UniswapV2Router: INVALID_PATH'
+          'HUniswapV2_swapExactTokensForETH: UniswapV2Router: INVALID_PATH'
         );
       });
     });
@@ -422,7 +422,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
 
         await expectRevert(
           this.proxy.execMock(to, data, { from: user }),
-          'UniswapV2Router: EXCESSIVE_INPUT_AMOUNT.'
+          'HUniswapV2_swapTokensForExactETH: UniswapV2Router: EXCESSIVE_INPUT_AMOUNT.'
         );
       });
 
@@ -444,7 +444,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
 
         await expectRevert(
           this.proxy.execMock(to, data, { from: user }),
-          'UniswapV2Router: INVALID_PATH'
+          'HUniswapV2_swapTokensForExactETH: UniswapV2Router: INVALID_PATH'
         );
       });
     });
@@ -536,7 +536,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
         );
         await expectRevert(
           this.proxy.execMock(to, data, { from: user }),
-          'UniswapV2Router: INSUFFICIENT_OUTPUT_AMOUNT'
+          'HUniswapV2_swapExactTokensForTokens: UniswapV2Router: INSUFFICIENT_OUTPUT_AMOUNT'
         );
       });
 
@@ -556,7 +556,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
         await this.proxy.updateTokenMock(this.token0.address);
         await expectRevert(
           this.proxy.execMock(to, data, { from: user }),
-          'UniswapV2Library: IDENTICAL_ADDRESSES'
+          'HUniswapV2_swapExactTokensForTokens: UniswapV2Library: IDENTICAL_ADDRESSES'
         );
       });
     });
@@ -624,7 +624,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
         await this.proxy.updateTokenMock(this.token0.address);
         await expectRevert(
           this.proxy.execMock(to, data, { from: user }),
-          'UniswapV2Router: EXCESSIVE_INPUT_AMOUNT'
+          'HUniswapV2_swapTokensForExactTokens: UniswapV2Router: EXCESSIVE_INPUT_AMOUNT'
         );
       });
 
@@ -645,7 +645,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
         await this.proxy.updateTokenMock(this.token0.address);
         await expectRevert(
           this.proxy.execMock(to, data, { from: user }),
-          'UniswapV2Library: IDENTICAL_ADDRESSES'
+          'HUniswapV2_swapTokensForExactTokens: UniswapV2Library: IDENTICAL_ADDRESSES'
         );
       });
     });

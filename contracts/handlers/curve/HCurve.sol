@@ -30,7 +30,13 @@ contract HCurve is HandlerBase {
         ICurveHandler curveHandler = ICurveHandler(handler);
         uint256 beforeTokenJBalance = IERC20(tokenJ).balanceOf(address(this));
         IERC20(tokenI).safeApprove(address(curveHandler), dx);
-        curveHandler.exchange(i, j, dx, minDy);
+        try curveHandler.exchange(i, j, dx, minDy)  {} catch Error(
+            string memory reason
+        ) {
+            _revertMsg("exchange", reason);
+        } catch {
+            _revertMsg("exchange");
+        }
         IERC20(tokenI).safeApprove(address(curveHandler), 0);
         uint256 afterTokenJBalance = IERC20(tokenJ).balanceOf(address(this));
 
@@ -51,7 +57,13 @@ contract HCurve is HandlerBase {
         ICurveHandler curveHandler = ICurveHandler(handler);
         uint256 beforeTokenJBalance = IERC20(tokenJ).balanceOf(address(this));
         IERC20(tokenI).safeApprove(address(curveHandler), dx);
-        curveHandler.exchange_underlying(i, j, dx, minDy);
+        try curveHandler.exchange_underlying(i, j, dx, minDy)  {} catch Error(
+            string memory reason
+        ) {
+            _revertMsg("exchangeUnderlying", reason);
+        } catch {
+            _revertMsg("exchangeUnderlying");
+        }
         IERC20(tokenI).safeApprove(address(curveHandler), 0);
         uint256 afterTokenJBalance = IERC20(tokenJ).balanceOf(address(this));
 
@@ -71,14 +83,20 @@ contract HCurve is HandlerBase {
         IOneSplit oneSplit = IOneSplit(ONE_SPLIT);
         uint256 beforeToTokenBalance = IERC20(toToken).balanceOf(address(this));
         IERC20(fromToken).safeApprove(address(oneSplit), amount);
-        oneSplit.swap(
-            fromToken,
-            toToken,
-            amount,
-            minReturn,
-            distribution,
-            featureFlags
-        );
+        try
+            oneSplit.swap(
+                fromToken,
+                toToken,
+                amount,
+                minReturn,
+                distribution,
+                featureFlags
+            )
+         {} catch Error(string memory reason) {
+            _revertMsg("swap", reason);
+        } catch {
+            _revertMsg("swap");
+        }
         IERC20(fromToken).safeApprove(address(oneSplit), 0);
         uint256 afterToTokenBalance = IERC20(toToken).balanceOf(address(this));
 
@@ -106,10 +124,22 @@ contract HCurve is HandlerBase {
         // Execute add_liquidity according to amount array size
         if (amounts.length == 2) {
             uint256[2] memory amts = [amounts[0], amounts[1]];
-            curveHandler.add_liquidity(amts, minMintAmount);
+            try curveHandler.add_liquidity(amts, minMintAmount)  {} catch Error(
+                string memory reason
+            ) {
+                _revertMsg("addLiquidity", reason);
+            } catch {
+                _revertMsg("addLiquidity");
+            }
         } else if (amounts.length == 3) {
             uint256[3] memory amts = [amounts[0], amounts[1], amounts[2]];
-            curveHandler.add_liquidity(amts, minMintAmount);
+            try curveHandler.add_liquidity(amts, minMintAmount)  {} catch Error(
+                string memory reason
+            ) {
+                _revertMsg("addLiquidity", reason);
+            } catch {
+                _revertMsg("addLiquidity");
+            }
         } else if (amounts.length == 4) {
             uint256[4] memory amts = [
                 amounts[0],
@@ -117,7 +147,13 @@ contract HCurve is HandlerBase {
                 amounts[2],
                 amounts[3]
             ];
-            curveHandler.add_liquidity(amts, minMintAmount);
+            try curveHandler.add_liquidity(amts, minMintAmount)  {} catch Error(
+                string memory reason
+            ) {
+                _revertMsg("addLiquidity", reason);
+            } catch {
+                _revertMsg("addLiquidity");
+            }
         } else if (amounts.length == 5) {
             uint256[5] memory amts = [
                 amounts[0],
@@ -126,7 +162,13 @@ contract HCurve is HandlerBase {
                 amounts[3],
                 amounts[4]
             ];
-            curveHandler.add_liquidity(amts, minMintAmount);
+            try curveHandler.add_liquidity(amts, minMintAmount)  {} catch Error(
+                string memory reason
+            ) {
+                _revertMsg("addLiquidity", reason);
+            } catch {
+                _revertMsg("addLiquidity");
+            }
         } else if (amounts.length == 6) {
             uint256[6] memory amts = [
                 amounts[0],
@@ -136,9 +178,15 @@ contract HCurve is HandlerBase {
                 amounts[4],
                 amounts[5]
             ];
-            curveHandler.add_liquidity(amts, minMintAmount);
+            try curveHandler.add_liquidity(amts, minMintAmount)  {} catch Error(
+                string memory reason
+            ) {
+                _revertMsg("addLiquidity", reason);
+            } catch {
+                _revertMsg("addLiquidity");
+            }
         } else {
-            revert("invalid amount array size");
+            _revertMsg("addLiquidity", "invalid amount array size");
         }
 
         // Reset zero amount for approval
@@ -166,7 +214,13 @@ contract HCurve is HandlerBase {
         ICurveHandler curveHandler = ICurveHandler(handler);
         uint256 beforeTokenIBalance = IERC20(tokenI).balanceOf(address(this));
         IERC20(pool).safeApprove(address(curveHandler), tokenAmount);
-        curveHandler.remove_liquidity_one_coin(tokenAmount, i, minAmount);
+        try
+            curveHandler.remove_liquidity_one_coin(tokenAmount, i, minAmount)
+         {} catch Error(string memory reason) {
+            _revertMsg("removeLiquidityOneCoin", reason);
+        } catch {
+            _revertMsg("removeLiquidityOneCoin");
+        }
         IERC20(pool).safeApprove(address(curveHandler), 0);
         uint256 afterTokenIBalance = IERC20(tokenI).balanceOf(address(this));
 
@@ -187,12 +241,18 @@ contract HCurve is HandlerBase {
         ICurveHandler curveHandler = ICurveHandler(handler);
         uint256 beforeTokenIBalance = IERC20(tokenI).balanceOf(address(this));
         IERC20(pool).safeApprove(address(curveHandler), tokenAmount);
-        curveHandler.remove_liquidity_one_coin(
-            tokenAmount,
-            i,
-            minAmount,
-            true // donate_dust
-        );
+        try
+            curveHandler.remove_liquidity_one_coin(
+                tokenAmount,
+                i,
+                minAmount,
+                true // donate_dust
+            )
+         {} catch Error(string memory reason) {
+            _revertMsg("removeLiquidityOneCoinDust", reason);
+        } catch {
+            _revertMsg("removeLiquidityOneCoinDust");
+        }
         IERC20(pool).safeApprove(address(curveHandler), 0);
         uint256 afterTokenIBalance = IERC20(tokenI).balanceOf(address(this));
 

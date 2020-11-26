@@ -155,12 +155,12 @@ contract('CEther', function([_, user]) {
       const data = abi.simpleEncode('redeem(uint256)', value);
       await this.proxy.updateTokenMock(this.cEther.address);
 
-      await expectRevert.unspecified(
+      await expectRevert(
         this.proxy.execMock(to, data, {
           from: user,
           value: ether('0.1'),
         }),
-        'compound redeem failed'
+        'HCEther_redeem: error 9'
       );
     });
   });
@@ -215,12 +215,12 @@ contract('CEther', function([_, user]) {
       const to = this.hCEther.address;
       const data = abi.simpleEncode('redeemUnderlying(uint256)', value);
       await this.proxy.updateTokenMock(this.cEther.address);
-      await expectRevert.unspecified(
+      await expectRevert(
         this.proxy.execMock(to, data, {
           from: user,
           value: ether('0.1'),
         }),
-        'compound redeem underlying failed'
+        'HCEther_redeemUnderlying: error 9'
       );
     });
   });
@@ -276,11 +276,12 @@ contract('CEther', function([_, user]) {
         value,
         user
       );
-      await expectRevert.unspecified(
+      await expectRevert(
         this.proxy.execMock(to, data, {
           from: user,
           value: ether('0.09'),
-        })
+        }),
+        'HCEther_repayBorrowBehalf: Unspecified'
       );
     });
   });

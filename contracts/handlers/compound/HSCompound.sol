@@ -11,7 +11,7 @@ contract HSCompound is HandlerBase {
     using SafeERC20 for IERC20;
 
     // prettier-ignore
-    address public constant FCOMPOUND_ACTIONS = 0x2617518b6194323D85663D7b141423846C92fB34;
+    address public constant FCOMPOUND_ACTIONS = 0x3b48034e095F28555BED1f591E44B174B55f46Be;
     // prettier-ignore
     address public constant COMPTROLLER = 0x3d9819210A31b4961b30EF54bE2aeD79B9c9Cd3B;
     // prettier-ignore
@@ -27,10 +27,8 @@ contract HSCompound is HandlerBase {
 
     modifier isDSProxyOwner(address dsProxy) {
         address sender = cache.getSender();
-        require(
-            IDSProxy(dsProxy).owner() == sender,
-            "Not owner of the DSProxy"
-        );
+        if (IDSProxy(dsProxy).owner() != sender)
+            _revertMsg("General", "Not owner of the DSProxy");
         _;
     }
 
@@ -75,15 +73,21 @@ contract HSCompound is HandlerBase {
                 underlying = _getToken(cTokenBorrow);
             }
             // Execute borrow, borrowed token will stay in the DSProxy
-            IDSProxy(dsProxy).execute(
-                FCOMPOUND_ACTIONS,
-                abi.encodeWithSelector(
-                    // selector of "borrow(address,uint256)"
-                    0x4b8a3529,
-                    cTokenBorrow,
-                    uBorrowAmount
+            try
+                IDSProxy(dsProxy).execute(
+                    FCOMPOUND_ACTIONS,
+                    abi.encodeWithSelector(
+                        // selector of "borrow(address,uint256)"
+                        0x4b8a3529,
+                        cTokenBorrow,
+                        uBorrowAmount
+                    )
                 )
-            );
+             {} catch Error(string memory reason) {
+                _revertMsg("borrow", reason);
+            } catch {
+                _revertMsg("borrow");
+            }
             // Withdraw borrowed token from the DSProxy
             _withdraw(dsProxy, underlying, uBorrowAmount);
 
@@ -103,29 +107,41 @@ contract HSCompound is HandlerBase {
         if (uRepayAmount > 0) {
             if (cTokenRepay == CETH_ADDRESS) {
                 // Execute ether repay
-                IDSProxy(dsProxy).execute.value(uRepayAmount)(
-                    FCOMPOUND_ACTIONS,
-                    abi.encodeWithSelector(
-                        // selector of "repayBorrow(address,uint256)"
-                        0xabdb5ea8,
-                        cTokenRepay,
-                        uRepayAmount
+                try
+                    IDSProxy(dsProxy).execute.value(uRepayAmount)(
+                        FCOMPOUND_ACTIONS,
+                        abi.encodeWithSelector(
+                            // selector of "repayBorrow(address,uint256)"
+                            0xabdb5ea8,
+                            cTokenRepay,
+                            uRepayAmount
+                        )
                     )
-                );
+                 {} catch Error(string memory reason) {
+                    _revertMsg("repayBorrow", reason);
+                } catch {
+                    _revertMsg("repayBorrow");
+                }
             } else {
                 // Approve repay token to DSProxy
                 address underlying = _getToken(cTokenRepay);
                 IERC20(underlying).safeApprove(dsProxy, uRepayAmount);
                 // Execute token repay
-                IDSProxy(dsProxy).execute(
-                    FCOMPOUND_ACTIONS,
-                    abi.encodeWithSelector(
-                        // selector of "repayBorrow(address,uint256)"
-                        0xabdb5ea8,
-                        cTokenRepay,
-                        uRepayAmount
+                try
+                    IDSProxy(dsProxy).execute(
+                        FCOMPOUND_ACTIONS,
+                        abi.encodeWithSelector(
+                            // selector of "repayBorrow(address,uint256)"
+                            0xabdb5ea8,
+                            cTokenRepay,
+                            uRepayAmount
+                        )
                     )
-                );
+                 {} catch Error(string memory reason) {
+                    _revertMsg("repayBorrow", reason);
+                } catch {
+                    _revertMsg("repayBorrow");
+                }
                 IERC20(underlying).safeApprove(dsProxy, 0);
             }
         }
@@ -151,14 +167,20 @@ contract HSCompound is HandlerBase {
         payable
         isDSProxyOwner(dsProxy)
     {
-        IDSProxy(dsProxy).execute(
-            FCOMPOUND_ACTIONS,
-            abi.encodeWithSelector(
-                // selector of "enterMarkets(address[])"
-                0xc2998238,
-                cTokens
+        try
+            IDSProxy(dsProxy).execute(
+                FCOMPOUND_ACTIONS,
+                abi.encodeWithSelector(
+                    // selector of "enterMarkets(address[])"
+                    0xc2998238,
+                    cTokens
+                )
             )
-        );
+         {} catch Error(string memory reason) {
+            _revertMsg("enterMarkets", reason);
+        } catch {
+            _revertMsg("enterMarkets");
+        }
     }
 
     function exitMarket(address dsProxy, address cToken)
@@ -166,14 +188,20 @@ contract HSCompound is HandlerBase {
         payable
         isDSProxyOwner(dsProxy)
     {
-        IDSProxy(dsProxy).execute(
-            FCOMPOUND_ACTIONS,
-            abi.encodeWithSelector(
-                // selector of "exitMarket(address)"
-                0xede4edd0,
-                cToken
+        try
+            IDSProxy(dsProxy).execute(
+                FCOMPOUND_ACTIONS,
+                abi.encodeWithSelector(
+                    // selector of "exitMarket(address)"
+                    0xede4edd0,
+                    cToken
+                )
             )
-        );
+         {} catch Error(string memory reason) {
+            _revertMsg("exitMarket", reason);
+        } catch {
+            _revertMsg("exitMarket");
+        }
     }
 
     function claimComp(address dsProxy)
@@ -181,7 +209,13 @@ contract HSCompound is HandlerBase {
         payable
         isDSProxyOwner(dsProxy)
     {
-        IComptroller(COMPTROLLER).claimComp(dsProxy);
+        try IComptroller(COMPTROLLER).claimComp(dsProxy)  {} catch Error(
+            string memory reason
+        ) {
+            _revertMsg("claimComp", reason);
+        } catch {
+            _revertMsg("claimComp");
+        }
         uint256 balance = IERC20(COMP_ADDRESS).balanceOf(dsProxy);
         // Withdraw whole COMP balance of DSProxy
         _withdraw(dsProxy, COMP_ADDRESS, balance);
@@ -208,26 +242,38 @@ contract HSCompound is HandlerBase {
         address token,
         uint256 amount
     ) internal {
-        IDSProxy(dsProxy).execute(
-            FCOMPOUND_ACTIONS,
-            abi.encodeWithSelector(
-                // selector of "withdraw(address,uint256)"
-                0xf3fef3a3,
-                token,
-                amount
+        try
+            IDSProxy(dsProxy).execute(
+                FCOMPOUND_ACTIONS,
+                abi.encodeWithSelector(
+                    // selector of "withdraw(address,uint256)"
+                    0xf3fef3a3,
+                    token,
+                    amount
+                )
             )
-        );
+         {} catch Error(string memory reason) {
+            _revertMsg("_withdraw", reason);
+        } catch {
+            _revertMsg("_withdraw");
+        }
     }
 
     function _enterMarket(address dsProxy, address cToken) internal {
-        IDSProxy(dsProxy).execute(
-            FCOMPOUND_ACTIONS,
-            abi.encodeWithSelector(
-                // selector of "enterMarket(address)"
-                0x3fe5d425,
-                cToken
+        try
+            IDSProxy(dsProxy).execute(
+                FCOMPOUND_ACTIONS,
+                abi.encodeWithSelector(
+                    // selector of "enterMarket(address)"
+                    0x3fe5d425,
+                    cToken
+                )
             )
-        );
+         {} catch Error(string memory reason) {
+            _revertMsg("_enterMarket", reason);
+        } catch {
+            _revertMsg("_enterMarket");
+        }
     }
 
     function _getToken(address token) internal view returns (address) {

@@ -53,4 +53,21 @@ abstract contract HandlerBase is Cache, Config {
     function _revertMsg(string memory functionName) internal pure {
         _revertMsg(functionName, "Unspecified");
     }
+
+    function _uint2String(uint256 n) internal pure returns (string memory) {
+        if (n == 0) {
+            return "0";
+        } else {
+            uint256 len = 0;
+            for (uint256 temp = n; temp > 0; temp /= 10) {
+                len++;
+            }
+            bytes memory str = new bytes(len);
+            for (uint256 i = len; i > 0; i--) {
+                str[i - 1] = bytes1(uint8(48 + (n % 10)));
+                n /= 10;
+            }
+            return string(str);
+        }
+    }
 }

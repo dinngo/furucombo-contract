@@ -32,17 +32,23 @@ contract HBalancer is HandlerBase {
 
         // Execute "joinswapExternAmountIn" by using DSProxy
         IERC20(tokenIn).safeApprove(address(proxy), tokenAmountIn);
-        proxy.execute(
-            BACTIONS,
-            abi.encodeWithSelector(
-                // selector of "joinswapExternAmountIn(address,address,uint256,uint256)"
-                0xc1762b15,
-                pool,
-                tokenIn,
-                tokenAmountIn,
-                minPoolAmountOut
+        try
+            proxy.execute(
+                BACTIONS,
+                abi.encodeWithSelector(
+                    // selector of "joinswapExternAmountIn(address,address,uint256,uint256)"
+                    0xc1762b15,
+                    pool,
+                    tokenIn,
+                    tokenAmountIn,
+                    minPoolAmountOut
+                )
             )
-        );
+         {} catch Error(string memory reason) {
+            _revertMsg("joinswapExternAmountIn", reason);
+        } catch {
+            _revertMsg("joinswapExternAmountIn");
+        }
         IERC20(tokenIn).safeApprove(address(proxy), 0);
         uint256 afterPoolAmount = IERC20(pool).balanceOf(address(this));
 
@@ -59,10 +65,8 @@ contract HBalancer is HandlerBase {
         // Get all tokens of pool
         IBPool BPool = IBPool(pool);
         address[] memory tokens = BPool.getFinalTokens();
-        require(
-            tokens.length == maxAmountsIn.length,
-            "token and amount does not match"
-        );
+        if (tokens.length != maxAmountsIn.length)
+            _revertMsg("joinPool", "token and amount does not match");
 
         // Get furucombo DSProxy
         IDSProxy proxy = IDSProxy(_getProxy(address(this)));
@@ -75,16 +79,22 @@ contract HBalancer is HandlerBase {
         }
 
         // Execute "joinPool" by using DSProxy
-        proxy.execute(
-            BACTIONS,
-            abi.encodeWithSelector(
-                // selector of "joinPool(address,uint256,uint256[])"
-                0x8a5c57df,
-                pool,
-                poolAmountOut,
-                maxAmountsIn
+        try
+            proxy.execute(
+                BACTIONS,
+                abi.encodeWithSelector(
+                    // selector of "joinPool(address,uint256,uint256[])"
+                    0x8a5c57df,
+                    pool,
+                    poolAmountOut,
+                    maxAmountsIn
+                )
             )
-        );
+         {} catch Error(string memory reason) {
+            _revertMsg("joinPool", reason);
+        } catch {
+            _revertMsg("joinPool");
+        }
 
         // Reset approval of tokens to 0
         for (uint256 i = 0; i < tokens.length; i++) {
@@ -109,11 +119,15 @@ contract HBalancer is HandlerBase {
         IBPool BPool = IBPool(pool);
 
         // Call exitswapPoolAmountIn function of balancer pool
-        tokenAmountOut = BPool.exitswapPoolAmountIn(
-            tokenOut,
-            poolAmountIn,
-            minAmountOut
-        );
+        try
+            BPool.exitswapPoolAmountIn(tokenOut, poolAmountIn, minAmountOut)
+        returns (uint256 amount) {
+            tokenAmountOut = amount;
+        } catch Error(string memory reason) {
+            _revertMsg("exitswapPoolAmountIn", reason);
+        } catch {
+            _revertMsg("exitswapPoolAmountIn");
+        }
 
         // Update post process
         _updateToken(tokenOut);
@@ -129,10 +143,8 @@ contract HBalancer is HandlerBase {
 
         address[] memory tokens = BPool.getFinalTokens();
         // uint256[tokens.length] memory tokenAmounts;
-        require(
-            minAmountsOut.length == tokens.length,
-            "token and amount does not match"
-        );
+        if (minAmountsOut.length != tokens.length)
+            _revertMsg("exitPool", "token and amount does not match");
 
         uint256[] memory amountsIn = new uint256[](tokens.length);
         for (uint256 i = 0; i < tokens.length; i++) {
@@ -140,7 +152,13 @@ contract HBalancer is HandlerBase {
         }
 
         // Call exitPool function of balancer pool
-        BPool.exitPool(poolAmountIn, minAmountsOut);
+        try BPool.exitPool(poolAmountIn, minAmountsOut)  {} catch Error(
+            string memory reason
+        ) {
+            _revertMsg("exitPool", reason);
+        } catch {
+            _revertMsg("exitPool");
+        }
 
         // Update post process
         for (uint256 i = 0; i < tokens.length; i++) {

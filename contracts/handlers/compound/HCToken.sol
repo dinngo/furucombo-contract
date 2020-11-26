@@ -25,7 +25,17 @@ contract HCToken is HandlerBase {
 
         address token = _getToken(cToken);
         IERC20(token).safeApprove(cToken, mintAmount);
-        require(compound.mint(mintAmount) == 0, "compound mint failed");
+        try compound.mint(mintAmount) returns (uint256 errorCode) {
+            if (errorCode != 0)
+                _revertMsg(
+                    "mint",
+                    string(abi.encodePacked("error ", _uint2String(errorCode)))
+                );
+        } catch Error(string memory reason) {
+            _revertMsg("mint", reason);
+        } catch {
+            _revertMsg("mint");
+        }
         IERC20(token).safeApprove(cToken, 0);
 
         // Get ctoken balance of proxy after mint
@@ -47,7 +57,17 @@ contract HCToken is HandlerBase {
 
         ICToken compound = ICToken(cToken);
         IERC20(cToken).safeApprove(cToken, redeemTokens);
-        require(compound.redeem(redeemTokens) == 0, "compound redeem failed");
+        try compound.redeem(redeemTokens) returns (uint256 errorCode) {
+            if (errorCode != 0)
+                _revertMsg(
+                    "redeem",
+                    string(abi.encodePacked("error ", _uint2String(errorCode)))
+                );
+        } catch Error(string memory reason) {
+            _revertMsg("redeem", reason);
+        } catch {
+            _revertMsg("redeem");
+        }
         IERC20(cToken).safeApprove(cToken, 0);
 
         // Get token balance of proxy after redeem
@@ -71,10 +91,19 @@ contract HCToken is HandlerBase {
             cToken,
             0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
         );
-        require(
-            compound.redeemUnderlying(redeemAmount) == 0,
-            "compound redeem underlying failed"
-        );
+        try compound.redeemUnderlying(redeemAmount) returns (
+            uint256 errorCode
+        ) {
+            if (errorCode != 0)
+                _revertMsg(
+                    "redeemUnderlying",
+                    string(abi.encodePacked("error ", _uint2String(errorCode)))
+                );
+        } catch Error(string memory reason) {
+            _revertMsg("redeemUnderlying", reason);
+        } catch {
+            _revertMsg("redeemUnderlying");
+        }
         IERC20(cToken).safeApprove(cToken, 0);
 
         // Get ctoken balance of proxy after redeem
@@ -102,10 +131,19 @@ contract HCToken is HandlerBase {
             debt = repayAmount;
         }
         IERC20(token).safeApprove(cToken, debt);
-        require(
-            compound.repayBorrowBehalf(borrower, debt) == 0,
-            "compound repay failed"
-        );
+        try compound.repayBorrowBehalf(borrower, debt) returns (
+            uint256 errorCode
+        ) {
+            if (errorCode != 0)
+                _revertMsg(
+                    "repayBorrowBehalf",
+                    string(abi.encodePacked("error ", _uint2String(errorCode)))
+                );
+        } catch Error(string memory reason) {
+            _revertMsg("repayBorrowBehalf", reason);
+        } catch {
+            _revertMsg("repayBorrowBehalf");
+        }
         IERC20(token).safeApprove(cToken, 0);
         return remainingAmount;
     }

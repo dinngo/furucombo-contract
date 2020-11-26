@@ -262,7 +262,7 @@ contract('Mooniswap', function([_, user]) {
           from: user,
           value: amounts[0].add(amounts[1]),
         }),
-        'wrong tokens order'
+        'HMooniswap_deposit: same tokens'
       );
     });
 
@@ -284,7 +284,7 @@ contract('Mooniswap', function([_, user]) {
       // Execute handler
       await expectRevert(
         this.proxy.execMock(to, data, { from: user, value: value }),
-        'wrong amounts length'
+        'HMooniswap_deposit: wrong amounts length'
       );
     });
 
@@ -309,7 +309,7 @@ contract('Mooniswap', function([_, user]) {
           from: user,
           value: value,
         }),
-        'wrong tokens order'
+        'HMooniswap_deposit: wrong tokens order'
       );
     });
   });

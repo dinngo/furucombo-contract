@@ -114,9 +114,9 @@ contract('CToken', function([_, user]) {
         value
       );
       await this.proxy.updateTokenMock(this.token.address);
-      await expectRevert.unspecified(
+      await expectRevert(
         this.proxy.execMock(to, data, { from: user }),
-        'compound mint failed'
+        'HCToken_mint: error 13'
       );
     });
   });
@@ -178,12 +178,12 @@ contract('CToken', function([_, user]) {
         value
       );
       await this.proxy.updateTokenMock(this.cToken.address);
-      await expectRevert.unspecified(
+      await expectRevert(
         this.proxy.execMock(to, data, {
           from: user,
           value: ether('0.1'),
         }),
-        'compound redeem failed'
+        'HCToken_redeem: error 9'
       );
     });
   });
@@ -246,12 +246,12 @@ contract('CToken', function([_, user]) {
       );
       await this.proxy.updateTokenMock(this.cToken.address);
       // cTokenUser = await this.cToken.balanceOf.call(user);
-      await expectRevert.unspecified(
+      await expectRevert(
         this.proxy.execMock(to, data, {
           from: user,
           value: ether('0.1'),
         }),
-        'compound redeem underlying failed'
+        'HCToken_redeemUnderlying: error 9'
       );
     });
   });
@@ -311,11 +311,12 @@ contract('CToken', function([_, user]) {
         from: providerAddress,
       });
       await this.proxy.updateTokenMock(this.token.address);
-      await expectRevert.unspecified(
+      await expectRevert(
         this.proxy.execMock(to, data, {
           from: user,
           value: ether('0.1'),
-        })
+        }),
+        'HCToken_repayBorrowBehalf: error 13'
       );
     });
   });

@@ -282,7 +282,7 @@ contract('Balancer', function([_, user]) {
             from: user,
             value: ether('0.1'),
           }),
-          'token and amount does not match'
+          'HBalancer_joinPool: token and amount does not match'
         );
       });
     });
@@ -507,7 +507,7 @@ contract('Balancer', function([_, user]) {
             from: user,
             value: ether('0.1'),
           }),
-          'token and amount does not match'
+          'HBalancer_exitPool: token and amount does not match'
         );
       });
     });

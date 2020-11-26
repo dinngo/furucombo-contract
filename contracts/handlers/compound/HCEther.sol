@@ -23,7 +23,11 @@ contract HCEther is HandlerBase {
         uint256 beforeCEtherAmount = compound.balanceOf(address(this));
 
         // Execute mint
-        compound.mint.value(value)();
+        try compound.mint.value(value)()  {} catch Error(string memory reason) {
+            _revertMsg("mint", reason);
+        } catch {
+            _revertMsg("mint");
+        }
 
         // Get cether balance of proxy after mint
         uint256 afterCEtherAmount = compound.balanceOf(address(this));
@@ -42,7 +46,17 @@ contract HCEther is HandlerBase {
         IERC20(CETHER).safeApprove(CETHER, redeemTokens);
 
         // Execute redeem
-        require(compound.redeem(redeemTokens) == 0, "compound redeem failed");
+        try compound.redeem(redeemTokens) returns (uint256 errorCode) {
+            if (errorCode != 0)
+                _revertMsg(
+                    "redeem",
+                    string(abi.encodePacked("error ", _uint2String(errorCode)))
+                );
+        } catch Error(string memory reason) {
+            _revertMsg("redeem", reason);
+        } catch {
+            _revertMsg("redeem");
+        }
 
         // Approve cether to zero
         IERC20(CETHER).safeApprove(CETHER, 0);
@@ -65,10 +79,19 @@ contract HCEther is HandlerBase {
             CETHER,
             0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
         );
-        require(
-            compound.redeemUnderlying(redeemAmount) == 0,
-            "compound redeem underlying failed"
-        );
+        try compound.redeemUnderlying(redeemAmount) returns (
+            uint256 errorCode
+        ) {
+            if (errorCode != 0)
+                _revertMsg(
+                    "redeemUnderlying",
+                    string(abi.encodePacked("error ", _uint2String(errorCode)))
+                );
+        } catch Error(string memory reason) {
+            _revertMsg("redeemUnderlying", reason);
+        } catch {
+            _revertMsg("redeemUnderlying");
+        }
         IERC20(CETHER).safeApprove(CETHER, 0);
 
         // Get cether balance of proxy after redeemUnderlying
@@ -89,7 +112,13 @@ contract HCEther is HandlerBase {
             remainingAmount = debt.sub(amount);
             debt = amount;
         }
-        compound.repayBorrowBehalf.value(debt)(borrower);
+        try compound.repayBorrowBehalf.value(debt)(borrower)  {} catch Error(
+            string memory reason
+        ) {
+            _revertMsg("repayBorrowBehalf", reason);
+        } catch {
+            _revertMsg("repayBorrowBehalf");
+        }
         return remainingAmount;
     }
 }

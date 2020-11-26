@@ -123,11 +123,12 @@ contract('KyberNetwork Swap', function([_, user]) {
           tokenAddress,
           rate[0].mul(new BN('1.5'))
         );
-        await expectRevert.unspecified(
+        await expectRevert(
           this.proxy.execMock(to, data, {
             from: user,
             value: ether('1'),
-          })
+          }),
+          'HKyberNetwork_swapEtherToToken: Unspecified'
         );
         expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
           tokenUser

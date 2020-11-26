@@ -102,11 +102,12 @@ contract('Curve DAO', function([_, user]) {
         this.gauge0.address,
         gauge0Amount
       );
-      await expectRevert.unspecified(
+      await expectRevert(
         this.proxy.execMock(to, data, {
           from: user,
           value: ether('0.1'),
-        })
+        }),
+        'HCurveDao_deposit: Not approved'
       );
     });
   });
@@ -167,11 +168,12 @@ contract('Curve DAO', function([_, user]) {
       it('without approval', async function() {
         const to = this.hCurveDao.address;
         const data = abi.simpleEncode('mint(address)', this.gauge0.address);
-        await expectRevert.unspecified(
+        await expectRevert(
           this.proxy.execMock(to, data, {
             from: user,
             value: ether('0.1'),
-          })
+          }),
+          'HCurveDao_mint: not allowed to mint'
         );
       });
     });
@@ -255,11 +257,12 @@ contract('Curve DAO', function([_, user]) {
           this.gauge0.address,
           this.gauge1.address,
         ]);
-        await expectRevert.unspecified(
+        await expectRevert(
           this.proxy.execMock(to, data, {
             from: user,
             value: ether('0.1'),
-          })
+          }),
+          'HCurveDao_mintMany: not allowed to mint'
         );
       });
     });

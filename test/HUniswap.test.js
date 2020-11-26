@@ -134,8 +134,9 @@ contract('Uniswap Swap', function([_, user, someone]) {
           tokenAddress,
           uniswapAmount.add(ether('0.1'))
         );
-        await expectRevert.unspecified(
-          this.proxy.execMock(to, data, { from: user, value: ether('1') })
+        await expectRevert(
+          this.proxy.execMock(to, data, { from: user, value: ether('1') }),
+          'HUniswap_ethToTokenSwapInput: Unspecified'
         );
         expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
           tokenUser
@@ -207,11 +208,12 @@ contract('Uniswap Swap', function([_, user, someone]) {
           deadline,
           { from: user, value: ether('1') }
         );
-        await expectRevert.unspecified(
+        await expectRevert(
           this.proxy.execMock(to, data, {
             from: user,
             value: ether('1'),
-          })
+          }),
+          'HUniswap_ethToTokenSwapOutput: Unspecified'
         );
       });
     });

@@ -144,8 +144,9 @@ contract('Oasis Swap', function([_, user, someone]) {
           tokenAddress,
           get110x(oasisAmount)
         );
-        await expectRevert.unspecified(
-          this.proxy.execMock(to, data, { from: user, value: value })
+        await expectRevert(
+          this.proxy.execMock(to, data, { from: user, value: value }),
+          'HOasis_sellAllAmountPayEth: Unspecified'
         );
         expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
           tokenUser
@@ -217,11 +218,12 @@ contract('Oasis Swap', function([_, user, someone]) {
           buyAmt,
           WETH_TOKEN
         );
-        await expectRevert.unspecified(
+        await expectRevert(
           this.proxy.execMock(to, data, {
             from: user,
             value: value,
-          })
+          }),
+          'HOasis_buyAllAmountPayEth: Unspecified'
         );
       });
     });
@@ -328,8 +330,9 @@ contract('Oasis Swap', function([_, user, someone]) {
           get110x(result)
         );
 
-        await expectRevert.unspecified(
-          this.proxy.execMock(to, data, { from: user })
+        await expectRevert(
+          this.proxy.execMock(to, data, { from: user }),
+          'HOasis_sellAllAmountBuyEth: Unspecified'
         );
       });
     });
@@ -406,10 +409,11 @@ contract('Oasis Swap', function([_, user, someone]) {
           from: providerAddress,
         });
         await this.proxy.updateTokenMock(this.token.address);
-        await expectRevert.unspecified(
+        await expectRevert(
           this.proxy.execMock(to, data, {
             from: user,
-          })
+          }),
+          'HOasis_buyAllAmountBuyEth: Unspecified'
         );
       });
     });
@@ -520,8 +524,9 @@ contract('Oasis Swap', function([_, user, someone]) {
           get110x(result)
         );
 
-        await expectRevert.unspecified(
-          this.proxy.execMock(to, data, { from: user })
+        await expectRevert(
+          this.proxy.execMock(to, data, { from: user }),
+          'HOasis_sellAllAmount: Unspecified'
         );
       });
     });
@@ -602,8 +607,9 @@ contract('Oasis Swap', function([_, user, someone]) {
         });
         await this.proxy.updateTokenMock(this.token0.address);
 
-        await expectRevert.unspecified(
-          this.proxy.execMock(to, data, { from: user })
+        await expectRevert(
+          this.proxy.execMock(to, data, { from: user }),
+          'HOasis_buyAllAmount: Unspecified'
         );
       });
     });

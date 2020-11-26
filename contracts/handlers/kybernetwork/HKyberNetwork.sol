@@ -22,10 +22,15 @@ contract HKyberNetwork is HandlerBase {
         uint256 minRate
     ) external payable returns (uint256 destAmount) {
         IKyberNetworkProxy kyber = IKyberNetworkProxy(KYBERNETWORK_PROXY);
-        destAmount = kyber.swapEtherToToken.value(value)(
-            IERC20(token),
-            minRate
-        );
+        try
+            kyber.swapEtherToToken.value(value)(IERC20(token), minRate)
+        returns (uint256 amount) {
+            destAmount = amount;
+        } catch Error(string memory reason) {
+            _revertMsg("swapEtherToToken", reason);
+        } catch {
+            _revertMsg("swapEtherToToken");
+        }
 
         // Update involved token
         _updateToken(token);
@@ -38,7 +43,15 @@ contract HKyberNetwork is HandlerBase {
     ) external payable returns (uint256 destAmount) {
         IKyberNetworkProxy kyber = IKyberNetworkProxy(KYBERNETWORK_PROXY);
         IERC20(token).safeApprove(address(kyber), tokenQty);
-        destAmount = kyber.swapTokenToEther(IERC20(token), tokenQty, minRate);
+        try kyber.swapTokenToEther(IERC20(token), tokenQty, minRate) returns (
+            uint256 amount
+        ) {
+            destAmount = amount;
+        } catch Error(string memory reason) {
+            _revertMsg("swapTokenToEther", reason);
+        } catch {
+            _revertMsg("swapTokenToEther");
+        }
         IERC20(token).safeApprove(address(kyber), 0);
     }
 
@@ -50,12 +63,20 @@ contract HKyberNetwork is HandlerBase {
     ) external payable returns (uint256 destAmount) {
         IKyberNetworkProxy kyber = IKyberNetworkProxy(KYBERNETWORK_PROXY);
         IERC20(srcToken).safeApprove(address(kyber), srcQty);
-        destAmount = kyber.swapTokenToToken(
-            IERC20(srcToken),
-            srcQty,
-            IERC20(destToken),
-            minRate
-        );
+        try
+            kyber.swapTokenToToken(
+                IERC20(srcToken),
+                srcQty,
+                IERC20(destToken),
+                minRate
+            )
+        returns (uint256 amount) {
+            destAmount = amount;
+        } catch Error(string memory reason) {
+            _revertMsg("swapTokenToToken", reason);
+        } catch {
+            _revertMsg("swapTokenToToken");
+        }
         IERC20(srcToken).safeApprove(address(kyber), 0);
 
         // Update involved token

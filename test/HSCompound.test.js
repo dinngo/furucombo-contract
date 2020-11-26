@@ -179,7 +179,7 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
         this.proxy.execMock(to, data, {
           from: someone,
         }),
-        'Not owner of the DSProxy'
+        'HSCompound_General: Not owner of the DSProxy'
       );
     });
   });
@@ -262,7 +262,7 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
         this.proxy.execMock(to, data, {
           from: someone,
         }),
-        'Not owner of the DSProxy'
+        'HSCompound_General: Not owner of the DSProxy'
       );
     });
   });
@@ -318,7 +318,7 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
           this.proxy.execMock(to, data, {
             from: someone,
           }),
-          'Not owner of the DSProxy'
+          'HSCompound_General: Not owner of the DSProxy'
         );
       });
     });
@@ -391,7 +391,7 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
           this.proxy.execMock(to, data, {
             from: someone,
           }),
-          'Not owner of the DSProxy'
+          'HSCompound_General: Not owner of the DSProxy'
         );
       });
     });
@@ -466,7 +466,7 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
           this.proxy.execMock(to, data, {
             from: someone,
           }),
-          'Not owner of the DSProxy'
+          'HSCompound_General: Not owner of the DSProxy'
         );
       });
     });
@@ -749,11 +749,11 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
           )
         ).to.be.false;
         // Expect to be reverted since collateral not enter market
-        await expectRevert.unspecified(
+        await expectRevert(
           this.proxy.execMock(to, data, {
             from: user,
           }),
-          'FCompoundActions: borrow failed'
+          'HSCompound_borrow: Unspecified'
         );
       });
 
@@ -787,7 +787,7 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
           this.proxy.execMock(to, data, {
             from: someone,
           }),
-          'Not owner of the DSProxy'
+          'HSCompound_General: Not owner of the DSProxy'
         );
       });
     });
@@ -1141,7 +1141,7 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
           this.proxy.execMock(to, data, {
             from: someone,
           }),
-          'Not owner of the DSProxy'
+          'HSCompound_General: Not owner of the DSProxy'
         );
       });
     });
@@ -1200,7 +1200,7 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
         this.proxy.execMock(to, data, {
           from: someone,
         }),
-        'Not owner of the DSProxy'
+        'HSCompound_General: Not owner of the DSProxy'
       );
     });
   });

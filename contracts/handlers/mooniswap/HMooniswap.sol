@@ -23,8 +23,10 @@ contract HMooniswap is HandlerBase {
         uint256[] calldata amounts,
         uint256[] calldata minAmounts
     ) external payable returns (uint256 fairSupply) {
-        require(tokens[0] < tokens[1], "wrong tokens order");
-        require(amounts.length == tokens.length, "wrong amounts length");
+        if (tokens[0] > tokens[1]) _revertMsg("deposit", "wrong tokens order");
+        if (tokens[0] == tokens[1]) _revertMsg("deposit", "same tokens");
+        if (amounts.length != tokens.length)
+            _revertMsg("deposit", "wrong amounts length");
 
         IMooniFactory factory = IMooniFactory(MooniFactory);
         IMooniswap mooniswap = IMooniswap(factory.pools(tokens[0], tokens[1]));
@@ -39,7 +41,15 @@ contract HMooniswap is HandlerBase {
         IERC20(tokens[1]).safeApprove(address(mooniswap), amounts[1]);
 
         // Add liquidity
-        fairSupply = mooniswap.deposit.value(value)(amounts, minAmounts);
+        try mooniswap.deposit.value(value)(amounts, minAmounts) returns (
+            uint256 ret
+        ) {
+            fairSupply = ret;
+        } catch Error(string memory reason) {
+            _revertMsg("deposit", reason);
+        } catch {
+            _revertMsg("deposit");
+        }
 
         // Approve token 0
         if (tokens[0] != address(0)) {
@@ -70,7 +80,13 @@ contract HMooniswap is HandlerBase {
         }
 
         // Remove liquidity
-        mooniswap.withdraw(amount, minReturns);
+        try mooniswap.withdraw(amount, minReturns)  {} catch Error(
+            string memory reason
+        ) {
+            _revertMsg("withdraw", reason);
+        } catch {
+            _revertMsg("withdraw");
+        }
 
         // Update involved token except ETH
         for (uint256 i = 0; i < tokens.length; i++) {

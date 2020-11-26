@@ -54,18 +54,30 @@ contract HGasTokens is HandlerBase {
     function _freeCHI(uint256 gasStart, uint256 amount) internal {
         uint256 gasSpent = gasStart - gasleft();
         uint256 maxAmount = (gasSpent + 14154) / 41947;
-        IGasTokens(CHI_TOKEN).freeFromUpTo(
-            cache.getSender(),
-            Math.min(amount, maxAmount)
-        );
+        try
+            IGasTokens(CHI_TOKEN).freeFromUpTo(
+                cache.getSender(),
+                Math.min(amount, maxAmount)
+            )
+         {} catch Error(string memory reason) {
+            _revertMsg("_freeCHI", reason);
+        } catch {
+            _revertMsg("_freeCHI");
+        }
     }
 
     function _freeGST2(uint256 gasStart, uint256 amount) internal {
         uint256 gasSpent = gasStart - gasleft();
         uint256 maxAmount = (gasSpent + 14154) / 41130; // 41130 = (24000*2-6870)
-        IGasTokens(GST2_TOKEN).freeFromUpTo(
-            cache.getSender(),
-            Math.min(amount, maxAmount)
-        );
+        try
+            IGasTokens(GST2_TOKEN).freeFromUpTo(
+                cache.getSender(),
+                Math.min(amount, maxAmount)
+            )
+         {} catch Error(string memory reason) {
+            _revertMsg("_freeGST2", reason);
+        } catch {
+            _revertMsg("_freeGST2");
+        }
     }
 }

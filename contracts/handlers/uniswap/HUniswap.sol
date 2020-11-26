@@ -22,7 +22,15 @@ contract HUniswap is HandlerBase {
     ) external payable returns (uint256 liquidity) {
         IUniswapExchange uniswap = _getExchange(token);
         IERC20(token).safeApprove(address(uniswap), max_tokens);
-        liquidity = uniswap.addLiquidity.value(value)(1, max_tokens, now + 1);
+        try uniswap.addLiquidity.value(value)(1, max_tokens, now + 1) returns (
+            uint256 ret
+        ) {
+            liquidity = ret;
+        } catch Error(string memory reason) {
+            _revertMsg("addLiquidity", reason);
+        } catch {
+            _revertMsg("addLiquidity");
+        }
         IERC20(token).safeApprove(address(uniswap), 0);
 
         // Update involved token
@@ -37,12 +45,16 @@ contract HUniswap is HandlerBase {
     ) external payable returns (uint256 eth_gain, uint256 token_gain) {
         IUniswapExchange uniswap = _getExchange(token);
         IERC20(address(uniswap)).safeApprove(address(uniswap), amount);
-        (eth_gain, token_gain) = uniswap.removeLiquidity(
-            amount,
-            min_eth,
-            min_tokens,
-            now + 1
-        );
+        try
+            uniswap.removeLiquidity(amount, min_eth, min_tokens, now + 1)
+        returns (uint256 ret1, uint256 ret2) {
+            eth_gain = ret1;
+            token_gain = ret2;
+        } catch Error(string memory reason) {
+            _revertMsg("removeLiquidity", reason);
+        } catch {
+            _revertMsg("removeLiquidity");
+        }
         IERC20(address(uniswap)).safeApprove(address(uniswap), 0);
 
         // Update involved token
@@ -55,10 +67,15 @@ contract HUniswap is HandlerBase {
         uint256 min_tokens
     ) external payable returns (uint256 tokens_bought) {
         IUniswapExchange uniswap = _getExchange(token);
-        tokens_bought = uniswap.ethToTokenSwapInput.value(value)(
-            min_tokens,
-            now
-        );
+        try uniswap.ethToTokenSwapInput.value(value)(min_tokens, now) returns (
+            uint256 ret
+        ) {
+            tokens_bought = ret;
+        } catch Error(string memory reason) {
+            _revertMsg("ethToTokenSwapInput", reason);
+        } catch {
+            _revertMsg("ethToTokenSwapInput");
+        }
 
         // Update involved token
         _updateToken(token);
@@ -70,10 +87,15 @@ contract HUniswap is HandlerBase {
         uint256 tokens_bought
     ) external payable returns (uint256 eth_sold) {
         IUniswapExchange uniswap = _getExchange(token);
-        eth_sold = uniswap.ethToTokenSwapOutput.value(value)(
-            tokens_bought,
-            now
-        );
+        try
+            uniswap.ethToTokenSwapOutput.value(value)(tokens_bought, now)
+        returns (uint256 ret) {
+            eth_sold = ret;
+        } catch Error(string memory reason) {
+            _revertMsg("ethToTokenSwapOutput", reason);
+        } catch {
+            _revertMsg("ethToTokenSwapOutput");
+        }
 
         // Update involved token
         _updateToken(token);
@@ -86,7 +108,15 @@ contract HUniswap is HandlerBase {
     ) external payable returns (uint256 eth_bought) {
         IUniswapExchange uniswap = _getExchange(token);
         IERC20(token).safeApprove(address(uniswap), tokens_sold);
-        eth_bought = uniswap.tokenToEthSwapInput(tokens_sold, min_eth, now);
+        try uniswap.tokenToEthSwapInput(tokens_sold, min_eth, now) returns (
+            uint256 ret
+        ) {
+            eth_bought = ret;
+        } catch Error(string memory reason) {
+            _revertMsg("tokenToEthSwapInput", reason);
+        } catch {
+            _revertMsg("tokenToEthSwapInput");
+        }
         IERC20(token).safeApprove(address(uniswap), 0);
     }
 
@@ -97,7 +127,15 @@ contract HUniswap is HandlerBase {
     ) external payable returns (uint256 tokens_sold) {
         IUniswapExchange uniswap = _getExchange(token);
         IERC20(token).safeApprove(address(uniswap), max_tokens);
-        tokens_sold = uniswap.tokenToEthSwapOutput(eth_bought, max_tokens, now);
+        try uniswap.tokenToEthSwapOutput(eth_bought, max_tokens, now) returns (
+            uint256 ret
+        ) {
+            tokens_sold = ret;
+        } catch Error(string memory reason) {
+            _revertMsg("tokenToEthSwapOutput", reason);
+        } catch {
+            _revertMsg("tokenToEthSwapOutput");
+        }
         IERC20(token).safeApprove(address(uniswap), 0);
     }
 
@@ -109,13 +147,21 @@ contract HUniswap is HandlerBase {
     ) external payable returns (uint256 tokens_bought) {
         IUniswapExchange uniswap = _getExchange(token);
         IERC20(token).safeApprove(address(uniswap), tokens_sold);
-        tokens_bought = uniswap.tokenToTokenSwapInput(
-            tokens_sold,
-            min_tokens_bought,
-            1,
-            now,
-            token_addr
-        );
+        try
+            uniswap.tokenToTokenSwapInput(
+                tokens_sold,
+                min_tokens_bought,
+                1,
+                now,
+                token_addr
+            )
+        returns (uint256 ret) {
+            tokens_bought = ret;
+        } catch Error(string memory reason) {
+            _revertMsg("tokenToTokenSwapInput", reason);
+        } catch {
+            _revertMsg("tokenToTokenSwapInput");
+        }
         IERC20(token).safeApprove(address(uniswap), 0);
 
         // Update involved token
@@ -130,13 +176,21 @@ contract HUniswap is HandlerBase {
     ) external payable returns (uint256 tokens_sold) {
         IUniswapExchange uniswap = _getExchange(token);
         IERC20(token).safeApprove(address(uniswap), max_tokens_sold);
-        tokens_sold = uniswap.tokenToTokenSwapOutput(
-            tokens_bought,
-            max_tokens_sold,
-            0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff,
-            now,
-            token_addr
-        );
+        try
+            uniswap.tokenToTokenSwapOutput(
+                tokens_bought,
+                max_tokens_sold,
+                0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff,
+                now,
+                token_addr
+            )
+        returns (uint256 ret) {
+            tokens_sold = ret;
+        } catch Error(string memory reason) {
+            _revertMsg("tokenToTokenSwapOutput", reason);
+        } catch {
+            _revertMsg("tokenToTokenSwapOutput");
+        }
         IERC20(token).safeApprove(address(uniswap), 0);
 
         // Update involved token

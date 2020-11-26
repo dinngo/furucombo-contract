@@ -25,7 +25,11 @@ contract HYVault is HandlerBase {
 
         address token = yVault.token();
         IERC20(token).safeApprove(address(yVault), _amount);
-        yVault.deposit(_amount);
+        try yVault.deposit(_amount)  {} catch Error(string memory reason) {
+            _revertMsg("deposit", reason);
+        } catch {
+            _revertMsg("deposit");
+        }
         IERC20(token).safeApprove(address(yVault), 0);
 
         uint256 afterYTokenBalance = IERC20(address(yVault)).balanceOf(
@@ -45,7 +49,13 @@ contract HYVault is HandlerBase {
         uint256 beforeYTokenBalance = IERC20(address(yVault)).balanceOf(
             address(this)
         );
-        yVault.depositETH.value(value)();
+        try yVault.depositETH.value(value)()  {} catch Error(
+            string memory reason
+        ) {
+            _revertMsg("depositETH", reason);
+        } catch {
+            _revertMsg("depositETH");
+        }
         uint256 afterYTokenBalance = IERC20(address(yVault)).balanceOf(
             address(this)
         );
@@ -62,7 +72,11 @@ contract HYVault is HandlerBase {
         IYVault yVault = IYVault(vault);
         address token = yVault.token();
         uint256 beforeTokenBalance = IERC20(token).balanceOf(address(this));
-        yVault.withdraw(_shares);
+        try yVault.withdraw(_shares)  {} catch Error(string memory reason) {
+            _revertMsg("withdraw", reason);
+        } catch {
+            _revertMsg("withdraw");
+        }
         uint256 afterTokenBalance = IERC20(token).balanceOf(address(this));
 
         _updateToken(token);
@@ -76,7 +90,11 @@ contract HYVault is HandlerBase {
     {
         uint256 beforeETHBalance = address(this).balance;
         IYVault yVault = IYVault(vault);
-        yVault.withdrawETH(_shares);
+        try yVault.withdrawETH(_shares)  {} catch Error(string memory reason) {
+            _revertMsg("withdrawETH", reason);
+        } catch {
+            _revertMsg("withdrawETH");
+        }
         uint256 afterETHBalance = address(this).balance;
         return afterETHBalance.sub(beforeETHBalance);
     }

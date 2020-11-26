@@ -13,11 +13,21 @@ contract HWeth is HandlerBase {
     }
 
     function deposit(uint256 value) external payable {
-        IWETH9(WETH).deposit.value(value)();
+        try IWETH9(WETH).deposit.value(value)()  {} catch Error(
+            string memory reason
+        ) {
+            _revertMsg("deposit", reason);
+        } catch {
+            _revertMsg("deposit");
+        }
         _updateToken(WETH);
     }
 
     function withdraw(uint256 wad) external payable {
-        IWETH9(WETH).withdraw(wad);
+        try IWETH9(WETH).withdraw(wad)  {} catch Error(string memory reason) {
+            _revertMsg("withdraw", reason);
+        } catch {
+            _revertMsg("withdraw");
+        }
     }
 }

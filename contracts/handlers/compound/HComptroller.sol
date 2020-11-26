@@ -20,7 +20,13 @@ contract HComptroller is HandlerBase {
         address sender = cache.getSender();
 
         uint256 beforeCompBalance = IERC20(comp).balanceOf(sender);
-        comptroller.claimComp(sender);
+        try comptroller.claimComp(sender)  {} catch Error(
+            string memory reason
+        ) {
+            _revertMsg("claimComp", reason);
+        } catch {
+            _revertMsg("claimComp");
+        }
         uint256 afterCompBalance = IERC20(comp).balanceOf(sender);
 
         return afterCompBalance.sub(beforeCompBalance);
@@ -31,7 +37,13 @@ contract HComptroller is HandlerBase {
         address comp = comptroller.getCompAddress();
 
         uint256 beforeCompBalance = IERC20(comp).balanceOf(holder);
-        comptroller.claimComp(holder);
+        try comptroller.claimComp(holder)  {} catch Error(
+            string memory reason
+        ) {
+            _revertMsg("claimComp", reason);
+        } catch {
+            _revertMsg("claimComp");
+        }
         uint256 afterCompBalance = IERC20(comp).balanceOf(holder);
 
         return afterCompBalance.sub(beforeCompBalance);
