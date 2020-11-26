@@ -477,10 +477,11 @@ contract('Maker', function([_, user1, user2, someone]) {
           cdp,
           wad
         );
-        await expectRevert.unspecified(
+        await expectRevert(
           this.proxy.execMock(to, data, {
             from: user1,
-          })
+          }),
+          'HMaker_freeETH: Unspecified'
         );
       });
 
@@ -497,7 +498,7 @@ contract('Maker', function([_, user1, user2, someone]) {
         );
         await expectRevert(
           this.proxy.execMock(to, data),
-          'Unauthorized sender of cdp'
+          'HMaker_General: Unauthorized sender of cdp'
         );
       });
     });
@@ -565,10 +566,11 @@ contract('Maker', function([_, user1, user2, someone]) {
           cdp,
           wad
         );
-        await expectRevert.unspecified(
+        await expectRevert(
           this.proxy.execMock(to, data, {
             from: user1,
-          })
+          }),
+          'HMaker_freeGem: Unspecified'
         );
       });
 
@@ -584,7 +586,7 @@ contract('Maker', function([_, user1, user2, someone]) {
         );
         await expectRevert(
           this.proxy.execMock(to, data),
-          'Unauthorized sender of cdp'
+          'HMaker_General: Unauthorized sender of cdp'
         );
       });
     });
@@ -647,10 +649,11 @@ contract('Maker', function([_, user1, user2, someone]) {
           cdp,
           wad
         );
-        await expectRevert.unspecified(
+        await expectRevert(
           this.proxy.execMock(to, data, {
             from: user1,
-          })
+          }),
+          'HMaker_draw: Unspecified'
         );
       });
 
@@ -666,7 +669,7 @@ contract('Maker', function([_, user1, user2, someone]) {
         );
         await expectRevert(
           this.proxy.execMock(to, data),
-          'Unauthorized sender of cdp'
+          'HMaker_General: Unauthorized sender of cdp'
         );
       });
     });
@@ -734,10 +737,11 @@ contract('Maker', function([_, user1, user2, someone]) {
           cdp,
           wad
         );
-        await expectRevert.unspecified(
+        await expectRevert(
           this.proxy.execMock(to, data, {
             from: user1,
-          })
+          }),
+          'HMaker_draw: Unspecified'
         );
       });
 
@@ -753,7 +757,7 @@ contract('Maker', function([_, user1, user2, someone]) {
         );
         await expectRevert(
           this.proxy.execMock(to, data),
-          'Unauthorized sender of cdp'
+          'HMaker_General: Unauthorized sender of cdp'
         );
       });
     });

@@ -19,11 +19,10 @@ contract HMaker is HandlerBase {
         IMakerManager manager = IMakerManager(CDP_MANAGER);
         address owner = manager.owns(cdp);
         address sender = cache.getSender();
-        require(
-            IDSProxyRegistry(PROXY_REGISTRY).proxies(sender) == owner ||
-                manager.cdpCan(owner, cdp, sender) == 1,
-            "Unauthorized sender of cdp"
-        );
+        if (
+            IDSProxyRegistry(PROXY_REGISTRY).proxies(sender) != owner &&
+            manager.cdpCan(owner, cdp, sender) != 1
+        ) _revertMsg("General", "Unauthorized sender of cdp");
         _;
     }
 
@@ -39,7 +38,7 @@ contract HMaker is HandlerBase {
         uint256 wadD
     ) external payable returns (uint256 cdp) {
         IDSProxy proxy = IDSProxy(_getProxy(address(this)));
-        cdp = uint256(
+        try
             proxy.execute.value(value)(
                 PROXY_ACTIONS,
                 abi.encodeWithSelector(
@@ -53,7 +52,13 @@ contract HMaker is HandlerBase {
                     wadD
                 )
             )
-        );
+        returns (bytes32 ret) {
+            cdp = uint256(ret);
+        } catch Error(string memory reason) {
+            _revertMsg("openLockETHAndDraw", reason);
+        } catch {
+            _revertMsg("openLockETHAndDraw");
+        }
 
         // Update post process
         bytes32[] memory params = new bytes32[](1);
@@ -71,7 +76,7 @@ contract HMaker is HandlerBase {
         IDSProxy proxy = IDSProxy(_getProxy(address(this)));
         address token = IMakerGemJoin(gemJoin).gem();
         IERC20(token).safeApprove(address(proxy), wadC);
-        cdp = uint256(
+        try
             proxy.execute(
                 PROXY_ACTIONS,
                 abi.encodeWithSelector(
@@ -87,7 +92,13 @@ contract HMaker is HandlerBase {
                     true
                 )
             )
-        );
+        returns (bytes32 ret) {
+            cdp = uint256(ret);
+        } catch Error(string memory reason) {
+            _revertMsg("openLockGemAndDraw", reason);
+        } catch {
+            _revertMsg("openLockGemAndDraw");
+        }
         IERC20(token).safeApprove(address(proxy), 0);
 
         // Update post process
@@ -103,17 +114,23 @@ contract HMaker is HandlerBase {
     ) external payable {
         IDSProxy proxy = IDSProxy(_getProxy(address(this)));
         address owner = _getProxy(cache.getSender());
-        proxy.execute.value(value)(
-            PROXY_ACTIONS,
-            abi.encodeWithSelector(
-                // selector of "safeLockETH(address,address,uint256,address)"
-                0xee284576,
-                CDP_MANAGER,
-                ethJoin,
-                cdp,
-                owner
+        try
+            proxy.execute.value(value)(
+                PROXY_ACTIONS,
+                abi.encodeWithSelector(
+                    // selector of "safeLockETH(address,address,uint256,address)"
+                    0xee284576,
+                    CDP_MANAGER,
+                    ethJoin,
+                    cdp,
+                    owner
+                )
             )
-        );
+         {} catch Error(string memory reason) {
+            _revertMsg("safeLockETH", reason);
+        } catch {
+            _revertMsg("safeLockETH");
+        }
     }
 
     function safeLockGem(
@@ -125,19 +142,25 @@ contract HMaker is HandlerBase {
         address owner = _getProxy(cache.getSender());
         address token = IMakerGemJoin(gemJoin).gem();
         IERC20(token).safeApprove(address(proxy), wad);
-        proxy.execute(
-            PROXY_ACTIONS,
-            abi.encodeWithSelector(
-                // selector of "safeLockGem(address,address,uint256,uint256,bool,address)"
-                0xead64729,
-                CDP_MANAGER,
-                gemJoin,
-                cdp,
-                wad,
-                true,
-                owner
+        try
+            proxy.execute(
+                PROXY_ACTIONS,
+                abi.encodeWithSelector(
+                    // selector of "safeLockGem(address,address,uint256,uint256,bool,address)"
+                    0xead64729,
+                    CDP_MANAGER,
+                    gemJoin,
+                    cdp,
+                    wad,
+                    true,
+                    owner
+                )
             )
-        );
+         {} catch Error(string memory reason) {
+            _revertMsg("safeLockGem", reason);
+        } catch {
+            _revertMsg("safeLockGem");
+        }
         IERC20(token).safeApprove(address(proxy), 0);
     }
 
@@ -148,17 +171,23 @@ contract HMaker is HandlerBase {
     ) external payable cdpAllowed(cdp) {
         // Check msg.sender authority
         IDSProxy proxy = IDSProxy(_getProxy(address(this)));
-        proxy.execute(
-            PROXY_ACTIONS,
-            abi.encodeWithSelector(
-                // selector of "freeETH(address,address,uint256,uint256)"
-                0x7b5a3b43,
-                CDP_MANAGER,
-                ethJoin,
-                cdp,
-                wad
+        try
+            proxy.execute(
+                PROXY_ACTIONS,
+                abi.encodeWithSelector(
+                    // selector of "freeETH(address,address,uint256,uint256)"
+                    0x7b5a3b43,
+                    CDP_MANAGER,
+                    ethJoin,
+                    cdp,
+                    wad
+                )
             )
-        );
+         {} catch Error(string memory reason) {
+            _revertMsg("freeETH", reason);
+        } catch {
+            _revertMsg("freeETH");
+        }
     }
 
     function freeGem(
@@ -169,17 +198,23 @@ contract HMaker is HandlerBase {
         // Check msg.sender authority
         IDSProxy proxy = IDSProxy(_getProxy(address(this)));
         address token = IMakerGemJoin(gemJoin).gem();
-        proxy.execute(
-            PROXY_ACTIONS,
-            abi.encodeWithSelector(
-                // selector of "freeGem(address,address,uint256,uint256)"
-                0x6ab6a491,
-                CDP_MANAGER,
-                gemJoin,
-                cdp,
-                wad
+        try
+            proxy.execute(
+                PROXY_ACTIONS,
+                abi.encodeWithSelector(
+                    // selector of "freeGem(address,address,uint256,uint256)"
+                    0x6ab6a491,
+                    CDP_MANAGER,
+                    gemJoin,
+                    cdp,
+                    wad
+                )
             )
-        );
+         {} catch Error(string memory reason) {
+            _revertMsg("freeGem", reason);
+        } catch {
+            _revertMsg("freeGem");
+        }
 
         // Update post process
         _updateToken(token);
@@ -192,18 +227,24 @@ contract HMaker is HandlerBase {
     ) external payable cdpAllowed(cdp) {
         // Check msg.sender authority
         IDSProxy proxy = IDSProxy(_getProxy(address(this)));
-        proxy.execute(
-            PROXY_ACTIONS,
-            abi.encodeWithSelector(
-                // selector of "draw(address,address,address,uint256,uint256)"
-                0x9f6f3d5b,
-                CDP_MANAGER,
-                MCD_JUG,
-                daiJoin,
-                cdp,
-                wad
+        try
+            proxy.execute(
+                PROXY_ACTIONS,
+                abi.encodeWithSelector(
+                    // selector of "draw(address,address,address,uint256,uint256)"
+                    0x9f6f3d5b,
+                    CDP_MANAGER,
+                    MCD_JUG,
+                    daiJoin,
+                    cdp,
+                    wad
+                )
             )
-        );
+         {} catch Error(string memory reason) {
+            _revertMsg("draw", reason);
+        } catch {
+            _revertMsg("draw");
+        }
 
         // Update post process
         _updateToken(DAI_TOKEN);
@@ -216,33 +257,45 @@ contract HMaker is HandlerBase {
     ) external payable {
         IDSProxy proxy = IDSProxy(_getProxy(address(this)));
         IERC20(DAI_TOKEN).safeApprove(address(proxy), wad);
-        proxy.execute(
-            PROXY_ACTIONS,
-            abi.encodeWithSelector(
-                // selector of "wipe(address,address,uint256,uint256)"
-                0x4b666199,
-                CDP_MANAGER,
-                daiJoin,
-                cdp,
-                wad
+        try
+            proxy.execute(
+                PROXY_ACTIONS,
+                abi.encodeWithSelector(
+                    // selector of "wipe(address,address,uint256,uint256)"
+                    0x4b666199,
+                    CDP_MANAGER,
+                    daiJoin,
+                    cdp,
+                    wad
+                )
             )
-        );
+         {} catch Error(string memory reason) {
+            _revertMsg("wipe", reason);
+        } catch {
+            _revertMsg("wipe");
+        }
         IERC20(DAI_TOKEN).safeApprove(address(proxy), 0);
     }
 
     function wipeAll(address daiJoin, uint256 cdp) external payable {
         IDSProxy proxy = IDSProxy(_getProxy(address(this)));
         IERC20(DAI_TOKEN).safeApprove(address(proxy), uint256(-1));
-        proxy.execute(
-            PROXY_ACTIONS,
-            abi.encodeWithSelector(
-                // selector of "wipeAll(address,address,uint256)"
-                0x036a2395,
-                CDP_MANAGER,
-                daiJoin,
-                cdp
+        try
+            proxy.execute(
+                PROXY_ACTIONS,
+                abi.encodeWithSelector(
+                    // selector of "wipeAll(address,address,uint256)"
+                    0x036a2395,
+                    CDP_MANAGER,
+                    daiJoin,
+                    cdp
+                )
             )
-        );
+         {} catch Error(string memory reason) {
+            _revertMsg("wipeAll", reason);
+        } catch {
+            _revertMsg("wipeAll");
+        }
         IERC20(DAI_TOKEN).safeApprove(address(proxy), 0);
     }
 
@@ -264,16 +317,22 @@ contract HMaker is HandlerBase {
 
     function _transferCdp(uint256 cdp) internal {
         IDSProxy proxy = IDSProxy(_getProxy(address(this)));
-        proxy.execute(
-            PROXY_ACTIONS,
-            abi.encodeWithSelector(
-                // selector of "giveToProxy(address,address,uint256,address)"
-                0x493c2049,
-                PROXY_REGISTRY,
-                CDP_MANAGER,
-                cdp,
-                cache.getSender()
+        try
+            proxy.execute(
+                PROXY_ACTIONS,
+                abi.encodeWithSelector(
+                    // selector of "giveToProxy(address,address,uint256,address)"
+                    0x493c2049,
+                    PROXY_REGISTRY,
+                    CDP_MANAGER,
+                    cdp,
+                    cache.getSender()
+                )
             )
-        );
+         {} catch Error(string memory reason) {
+            _revertMsg("_transferCdp", reason);
+        } catch {
+            _revertMsg("_transferCdp");
+        }
     }
 }
