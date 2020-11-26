@@ -257,7 +257,7 @@ contract Proxy is Storage, Config {
         if (amount > 0) msg.sender.transfer(amount);
 
         // Reset the msg.sender
-        cache.setAddress(keccak256("msg.sender"), address(0));
+        cache.setAddress(MSG_SENDER_KEY, address(0));
     }
 
     /// @notice Get the registry contract address.
