@@ -145,9 +145,9 @@ contract('Maker', function([_, user]) {
         it('normal', async function() {
           const daiUser = await this.dai.balanceOf.call(user);
           const to1 = this.hMaker.address;
-          const value1 = ether('1');
+          const value1 = ether('5');
           const ilkEth = utils.padRight(utils.asciiToHex('ETH-A'), 64);
-          const wadD = ether('100');
+          const wadD = ether('500');
           const data1 = abi.simpleEncode(
             'openLockETHAndDraw(uint256,address,address,bytes32,uint256)',
             value1,
@@ -156,7 +156,7 @@ contract('Maker', function([_, user]) {
             ilkEth,
             wadD
           );
-          const value2 = ether('100');
+          const value2 = ether('500');
           const to2 = this.hUniswap.address;
           const data2 = abi.simpleEncode(
             'tokenToEthSwapInput(address,uint256,uint256):(uint256)',
@@ -169,7 +169,7 @@ contract('Maker', function([_, user]) {
             [data1, data2],
             {
               from: user,
-              value: ether('1'),
+              value: ether('5'),
             }
           );
           const daiUserEnd = await this.dai.balanceOf.call(user);
