@@ -55,7 +55,7 @@ contract HOasis is HandlerBase {
     ) external payable returns (uint256 buyAmt) {
         IOasisDirectProxy oasis = IOasisDirectProxy(OASIS_DIRECT_PROXY);
         try
-            oasis.sellAllAmountPayEth.value(value)(
+            oasis.sellAllAmountPayEth{value: value}(
                 MAKER_OTC,
                 wethToken,
                 buyToken,
@@ -131,7 +131,7 @@ contract HOasis is HandlerBase {
     ) external payable returns (uint256 wethAmt) {
         IOasisDirectProxy oasis = IOasisDirectProxy(OASIS_DIRECT_PROXY);
         try
-            oasis.buyAllAmountPayEth.value(value)(
+            oasis.buyAllAmountPayEth{value: value}(
                 MAKER_OTC,
                 buyToken,
                 buyAmt,

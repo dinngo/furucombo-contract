@@ -27,7 +27,7 @@ contract FlashLoanReceiverBase {
         uint256 _amount
     ) internal {
         if (_reserve == ETHADDRESS) {
-            _destination.call.value(_amount)("");
+            _destination.call{value: _amount}("");
             return;
         }
         IERC20(_reserve).safeTransfer(_destination, _amount);

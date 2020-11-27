@@ -17,7 +17,7 @@ contract HMock is HandlerBase {
     }
 
     function drain(address target, uint256 v) external payable {
-        IFaucet(target).drain.value(v)();
+        IFaucet(target).drain{value: v}();
     }
 
     function drainToken(

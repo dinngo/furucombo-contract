@@ -41,7 +41,7 @@ contract HUniswapV2 is HandlerBase {
 
         // Add liquidity ETH
         try
-            router.addLiquidityETH.value(value)(
+            router.addLiquidityETH{value: value}(
                 token,
                 amountTokenDesired,
                 amountTokenMin,
@@ -218,7 +218,7 @@ contract HUniswapV2 is HandlerBase {
         // Get uniswapV2 router
         IUniswapV2Router02 router = IUniswapV2Router02(UNISWAPV2_ROUTER);
         try
-            router.swapExactETHForTokens.value(value)(
+            router.swapExactETHForTokens{value: value}(
                 amountOutMin,
                 path,
                 address(this),
@@ -248,7 +248,7 @@ contract HUniswapV2 is HandlerBase {
         IUniswapV2Router02 router = IUniswapV2Router02(UNISWAPV2_ROUTER);
 
         try
-            router.swapETHForExactTokens.value(value)(
+            router.swapETHForExactTokens{value: value}(
                 amountOut,
                 path,
                 address(this),

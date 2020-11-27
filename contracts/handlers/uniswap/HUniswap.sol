@@ -23,7 +23,7 @@ contract HUniswap is HandlerBase {
     ) external payable returns (uint256 liquidity) {
         IUniswapExchange uniswap = _getExchange(token);
         IERC20(token).safeApprove(address(uniswap), maxTokens);
-        try uniswap.addLiquidity.value(value)(1, maxTokens, now + 1) returns (
+        try uniswap.addLiquidity{value: value}(1, maxTokens, now + 1) returns (
             uint256 ret
         ) {
             liquidity = ret;
@@ -68,7 +68,7 @@ contract HUniswap is HandlerBase {
         uint256 minTokens
     ) external payable returns (uint256 tokensBought) {
         IUniswapExchange uniswap = _getExchange(token);
-        try uniswap.ethToTokenSwapInput.value(value)(minTokens, now) returns (
+        try uniswap.ethToTokenSwapInput{value: value}(minTokens, now) returns (
             uint256 ret
         ) {
             tokensBought = ret;
@@ -89,7 +89,7 @@ contract HUniswap is HandlerBase {
     ) external payable returns (uint256 ethSold) {
         IUniswapExchange uniswap = _getExchange(token);
         try
-            uniswap.ethToTokenSwapOutput.value(value)(tokensBought, now)
+            uniswap.ethToTokenSwapOutput{value: value}(tokensBought, now)
         returns (uint256 ret) {
             ethSold = ret;
         } catch Error(string memory reason) {

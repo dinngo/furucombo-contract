@@ -62,7 +62,7 @@ contract FCompoundActions {
 
         if (_cTokenAddr == CETH_ADDR) {
             uint256 ethReceived = msg.value;
-            ICEther(_cTokenAddr).repayBorrow.value(_amount)();
+            ICEther(_cTokenAddr).repayBorrow{value: _amount}();
             // send back the extra eth
             if (ethReceived > _amount) {
                 msg.sender.transfer(ethReceived.sub(_amount));

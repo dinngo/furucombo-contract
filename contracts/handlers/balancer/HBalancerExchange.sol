@@ -29,7 +29,7 @@ contract HBalancerExchange is HandlerBase {
 
         if (tokenIn == ETH_ADDRESS) {
             try
-                balancer.batchSwapExactIn.value(totalAmountIn)(
+                balancer.batchSwapExactIn{value: totalAmountIn}(
                     swaps,
                     tokenIn,
                     tokenOut,
@@ -76,7 +76,7 @@ contract HBalancerExchange is HandlerBase {
 
         if (tokenIn == ETH_ADDRESS) {
             try
-                balancer.batchSwapExactOut.value(maxTotalAmountIn)(
+                balancer.batchSwapExactOut{value: maxTotalAmountIn}(
                     swaps,
                     tokenIn,
                     tokenOut,
@@ -122,7 +122,7 @@ contract HBalancerExchange is HandlerBase {
 
         if (tokenIn == ETH_ADDRESS) {
             try
-                balancer.multihopBatchSwapExactIn.value(totalAmountIn)(
+                balancer.multihopBatchSwapExactIn{value: totalAmountIn}(
                     swapSequences,
                     tokenIn,
                     tokenOut,
@@ -169,7 +169,7 @@ contract HBalancerExchange is HandlerBase {
 
         if (tokenIn == ETH_ADDRESS) {
             try
-                balancer.multihopBatchSwapExactOut.value(maxTotalAmountIn)(
+                balancer.multihopBatchSwapExactOut{value: maxTotalAmountIn}(
                     swapSequences,
                     tokenIn,
                     tokenOut,
@@ -214,7 +214,7 @@ contract HBalancerExchange is HandlerBase {
         IExchangeProxy balancer = IExchangeProxy(EXCHANGE_PROXY);
 
         if (tokenIn == ETH_ADDRESS) {
-            totalAmountOut = balancer.smartSwapExactIn.value(totalAmountIn)(
+            totalAmountOut = balancer.smartSwapExactIn{value: totalAmountIn}(
                 tokenIn,
                 tokenOut,
                 totalAmountIn,
@@ -247,7 +247,7 @@ contract HBalancerExchange is HandlerBase {
 
         if (tokenIn == ETH_ADDRESS) {
             try
-                balancer.smartSwapExactOut.value(maxTotalAmountIn)(
+                balancer.smartSwapExactOut{value: maxTotalAmountIn}(
                     tokenIn,
                     tokenOut,
                     totalAmountOut,

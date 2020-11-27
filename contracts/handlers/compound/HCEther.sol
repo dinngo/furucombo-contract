@@ -23,7 +23,7 @@ contract HCEther is HandlerBase {
         uint256 beforeCEtherAmount = compound.balanceOf(address(this));
 
         // Execute mint
-        try compound.mint.value(value)() {} catch Error(string memory reason) {
+        try compound.mint{value: value}() {} catch Error(string memory reason) {
             _revertMsg("mint", reason);
         } catch {
             _revertMsg("mint");
@@ -112,7 +112,7 @@ contract HCEther is HandlerBase {
             remainingAmount = debt.sub(amount);
             debt = amount;
         }
-        try compound.repayBorrowBehalf.value(debt)(borrower) {} catch Error(
+        try compound.repayBorrowBehalf{value: debt}(borrower) {} catch Error(
             string memory reason
         ) {
             _revertMsg("repayBorrowBehalf", reason);

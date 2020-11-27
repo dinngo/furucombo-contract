@@ -32,6 +32,6 @@ contract Foo2Handler is HandlerBase {
     {
         address target = getFoo(index);
         _updateToken(target);
-        return IFoo2(target).bar.value(value)();
+        return IFoo2(target).bar{value: value}();
     }
 }

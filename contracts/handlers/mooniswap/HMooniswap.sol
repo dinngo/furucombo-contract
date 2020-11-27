@@ -41,7 +41,7 @@ contract HMooniswap is HandlerBase {
         IERC20(tokens[1]).safeApprove(address(mooniswap), amounts[1]);
 
         // Add liquidity
-        try mooniswap.deposit.value(value)(amounts, minAmounts) returns (
+        try mooniswap.deposit{value: value}(amounts, minAmounts) returns (
             uint256 ret
         ) {
             fairSupply = ret;

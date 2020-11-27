@@ -70,7 +70,7 @@ contract HAaveProtocol is HandlerBase, FlashLoanReceiverBase {
 
         if (_reserve == ETHADDRESS) {
             try
-                lendingPool.deposit.value(_amount)(
+                lendingPool.deposit{value: _amount}(
                     _reserve,
                     _amount,
                     REFERRAL_CODE

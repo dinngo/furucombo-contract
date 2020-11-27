@@ -38,7 +38,7 @@ contract HOneInch is HandlerBase {
 
         if (address(fromToken) == ETH_ADDRESS) {
             try
-                IOneInchExchange(ONEINCH_PROXY).swap.value(fromTokenAmount)(
+                IOneInchExchange(ONEINCH_PROXY).swap{value: fromTokenAmount}(
                     fromToken,
                     toToken,
                     fromTokenAmount,

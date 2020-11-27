@@ -46,7 +46,7 @@ contract HYVault is HandlerBase {
         IYVault yVault = IYVault(vault);
         uint256 beforeYTokenBalance =
             IERC20(address(yVault)).balanceOf(address(this));
-        try yVault.depositETH.value(value)() {} catch Error(
+        try yVault.depositETH{value: value}() {} catch Error(
             string memory reason
         ) {
             _revertMsg("depositETH", reason);

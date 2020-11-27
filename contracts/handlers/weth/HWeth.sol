@@ -13,7 +13,7 @@ contract HWeth is HandlerBase {
     }
 
     function deposit(uint256 value) external payable {
-        try IWETH9(WETH).deposit.value(value)() {} catch Error(
+        try IWETH9(WETH).deposit{value: value}() {} catch Error(
             string memory reason
         ) {
             _revertMsg("deposit", reason);

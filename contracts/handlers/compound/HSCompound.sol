@@ -11,7 +11,7 @@ contract HSCompound is HandlerBase {
     using SafeERC20 for IERC20;
 
     // prettier-ignore
-    address public constant FCOMPOUND_ACTIONS = 0x3b48034e095F28555BED1f591E44B174B55f46Be;
+    address public constant FCOMPOUND_ACTIONS = 0x0B35AbCEA29f1AB2caF2c1f1df4173d0E556258B;
     // prettier-ignore
     address public constant COMPTROLLER = 0x3d9819210A31b4961b30EF54bE2aeD79B9c9Cd3B;
     // prettier-ignore
@@ -108,7 +108,7 @@ contract HSCompound is HandlerBase {
             if (cTokenRepay == CETH_ADDRESS) {
                 // Execute ether repay
                 try
-                    IDSProxy(dsProxy).execute.value(uRepayAmount)(
+                    IDSProxy(dsProxy).execute{value: uRepayAmount}(
                         FCOMPOUND_ACTIONS,
                         abi.encodeWithSelector(
                             // selector of "repayBorrow(address,uint256)"
