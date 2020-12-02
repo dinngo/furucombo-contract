@@ -284,6 +284,39 @@ contract('Proxy', function([_, deployer, user]) {
       expect(await this.foo.bValue.call()).eq(r);
     });
 
+    it('replace parameter with dynamic array return', async function() {
+      const tos = [this.fooHandler.address, this.fooHandler.address];
+      const secAmt = ether('1');
+      const ratio = ether('0.7');
+
+      // local stack idx start from [+2] if using dynamic array
+      // because it will store 2 extra data(pointer and array length) to local stack in the first and second index
+      const configs = [
+        '0x0200000000000000000000000000000000000000000000000000000000000000', // be referenced
+        '0x01000000000000000203ffffffffffffffffffffffffffffffffffffffffffff', //replace params[1] -> local stack[3]
+      ];
+
+      const datas = [
+        abi.simpleEncode(
+          'barUList(address,uint256,uint256,uint256)',
+          this.foo.address,
+          ether('1'),
+          secAmt,
+          ether('1')
+        ),
+        abi.simpleEncode('barUint1(address,uint256)', this.foo.address, ratio),
+      ];
+
+      const receipt = await this.proxy.batchExec(tos, configs, datas, {
+        from: user,
+        value: ether('1'),
+      });
+
+      expect(await this.foo.nValue.call()).to.be.bignumber.eq(
+        secAmt.mul(ratio).div(ether('1'))
+      );
+    });
+
     it('replace second parameter', async function() {
       const tos = [this.fooHandler.address, this.fooHandler.address];
       const r = await this.foo.bar.call();

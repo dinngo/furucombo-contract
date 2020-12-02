@@ -42,4 +42,13 @@ contract Foo4Handler is HandlerBase {
     {
         ret = Foo4(to).barUint1(a);
     }
+
+    function barUList(
+        address to,
+        uint256 a,
+        uint256 b,
+        uint256 c
+    ) external payable returns (uint256[] memory ret) {
+        ret = Foo4(to).barUList(a, b, c);
+    }
 }

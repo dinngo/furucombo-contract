@@ -28,4 +28,16 @@ contract Foo4 {
         nValue = a;
         return nValue;
     }
+
+    function barUList(
+        uint256 a,
+        uint256 b,
+        uint256 c
+    ) external returns (uint256[] memory) {
+        uint256[] memory uList = new uint256[](3);
+        uList[0] = a;
+        uList[1] = b;
+        uList[2] = c;
+        return uList;
+    }
 }
