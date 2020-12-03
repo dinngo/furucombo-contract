@@ -18,11 +18,11 @@ The details about dynamic cube input of Furucombo that includes config setup and
 
 config is bytes32 data represent by hex.
 
-![](image/../images/config.png)
+![](images/config.png)
 
 
 - ### Param config
-    -  ![](image/../images/param_config.png)
+    -  ![](images/param_config.png)
     - `255-248` bits reserved for Param config
     - `248`: 1 if the parameter is dynamic, 0 if the parameter is static.
     - `249`: 1 if the return data will be referenced, 0 if not.
@@ -33,7 +33,7 @@ config is bytes32 data represent by hex.
         - `0x03` => `(b11)`: dynamic parameter and return data will be referenced.
 
 - ### Parameter location
-    - ![](image/../images/parameter_config.png)
+    - ![](images/parameter_config.png)
     - `247-184` bits reserved for Parameter location (total `64` bits).
     - Every bit locate the bytes (exclude 4-byte function signature) of dynamic parameter.
     - Support the function include maximum `64` parameters.
@@ -43,7 +43,7 @@ config is bytes32 data represent by hex.
         - `0x04` => `(b100)` => replace the 1, 3 preamter with dynamic parameter
 
 - ### Reference location
-    - ![](image/../images/reference_config.png)
+    - ![](images/reference_config.png)
     -  `183-0` bits reserved for Reference location (total: `184` bits).
     - Support max `23` dynamic parameters replacement.
     - Every `byte` give the location of localStack which contains the return values
@@ -63,7 +63,7 @@ config is bytes32 data represent by hex.
 ## Dynamic Array Parameters
 Dynamic array includes **2** extra data(pointer and array length) except data. It will store pointer and array length to localStack at the first.
 
-![](image/../images/dynamic_array.png)
+![](images/dynamic_array.png)
 
 **Dynamic Array Data**
 
@@ -85,7 +85,7 @@ The localStack index must start from [**+2**] if using dynamic array return. For
 ## Percentage of dynamic parameter
 `dynamic parameter = return data * percentage, 0 < percentage <= 1`
 
-![](image/../images/percentage.png)
+![](images/percentage.png)
 
 
 Replace the original parameter with **fraction** if using a dynamic parameter. The fraction will be divided by `ether(1)` for getting the **percentage** of return data.
