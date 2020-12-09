@@ -38,9 +38,9 @@ config is bytes32 data represent by hex.
     - Every bit locate the bytes (exclude 4-byte function signature) of dynamic parameter.
     - Support the function include maximum `64` parameters.
     - Example:
-        - `0x01` => `(b001)` => replace the 1 preamter with dynamic parameter
-        - `0x03` => `(b011)` => replace the 1, 2 preamters with dynamic parameter
-        - `0x04` => `(b100)` => replace the 1, 3 preamter with dynamic parameter
+        - `0x01` => `(b001)` => replace the 1 parameter with dynamic parameter
+        - `0x03` => `(b011)` => replace the 1, 2 parameters with dynamic parameter
+        - `0x04` => `(b100)` => replace the 3 parameter with dynamic parameter
 
 - ### Reference location
     - ![](images/reference_config.png)
