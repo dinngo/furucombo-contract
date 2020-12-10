@@ -12,7 +12,7 @@ contract HMooniswap is HandlerBase {
     using SafeMath for uint256;
 
     // prettier-ignore
-    address payable public constant MOONIFACTORY = 0x71CD6666064C3A1354a3B4dca5fA1E2D3ee7D303;
+    address public constant MOONIFACTORY = 0x71CD6666064C3A1354a3B4dca5fA1E2D3ee7D303;
 
     function getContractName() public pure override returns (string memory) {
         return "HMooniswap";
