@@ -124,10 +124,7 @@ contract HCToken is HandlerBase {
         address token = _getToken(cToken);
 
         uint256 debt = compound.borrowBalanceCurrent(borrower);
-        uint256 remainingAmount;
         if (repayAmount < debt) {
-            // Get remaining debt amount
-            remainingAmount = debt.sub(repayAmount);
             debt = repayAmount;
         }
         IERC20(token).safeApprove(cToken, debt);
@@ -144,8 +141,9 @@ contract HCToken is HandlerBase {
         } catch {
             _revertMsg("repayBorrowBehalf");
         }
+        uint256 debtEnd = compound.borrowBalanceCurrent(borrower);
         IERC20(token).safeApprove(cToken, 0);
-        return remainingAmount;
+        return debtEnd;
     }
 
     function _getToken(address token) internal view returns (address result) {

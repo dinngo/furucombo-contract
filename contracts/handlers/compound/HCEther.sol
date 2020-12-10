@@ -106,10 +106,7 @@ contract HCEther is HandlerBase {
     {
         ICEther compound = ICEther(CETHER);
         uint256 debt = compound.borrowBalanceCurrent(borrower);
-        uint256 remainingAmount;
         if (amount < debt) {
-            // Get remaining debt amount
-            remainingAmount = debt.sub(amount);
             debt = amount;
         }
         try compound.repayBorrowBehalf{value: debt}(borrower) {} catch Error(
@@ -119,6 +116,7 @@ contract HCEther is HandlerBase {
         } catch {
             _revertMsg("repayBorrowBehalf");
         }
-        return remainingAmount;
+        uint256 debtEnd = compound.borrowBalanceCurrent(borrower);
+        return debtEnd;
     }
 }
