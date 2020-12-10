@@ -96,6 +96,10 @@ contract Proxy is Storage, Config {
             tos.length == datas.length,
             "Tos and datas length inconsistent"
         );
+        require(
+            tos.length == configs.length,
+            "Tos and configs length inconsistent"
+        );
         for (uint256 i = 0; i < tos.length; i++) {
             // Check if the data contains dynamic parameter
             if (!configs[i].isStatic()) {
