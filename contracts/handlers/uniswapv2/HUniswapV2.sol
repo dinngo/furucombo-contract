@@ -11,8 +11,8 @@ contract HUniswapV2 is HandlerBase {
     using SafeERC20 for IERC20;
     using SafeMath for uint256;
 
-    address constant UNISWAPV2_ROUTER =
-        0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D;
+    // prettier-ignore
+    address public constant UNISWAPV2_ROUTER = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D;
 
     function getContractName() public pure override returns (string memory) {
         return "HUniswapV2";
