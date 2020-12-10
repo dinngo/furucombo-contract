@@ -8,7 +8,7 @@ contract Foo4Handler is HandlerBase {
     event FooUint256(uint256 b);
 
     function getContractName() public pure override returns (string memory) {
-        return "Foo3Handler";
+        return "Foo4Handler";
     }
 
     function bar(address to) external payable returns (bytes32 ret) {
