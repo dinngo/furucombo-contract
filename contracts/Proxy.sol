@@ -105,7 +105,14 @@ contract Proxy is Storage, Config {
             // Check if the output will be referenced afterwards
             if (configs[i].isReferenced()) {
                 // If so, parse the output and place it into local stack
-                index = _parse(localStack, _exec(tos[i], datas[i]), index);
+                uint256 num = configs[i].getReturnNum();
+                uint256 newIndex =
+                    _parse(localStack, _exec(tos[i], datas[i]), index);
+                require(
+                    newIndex == index + num,
+                    "Return num and parsed return num not matched"
+                );
+                index = newIndex;
             } else {
                 _exec(tos[i], datas[i]);
             }

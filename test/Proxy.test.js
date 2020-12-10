@@ -268,8 +268,9 @@ contract('Proxy', function([_, deployer, user]) {
       const a =
         '0x0000000000000000000000000000000000000000000000000000000000000000';
       const configs = [
-        '0x0200000000000000000000000000000000000000000000000000000000000000',
-        '0x01000000000000000200ffffffffffffffffffffffffffffffffffffffffffff',
+        // 1 32-bytes return value to be referenced
+        '0x0001000000000000000000000000000000000000000000000000000000000000',
+        '0x0100000000000000000200ffffffffffffffffffffffffffffffffffffffffff',
       ];
       const datas = [
         abi.simpleEncode('bar(address)', this.foo.address),
@@ -292,8 +293,9 @@ contract('Proxy', function([_, deployer, user]) {
       // local stack idx start from [+2] if using dynamic array
       // because it will store 2 extra data(pointer and array length) to local stack in the first and second index
       const configs = [
-        '0x0200000000000000000000000000000000000000000000000000000000000000', // be referenced
-        '0x01000000000000000203ffffffffffffffffffffffffffffffffffffffffffff', //replace params[1] -> local stack[3]
+        // 5 32-bytes return value to be referenced
+        '0x0005000000000000000000000000000000000000000000000000000000000000', // be referenced
+        '0x0100000000000000000203ffffffffffffffffffffffffffffffffffffffffff', //replace params[1] -> local stack[3]
       ];
 
       const datas = [
@@ -325,8 +327,8 @@ contract('Proxy', function([_, deployer, user]) {
       const b =
         '0x0000000000000000000000000000000000000000000000000000000000000000';
       const configs = [
-        '0x0200000000000000000000000000000000000000000000000000000000000000',
-        '0x01000000000000000400ffffffffffffffffffffffffffffffffffffffffffff',
+        '0x0001000000000000000000000000000000000000000000000000000000000000',
+        '0x0100000000000000000400ffffffffffffffffffffffffffffffffffffffffff',
       ];
       const datas = [
         abi.simpleEncode('bar(address)', this.foo.address),
@@ -351,8 +353,8 @@ contract('Proxy', function([_, deployer, user]) {
       const r = await this.foo.barUint.call();
       const a = ether('0.5');
       const configs = [
-        '0x0200000000000000000000000000000000000000000000000000000000000000',
-        '0x01000000000000000200ffffffffffffffffffffffffffffffffffffffffffff',
+        '0x0001000000000000000000000000000000000000000000000000000000000000',
+        '0x0100000000000000000200ffffffffffffffffffffffffffffffffffffffffff',
       ];
       const datas = [
         abi.simpleEncode('barUint(address)', this.foo.address),
