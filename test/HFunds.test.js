@@ -314,7 +314,6 @@ contract('Funds', function([_, user, someone]) {
   describe('get balance', function() {
     before(async function() {
       this.token = await IToken.at(tokenAddresses[0]);
-      this.usdt = await IUsdt.at(USDT_TOKEN);
     });
     describe('Ether', async function() {
       it('normal', async function() {
@@ -336,8 +335,6 @@ contract('Funds', function([_, user, someone]) {
         const handlerReturn = utils.toBN(
           getHandlerReturn(receipt, ['uint256'])[0]
         );
-        console.log('handler', handlerReturn.toString());
-        console.log('value', value.toString());
         expect(handlerReturn).to.be.bignumber.eq(value);
         profileGas(receipt);
       });
@@ -361,8 +358,6 @@ contract('Funds', function([_, user, someone]) {
           const handlerReturn = utils.toBN(
             getHandlerReturn(receipt, ['uint256'])[0]
           );
-          console.log('handler', handlerReturn.toString());
-          console.log('value', value.toString());
           expect(handlerReturn).to.be.bignumber.eq(value);
           profileGas(receipt);
         });

@@ -52,8 +52,6 @@ contract('CEther', function([_, user]) {
     );
     this.cEther = await ICEther.at(CETHER);
     this.proxy = await Proxy.new(this.registry.address);
-    console.log('user', user);
-    console.log('proxy', this.proxy.address);
   });
 
   beforeEach(async function() {

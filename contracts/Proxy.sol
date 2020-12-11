@@ -151,7 +151,10 @@ contract Proxy is Storage, Config {
                 let m := mload(loc)
                 // Adjust the value by multiplier if a dynamic parameter is not zero
                 if iszero(iszero(m)) {
-                    ref := div(mul(mload(loc), ref), base)
+                    // Assert no overflow first
+                    let p := mul(m, ref)
+                    if iszero(eq(div(p, m), ref)) { revert(0, 0) } // require(p / m == ref)
+                    ref := div(p, base)
                 }
                 mstore(loc, ref)
             }

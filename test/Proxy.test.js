@@ -7,7 +7,7 @@ const {
   expectRevert,
 } = require('@openzeppelin/test-helpers');
 const { tracker } = balance;
-const { ZERO_BYTES32 } = constants;
+const { ZERO_BYTES32, MAX_UINT256 } = constants;
 const abi = require('ethereumjs-abi');
 const utils = web3.utils;
 
@@ -319,7 +319,7 @@ contract('Proxy', function([_, deployer, user]) {
       );
     });
 
-    it('replace second parameter', async function() {
+    it('replace third parameter', async function() {
       const tos = [this.fooHandler.address, this.fooHandler.address];
       const r = await this.foo.bar.call();
       const a =
@@ -464,6 +464,27 @@ contract('Proxy', function([_, deployer, user]) {
           value: ether('1'),
         }),
         'Return num and parsed return num not matched'
+      );
+    });
+
+    it('should revert: overflow during trimming', async function() {
+      const tos = [this.fooHandler.address, this.fooHandler.address];
+      const r = await this.foo.barUint.call();
+      const a = MAX_UINT256; // multiply by any num greater than 0 will cause overflow
+      const configs = [
+        '0x0001000000000000000000000000000000000000000000000000000000000000',
+        '0x0100000000000000000200ffffffffffffffffffffffffffffffffffffffffff',
+      ];
+      const datas = [
+        abi.simpleEncode('barUint(address)', this.foo.address),
+        abi.simpleEncode('barUint1(address,uint256)', this.foo.address, a),
+      ];
+
+      await expectRevert.unspecified(
+        this.proxy.batchExec(tos, configs, datas, {
+          from: user,
+          value: ether('1'),
+        })
       );
     });
   });

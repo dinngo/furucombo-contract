@@ -71,7 +71,6 @@ contract('Uniswap Liquidity', function([_, user]) {
         from: user,
       });
       await this.proxy.updateTokenMock(this.token.address);
-      const swapUser = this.swap.balanceOf.call(user);
     });
 
     it('normal', async function() {
