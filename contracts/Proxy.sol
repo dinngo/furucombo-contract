@@ -104,7 +104,7 @@ contract Proxy is Storage, Config {
             // Check if the data contains dynamic parameter
             if (!configs[i].isStatic()) {
                 // If so, trim the exectution data base on the configuration and stack content
-                _trim(datas[i], configs[i], localStack);
+                _trim(datas[i], configs[i], localStack, index);
             }
             // Check if the output will be referenced afterwards
             if (configs[i].isReferenced()) {
@@ -130,16 +130,19 @@ contract Proxy is Storage, Config {
      * @param data The execution data.
      * @param config The configuration.
      * @param localStack The stack the be referenced.
+     * @param index Current element count of localStack.
      */
     function _trim(
         bytes memory data,
         bytes32 config,
-        bytes32[256] memory localStack
+        bytes32[256] memory localStack,
+        uint256 index
     ) internal pure {
         // Fetch the parameter configuration from config
         (uint256[] memory refs, uint256[] memory params) = config.getParams();
         // Trim the data with the reference and parameters
         for (uint256 i = 0; i < refs.length; i++) {
+            require(refs[i] < index, "Reference to out of localStack");
             bytes32 ref = localStack[refs[i]];
             uint256 offset = params[i];
             uint256 base = PERCENTAGE_BASE;
