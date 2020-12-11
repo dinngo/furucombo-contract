@@ -828,7 +828,7 @@ contract('Maker', function([_, user1, user2, someone]) {
       let daiUser;
 
       beforeEach(async function() {
-        const tokenAmount = ether('1000');
+        const tokenAmount = ether('2000');
         const daiAmount = ether('510');
         const new2 = abi.simpleEncode(
           'openLockGemAndDraw(address,address,address,address,bytes32,uint256,uint256,bool)',
