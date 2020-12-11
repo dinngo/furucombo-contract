@@ -11,7 +11,7 @@ contract HSCompound is HandlerBase {
     using SafeERC20 for IERC20;
 
     // prettier-ignore
-    address public constant FCOMPOUND_ACTIONS = 0x311F15567e78f76A614906801e6D39976375aA18;
+    address public constant FCOMPOUND_ACTIONS = 0x05EF8eb657027927fAB9b279138f0189CB144976;
     // prettier-ignore
     address public constant COMPTROLLER = 0x3d9819210A31b4961b30EF54bE2aeD79B9c9Cd3B;
     // prettier-ignore
