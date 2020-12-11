@@ -31,6 +31,7 @@
     "ganache-cli": "6.11.0",
     "husky": "^4.2.5",
     "node-fetch": "^2.6.0",
+    "pify": "^5.0.0",
     "prettier": "^1.19.1",
     "prettier-plugin-solidity": "^1.0.0-alpha.57",
     "query-string": "^6.13.1",
