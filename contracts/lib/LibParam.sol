@@ -1,18 +1,18 @@
 pragma solidity ^0.6.0;
 
 library LibParam {
-    bytes32 public constant STATIC_MASK =
+    bytes32 private constant STATIC_MASK =
         0x0100000000000000000000000000000000000000000000000000000000000000;
-    bytes32 public constant PARAMS_MASK =
+    bytes32 private constant PARAMS_MASK =
         0x0000000000000000000000000000000000000000000000000000000000000001;
-    bytes32 public constant REFS_MASK =
+    bytes32 private constant REFS_MASK =
         0x00000000000000000000000000000000000000000000000000000000000000FF;
-    bytes32 public constant RETURN_NUM_MASK =
+    bytes32 private constant RETURN_NUM_MASK =
         0x00FF000000000000000000000000000000000000000000000000000000000000;
 
-    uint256 public constant REFS_LIMIT = 22;
-    uint256 public constant PARAMS_SIZE_LIMIT = 64;
-    uint256 public constant RETURN_NUM_OFFSET = 240;
+    uint256 private constant REFS_LIMIT = 22;
+    uint256 private constant PARAMS_SIZE_LIMIT = 64;
+    uint256 private constant RETURN_NUM_OFFSET = 240;
 
     function isStatic(bytes32 conf) internal pure returns (bool) {
         if (conf & STATIC_MASK == 0) return true;
