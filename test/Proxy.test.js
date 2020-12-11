@@ -391,7 +391,7 @@ contract('Proxy', function([_, deployer, user]) {
           from: user,
           value: ether('1'),
         }),
-        'Location count and ref count not match'
+        'Location count less than ref count'
       );
     });
 
