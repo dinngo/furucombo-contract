@@ -57,6 +57,6 @@ library LibParam {
             }
             conf = conf >> 1;
         }
-        require(i == n, "Location count and ref count not match");
+        require(i == n, "Location count less than ref count");
     }
 }
