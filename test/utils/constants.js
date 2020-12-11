@@ -150,7 +150,7 @@ module.exports = {
   CREATE2_FACTORY: '0xce0042B868300000d44A59004Da54A005ffdcf9f',
   // salt: web3.utils.asciiToHex('FCompoundActions')
   FCOMPOUND_ACTIONS_SALT: '0x46436f6d706f756e64416374696f6e73',
-  FCOMPOUND_ACTIONS: '0xa3a30f51fd45B9B568948a23b81Dcfe5e267c2F3',
+
   // Combo Claim Merkle Proof
   COMBO_TOTAL_SUPPLY: '20', // ehter
   COMBO_CLAIM_USER: '0x1b57b3A1d5b4aa8E218F54FafB00975699463e6e',
@@ -163,4 +163,9 @@ module.exports = {
     '0xc1426e8cdac7d0d5c911219007db6366856d7c6e82baade601db7aa3c3343dd8',
     '0xed112d2d07db65f0ff74ad495d1ca35e89d51ea233be7ab2cc275d69559c97fa',
   ],
+  FCOMPOUND_ACTIONS: '0x05EF8eb657027927fAB9b279138f0189CB144976',
+
+  /* Event Signature */
+  RecordHandlerResultSig:
+    '0x90c726ff5efa7268723ee48df835144384bc0f012e89750782886764b5e54f16',
 };

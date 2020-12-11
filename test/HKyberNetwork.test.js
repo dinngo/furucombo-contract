@@ -25,6 +25,7 @@ const {
   evmSnapshot,
   mulPercent,
   profileGas,
+  getHandlerReturn,
 } = require('./utils/utils');
 
 const HKyberNetwork = artifacts.require('HKyberNetwork');
@@ -87,6 +88,12 @@ contract('KyberNetwork Swap', function([_, user]) {
           from: user,
           value: ether('1'),
         });
+
+        const tokenUserEnd = await this.token.balanceOf.call(user);
+        const handlerReturn = utils.toBN(
+          getHandlerReturn(receipt, ['uint256'])[0]
+        );
+        expect(handlerReturn).to.be.bignumber.eq(tokenUserEnd.sub(tokenUser));
         expect(await this.token.balanceOf.call(user)).to.be.bignumber.gt(
           tokenUser.add(kyberswapAmount)
         );
@@ -116,11 +123,12 @@ contract('KyberNetwork Swap', function([_, user]) {
           tokenAddress,
           rate[0].mul(new BN('1.5'))
         );
-        await expectRevert.unspecified(
+        await expectRevert(
           this.proxy.execMock(to, data, {
             from: user,
             value: ether('1'),
-          })
+          }),
+          'HKyberNetwork_swapEtherToToken: Unspecified'
         );
         expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
           tokenUser
@@ -159,6 +167,14 @@ contract('KyberNetwork Swap', function([_, user]) {
           value: ether('1'),
         });
 
+        const balanceUserDelta = await balanceUser.delta();
+        const handlerReturn = utils.toBN(
+          getHandlerReturn(receipt, ['uint256'])[0]
+        );
+        expect(handlerReturn).to.be.bignumber.eq(
+          balanceUserDelta.add(new BN(receipt.receipt.gasUsed))
+        );
+
         expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
           tokenUser
         );
@@ -166,7 +182,7 @@ contract('KyberNetwork Swap', function([_, user]) {
           await this.token.balanceOf.call(this.proxy.address)
         ).to.be.bignumber.eq(ether('0'));
         expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
-        expect(await balanceUser.delta()).to.be.bignumber.gt(
+        expect(balanceUserDelta).to.be.bignumber.gt(
           kyberswapAmount.sub(new BN(receipt.receipt.gasUsed))
         );
         profileGas(receipt);
@@ -207,6 +223,12 @@ contract('KyberNetwork Swap', function([_, user]) {
           from: user,
           value: ether('1'),
         });
+
+        const destTokenUserEnd = await this.destToken.balanceOf.call(user);
+        const handlerReturn = utils.toBN(
+          getHandlerReturn(receipt, ['uint256'])[0]
+        );
+        expect(handlerReturn).to.be.bignumber.eq(destTokenUserEnd);
 
         expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
           tokenUser

@@ -1,12 +1,12 @@
-pragma solidity ^0.5.0;
+pragma solidity ^0.6.0;
 
-import "@openzeppelin/contracts/ownership/Ownable.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
 /// @notice The handler registry database for Furucombo
 contract Registry is Ownable {
-    mapping(address => bytes32) handlers;
+    mapping(address => bytes32) public handlers;
 
-    bytes32 constant DEPRECATED = bytes10(0x64657072656361746564);
+    bytes32 public constant DEPRECATED = bytes10(0x64657072656361746564);
 
     /**
      * @notice Register a handler with a bytes32 information.
@@ -18,7 +18,7 @@ contract Registry is Ownable {
      */
     function register(address registration, bytes32 info) external onlyOwner {
         require(registration != address(0), "zero address");
-        require(handlers[registration] == bytes32(0), "registered");
+        require(handlers[registration] != DEPRECATED, "unregistered");
         handlers[registration] = info;
     }
 

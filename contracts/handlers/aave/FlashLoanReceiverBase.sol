@@ -1,4 +1,4 @@
-pragma solidity ^0.5.0;
+pragma solidity ^0.6.0;
 
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
@@ -15,8 +15,8 @@ contract FlashLoanReceiverBase {
     function transferFundsBackToPoolInternal(address _reserve, uint256 _amount)
         internal
     {
-        address payable core = ILendingPoolAddressesProvider(PROVIDER)
-            .getLendingPoolCore();
+        address payable core =
+            ILendingPoolAddressesProvider(PROVIDER).getLendingPoolCore();
 
         transferInternal(core, _reserve, _amount);
     }
@@ -27,7 +27,7 @@ contract FlashLoanReceiverBase {
         uint256 _amount
     ) internal {
         if (_reserve == ETHADDRESS) {
-            _destination.call.value(_amount)("");
+            _destination.call{value: _amount}("");
             return;
         }
         IERC20(_reserve).safeTransfer(_destination, _amount);

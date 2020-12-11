@@ -8,6 +8,7 @@ const {
   time,
 } = require('@openzeppelin/test-helpers');
 const { tracker } = balance;
+const { ZERO_BYTES32 } = constants;
 const { duration, increase, latest } = time;
 const abi = require('ethereumjs-abi');
 const utils = web3.utils;
@@ -132,6 +133,7 @@ contract('Claim Comp and add liquidity', function([
         this.hFunds.address,
         this.hUniswapV2.address,
       ];
+      const config = [ZERO_BYTES32, ZERO_BYTES32, ZERO_BYTES32];
       const data = [
         abi.simpleEncode('claimComp()'),
         abi.simpleEncode('inject(address[],uint256[])', tokenAddresses, values),
@@ -144,7 +146,7 @@ contract('Claim Comp and add liquidity', function([
           new BN('1')
         ),
       ];
-      const receipt = await this.proxy.batchExec(to, data, {
+      const receipt = await this.proxy.batchExec(to, config, data, {
         from: user,
         value: ether('1'),
       });

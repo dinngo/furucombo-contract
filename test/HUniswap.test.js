@@ -25,6 +25,7 @@ const {
   evmSnapshot,
   mulPercent,
   profileGas,
+  getHandlerReturn,
 } = require('./utils/utils');
 
 const HUniswap = artifacts.require('HUniswap');
@@ -97,6 +98,12 @@ contract('Uniswap Swap', function([_, user, someone]) {
           from: user,
           value: ether('1'),
         });
+
+        const handlerReturn = utils.toBN(
+          getHandlerReturn(receipt, ['uint256'])[0]
+        );
+        expect(handlerReturn).to.be.bignumber.eq(uniswapAmount);
+
         expect(await this.token.balanceOf.call(user)).to.be.bignumber.gte(
           tokenUser.add(minAmount)
         );
@@ -127,8 +134,9 @@ contract('Uniswap Swap', function([_, user, someone]) {
           tokenAddress,
           uniswapAmount.add(ether('0.1'))
         );
-        await expectRevert.unspecified(
-          this.proxy.execMock(to, data, { from: user, value: ether('1') })
+        await expectRevert(
+          this.proxy.execMock(to, data, { from: user, value: ether('1') }),
+          'HUniswap_ethToTokenSwapInput: Unspecified'
         );
         expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
           tokenUser
@@ -164,6 +172,12 @@ contract('Uniswap Swap', function([_, user, someone]) {
           from: user,
           value: ether('1'),
         });
+
+        const handlerReturn = utils.toBN(
+          getHandlerReturn(receipt, ['uint256'])[0]
+        );
+        expect(handlerReturn).to.be.bignumber.eq(uniswapAmount);
+
         expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
           tokenUser.add(ether('100'))
         );
@@ -194,11 +208,12 @@ contract('Uniswap Swap', function([_, user, someone]) {
           deadline,
           { from: user, value: ether('1') }
         );
-        await expectRevert.unspecified(
+        await expectRevert(
           this.proxy.execMock(to, data, {
             from: user,
             value: ether('1'),
-          })
+          }),
+          'HUniswap_ethToTokenSwapOutput: Unspecified'
         );
       });
     });
@@ -251,6 +266,14 @@ contract('Uniswap Swap', function([_, user, someone]) {
         });
         await this.proxy.updateTokenMock(this.token.address);
         const receipt = await this.proxy.execMock(to, data, { from: user });
+        const handlerReturn = utils.toBN(
+          getHandlerReturn(receipt, ['uint256'])[0]
+        );
+
+        const userBalanceDelta = await balanceUser.delta();
+        expect(userBalanceDelta).to.be.bignumber.eq(
+          handlerReturn.sub(new BN(receipt.receipt.gasUsed))
+        );
 
         expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
           tokenUser
@@ -259,7 +282,7 @@ contract('Uniswap Swap', function([_, user, someone]) {
           await this.token.balanceOf.call(this.proxy.address)
         ).to.be.bignumber.eq(ether('0'));
         expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
-        expect(await balanceUser.delta()).to.be.bignumber.gte(
+        expect(userBalanceDelta).to.be.bignumber.gte(
           minAmount.sub(new BN(receipt.receipt.gasUsed))
         );
         profileGas(receipt);
@@ -296,6 +319,12 @@ contract('Uniswap Swap', function([_, user, someone]) {
         const receipt = await this.proxy.execMock(to, data, {
           from: user,
         });
+        const handlerReturn = utils.toBN(
+          getHandlerReturn(receipt, ['uint256'])[0]
+        );
+        const tokenUserEnd = await this.token.balanceOf.call(user);
+        expect(tokenUserEnd).to.be.bignumber.eq(value.sub(handlerReturn));
+
         expect(await this.token.balanceOf.call(user)).to.be.bignumber.gte(
           tokenUser.add(value).sub(maxAmount)
         );
@@ -363,6 +392,11 @@ contract('Uniswap Swap', function([_, user, someone]) {
         });
         await this.proxy.updateTokenMock(this.token0.address);
         const receipt = await this.proxy.execMock(to, data, { from: user });
+        const handlerReturn = utils.toBN(
+          getHandlerReturn(receipt, ['uint256'])[0]
+        );
+        const token1UserEnd = await this.token1.balanceOf.call(user);
+        expect(handlerReturn).to.be.bignumber.eq(token1UserEnd.sub(token1User));
 
         expect(await this.token0.balanceOf.call(user)).to.be.bignumber.eq(
           token0User
@@ -411,6 +445,12 @@ contract('Uniswap Swap', function([_, user, someone]) {
         const receipt = await this.proxy.execMock(to, data, {
           from: user,
         });
+        const handlerReturn = utils.toBN(
+          getHandlerReturn(receipt, ['uint256'])[0]
+        );
+        const token0UserEnd = await this.token0.balanceOf.call(user);
+        expect(token0UserEnd).to.be.bignumber.eq(value.sub(handlerReturn));
+
         expect(await this.token0.balanceOf.call(user)).to.be.bignumber.gte(
           token0User.add(value).sub(maxAmount)
         );

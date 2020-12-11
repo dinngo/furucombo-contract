@@ -44,6 +44,7 @@ const {
   evmSnapshot,
   mulPercent,
   profileGas,
+  getHandlerReturn,
 } = require('./utils/utils');
 
 const HBalancerExchange = artifacts.require('HBalancerExchange');
@@ -165,6 +166,13 @@ contract('BalancerExchange', function([_, user]) {
             from: user,
             value: amount,
           });
+          // Get handler return
+          const handlerReturn = utils.toBN(
+            getHandlerReturn(receipt, ['uint256'])[0]
+          );
+          expect(handlerReturn).to.be.bignumber.eq(
+            await this.token0.balanceOf.call(user)
+          );
           expect(await balanceProxy.get()).to.be.zero;
           expect(
             await this.token0.balanceOf.call(this.proxy.address)
@@ -220,6 +228,13 @@ contract('BalancerExchange', function([_, user]) {
             from: user,
             value: ether('0.1'),
           });
+
+          // Check handler return amount
+          const handlerReturn = utils.toBN(
+            getHandlerReturn(receipt, ['uint256'])[0]
+          );
+          expect(handlerReturn).to.be.bignumber.eq(totalReturnWei);
+
           expect(await balanceProxy.get()).to.be.zero;
           expect(
             await this.token0.balanceOf.call(this.proxy.address)
@@ -270,6 +285,15 @@ contract('BalancerExchange', function([_, user]) {
             from: user,
             value: ether('0.1'),
           });
+
+          // Check handler return amount
+          const handlerReturn = utils.toBN(
+            getHandlerReturn(receipt, ['uint256'])[0]
+          );
+          expect(handlerReturn).to.be.bignumber.eq(
+            await this.token1.balanceOf.call(user)
+          );
+
           expect(await balanceProxy.get()).to.be.zero;
           expect(
             await this.token0.balanceOf.call(this.proxy.address)
@@ -326,6 +350,13 @@ contract('BalancerExchange', function([_, user]) {
             from: user,
             value: maxAmount,
           });
+
+          // Check handler return amount
+          const handlerReturn = utils.toBN(
+            getHandlerReturn(receipt, ['uint256'])[0]
+          );
+          expect(handlerReturn).to.be.bignumber.eq(totalReturnWei);
+
           expect(await balanceProxy.get()).to.be.zero;
           expect(
             await this.token0.balanceOf.call(this.proxy.address)
@@ -380,6 +411,13 @@ contract('BalancerExchange', function([_, user]) {
             from: user,
             value: ether('0.1'),
           });
+
+          // Check handler return amount
+          const handlerReturn = utils.toBN(
+            getHandlerReturn(receipt, ['uint256'])[0]
+          );
+          expect(handlerReturn).to.be.bignumber.eq(totalReturnWei);
+
           expect(await balanceProxy.get()).to.be.zero;
           expect(
             await this.token0.balanceOf.call(this.proxy.address)
@@ -431,6 +469,13 @@ contract('BalancerExchange', function([_, user]) {
             from: user,
             value: ether('0.1'),
           });
+
+          // Check handler return amount
+          const handlerReturn = utils.toBN(
+            getHandlerReturn(receipt, ['uint256'])[0]
+          );
+          expect(handlerReturn).to.be.bignumber.eq(totalReturnWei);
+
           expect(await balanceProxy.get()).to.be.zero;
           expect(
             await this.token0.balanceOf.call(this.proxy.address)

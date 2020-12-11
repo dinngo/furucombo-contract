@@ -1,4 +1,4 @@
-pragma solidity ^0.5.0;
+pragma solidity ^0.6.0;
 
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 
@@ -17,6 +17,10 @@ contract HOneInch is HandlerBase {
     // prettier-ignore
     address public constant ETH_ADDRESS = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
+    function getContractName() public pure override returns (string memory) {
+        return "HOneInch";
+    }
+
     function swap(
         IERC20 fromToken,
         IERC20 toToken,
@@ -29,40 +33,52 @@ contract HOneInch is HandlerBase {
         uint256[] memory starts,
         uint256[] memory gasLimitsAndValues
     ) public payable returns (uint256 returnAmount) {
-        require(
-            address(fromToken) != address(toToken),
-            "attemp to swap to same token"
-        );
+        if (address(fromToken) == address(toToken))
+            _revertMsg("swap", "attemp to swap to same token");
 
         if (address(fromToken) == ETH_ADDRESS) {
-            returnAmount = IOneInchExchange(ONEINCH_PROXY).swap.value(
-                fromTokenAmount
-            )(
-                fromToken,
-                toToken,
-                fromTokenAmount,
-                minReturnAmount,
-                guaranteedAmount,
-                REFERRER,
-                callAddresses,
-                callDataConcat,
-                starts,
-                gasLimitsAndValues
-            );
+            try
+                IOneInchExchange(ONEINCH_PROXY).swap{value: fromTokenAmount}(
+                    fromToken,
+                    toToken,
+                    fromTokenAmount,
+                    minReturnAmount,
+                    guaranteedAmount,
+                    REFERRER,
+                    callAddresses,
+                    callDataConcat,
+                    starts,
+                    gasLimitsAndValues
+                )
+            returns (uint256 ret) {
+                returnAmount = ret;
+            } catch Error(string memory reason) {
+                _revertMsg("swap", reason);
+            } catch {
+                _revertMsg("swap");
+            }
         } else {
             IERC20(fromToken).safeApprove(TOKEN_SPENDER, fromTokenAmount);
-            returnAmount = IOneInchExchange(ONEINCH_PROXY).swap(
-                fromToken,
-                toToken,
-                fromTokenAmount,
-                minReturnAmount,
-                guaranteedAmount,
-                REFERRER,
-                callAddresses,
-                callDataConcat,
-                starts,
-                gasLimitsAndValues
-            );
+            try
+                IOneInchExchange(ONEINCH_PROXY).swap(
+                    fromToken,
+                    toToken,
+                    fromTokenAmount,
+                    minReturnAmount,
+                    guaranteedAmount,
+                    REFERRER,
+                    callAddresses,
+                    callDataConcat,
+                    starts,
+                    gasLimitsAndValues
+                )
+            returns (uint256 ret) {
+                returnAmount = ret;
+            } catch Error(string memory reason) {
+                _revertMsg("swap", reason);
+            } catch {
+                _revertMsg("swap");
+            }
             IERC20(fromToken).safeApprove(TOKEN_SPENDER, 0);
         }
 

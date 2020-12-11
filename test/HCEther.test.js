@@ -22,7 +22,12 @@ const {
   DAI_PROVIDER,
   COMPOUND_COMPTROLLER,
 } = require('./utils/constants');
-const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
+const {
+  evmRevert,
+  evmSnapshot,
+  profileGas,
+  getHandlerReturn,
+} = require('./utils/utils');
 
 const HCEther = artifacts.require('HCEther');
 const Registry = artifacts.require('Registry');
@@ -67,22 +72,31 @@ contract('CEther', function([_, user]) {
       const rate = await this.cEther.exchangeRateStored.call();
       const result = value.mul(ether('1')).div(rate);
       const cEtherUser = await this.cEther.balanceOf.call(user);
+
       const receipt = await this.proxy.execMock(to, data, {
         from: user,
         value: ether('0.1'),
       });
+
+      // Get handler return result
+      const handlerReturn = utils.toBN(
+        getHandlerReturn(receipt, ['uint256'])[0]
+      );
       const cEtherUserEnd = await this.cEther.balanceOf.call(user);
+      expect(cEtherUserEnd.sub(cEtherUser)).to.be.bignumber.eq(handlerReturn);
       expect(
         cEtherUserEnd
           .sub(cEtherUser)
           .mul(new BN('1000'))
           .divRound(result)
       ).to.be.bignumber.eq(new BN('1000'));
+
       expect(await balanceUser.delta()).to.be.bignumber.eq(
         ether('0')
           .sub(ether('0.1'))
           .sub(new BN(receipt.receipt.gasUsed))
       );
+
       profileGas(receipt);
     });
   });
@@ -105,18 +119,31 @@ contract('CEther', function([_, user]) {
       await this.cEther.transfer(this.proxy.address, value, { from: user });
       await this.proxy.updateTokenMock(this.cEther.address);
       await balanceUser.get();
+
       const receipt = await this.proxy.execMock(to, data, {
         from: user,
         value: ether('0.1'),
       });
+
+      // Get handler return result
+      const handlerReturn = utils.toBN(
+        getHandlerReturn(receipt, ['uint256'])[0]
+      );
+
+      const balanceDelta = await balanceUser.delta();
+      expect(balanceDelta).to.be.bignumber.eq(
+        handlerReturn.sub(new BN(receipt.receipt.gasUsed))
+      );
+
       expect(await this.cEther.balanceOf.call(user)).to.be.bignumber.eq(
         ether('0')
       );
       expect(
-        (await balanceUser.delta())
+        balanceDelta
           .mul(new BN('1000'))
           .divRound(result.sub(new BN(receipt.receipt.gasUsed)))
       ).to.be.bignumber.eq(new BN('1000'));
+
       profileGas(receipt);
     });
 
@@ -126,12 +153,12 @@ contract('CEther', function([_, user]) {
       const data = abi.simpleEncode('redeem(uint256)', value);
       await this.proxy.updateTokenMock(this.cEther.address);
 
-      await expectRevert.unspecified(
+      await expectRevert(
         this.proxy.execMock(to, data, {
           from: user,
           value: ether('0.1'),
         }),
-        'compound redeem failed'
+        'HCEther_redeem: error 9'
       );
     });
   });
@@ -156,10 +183,22 @@ contract('CEther', function([_, user]) {
       });
       await this.proxy.updateTokenMock(this.cEther.address);
       await balanceUser.get();
+
       const receipt = await this.proxy.execMock(to, data, {
         from: user,
         value: ether('0.1'),
       });
+
+      // Get handler return result
+      const handlerReturn = utils.toBN(
+        getHandlerReturn(receipt, ['uint256'])[0]
+      );
+
+      const cEtherUserAmountEnd = await this.cEther.balanceOf.call(user);
+      expect(handlerReturn).to.be.bignumber.eq(
+        cEtherUser.sub(cEtherUserAmountEnd)
+      );
+
       expect(await balanceUser.delta()).to.be.bignumber.eq(
         value.sub(new BN(receipt.receipt.gasUsed))
       );
@@ -174,12 +213,12 @@ contract('CEther', function([_, user]) {
       const to = this.hCEther.address;
       const data = abi.simpleEncode('redeemUnderlying(uint256)', value);
       await this.proxy.updateTokenMock(this.cEther.address);
-      await expectRevert.unspecified(
+      await expectRevert(
         this.proxy.execMock(to, data, {
           from: user,
           value: ether('0.1'),
         }),
-        'compound redeem underlying failed'
+        'HCEther_redeemUnderlying: error 9'
       );
     });
   });
@@ -206,13 +245,25 @@ contract('CEther', function([_, user]) {
         value,
         user
       );
+
       const receipt = await this.proxy.execMock(to, data, {
         from: user,
         value: value,
       });
+
+      // Get handler return result
+      const handlerReturn = utils.toBN(
+        getHandlerReturn(receipt, ['uint256'])[0]
+      );
+
+      expect(
+        await this.cEther.borrowBalanceCurrent.call(user)
+      ).to.be.bignumber.eq(handlerReturn);
+
       expect(
         await this.cEther.borrowBalanceCurrent.call(user)
       ).to.be.bignumber.eq(ether('0'));
+      profileGas(receipt);
     });
 
     it('insufficient ether', async function() {
@@ -223,11 +274,12 @@ contract('CEther', function([_, user]) {
         value,
         user
       );
-      await expectRevert.unspecified(
+      await expectRevert(
         this.proxy.execMock(to, data, {
           from: user,
           value: ether('0.09'),
-        })
+        }),
+        'HCEther_repayBorrowBehalf: Unspecified'
       );
     });
   });

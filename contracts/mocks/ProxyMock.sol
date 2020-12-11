@@ -1,4 +1,4 @@
-pragma solidity ^0.5.0;
+pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
 import "../Proxy.sol";
@@ -6,6 +6,8 @@ import "./debug/GasProfiler.sol";
 
 contract ProxyMock is Proxy, GasProfiler {
     constructor(address registry) public Proxy(registry) {}
+
+    event RecordHandlerResult(bytes value);
 
     function execMock(address to, bytes memory data)
         public
@@ -18,23 +20,16 @@ contract ProxyMock is Proxy, GasProfiler {
         _setPostProcess(to);
         _deltaGas("Gas");
         _postProcess();
+        emit RecordHandlerResult(result);
         return result;
     }
 
-    function _preProcess() internal {
-        // Set the sender on the top of cache.
-        if (cache.length != 0) {
-            cache.set(cache.peek());
-            for (uint256 i = cache.length - 1; i > 0; i--) {
-                cache[i] = cache[i - 1];
-            }
-            cache[0] = bytes32(uint256(uint160(msg.sender)));
-        } else {
-            cache.setSender(msg.sender);
-        }
+    function _preProcess() internal override isCubeCounterZero {
+        // Set the sender.
+        _setSender();
     }
 
     function updateTokenMock(address token) public {
-        cache.setAddress(token);
+        stack.setAddress(token);
     }
 }

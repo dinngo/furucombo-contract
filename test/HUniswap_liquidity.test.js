@@ -18,7 +18,12 @@ const {
   DAI_PROVIDER,
   ETH_PROVIDER,
 } = require('./utils/constants');
-const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
+const {
+  evmRevert,
+  evmSnapshot,
+  profileGas,
+  getHandlerReturn,
+} = require('./utils/utils');
 
 const HUniswap = artifacts.require('HUniswap');
 const Registry = artifacts.require('Registry');
@@ -92,6 +97,11 @@ contract('Uniswap Liquidity', function([_, user]) {
         value: ether('0.1'),
       });
 
+      const handlerReturn = utils.toBN(
+        getHandlerReturn(receipt, ['uint256'])[0]
+      );
+      expect(handlerReturn).to.be.bignumber.eq(result);
+
       expect(await balanceUser.delta()).to.be.bignumber.lt(ether('0'));
       expect(await this.swap.balanceOf.call(user)).to.be.bignumber.eq(
         uniTokenUser.add(result)
@@ -143,10 +153,19 @@ contract('Uniswap Liquidity', function([_, user]) {
       await this.proxy.updateTokenMock(this.swap.address);
       await balanceUser.get();
       const receipt = await this.proxy.execMock(to, data, { from: user });
+
+      const handlerReturn = getHandlerReturn(receipt, ['uint256', 'uint256']);
+      const userBalanceDelta = await balanceUser.delta();
+
+      expect(userBalanceDelta).to.be.bignumber.eq(
+        utils.toBN(handlerReturn[0]).sub(new BN(receipt.receipt.gasUsed))
+      );
+      expect(utils.toBN(handlerReturn[1])).to.be.bignumber.eq(result['1']);
+
       expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
         tokenUser.add(result['1'])
       );
-      expect(await balanceUser.delta()).to.be.bignumber.eq(
+      expect(userBalanceDelta).to.be.bignumber.eq(
         result['0'].sub(new BN(receipt.receipt.gasUsed))
       );
       profileGas(receipt);

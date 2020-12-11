@@ -24,7 +24,12 @@ const {
   AETHER,
   ADAI,
 } = require('./utils/constants');
-const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
+const {
+  evmRevert,
+  evmSnapshot,
+  profileGas,
+  getHandlerReturn,
+} = require('./utils/utils');
 
 const HAave = artifacts.require('HAaveProtocol');
 const Registry = artifacts.require('Registry');
@@ -81,13 +86,19 @@ contract('Aave', function([_, user]) {
         ETH_TOKEN,
         value
       );
+
       const receipt = await this.proxy.execMock(to, data, {
         from: user,
         value: value,
       });
+      // Get handler return result
+      const handlerReturn = utils.toBN(
+        getHandlerReturn(receipt, ['uint256'])[0]
+      );
       const aEtherUser = await this.aEther.balanceOf.call(user);
 
       expect(aEtherUser).to.be.bignumber.eq(value);
+      expect(aEtherUser).to.be.bignumber.eq(handlerReturn);
       expect(await balanceUser.delta()).to.be.bignumber.eq(
         ether('0')
           .sub(value)
@@ -111,9 +122,14 @@ contract('Aave', function([_, user]) {
       await this.proxy.updateTokenMock(this.token.address);
 
       const receipt = await this.proxy.execMock(to, data, { from: user });
+      // Get handler return result
+      const handlerReturn = utils.toBN(
+        getHandlerReturn(receipt, ['uint256'])[0]
+      );
       const aTokenUser = await this.aToken.balanceOf.call(user);
 
       expect(aTokenUser).to.be.bignumber.eq(new BN(value));
+      expect(aTokenUser).to.be.bignumber.eq(handlerReturn);
       expect(await balanceUser.delta()).to.be.bignumber.eq(
         ether('0').sub(new BN(receipt.receipt.gasUsed))
       );
@@ -128,8 +144,9 @@ contract('Aave', function([_, user]) {
         constants.ZERO_ADDRESS,
         value
       );
-      await expectRevert.unspecified(
-        this.proxy.execMock(to, data, { from: user, value: value })
+      await expectRevert(
+        this.proxy.execMock(to, data, { from: user, value: value }),
+        'HAaveProtocol_General: aToken should not be zero address'
       );
     });
   });
@@ -151,8 +168,13 @@ contract('Aave', function([_, user]) {
 
       const receipt = await this.proxy.execMock(to, data, { from: user });
 
+      // Get handler return result
+      const handlerReturn = utils.toBN(
+        getHandlerReturn(receipt, ['uint256'])[0]
+      );
       const aEtherUserAfter = await this.aEther.balanceOf.call(user);
       const interestMax = value.mul(new BN(1)).div(new BN(10000));
+      expect(value).to.be.bignumber.eq(handlerReturn);
       expect(aEtherUserAfter).to.be.bignumber.lt(
         aEtherUserBefore.sub(value).add(interestMax)
       );
@@ -188,10 +210,16 @@ contract('Aave', function([_, user]) {
       await balanceUser.get();
 
       const receipt = await this.proxy.execMock(to, data, { from: user });
+
+      // Get handler return result
+      const handlerReturn = utils.toBN(
+        getHandlerReturn(receipt, ['uint256'])[0]
+      );
       const aTokenUserAfter = await this.aToken.balanceOf.call(user);
       const tokenUserAfter = await this.token.balanceOf.call(user);
 
       const interestMax = value.mul(new BN(1)).div(new BN(10000));
+      expect(value).to.be.bignumber.eq(handlerReturn);
       expect(aTokenUserAfter).to.be.bignumber.lt(
         aTokenUserBefore.sub(value).add(interestMax)
       );
@@ -206,8 +234,9 @@ contract('Aave', function([_, user]) {
       const value = ether('10');
       const to = this.hAave.address;
       const data = abi.simpleEncode('redeem(address,uint256)', AETHER, value);
-      await expectRevert.unspecified(
-        this.proxy.execMock(to, data, { from: user, value: value })
+      await expectRevert(
+        this.proxy.execMock(to, data, { from: user, value: value }),
+        'HAaveProtocol_redeem: User cannot redeem more than the available balance'
       );
     });
   });

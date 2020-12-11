@@ -110,7 +110,7 @@ contract('Furucombo', function([_, user, someone]) {
     });
 
     it('should revert: stake insufficient amount', async function() {
-      const stakeAmount = ether('100');
+      const stakeAmount = ether('50');
       const to = this.hFurucombo.address;
       const data = abi.simpleEncode(
         'stake(address,uint256)',
@@ -118,6 +118,9 @@ contract('Furucombo', function([_, user, someone]) {
         stakeAmount
       );
 
+      console.log(
+        (await this.token.balanceOf.call(providerAddress)).toString()
+      );
       // Send token to proxy
       await this.token.transfer(this.proxy.address, ether('1'), {
         from: providerAddress,
@@ -129,7 +132,7 @@ contract('Furucombo', function([_, user, someone]) {
           from: user,
           value: ether('0.1'),
         }),
-        'SafeERC20: low-level call failed'
+        'ERR_INSUFFICIENT_BAL'
       );
     });
 
@@ -163,7 +166,7 @@ contract('Furucombo', function([_, user, someone]) {
     beforeEach(async function() {
       balanceUser = await tracker(user);
       balanceProxy = await tracker(this.proxy.address);
-      await this.token.transfer(user, ether('1000'), {
+      await this.token.transfer(user, ether('500'), {
         from: providerAddress,
       });
 

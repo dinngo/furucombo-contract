@@ -25,6 +25,7 @@ const {
   evmSnapshot,
   mulPercent,
   profileGas,
+  getHandlerReturn,
 } = require('./utils/utils');
 
 const HUniswapV2 = artifacts.require('HUniswapV2');
@@ -94,6 +95,12 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
           from: user,
           value: value,
         });
+
+        const handlerReturn = utils.toBN(
+          getHandlerReturn(receipt, ['uint256'])[0]
+        );
+        expect(handlerReturn).to.be.bignumber.eq(result[result.length - 1]);
+
         expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
           tokenUser.add(result[result.length - 1])
         );
@@ -125,7 +132,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
 
         await expectRevert(
           this.proxy.execMock(to, data, { from: user, value: value }),
-          'UniswapV2Router: INSUFFICIENT_OUTPUT_AMOUNT'
+          'HUniswapV2_swapExactETHForTokens: UniswapV2Router: INSUFFICIENT_OUTPUT_AMOUNT'
         );
         expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
           tokenUser
@@ -148,7 +155,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
         );
         await expectRevert(
           this.proxy.execMock(to, data, { from: user, value: value }),
-          'UniswapV2Router: INVALID_PATH'
+          'HUniswapV2_swapExactETHForTokens: UniswapV2Router: INVALID_PATH'
         );
       });
     });
@@ -172,6 +179,18 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
           from: user,
           value: value,
         });
+
+        const handlerReturn = utils.toBN(
+          getHandlerReturn(receipt, ['uint256'])[0]
+        );
+        const userBalanceDelta = await balanceUser.delta();
+
+        expect(userBalanceDelta).to.be.bignumber.eq(
+          ether('0')
+            .sub(handlerReturn)
+            .sub(new BN(receipt.receipt.gasUsed))
+        );
+
         expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
           tokenUser.add(buyAmt)
         );
@@ -179,7 +198,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
           await this.token.balanceOf.call(this.proxy.address)
         ).to.be.bignumber.eq(ether('0'));
         expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
-        expect(await balanceUser.delta()).to.be.bignumber.eq(
+        expect(userBalanceDelta).to.be.bignumber.eq(
           ether('0')
             .sub(result[0])
             .sub(new BN(receipt.receipt.gasUsed))
@@ -206,7 +225,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
             from: user,
             value: value,
           }),
-          'UniswapV2Router: EXCESSIVE_INPUT_AMOUNT'
+          'HUniswapV2_swapETHForExactTokens: UniswapV2Router: EXCESSIVE_INPUT_AMOUNT'
         );
       });
 
@@ -226,7 +245,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
             from: user,
             value: value,
           }),
-          'UniswapV2Router: INVALID_PATH'
+          'HUniswapV2_swapETHForExactTokens: UniswapV2Router: INVALID_PATH'
         );
       });
     });
@@ -271,6 +290,17 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
         await this.token.transfer(someone, value, { from: providerAddress });
         const receipt = await this.proxy.execMock(to, data, { from: user });
 
+        const handlerReturn = utils.toBN(
+          getHandlerReturn(receipt, ['uint256'])[0]
+        );
+        const userBalanceDelta = await balanceUser.delta();
+
+        expect(userBalanceDelta).to.be.bignumber.eq(
+          ether('0')
+            .add(handlerReturn)
+            .sub(new BN(receipt.receipt.gasUsed))
+        );
+
         expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
           tokenUser
         );
@@ -278,7 +308,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
           await this.token.balanceOf.call(this.proxy.address)
         ).to.be.bignumber.eq(ether('0'));
         expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
-        expect(await balanceUser.delta()).to.be.bignumber.eq(
+        expect(userBalanceDelta).to.be.bignumber.eq(
           ether('0')
             .add(result[result.length - 1])
             .sub(new BN(receipt.receipt.gasUsed))
@@ -306,7 +336,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
         );
         await expectRevert(
           this.proxy.execMock(to, data, { from: user }),
-          'UniswapV2Router: INSUFFICIENT_OUTPUT_AMOUNT'
+          'HUniswapV2_swapExactTokensForETH: UniswapV2Router: INSUFFICIENT_OUTPUT_AMOUNT'
         );
       });
 
@@ -326,7 +356,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
         await this.proxy.updateTokenMock(this.token.address);
         await expectRevert(
           this.proxy.execMock(to, data, { from: user }),
-          'UniswapV2Router: INVALID_PATH'
+          'HUniswapV2_swapExactTokensForETH: UniswapV2Router: INVALID_PATH'
         );
       });
     });
@@ -354,6 +384,13 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
         const receipt = await this.proxy.execMock(to, data, {
           from: user,
         });
+
+        const handlerReturn = utils.toBN(
+          getHandlerReturn(receipt, ['uint256'])[0]
+        );
+        const userBalanceDelta = await balanceUser.delta();
+        expect(handlerReturn).to.be.bignumber.eq(result[0]);
+
         expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
           tokenUser.add(value).sub(result[0])
         );
@@ -361,7 +398,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
           await this.token.balanceOf.call(this.proxy.address)
         ).to.be.bignumber.eq(ether('0'));
         expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
-        expect(await balanceUser.delta()).to.be.bignumber.eq(
+        expect(userBalanceDelta).to.be.bignumber.eq(
           buyAmt.sub(new BN(receipt.receipt.gasUsed))
         );
         profileGas(receipt);
@@ -385,7 +422,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
 
         await expectRevert(
           this.proxy.execMock(to, data, { from: user }),
-          'UniswapV2Router: EXCESSIVE_INPUT_AMOUNT.'
+          'HUniswapV2_swapTokensForExactETH: UniswapV2Router: EXCESSIVE_INPUT_AMOUNT.'
         );
       });
 
@@ -407,7 +444,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
 
         await expectRevert(
           this.proxy.execMock(to, data, { from: user }),
-          'UniswapV2Router: INVALID_PATH'
+          'HUniswapV2_swapTokensForExactETH: UniswapV2Router: INVALID_PATH'
         );
       });
     });
@@ -454,6 +491,12 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
         });
         const receipt = await this.proxy.execMock(to, data, { from: user });
 
+        const handlerReturn = utils.toBN(
+          getHandlerReturn(receipt, ['uint256'])[0]
+        );
+
+        expect(handlerReturn).to.be.bignumber.eq(result[result.length - 1]);
+
         expect(await this.token0.balanceOf.call(user)).to.be.bignumber.eq(
           token0User
         );
@@ -493,7 +536,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
         );
         await expectRevert(
           this.proxy.execMock(to, data, { from: user }),
-          'UniswapV2Router: INSUFFICIENT_OUTPUT_AMOUNT'
+          'HUniswapV2_swapExactTokensForTokens: UniswapV2Router: INSUFFICIENT_OUTPUT_AMOUNT'
         );
       });
 
@@ -513,7 +556,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
         await this.proxy.updateTokenMock(this.token0.address);
         await expectRevert(
           this.proxy.execMock(to, data, { from: user }),
-          'UniswapV2Library: IDENTICAL_ADDRESSES'
+          'HUniswapV2_swapExactTokensForTokens: UniswapV2Library: IDENTICAL_ADDRESSES'
         );
       });
     });
@@ -543,6 +586,12 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
         const receipt = await this.proxy.execMock(to, data, {
           from: user,
         });
+
+        const handlerReturn = utils.toBN(
+          getHandlerReturn(receipt, ['uint256'])[0]
+        );
+        expect(handlerReturn).to.be.bignumber.eq(result[0]);
+
         expect(await this.token0.balanceOf.call(user)).to.be.bignumber.eq(
           token0User.add(value).sub(result[0])
         );
@@ -575,7 +624,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
         await this.proxy.updateTokenMock(this.token0.address);
         await expectRevert(
           this.proxy.execMock(to, data, { from: user }),
-          'UniswapV2Router: EXCESSIVE_INPUT_AMOUNT'
+          'HUniswapV2_swapTokensForExactTokens: UniswapV2Router: EXCESSIVE_INPUT_AMOUNT'
         );
       });
 
@@ -596,7 +645,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
         await this.proxy.updateTokenMock(this.token0.address);
         await expectRevert(
           this.proxy.execMock(to, data, { from: user }),
-          'UniswapV2Library: IDENTICAL_ADDRESSES'
+          'HUniswapV2_swapTokensForExactTokens: UniswapV2Library: IDENTICAL_ADDRESSES'
         );
       });
     });

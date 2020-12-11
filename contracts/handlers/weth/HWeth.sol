@@ -1,4 +1,4 @@
-pragma solidity ^0.5.0;
+pragma solidity ^0.6.0;
 
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "../HandlerBase.sol";
@@ -8,12 +8,26 @@ contract HWeth is HandlerBase {
     // prettier-ignore
     address payable public constant WETH = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
 
+    function getContractName() public pure override returns (string memory) {
+        return "HWeth";
+    }
+
     function deposit(uint256 value) external payable {
-        IWETH9(WETH).deposit.value(value)();
+        try IWETH9(WETH).deposit{value: value}() {} catch Error(
+            string memory reason
+        ) {
+            _revertMsg("deposit", reason);
+        } catch {
+            _revertMsg("deposit");
+        }
         _updateToken(WETH);
     }
 
     function withdraw(uint256 wad) external payable {
-        IWETH9(WETH).withdraw(wad);
+        try IWETH9(WETH).withdraw(wad) {} catch Error(string memory reason) {
+            _revertMsg("withdraw", reason);
+        } catch {
+            _revertMsg("withdraw");
+        }
     }
 }

@@ -22,7 +22,12 @@ const {
   DAI_PROVIDER,
   COMPOUND_COMPTROLLER,
 } = require('./utils/constants');
-const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
+const {
+  evmRevert,
+  evmSnapshot,
+  profileGas,
+  getHandlerReturn,
+} = require('./utils/utils');
 
 const HCToken = artifacts.require('HCToken');
 const Registry = artifacts.require('Registry');
@@ -78,13 +83,21 @@ contract('CToken', function([_, user]) {
         from: providerAddress,
       });
       await this.proxy.updateTokenMock(this.token.address);
+      cTokenUser = await this.cToken.balanceOf.call(user);
 
       const rate = await this.cToken.exchangeRateStored.call();
       const result = value.mul(ether('1')).div(rate);
       const receipt = await this.proxy.execMock(to, data, { from: user });
-      cTokenUser = await this.cToken.balanceOf.call(user);
+
+      // Get handler return result
+      const handlerReturn = utils.toBN(
+        getHandlerReturn(receipt, ['uint256'])[0]
+      );
+
+      cTokenUserEnd = await this.cToken.balanceOf.call(user);
+      expect(cTokenUserEnd.sub(cTokenUser)).to.be.bignumber.eq(handlerReturn);
       expect(
-        cTokenUser.mul(new BN('1000')).divRound(result)
+        cTokenUserEnd.mul(new BN('1000')).divRound(result)
       ).to.be.bignumber.eq(new BN('1000'));
       expect(await balanceUser.delta()).to.be.bignumber.eq(
         ether('0').sub(new BN(receipt.receipt.gasUsed))
@@ -101,9 +114,9 @@ contract('CToken', function([_, user]) {
         value
       );
       await this.proxy.updateTokenMock(this.token.address);
-      await expectRevert.unspecified(
+      await expectRevert(
         this.proxy.execMock(to, data, { from: user }),
-        'compound mint failed'
+        'HCToken_mint: error 13'
       );
     });
   });
@@ -129,11 +142,21 @@ contract('CToken', function([_, user]) {
       const result = value.mul(rate).div(ether('1'));
       await this.cToken.transfer(this.proxy.address, value, { from: user });
       await this.proxy.updateTokenMock(this.cToken.address);
+      tokenUser = await this.token.balanceOf.call(user);
       cTokenUser = await this.cToken.balanceOf.call(user);
       const receipt = await this.proxy.execMock(to, data, {
         from: user,
         value: ether('0.1'),
       });
+
+      // Get handler return result
+      const handlerReturn = utils.toBN(
+        getHandlerReturn(receipt, ['uint256'])[0]
+      );
+
+      tokenUserEnd = await this.token.balanceOf.call(user);
+      expect(tokenUserEnd.sub(tokenUser)).to.be.bignumber.eq(handlerReturn);
+
       expect(await this.cToken.balanceOf.call(user)).to.be.bignumber.eq(
         ether('0')
       );
@@ -155,12 +178,12 @@ contract('CToken', function([_, user]) {
         value
       );
       await this.proxy.updateTokenMock(this.cToken.address);
-      await expectRevert.unspecified(
+      await expectRevert(
         this.proxy.execMock(to, data, {
           from: user,
           value: ether('0.1'),
         }),
-        'compound redeem failed'
+        'HCToken_redeem: error 9'
       );
     });
   });
@@ -190,11 +213,18 @@ contract('CToken', function([_, user]) {
         from: user,
       });
       await this.proxy.updateTokenMock(this.cToken.address);
-      cTokenUser = await this.cToken.balanceOf.call(user);
       const receipt = await this.proxy.execMock(to, data, {
         from: user,
         value: ether('0.1'),
       });
+
+      // Get handler return result
+      const handlerReturn = utils.toBN(
+        getHandlerReturn(receipt, ['uint256'])[0]
+      );
+      const cTokenUserEnd = await this.cToken.balanceOf.call(user);
+      expect(handlerReturn).to.be.bignumber.eq(cTokenUser.sub(cTokenUserEnd));
+
       expect(
         (await this.token.balanceOf.call(user)).sub(tokenUser)
       ).to.be.bignumber.eq(value);
@@ -216,12 +246,12 @@ contract('CToken', function([_, user]) {
       );
       await this.proxy.updateTokenMock(this.cToken.address);
       // cTokenUser = await this.cToken.balanceOf.call(user);
-      await expectRevert.unspecified(
+      await expectRevert(
         this.proxy.execMock(to, data, {
           from: user,
           value: ether('0.1'),
         }),
-        'compound redeem underlying failed'
+        'HCToken_redeemUnderlying: error 9'
       );
     });
   });
@@ -254,6 +284,15 @@ contract('CToken', function([_, user]) {
         from: user,
         value: ether('0.1'),
       });
+      // Get handler return result
+      const handlerReturn = utils.toBN(
+        getHandlerReturn(receipt, ['uint256'])[0]
+      );
+
+      expect(
+        await this.cToken.borrowBalanceCurrent.call(user)
+      ).to.be.bignumber.eq(handlerReturn);
+
       expect(
         await this.cToken.borrowBalanceCurrent.call(user)
       ).to.be.bignumber.eq(ether('0'));
@@ -272,11 +311,12 @@ contract('CToken', function([_, user]) {
         from: providerAddress,
       });
       await this.proxy.updateTokenMock(this.token.address);
-      await expectRevert.unspecified(
+      await expectRevert(
         this.proxy.execMock(to, data, {
           from: user,
           value: ether('0.1'),
-        })
+        }),
+        'HCToken_repayBorrowBehalf: error 13'
       );
     });
   });

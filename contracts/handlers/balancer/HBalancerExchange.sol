@@ -1,4 +1,4 @@
-pragma solidity ^0.5.0;
+pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
 import "./IExchangeProxy.sol";
@@ -14,6 +14,10 @@ contract HBalancerExchange is HandlerBase {
     // prettier-ignore
     address public constant ETH_ADDRESS = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
+    function getContractName() public pure override returns (string memory) {
+        return "HBalancerExchange";
+    }
+
     function batchSwapExactIn(
         IExchangeProxy.Swap[] calldata swaps,
         address tokenIn,
@@ -24,22 +28,38 @@ contract HBalancerExchange is HandlerBase {
         IExchangeProxy balancer = IExchangeProxy(EXCHANGE_PROXY);
 
         if (tokenIn == ETH_ADDRESS) {
-            totalAmountOut = balancer.batchSwapExactIn.value(totalAmountIn)(
-                swaps,
-                tokenIn,
-                tokenOut,
-                totalAmountIn,
-                minTotalAmountOut
-            );
+            try
+                balancer.batchSwapExactIn{value: totalAmountIn}(
+                    swaps,
+                    tokenIn,
+                    tokenOut,
+                    totalAmountIn,
+                    minTotalAmountOut
+                )
+            returns (uint256 amount) {
+                totalAmountOut = amount;
+            } catch Error(string memory reason) {
+                _revertMsg("batchSwapExactIn", reason);
+            } catch {
+                _revertMsg("batchSwapExactIn");
+            }
         } else {
             IERC20(tokenIn).safeApprove(EXCHANGE_PROXY, totalAmountIn);
-            totalAmountOut = balancer.batchSwapExactIn(
-                swaps,
-                tokenIn,
-                tokenOut,
-                totalAmountIn,
-                minTotalAmountOut
-            );
+            try
+                balancer.batchSwapExactIn(
+                    swaps,
+                    tokenIn,
+                    tokenOut,
+                    totalAmountIn,
+                    minTotalAmountOut
+                )
+            returns (uint256 amount) {
+                totalAmountOut = amount;
+            } catch Error(string memory reason) {
+                _revertMsg("batchSwapExactIn", reason);
+            } catch {
+                _revertMsg("batchSwapExactIn");
+            }
             IERC20(tokenIn).safeApprove(EXCHANGE_PROXY, 0);
         }
 
@@ -55,20 +75,36 @@ contract HBalancerExchange is HandlerBase {
         IExchangeProxy balancer = IExchangeProxy(EXCHANGE_PROXY);
 
         if (tokenIn == ETH_ADDRESS) {
-            totalAmountIn = balancer.batchSwapExactOut.value(maxTotalAmountIn)(
-                swaps,
-                tokenIn,
-                tokenOut,
-                maxTotalAmountIn
-            );
+            try
+                balancer.batchSwapExactOut{value: maxTotalAmountIn}(
+                    swaps,
+                    tokenIn,
+                    tokenOut,
+                    maxTotalAmountIn
+                )
+            returns (uint256 amount) {
+                totalAmountIn = amount;
+            } catch Error(string memory reason) {
+                _revertMsg("batchSwapExactOut", reason);
+            } catch {
+                _revertMsg("batchSwapExactOut");
+            }
         } else {
             IERC20(tokenIn).safeApprove(EXCHANGE_PROXY, maxTotalAmountIn);
-            totalAmountIn = balancer.batchSwapExactOut(
-                swaps,
-                tokenIn,
-                tokenOut,
-                maxTotalAmountIn
-            );
+            try
+                balancer.batchSwapExactOut(
+                    swaps,
+                    tokenIn,
+                    tokenOut,
+                    maxTotalAmountIn
+                )
+            returns (uint256 amount) {
+                totalAmountIn = amount;
+            } catch Error(string memory reason) {
+                _revertMsg("batchSwapExactOut", reason);
+            } catch {
+                _revertMsg("batchSwapExactOut");
+            }
             IERC20(tokenIn).safeApprove(EXCHANGE_PROXY, 0);
         }
 
@@ -85,24 +121,38 @@ contract HBalancerExchange is HandlerBase {
         IExchangeProxy balancer = IExchangeProxy(EXCHANGE_PROXY);
 
         if (tokenIn == ETH_ADDRESS) {
-            totalAmountOut = balancer.multihopBatchSwapExactIn.value(
-                totalAmountIn
-            )(
-                swapSequences,
-                tokenIn,
-                tokenOut,
-                totalAmountIn,
-                minTotalAmountOut
-            );
+            try
+                balancer.multihopBatchSwapExactIn{value: totalAmountIn}(
+                    swapSequences,
+                    tokenIn,
+                    tokenOut,
+                    totalAmountIn,
+                    minTotalAmountOut
+                )
+            returns (uint256 amount) {
+                totalAmountOut = amount;
+            } catch Error(string memory reason) {
+                _revertMsg("multihopBatchSwapExactIn", reason);
+            } catch {
+                _revertMsg("multihopBatchSwapExactIn");
+            }
         } else {
             IERC20(tokenIn).safeApprove(EXCHANGE_PROXY, totalAmountIn);
-            totalAmountOut = balancer.multihopBatchSwapExactIn(
-                swapSequences,
-                tokenIn,
-                tokenOut,
-                totalAmountIn,
-                minTotalAmountOut
-            );
+            try
+                balancer.multihopBatchSwapExactIn(
+                    swapSequences,
+                    tokenIn,
+                    tokenOut,
+                    totalAmountIn,
+                    minTotalAmountOut
+                )
+            returns (uint256 amount) {
+                totalAmountOut = amount;
+            } catch Error(string memory reason) {
+                _revertMsg("multihopBatchSwapExactIn", reason);
+            } catch {
+                _revertMsg("multihopBatchSwapExactIn");
+            }
             IERC20(tokenIn).safeApprove(EXCHANGE_PROXY, 0);
         }
 
@@ -118,17 +168,36 @@ contract HBalancerExchange is HandlerBase {
         IExchangeProxy balancer = IExchangeProxy(EXCHANGE_PROXY);
 
         if (tokenIn == ETH_ADDRESS) {
-            totalAmountIn = balancer.multihopBatchSwapExactOut.value(
-                maxTotalAmountIn
-            )(swapSequences, tokenIn, tokenOut, maxTotalAmountIn);
+            try
+                balancer.multihopBatchSwapExactOut{value: maxTotalAmountIn}(
+                    swapSequences,
+                    tokenIn,
+                    tokenOut,
+                    maxTotalAmountIn
+                )
+            returns (uint256 amount) {
+                totalAmountIn = amount;
+            } catch Error(string memory reason) {
+                _revertMsg("multihopBatchSwapExactOut", reason);
+            } catch {
+                _revertMsg("multihopBatchSwapExactOut");
+            }
         } else {
             IERC20(tokenIn).safeApprove(EXCHANGE_PROXY, maxTotalAmountIn);
-            totalAmountIn = balancer.multihopBatchSwapExactOut(
-                swapSequences,
-                tokenIn,
-                tokenOut,
-                maxTotalAmountIn
-            );
+            try
+                balancer.multihopBatchSwapExactOut(
+                    swapSequences,
+                    tokenIn,
+                    tokenOut,
+                    maxTotalAmountIn
+                )
+            returns (uint256 amount) {
+                totalAmountIn = amount;
+            } catch Error(string memory reason) {
+                _revertMsg("multihopBatchSwapExactOut", reason);
+            } catch {
+                _revertMsg("multihopBatchSwapExactOut");
+            }
             IERC20(tokenIn).safeApprove(EXCHANGE_PROXY, 0);
         }
 
@@ -145,22 +214,38 @@ contract HBalancerExchange is HandlerBase {
         IExchangeProxy balancer = IExchangeProxy(EXCHANGE_PROXY);
 
         if (tokenIn == ETH_ADDRESS) {
-            totalAmountOut = balancer.smartSwapExactIn.value(totalAmountIn)(
-                tokenIn,
-                tokenOut,
-                totalAmountIn,
-                minTotalAmountOut,
-                nPools
-            );
+            try
+                balancer.smartSwapExactIn{value: totalAmountIn}(
+                    tokenIn,
+                    tokenOut,
+                    totalAmountIn,
+                    minTotalAmountOut,
+                    nPools
+                )
+            returns (uint256 amount) {
+                totalAmountOut = amount;
+            } catch Error(string memory reason) {
+                _revertMsg("smartSwapExactIn", reason);
+            } catch {
+                _revertMsg("smartSwapExactIn");
+            }
         } else {
             IERC20(tokenIn).safeApprove(EXCHANGE_PROXY, totalAmountIn);
-            totalAmountOut = balancer.smartSwapExactIn(
-                tokenIn,
-                tokenOut,
-                totalAmountIn,
-                minTotalAmountOut,
-                nPools
-            );
+            try
+                balancer.smartSwapExactIn(
+                    tokenIn,
+                    tokenOut,
+                    totalAmountIn,
+                    minTotalAmountOut,
+                    nPools
+                )
+            returns (uint256 amount) {
+                totalAmountOut = amount;
+            } catch Error(string memory reason) {
+                _revertMsg("smartSwapExactIn", reason);
+            } catch {
+                _revertMsg("smartSwapExactIn");
+            }
             IERC20(tokenIn).safeApprove(EXCHANGE_PROXY, 0);
         }
 
@@ -177,22 +262,38 @@ contract HBalancerExchange is HandlerBase {
         IExchangeProxy balancer = IExchangeProxy(EXCHANGE_PROXY);
 
         if (tokenIn == ETH_ADDRESS) {
-            totalAmountIn = balancer.smartSwapExactOut.value(maxTotalAmountIn)(
-                tokenIn,
-                tokenOut,
-                totalAmountOut,
-                maxTotalAmountIn,
-                nPools
-            );
+            try
+                balancer.smartSwapExactOut{value: maxTotalAmountIn}(
+                    tokenIn,
+                    tokenOut,
+                    totalAmountOut,
+                    maxTotalAmountIn,
+                    nPools
+                )
+            returns (uint256 amount) {
+                totalAmountIn = amount;
+            } catch Error(string memory reason) {
+                _revertMsg("smartSwapExactOut", reason);
+            } catch {
+                _revertMsg("smartSwapExactOut");
+            }
         } else {
             IERC20(tokenIn).safeApprove(EXCHANGE_PROXY, maxTotalAmountIn);
-            totalAmountIn = balancer.smartSwapExactOut(
-                tokenIn,
-                tokenOut,
-                totalAmountOut,
-                maxTotalAmountIn,
-                nPools
-            );
+            try
+                balancer.smartSwapExactOut(
+                    tokenIn,
+                    tokenOut,
+                    totalAmountOut,
+                    maxTotalAmountIn,
+                    nPools
+                )
+            returns (uint256 amount) {
+                totalAmountIn = amount;
+            } catch Error(string memory reason) {
+                _revertMsg("smartSwapExactOut", reason);
+            } catch {
+                _revertMsg("smartSwapExactOut");
+            }
             IERC20(tokenIn).safeApprove(EXCHANGE_PROXY, 0);
         }
 
