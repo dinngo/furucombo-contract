@@ -39,7 +39,7 @@ Registry handles the verification for the valid handlers called by proxy. Every 
 
 #### Handler
 
-Handler implements the logic to interact with the external services. Handlers should be treated as libraries, which does not hold states.
+Handler implements the logic to interact with the external services. Handlers should be treated as libraries, which does not hold states. Handler parameters may apply the execution result of another, for the details please refer to the [dynamic cube input guideline](DYNAMICINPUT.md).
 
 ## Contribute
 

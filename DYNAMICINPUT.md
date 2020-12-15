@@ -3,15 +3,17 @@
 The details about dynamic cube input of Furucombo that includes config setup and common use cases. Please make sure to review the document.
 
 ## Structure
-* Proxy
-    * Storage
-        * bytes32[] public stack;
-        * mapping(bytes32 => bytes32) public cache;
-    * Memory
-        * bytes32[] memory localStack;
-            * Store return data stack.
-* Config
-    * bytes32
+
+- Proxy
+  - Storage
+    - bytes32[] public stack;
+    - mapping(bytes32 => bytes32) public cache;
+  - Memory
+    - bytes32[] memory localStack;
+      - Store return data stack.
+- Config
+  - bytes32
+
 ---
 
 ## Config
@@ -20,8 +22,8 @@ config is bytes32 data represent by hex.
 
 ![](images/config.png)
 
+### Param config
 
-- ### Param config
     -  ![](images/param_config.png)
     - `255-248` bits are reserved for Param config.
     - `248`: 1 if the parameter is dynamic, 0 if the parameter is static.
@@ -29,8 +31,8 @@ config is bytes32 data represent by hex.
         - `0x00` => `(b00)`: static parameter.
         - `0x01` => `(b01)`: dynamic parameter.
 
+### Return data count
 
-- ### Return data count
     - `247-240` bits are reserved for return data count.
     - Expected return data count after a cube is executed.
     - `0` if the return data will not be referenced.
@@ -38,7 +40,8 @@ config is bytes32 data represent by hex.
         - `0x04` => the return data of the cube will be referenced and the return data count is 4.
         - `0x00` => the return data of the cube will `not` be referenced.
 
-- ### Parameter location
+### Parameter location
+
     - ![](images/parameter_config.png)
     - `239-176` bits are reserved for Parameter location.
     - Every `bit` indicates which bytes32 (exclude 4-byte function signature) of parameter data should be replaced.
@@ -49,11 +52,11 @@ config is bytes32 data represent by hex.
         - `0x04` => `(b100)` => replace the 3rd bytes32 of parameter data with return data.
 
 - ### Reference location
-    - ![](images/reference_config.png)
-    -  `175-0` bits are reserved for Reference location.
-    - Every `byte` indicates which bytes32 of localStack contains the referenced data.
-    - Should be `ff` if the location is not used.
-    - Parameter data replacement order is from right to left except `ff`.
+  - ![](images/reference_config.png)
+  - `175-0` bits are reserved for Reference location.
+  - Every `byte` indicates which bytes32 of localStack contains the referenced data.
+  - Should be `ff` if the location is not used.
+  - Parameter data replacement order is from right to left except `ff`.
 
 ---
 
@@ -69,32 +72,35 @@ config is bytes32 data represent by hex.
 ---
 
 ## Return Data Type
+
 Return data fall into two broad categories: `Value` and `Reference`.
 
 ### Value Type
 
 Value type return data will store in localStack in order (non-array).
 Ex.
-  - `uint256`
-  - `bytes32`
-  - `bool`
-  - ...
 
+- `uint256`
+- `bytes32`
+- `bool`
+- ...
 
 ![](images/value_type.png)
 
 ### Reference Type
 
-Reference type (dynamic array) includes `2` extra data(`pointer` and ` length`) except `data`. Every reference type return data count is `+2`, `+1` increased by every data. . `pointer` store in the original position, `length` and `data` will store the location that `pointer` pointer in order.
+Reference type (dynamic array) includes `2` extra data(`pointer` and `length`) except `data`. Every reference type return data count is `+2`, `+1` increased by every data. . `pointer` store in the original position, `length` and `data` will store the location that `pointer` pointer in order.
 Ex.
-  - `uint256[]`
-  - `address[]`
-  - `uint8[]`
-  - ..
+
+- `uint256[]`
+- `address[]`
+- `uint8[]`
+- ..
 
 **Example**
 
 `returns(uint256 a, uint8[] memory b, bytes32 c)`
+
 ```
 a           = 1
 b.length    = 3
@@ -103,6 +109,7 @@ b[1]        = 3
 b[2]        = 4
 c           = 0x0000000.....0F
 ```
+
 return data will be:
 
 ```
@@ -115,35 +122,36 @@ returnData[4] = 2
 returnData[5] = 3
 returnData[6] = 4
 ```
+
 ![](images/dynamic_array.png)
+
 ## Percentage of dynamic parameter
+
 `dynamic parameter = return data * percentage, 0 < percentage <= 1`
 
 ![](images/percentage.png)
 
-
 Replace the original parameter with **fraction** if using a dynamic parameter. The fraction will be divided by `ether(1)` for getting the **percentage** of return data.
-* fraction
-    * `uint256` type
-    * denominator is `ether(1)`
-    * `0 <= fraction <= ether(1)`
-    * `0` if replace parameter with 100% of return data.
 
-
+- fraction
+  - `uint256` type
+  - denominator is `ether(1)`
+  - `0 <= fraction <= ether(1)`
+  - `0` if replace parameter with 100% of return data.
 
 **Example**
-* Replace the 2nd parameter with 50% of return data.
-    * `function bar(a, ether(0.5), c)`
-* Replace the 1st parameter with 70% of return data.
-    * `function bar(ether(0.7), b, c)`
-* Replace the 1st parameter with 100% of return data.
-    * `function bar(0, b, c)`
 
-
+- Replace second parameter with 50% of return data.
+  - `function bar(a, ether(0.5), c)`
+- Replace first parameter with 70% of return data.
+  - `function bar(ether(0.7), b, c)`
+- Replace first parameter with 100% of return data.
+  - `function bar(0, b, c)`
 
 ## Preparation before using dynamic parameter
-* Know config setup detail
-* Know every cube return data (type and count)
-* Know the index of all return data in localStack
-* Know which cube return data will be referenced
-* Know which cube need to use dynamic parameter and which return data will be referenced
+
+- Know config setup detail
+- Know every cube return data (type and count)
+- Know the index of all return data in localStack
+- Know which cube return data will be reference
+- Know which cube need to use dynamic parameter and which return data will be referenced
