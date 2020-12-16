@@ -42,7 +42,9 @@ contract Proxy is Storage, Config {
             require(_isValid(msg.sender), "Invalid caller");
 
             address target =
-                address(bytes20(IRegistry(_getRegistry()).getInfo(msg.sender)));
+                address(
+                    bytes20(IRegistry(_getRegistry()).handlers(msg.sender))
+                );
             _exec(target, msg.data);
         }
     }
@@ -153,7 +155,9 @@ contract Proxy is Storage, Config {
                 if iszero(iszero(m)) {
                     // Assert no overflow first
                     let p := mul(m, ref)
-                    if iszero(eq(div(p, m), ref)) { revert(0, 0) } // require(p / m == ref)
+                    if iszero(eq(div(p, m), ref)) {
+                        revert(0, 0)
+                    } // require(p / m == ref)
                     ref := div(p, base)
                 }
                 mstore(loc, ref)

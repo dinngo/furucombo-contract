@@ -42,12 +42,4 @@ contract Registry is Ownable {
             return false;
         else return true;
     }
-
-    /**
-     * @notice Get the information of a registration.
-     * @param handler The handler address to be queried.
-     */
-    function getInfo(address handler) external view returns (bytes32 info) {
-        return handlers[handler];
-    }
 }
