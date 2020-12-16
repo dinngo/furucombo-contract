@@ -44,6 +44,27 @@ contract HAaveProtocolV2 is HandlerBase {
         _updateToken(aToken);
     }
 
+    function withdraw(address asset, uint256 amount)
+        external
+        payable
+        returns (uint256 withdrawnAmount)
+    {
+        address pool =
+            ILendingPoolAddressesProviderV2(PROVIDER).getLendingPool();
+
+        try
+            ILendingPoolV2(pool).withdraw(asset, amount, address(this))
+        returns (uint256 ret) {
+            withdrawnAmount = ret;
+        } catch Error(string memory reason) {
+            _revertMsg("withdraw", reason);
+        } catch {
+            _revertMsg("withdraw");
+        }
+
+        _updateToken(asset);
+    }
+
     function _getLendingPoolAndAToken(address underlying)
         internal
         view

@@ -7,6 +7,7 @@ const {
   expectRevert,
   time,
 } = require('@openzeppelin/test-helpers');
+const { MAX_UINT256 } = constants;
 const { tracker } = balance;
 const { latest } = time;
 const abi = require('ethereumjs-abi');
@@ -35,9 +36,10 @@ const HAaveV2 = artifacts.require('HAaveProtocolV2');
 const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('ProxyMock');
 const IToken = artifacts.require('IERC20');
-const IAToken = artifacts.require('IAToken');
-const ILendingPool = artifacts.require('ILendingPool');
-const IProvider = artifacts.require('ILendingPoolAddressesProvider');
+const IAToken = artifacts.require('IATokenV2');
+const ILendingPool = artifacts.require('ILendingPoolV2');
+const IProvider = artifacts.require('ILendingPoolAddressesProviderV2');
+const SimpleToken = artifacts.require('SimpleToken');
 
 contract('Aave V2', function([_, user]) {
   const aTokenAddress = ADAI_V2;
@@ -46,7 +48,6 @@ contract('Aave V2', function([_, user]) {
 
   let id;
   let balanceUser;
-  let balanceProxy;
 
   before(async function() {
     this.registry = await Registry.new();
@@ -61,6 +62,7 @@ contract('Aave V2', function([_, user]) {
     this.lendingPool = await ILendingPool.at(this.lendingPoolAddress);
     this.token = await IToken.at(tokenAddress);
     this.aToken = await IAToken.at(aTokenAddress);
+    this.mockToken = await SimpleToken.new();
   });
 
   beforeEach(async function() {
@@ -78,7 +80,7 @@ contract('Aave V2', function([_, user]) {
       const to = this.hAaveV2.address;
       const data = abi.simpleEncode(
         'deposit(address,uint256)',
-        tokenAddress,
+        this.token.address,
         value
       );
 
@@ -87,7 +89,10 @@ contract('Aave V2', function([_, user]) {
       });
       await this.proxy.updateTokenMock(this.token.address);
 
-      const receipt = await this.proxy.execMock(to, data, { from: user });
+      const receipt = await this.proxy.execMock(to, data, {
+        from: user,
+        value: ether('0.1'),
+      });
 
       expect(await this.aToken.balanceOf.call(user)).to.be.bignumber.eq(value);
       expect(await balanceUser.delta()).to.be.bignumber.eq(
@@ -96,19 +101,161 @@ contract('Aave V2', function([_, user]) {
       profileGas(receipt);
     });
 
-    it('revert: reserve should not be zero address', async function() {
+    it('should revert: aToken is zero address', async function() {
       const value = ether('10');
       const to = this.hAaveV2.address;
       const data = abi.simpleEncode(
         'deposit(address,uint256)',
-        constants.ZERO_ADDRESS,
+        this.mockToken.address,
         value
       );
+      await this.mockToken.transfer(this.proxy.address, value, { from: _ });
       await expectRevert(
-        this.proxy.execMock(to, data, { from: user, value: value }),
+        this.proxy.execMock(to, data, { from: user }),
         'HAaveProtocolV2_General: aToken should not be zero address'
       );
     });
   });
 
+  describe('Withdraw', function() {
+    const depositValue = ether('10');
+
+    beforeEach(async function() {
+      await this.token.approve(this.lendingPool.address, depositValue, {
+        from: providerAddress,
+      });
+      await this.lendingPool.deposit(
+        this.token.address,
+        depositValue,
+        user,
+        0,
+        { from: providerAddress }
+      );
+      expect(await this.aToken.balanceOf.call(user)).to.be.bignumber.eq(
+        depositValue
+      );
+    });
+
+    it('partial', async function() {
+      const value = ether('5');
+      const to = this.hAaveV2.address;
+      const data = abi.simpleEncode(
+        'withdraw(address,uint256)',
+        this.token.address,
+        value
+      );
+      await this.aToken.transfer(this.proxy.address, value, { from: user });
+      await this.proxy.updateTokenMock(this.aToken.address);
+      await balanceUser.get();
+
+      const receipt = await this.proxy.execMock(to, data, {
+        from: user,
+        value: ether('0.1'),
+      });
+
+      // Get handler return result
+      const handlerReturn = utils.toBN(
+        getHandlerReturn(receipt, ['uint256'])[0]
+      );
+      const aTokenUserAfter = await this.aToken.balanceOf.call(user);
+      const tokenUserAfter = await this.token.balanceOf.call(user);
+      const interestMax = depositValue.mul(new BN(1)).div(new BN(10000));
+
+      // Verify handler return
+      expect(value).to.be.bignumber.eq(handlerReturn);
+      // Verify proxy balance
+      expect(await this.aToken.balanceOf.call(this.proxy.address)).to.be.zero;
+      expect(await this.token.balanceOf.call(this.proxy.address)).to.be.zero;
+      // Verify user balance
+      // (deposit - withdraw) <= aTokenAfter < (deposit + interestMax - withdraw)
+      expect(aTokenUserAfter).to.be.bignumber.gte(depositValue.sub(value));
+      expect(aTokenUserAfter).to.be.bignumber.lt(
+        depositValue.add(interestMax).sub(value)
+      );
+      expect(tokenUserAfter).to.be.bignumber.eq(value);
+      expect(await balanceUser.delta()).to.be.bignumber.eq(
+        ether('0').sub(new BN(receipt.receipt.gasUsed))
+      );
+      profileGas(receipt);
+    });
+
+    it('whole', async function() {
+      const value = MAX_UINT256;
+      const to = this.hAaveV2.address;
+      const data = abi.simpleEncode(
+        'withdraw(address,uint256)',
+        this.token.address,
+        value
+      );
+      await this.aToken.transfer(
+        this.proxy.address,
+        await this.aToken.balanceOf.call(user),
+        { from: user }
+      );
+      await this.proxy.updateTokenMock(this.aToken.address);
+      await balanceUser.get();
+
+      const receipt = await this.proxy.execMock(to, data, {
+        from: user,
+        value: ether('0.1'),
+      });
+
+      // Get handler return result
+      const handlerReturn = utils.toBN(
+        getHandlerReturn(receipt, ['uint256'])[0]
+      );
+      const aTokenUserAfter = await this.aToken.balanceOf.call(user);
+      const tokenUserAfter = await this.token.balanceOf.call(user);
+
+      // Verify handler return
+      expect(handlerReturn).to.be.bignumber.gte(depositValue);
+      // Verify proxy balance
+      expect(await this.aToken.balanceOf.call(this.proxy.address)).to.be.zero;
+      expect(await this.token.balanceOf.call(this.proxy.address)).to.be.zero;
+      // Verify user balance
+      expect(aTokenUserAfter).to.be.zero;
+      expect(tokenUserAfter).to.be.bignumber.eq(handlerReturn);
+      expect(await balanceUser.delta()).to.be.bignumber.eq(
+        ether('0').sub(new BN(receipt.receipt.gasUsed))
+      );
+      profileGas(receipt);
+    });
+
+    it('should revert: not enough balance', async function() {
+      const value = depositValue.add(ether('10'));
+      const to = this.hAaveV2.address;
+      const data = abi.simpleEncode(
+        'withdraw(address,uint256)',
+        this.token.address,
+        value
+      );
+
+      await this.aToken.transfer(
+        this.proxy.address,
+        await this.aToken.balanceOf.call(user),
+        { from: user }
+      );
+      await this.proxy.updateTokenMock(this.aToken.address);
+
+      await expectRevert(
+        this.proxy.execMock(to, data, { from: user }),
+        'HAaveProtocolV2_withdraw: 5'
+      );
+    });
+
+    it('should revert: not supported token', async function() {
+      const value = depositValue.add(ether('10'));
+      const to = this.hAaveV2.address;
+      const data = abi.simpleEncode(
+        'withdraw(address,uint256)',
+        this.mockToken.address,
+        value
+      );
+
+      await expectRevert(
+        this.proxy.execMock(to, data, { from: user }),
+        'HAaveProtocolV2_withdraw: Unspecified'
+      );
+    });
+  });
 });
