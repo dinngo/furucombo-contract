@@ -5,7 +5,8 @@ contract Foo4 {
     uint256 public nValue;
 
     function bar() external returns (bytes32) {
-        return 0x0000000000000000000000000000000000000000000000000123456789abcdef;
+        return
+            0x0000000000000000000000000000000000000000000000000123456789abcdef;
     }
 
     function barUint() external returns (uint256) {
