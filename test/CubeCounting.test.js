@@ -65,7 +65,7 @@ contract('CubeCounting', function([_, user]) {
       this.fooHandler = await FooHandler.new();
       await this.registry.register(
         this.fooHandler.address,
-        utils.asciiToHex('foo5')
+        utils.asciiToHex('Foo')
       );
     });
 
@@ -149,7 +149,7 @@ contract('CubeCounting', function([_, user]) {
         );
       });
 
-      it('revert on 3nd cube', async function() {
+      it('revert on 3rd cube', async function() {
         let value = [ether('0.1'), ether('0')];
         const deadline = (await latest()).add(new BN('100'));
         value[1] = await this.swap.ethToTokenSwapInput.call(
