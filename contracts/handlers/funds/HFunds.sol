@@ -51,8 +51,6 @@ contract HFunds is HandlerBase {
         }
 
         // FIXME: the detailed error message, ex. which token slippage over the limitation
-        // 討論一下有必要為了 error msg 就多寫一個 contact function 和 address to string function 增加風險嗎？
-
         for (uint256 i = 0; i < tokens.length; i++) {
             if (tokens[i] == address(0)) {
                 if (address(this).balance < amounts[i]) {

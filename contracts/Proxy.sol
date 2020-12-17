@@ -153,7 +153,9 @@ contract Proxy is Storage, Config {
                 if iszero(iszero(m)) {
                     // Assert no overflow first
                     let p := mul(m, ref)
-                    if iszero(eq(div(p, m), ref)) { revert(0, 0) } // require(p / m == ref)
+                    if iszero(eq(div(p, m), ref)) {
+                        revert(0, 0)
+                    } // require(p / m == ref)
                     ref := div(p, base)
                 }
                 mstore(loc, ref)

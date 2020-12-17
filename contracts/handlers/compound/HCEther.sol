@@ -1,10 +1,10 @@
 pragma solidity ^0.6.0;
 
-import '@openzeppelin/contracts/token/ERC20/SafeERC20.sol';
-import '@openzeppelin/contracts/math/SafeMath.sol';
+import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
+import "@openzeppelin/contracts/math/SafeMath.sol";
 
-import '../HandlerBase.sol';
-import './ICEther.sol';
+import "../HandlerBase.sol";
+import "./ICEther.sol";
 
 contract HCEther is HandlerBase {
     using SafeERC20 for IERC20;
@@ -13,7 +13,7 @@ contract HCEther is HandlerBase {
     address public constant CETHER = 0x4Ddc2D193948926D02f9B1fE9e1daa0718270ED5;
 
     function getContractName() public pure override returns (string memory) {
-        return 'HCEther';
+        return "HCEther";
     }
 
     function mint(uint256 value) external payable returns (uint256) {
@@ -24,9 +24,9 @@ contract HCEther is HandlerBase {
 
         // Execute mint
         try compound.mint{value: value}() {} catch Error(string memory reason) {
-            _revertMsg('mint', reason);
+            _revertMsg("mint", reason);
         } catch {
-            _revertMsg('mint');
+            _revertMsg("mint");
         }
 
         // Get cether balance of proxy after mint
@@ -47,11 +47,15 @@ contract HCEther is HandlerBase {
 
         // Execute redeem
         try compound.redeem(redeemTokens) returns (uint256 errorCode) {
-            if (errorCode != 0) _revertMsg('redeem', string(abi.encodePacked('error ', _uint2String(errorCode))));
+            if (errorCode != 0)
+                _revertMsg(
+                    "redeem",
+                    string(abi.encodePacked("error ", _uint2String(errorCode)))
+                );
         } catch Error(string memory reason) {
-            _revertMsg('redeem', reason);
+            _revertMsg("redeem", reason);
         } catch {
-            _revertMsg('redeem');
+            _revertMsg("redeem");
         }
 
         // Approve cether to zero
@@ -62,19 +66,31 @@ contract HCEther is HandlerBase {
         return (afterRedeemAmount.sub(beforeRedeemAmount));
     }
 
-    function redeemUnderlying(uint256 redeemAmount) external payable returns (uint256) {
+    function redeemUnderlying(uint256 redeemAmount)
+        external
+        payable
+        returns (uint256)
+    {
         // Get cether balance of proxy before redeemUnderlying
         ICEther compound = ICEther(CETHER);
         uint256 beforeCEtherAmount = compound.balanceOf(address(this));
 
-        IERC20(CETHER).safeApprove(CETHER, 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF);
-        try compound.redeemUnderlying(redeemAmount) returns (uint256 errorCode) {
+        IERC20(CETHER).safeApprove(
+            CETHER,
+            0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+        );
+        try compound.redeemUnderlying(redeemAmount) returns (
+            uint256 errorCode
+        ) {
             if (errorCode != 0)
-                _revertMsg('redeemUnderlying', string(abi.encodePacked('error ', _uint2String(errorCode))));
+                _revertMsg(
+                    "redeemUnderlying",
+                    string(abi.encodePacked("error ", _uint2String(errorCode)))
+                );
         } catch Error(string memory reason) {
-            _revertMsg('redeemUnderlying', reason);
+            _revertMsg("redeemUnderlying", reason);
         } catch {
-            _revertMsg('redeemUnderlying');
+            _revertMsg("redeemUnderlying");
         }
         IERC20(CETHER).safeApprove(CETHER, 0);
 
@@ -83,16 +99,22 @@ contract HCEther is HandlerBase {
         return (beforeCEtherAmount.sub(afterCEtherAmount));
     }
 
-    function repayBorrowBehalf(uint256 amount, address borrower) external payable returns (uint256) {
+    function repayBorrowBehalf(uint256 amount, address borrower)
+        external
+        payable
+        returns (uint256)
+    {
         ICEther compound = ICEther(CETHER);
         uint256 debt = compound.borrowBalanceCurrent(borrower);
         if (amount < debt) {
             debt = amount;
         }
-        try compound.repayBorrowBehalf{value: debt}(borrower) {} catch Error(string memory reason) {
-            _revertMsg('repayBorrowBehalf', reason);
+        try compound.repayBorrowBehalf{value: debt}(borrower) {} catch Error(
+            string memory reason
+        ) {
+            _revertMsg("repayBorrowBehalf", reason);
         } catch {
-            _revertMsg('repayBorrowBehalf');
+            _revertMsg("repayBorrowBehalf");
         }
         uint256 debtEnd = compound.borrowBalanceCurrent(borrower);
         return debtEnd;
