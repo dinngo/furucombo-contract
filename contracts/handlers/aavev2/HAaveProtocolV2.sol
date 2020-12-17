@@ -3,15 +3,14 @@ pragma experimental ABIEncoderV2;
 
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
-import "./IATokenV2.sol";
-import "./ILendingPoolV2.sol";
-import "./ILendingPoolAddressesProviderV2.sol";
-import "./libraries/DataTypes.sol";
-// import "./FlashLoanReceiverBaseV2.sol";
-// import "../../interface/IProxy.sol";
-import "../HandlerBase.sol";
 
-contract HAaveProtocolV2 is HandlerBase {
+import "../../interface/IProxy.sol";
+import "../HandlerBase.sol";
+import "./ILendingPoolV2.sol";
+import "./IFlashLoanReceiver.sol";
+import "./ILendingPoolAddressesProviderV2.sol";
+
+contract HAaveProtocolV2 is HandlerBase, IFlashLoanReceiver {
     using SafeERC20 for IERC20;
     using SafeMath for uint256;
 
@@ -105,5 +104,70 @@ contract HAaveProtocolV2 is HandlerBase {
         } catch {
             _revertMsg("General");
         }
+    }
+
+    function flashLoan(
+        address[] calldata assets,
+        uint256[] calldata amounts,
+        uint256[] calldata modes,
+        address onBehalfOf,
+        bytes calldata params
+    ) external payable {
+        if (assets.length != amounts.length) {
+            _revertMsg("flashLoan", "assets and amounts do not match");
+        }
+
+        if (assets.length != modes.length) {
+            _revertMsg("flashLoan", "assets and modes do not match");
+        }
+
+        address pool =
+            ILendingPoolAddressesProviderV2(PROVIDER).getLendingPool();
+
+        try
+            ILendingPoolV2(pool).flashLoan(
+                address(this),
+                assets,
+                amounts,
+                modes,
+                onBehalfOf,
+                params,
+                REFERRAL_CODE
+            )
+        {} catch Error(string memory reason) {
+            _revertMsg("flashLoan", reason);
+        } catch {
+            _revertMsg("flashLoan");
+        }
+
+        // approve lending pool zero
+        for (uint256 i = 0; i < assets.length; i++) {
+            IERC20(assets[i]).safeApprove(pool, 0);
+            _updateToken(assets[i]);
+        }
+    }
+
+    function executeOperation(
+        address[] calldata assets,
+        uint256[] calldata amounts,
+        uint256[] calldata premiums,
+        address initiator, // unused
+        bytes calldata params
+    ) external override returns (bool) {
+        (address[] memory tos, bytes32[] memory configs, bytes[] memory datas) =
+            abi.decode(params, (address[], bytes32[], bytes[]));
+        IProxy(address(this)).execs(tos, configs, datas);
+
+        address pool =
+            ILendingPoolAddressesProviderV2(PROVIDER).getLendingPool();
+        for (uint256 i = 0; i < assets.length; i++) {
+            uint256 amountOwing = amounts[i].add(premiums[i]);
+
+            // compile error: Stack too deep, try removing local variables, when using safeApprove
+            // allows lending pool transferFrom token from address(this) for paying back
+            IERC20(assets[i]).approve(pool, amountOwing);
+        }
+
+        return true;
     }
 }
