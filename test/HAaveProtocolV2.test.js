@@ -24,6 +24,7 @@ const {
   AAVEPROTOCOL_V2_PROVIDER,
   AWETH_V2,
   ADAI_V2,
+  AAVE_RATEMODE,
 } = require('./utils/constants');
 const {
   evmRevert,
