@@ -268,7 +268,10 @@ contract('Aave V2', function([_, user]) {
     const borrowTokenAddr = WETH_TOKEN;
     const borrowTokenProvider = WETH_PROVIDER;
     const rateMode = AAVE_RATEMODE.STABLE;
-    const debtTokenAddr = rateMode == AAVE_RATEMODE.STABLE ? AWETH_V2_DEBT_STABLE : AWETH_V2_DEBT_VARIABLE;
+    const debtTokenAddr =
+      rateMode == AAVE_RATEMODE.STABLE
+        ? AWETH_V2_DEBT_STABLE
+        : AWETH_V2_DEBT_VARIABLE;
 
     before(async function() {
       this.borrowToken = await IToken.at(borrowTokenAddr);
@@ -297,7 +300,7 @@ contract('Aave V2', function([_, user]) {
         rateMode,
         0,
         user,
-        {from: user}
+        { from: user }
       );
       expect(await this.borrowToken.balanceOf.call(user)).to.be.bignumber.eq(
         borrowAmount
@@ -315,9 +318,11 @@ contract('Aave V2', function([_, user]) {
         this.borrowToken.address,
         value,
         rateMode,
-        user,
+        user
       );
-      await this.borrowToken.transfer(this.proxy.address, value, { from: user });
+      await this.borrowToken.transfer(this.proxy.address, value, {
+        from: user,
+      });
       await this.proxy.updateTokenMock(this.borrowToken.address);
       await balanceUser.get();
 
@@ -337,7 +342,9 @@ contract('Aave V2', function([_, user]) {
       // Verify handler return
       expect(value).to.be.bignumber.eq(handlerReturn);
       // Verify proxy balance
-      expect(await this.borrowToken.balanceOf.call(this.proxy.address)).to.be.zero;
+      expect(
+        await this.borrowToken.balanceOf.call(this.proxy.address)
+      ).to.be.zero;
       // Verify user balance
       // (borrow - repay) <= debtTokenUserAfter < (borrow + interestMax - repay)
       expect(debtTokenUserAfter).to.be.bignumber.gte(borrowAmount.sub(value));
@@ -360,10 +367,14 @@ contract('Aave V2', function([_, user]) {
         this.borrowToken.address,
         value,
         rateMode,
-        user,
+        user
       );
-      await this.borrowToken.transfer(user, extraNeed, { from: borrowTokenProvider });
-      await this.borrowToken.transfer(this.proxy.address, value, { from: user });
+      await this.borrowToken.transfer(user, extraNeed, {
+        from: borrowTokenProvider,
+      });
+      await this.borrowToken.transfer(this.proxy.address, value, {
+        from: user,
+      });
       await this.proxy.updateTokenMock(this.borrowToken.address);
       await balanceUser.get();
 
@@ -385,7 +396,9 @@ contract('Aave V2', function([_, user]) {
       expect(handlerReturn).to.be.bignumber.gte(borrowAmount);
       expect(handlerReturn).to.be.bignumber.lt(borrowAmount.add(interestMax));
       // Verify proxy balance
-      expect(await this.borrowToken.balanceOf.call(this.proxy.address)).to.be.zero;
+      expect(
+        await this.borrowToken.balanceOf.call(this.proxy.address)
+      ).to.be.zero;
       // Verify user balance
       expect(debtTokenUserAfter).to.be.zero;
       expect(borrowTokenUserAfter).to.be.bignumber.eq(value.sub(handlerReturn));
@@ -403,9 +416,13 @@ contract('Aave V2', function([_, user]) {
         this.borrowToken.address,
         value,
         rateMode,
-        user,
+        user
       );
-      await this.borrowToken.transfer(this.proxy.address, value.sub(ether('0.1')), { from: user });
+      await this.borrowToken.transfer(
+        this.proxy.address,
+        value.sub(ether('0.1')),
+        { from: user }
+      );
       await this.proxy.updateTokenMock(this.borrowToken.address);
       await expectRevert(
         this.proxy.execMock(to, data, { from: user }),
@@ -421,7 +438,7 @@ contract('Aave V2', function([_, user]) {
         this.mockToken.address,
         value,
         rateMode,
-        user,
+        user
       );
       await this.mockToken.transfer(this.proxy.address, value, { from: _ });
       await this.proxy.updateTokenMock(this.mockToken.address);
@@ -440,9 +457,11 @@ contract('Aave V2', function([_, user]) {
         this.borrowToken.address,
         value,
         unborrowedRateMode,
-        user,
+        user
       );
-      await this.borrowToken.transfer(this.proxy.address, value, { from: user });
+      await this.borrowToken.transfer(this.proxy.address, value, {
+        from: user,
+      });
       await this.proxy.updateTokenMock(this.borrowToken.address);
       await expectRevert(
         this.proxy.execMock(to, data, { from: user }),
