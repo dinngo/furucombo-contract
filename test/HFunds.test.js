@@ -425,7 +425,7 @@ contract('Funds', function([_, user, someone]) {
           from: user,
           value: revertValue,
         }),
-        'HFunds_checkSlippage: error:2_' + revertValue.toString()
+        'HFunds_checkSlippage: error: 2_' + revertValue.toString()
       );
     });
 
@@ -453,7 +453,7 @@ contract('Funds', function([_, user, someone]) {
           from: user,
           value: value[2],
         }),
-        'HFunds_checkSlippage: error:0_' + revertValue.toString()
+        'HFunds_checkSlippage: error: 0_' + revertValue.toString()
       );
     });
   });

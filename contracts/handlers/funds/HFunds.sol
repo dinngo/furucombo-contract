@@ -56,7 +56,7 @@ contract HFunds is HandlerBase {
                     string memory errMsg =
                         string(
                             abi.encodePacked(
-                                "error:",
+                                "error: ",
                                 _uint2String(i),
                                 "_",
                                 _uint2String(address(this).balance)
@@ -70,7 +70,7 @@ contract HFunds is HandlerBase {
                 string memory errMsg =
                     string(
                         abi.encodePacked(
-                            "error:",
+                            "error: ",
                             _uint2String(i),
                             "_",
                             _uint2String(
