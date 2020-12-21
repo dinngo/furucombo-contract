@@ -91,14 +91,9 @@ contract('Aave', function([_, user]) {
         from: user,
         value: value,
       });
-      // Get handler return result
-      const handlerReturn = utils.toBN(
-        getHandlerReturn(receipt, ['uint256'])[0]
-      );
       const aEtherUser = await this.aEther.balanceOf.call(user);
 
       expect(aEtherUser).to.be.bignumber.eq(value);
-      expect(aEtherUser).to.be.bignumber.eq(handlerReturn);
       expect(await balanceUser.delta()).to.be.bignumber.eq(
         ether('0')
           .sub(value)
@@ -122,14 +117,9 @@ contract('Aave', function([_, user]) {
       await this.proxy.updateTokenMock(this.token.address);
 
       const receipt = await this.proxy.execMock(to, data, { from: user });
-      // Get handler return result
-      const handlerReturn = utils.toBN(
-        getHandlerReturn(receipt, ['uint256'])[0]
-      );
       const aTokenUser = await this.aToken.balanceOf.call(user);
 
       expect(aTokenUser).to.be.bignumber.eq(new BN(value));
-      expect(aTokenUser).to.be.bignumber.eq(handlerReturn);
       expect(await balanceUser.delta()).to.be.bignumber.eq(
         ether('0').sub(new BN(receipt.receipt.gasUsed))
       );
