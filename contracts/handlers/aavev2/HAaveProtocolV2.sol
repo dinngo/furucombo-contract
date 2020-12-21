@@ -47,7 +47,7 @@ contract HAaveProtocolV2 is HandlerBase {
     function withdraw(address asset, uint256 amount)
         external
         payable
-        returns (uint256 withdrawnAmount)
+        returns (uint256 withdrawAmount)
     {
         address pool =
             ILendingPoolAddressesProviderV2(PROVIDER).getLendingPool();
@@ -55,7 +55,7 @@ contract HAaveProtocolV2 is HandlerBase {
         try
             ILendingPoolV2(pool).withdraw(asset, amount, address(this))
         returns (uint256 ret) {
-            withdrawnAmount = ret;
+            withdrawAmount = ret;
         } catch Error(string memory reason) {
             _revertMsg("withdraw", reason);
         } catch {
@@ -63,6 +63,29 @@ contract HAaveProtocolV2 is HandlerBase {
         }
 
         _updateToken(asset);
+    }
+
+    function repay(
+        address asset,
+        uint256 amount,
+        uint256 rateMode,
+        address onBehalfOf
+    ) external payable returns (uint256 repayAmount) {
+        address pool =
+            ILendingPoolAddressesProviderV2(PROVIDER).getLendingPool();
+        IERC20(asset).safeApprove(pool, amount);
+
+        try
+            ILendingPoolV2(pool).repay(asset, amount, rateMode, onBehalfOf)
+        returns (uint256 ret) {
+            repayAmount = ret;
+        } catch Error(string memory reason) {
+            _revertMsg("repay", reason);
+        } catch {
+            _revertMsg("repay");
+        }
+
+        IERC20(asset).safeApprove(pool, 0);
     }
 
     function _getLendingPoolAndAToken(address underlying)
