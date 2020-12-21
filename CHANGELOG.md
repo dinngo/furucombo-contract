@@ -22,6 +22,7 @@ All notable changes to this project will be documented in this file.
 - `Cache.sol` is changed to `Storage.sol`.
 - `Cache` is now `Stack`. `LibCache` is now `LibStack`.
 - `Registry` allows to register non-deprecated registration to apply new info.
+- Rename `handlers` to `infos` in `Registry`.
 
 ## [0.12.1] - 2020-10-28
 
