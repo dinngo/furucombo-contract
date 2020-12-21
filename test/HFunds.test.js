@@ -418,13 +418,14 @@ contract('Funds', function([_, user, someone]) {
       await this.token1.transfer(this.proxy.address, value[1], {
         from: providerAddresses[1],
       });
+      revertValue = ether('1');
 
       await expectRevert(
         this.proxy.execMock(to, data, {
           from: user,
-          value: ether('1'),
+          value: revertValue,
         }),
-        '1_HFunds_checkSlippage: ETH slippage'
+        'HFunds_checkSlippage: error:2_' + revertValue.toString()
       );
     });
 
@@ -438,7 +439,8 @@ contract('Funds', function([_, user, someone]) {
         value
       );
 
-      await this.token0.transfer(this.proxy.address, ether('1'), {
+      revertValue = ether('1');
+      await this.token0.transfer(this.proxy.address, revertValue, {
         from: providerAddresses[0],
       });
 
@@ -451,7 +453,7 @@ contract('Funds', function([_, user, someone]) {
           from: user,
           value: value[2],
         }),
-        '1_HFunds_checkSlippage: token slippage'
+        'HFunds_checkSlippage: error:0_' + revertValue.toString()
       );
     });
   });

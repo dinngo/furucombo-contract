@@ -47,19 +47,39 @@ contract HFunds is HandlerBase {
         uint256[] calldata amounts
     ) external payable {
         if (tokens.length != amounts.length) {
-            _revertMsg("checkSlippage", "token and amount does not match");
+            _revertMsg("checkSlippage", "token and amount do not match");
         }
 
-        // FIXME: the detailed error message, ex. which token slippage over the limitation
         for (uint256 i = 0; i < tokens.length; i++) {
             if (tokens[i] == address(0)) {
                 if (address(this).balance < amounts[i]) {
-                    _revertMsg("checkSlippage", "ETH slippage");
+                    string memory errMsg =
+                        string(
+                            abi.encodePacked(
+                                "error:",
+                                _uint2String(i),
+                                "_",
+                                _uint2String(address(this).balance)
+                            )
+                        );
+                    _revertMsg("checkSlippage", errMsg);
                 }
-                continue;
-            }
-            if (IERC20(tokens[i]).balanceOf(address(this)) < amounts[i]) {
-                _revertMsg("checkSlippage", "token slippage");
+            } else if (
+                IERC20(tokens[i]).balanceOf(address(this)) < amounts[i]
+            ) {
+                string memory errMsg =
+                    string(
+                        abi.encodePacked(
+                            "error:",
+                            _uint2String(i),
+                            "_",
+                            _uint2String(
+                                IERC20(tokens[i]).balanceOf(address(this))
+                            )
+                        )
+                    );
+
+                _revertMsg("checkSlippage", errMsg);
             }
         }
     }
