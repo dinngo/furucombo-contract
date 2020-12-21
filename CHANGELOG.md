@@ -20,6 +20,7 @@ All notable changes to this project will be documented in this file.
 - Apply new `cache` mapping structure and `LibCache` to handler sender related functions.
 - Cube counting error message handling.
 - Support check slippage function in `HFunds`.
+- Support Aave v2 deposit/withdraw/repay in `HAaveProtocolV2`.
 
 ### Changed
 
