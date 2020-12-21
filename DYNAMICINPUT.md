@@ -14,8 +14,6 @@ The details about dynamic cube input of Furucombo that includes config setup and
 - Config
   - bytes32
 
----
-
 ## Config
 
 config is bytes32 data represent by hex.
@@ -24,41 +22,43 @@ config is bytes32 data represent by hex.
 
 ### Param config
 
-    -  ![](images/param_config.png)
-    - `255-248` bits are reserved for Param config.
-    - `248`: 1 if the parameter is dynamic, 0 if the parameter is static.
-    - Example:
-        - `0x00` => `(b00)`: static parameter.
-        - `0x01` => `(b01)`: dynamic parameter.
+![](images/param_config.png)
+
+- `255-248` bits are reserved for Param config.
+- `248`: 1 if the parameter is dynamic, 0 if the parameter is static.
+- Example:
+  - `0x00` => `(b00)`: static parameter.
+  - `0x01` => `(b01)`: dynamic parameter.
 
 ### Return data count
 
-    - `247-240` bits are reserved for return data count.
-    - Expected return data count after a cube is executed.
-    - `0` if the return data will not be referenced.
-    - Example:
-        - `0x04` => the return data of the cube will be referenced and the return data count is 4.
-        - `0x00` => the return data of the cube will `not` be referenced.
+- `247-240` bits are reserved for return data count.
+  - Expected return data count after a cube is executed.
+  - `0` if the return data will not be referenced.
+  - Example:
+    - `0x04` => the return data of the cube will be referenced and the return data count is 4.
+    - `0x00` => the return data of the cube will `not` be referenced.
 
 ### Parameter location
 
-    - ![](images/parameter_config.png)
-    - `239-176` bits are reserved for Parameter location.
-    - Every `bit` indicates which bytes32 (exclude 4-byte function signature) of parameter data should be replaced.
-    - 1 if the 1st bytes32 of parameter data will be replaced with return data, 0 if not.
-    - Example:
-        - `0x01` => `(b001)` => replace the 1st bytes32 of parameter data with return data.
-        - `0x03` => `(b011)` => replace the 1st bytes32 and the 2nd bytes32 of parameters data with return data.
-        - `0x04` => `(b100)` => replace the 3rd bytes32 of parameter data with return data.
+![](images/parameter_config.png)
 
-- ### Reference location
-  - ![](images/reference_config.png)
-  - `175-0` bits are reserved for Reference location.
-  - Every `byte` indicates which bytes32 of localStack contains the referenced data.
-  - Should be `ff` if the location is not used.
-  - Parameter data replacement order is from right to left except `ff`.
+- `239-176` bits are reserved for Parameter location.
+- Every `bit` indicates which bytes32 (exclude 4-byte function signature) of parameter data should be replaced.
+- 1 if the 1st bytes32 of parameter data will be replaced with return data, 0 if not.
+- Example:
+  - `0x01` => `(b001)` => replace the 1st bytes32 of parameter data with return data.
+  - `0x03` => `(b011)` => replace the 1st bytes32 and the 2nd bytes32 of parameters data with return data.
+  - `0x04` => `(b100)` => replace the 3rd bytes32 of parameter data with return data.
 
----
+### Reference location
+
+![](images/reference_config.png)
+
+- `175-0` bits are reserved for Reference location.
+- Every `byte` indicates which bytes32 of localStack contains the referenced data.
+- Should be `ff` if the location is not used.
+- Parameter data replacement order is from right to left except `ff`.
 
 ## Common Cases
 
@@ -68,8 +68,6 @@ config is bytes32 data represent by hex.
   - `0x0001000000000000000000000000000000000000000000000000000000000000`
 - Dynamic parameter, no return data, the 2nd bytes32 of parameter data will be replaced with localStack[0]
   - `0x0100000000000000000200ffffffffffffffffffffffffffffffffffffffffff`
-
----
 
 ## Return Data Type
 
