@@ -25,6 +25,8 @@ const Proxy = artifacts.require('Proxy');
 const IToken = artifacts.require('IERC20');
 const ICToken = artifacts.require('ICToken');
 const IUniswapExchange = artifacts.require('IUniswapExchange');
+const Foo = artifacts.require('Foo4');
+const FooHandler = artifacts.require('Foo4Handler');
 
 contract('CubeCounting', function([_, user]) {
   const tokenAddress = DAI_TOKEN;
@@ -59,6 +61,12 @@ contract('CubeCounting', function([_, user]) {
       );
       this.token = await IToken.at(tokenAddress);
       this.swap = await IUniswapExchange.at(uniswapAddress);
+      this.foo = await Foo.new();
+      this.fooHandler = await FooHandler.new();
+      await this.registry.register(
+        this.fooHandler.address,
+        utils.asciiToHex('Foo')
+      );
     });
 
     describe('Compound Token Lending', function() {
@@ -71,6 +79,40 @@ contract('CubeCounting', function([_, user]) {
           utils.asciiToHex('CToken')
         );
         this.cToken = await ICToken.at(cTokenAddress);
+      });
+
+      it('revert on 1st cube', async function() {
+        let value = [ether('10'), ether('0')];
+        const deadline = (await latest()).add(new BN('100'));
+        value[1] = await this.swap.ethToTokenSwapInput.call(
+          new BN('1'),
+          deadline,
+          { from: user, value: value[0] }
+        );
+        const to = [this.hUniswap.address, this.hCToken.address];
+        const config = [ZERO_BYTES32, ZERO_BYTES32];
+        const data = [
+          abi.simpleEncode(
+            'ethToTokenSwapInput(uint256,address,uint256):(uint256)',
+            value[0],
+            tokenAddress,
+            new BN('1')
+          ),
+          abi.simpleEncode(
+            'mint(address,uint256)',
+            cTokenAddress,
+            value[1].add(ether('10'))
+          ),
+        ];
+        const rate = await this.cToken.exchangeRateStored.call();
+        const result = value[1].mul(ether('1')).div(rate);
+        await expectRevert(
+          this.proxy.batchExec(to, config, data, {
+            from: user,
+            value: ether('1'),
+          }),
+          '1_HUniswap_ethToTokenSwapInput: Unspecified'
+        );
       });
 
       it('revert on 2nd cube', async function() {
@@ -104,6 +146,45 @@ contract('CubeCounting', function([_, user]) {
             value: ether('1'),
           }),
           '2_HCToken_mint: error 13'
+        );
+      });
+
+      it('revert on 3rd cube', async function() {
+        let value = [ether('0.1'), ether('0')];
+        const deadline = (await latest()).add(new BN('100'));
+        value[1] = await this.swap.ethToTokenSwapInput.call(
+          new BN('1'),
+          deadline,
+          { from: user, value: value[0] }
+        );
+        const to = [
+          this.hUniswap.address,
+          this.fooHandler.address,
+          this.hCToken.address,
+        ];
+        const config = [ZERO_BYTES32, ZERO_BYTES32, ZERO_BYTES32];
+        const data = [
+          abi.simpleEncode(
+            'ethToTokenSwapInput(uint256,address,uint256):(uint256)',
+            value[0],
+            tokenAddress,
+            new BN('1')
+          ),
+          abi.simpleEncode('bar(address)', this.foo.address),
+          abi.simpleEncode(
+            'mint(address,uint256)',
+            cTokenAddress,
+            value[1].add(ether('10'))
+          ),
+        ];
+        const rate = await this.cToken.exchangeRateStored.call();
+        const result = value[1].mul(ether('1')).div(rate);
+        await expectRevert(
+          this.proxy.batchExec(to, config, data, {
+            from: user,
+            value: ether('1'),
+          }),
+          '3_HCToken_mint: error 13'
         );
       });
     });

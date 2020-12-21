@@ -65,11 +65,15 @@ contract('Mooniswap', function([_, user]) {
     this.moonPoolBToken = await IToken.at(moonPoolBAddress);
     this.moonPoolA = await IMoonPool.at(moonPoolAAddress);
     this.moonPoolB = await IMoonPool.at(moonPoolBAddress);
+    console.log(tokenAProviderAddress);
+    console.log(
+      (await this.tokenA.balanceOf(tokenAProviderAddress)).toString()
+    );
 
-    await this.tokenA.transfer(user, ether('1000'), {
+    await this.tokenA.transfer(user, ether('900'), {
       from: tokenAProviderAddress,
     });
-    await this.tokenB.transfer(user, ether('1000'), {
+    await this.tokenB.transfer(user, ether('900'), {
       from: tokenBProviderAddress,
     });
   });
@@ -114,7 +118,10 @@ contract('Mooniswap', function([_, user]) {
       const expectedPoolAmountOut = await this.moonPoolA.deposit.call(
         amounts,
         minAmounts,
-        { from: user, value: value }
+        {
+          from: user,
+          value: value,
+        }
       );
 
       // Send tokens to proxy

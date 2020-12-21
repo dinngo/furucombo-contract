@@ -1,4 +1,5 @@
 # Exit script as soon as a command fails.
+# Exit script as soon as a command fails.
 set -o errexit
 
 # Executes cleanup function at script exit.
@@ -31,7 +32,7 @@ start_ganache() {
     RENBTC_PROVIDER="0x944644Ea989Ec64c2Ab9eF341D383cEf586A5777"
     YCRV_PROVIDER="0xc447fcaf1def19a583f97b3620627bf69c05b5fb"
     TCRV_PROVIDER="0xc447fcaf1def19a583f97b3620627bf69c05b5fb"
-    YFI_PROVIDER="0x3f5CE5FBFe3E9af3971dD833D26bA9b5C936f0bE"
+    YFI_PROVIDER="0xbe0eb53f46cd790cd13851d5eff43d12404d33e8"
     ALINK_PROVIDER="0xe3786BF25E15013FDDa09dbe881529d44B9CA239"
     CURVE_SBTCCRV_PROVIDER="0x2d407ddb06311396fe14d4b49da5f0471447d45c"
     CHI_PROVIDER="0x5B1fC2435B1f7C16c206e7968C0e8524eC29b786"

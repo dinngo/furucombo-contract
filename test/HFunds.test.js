@@ -7,6 +7,7 @@ const {
   expectRevert,
   time,
 } = require('@openzeppelin/test-helpers');
+const { ZERO_ADDRESS } = constants;
 const { tracker } = balance;
 const { latest } = time;
 const abi = require('ethereumjs-abi');
@@ -314,6 +315,7 @@ contract('Funds', function([_, user, someone]) {
   describe('get balance', function() {
     before(async function() {
       this.token = await IToken.at(tokenAddresses[0]);
+      this.usdt = await IUsdt.at(USDT_TOKEN);
     });
     describe('Ether', async function() {
       it('normal', async function() {
@@ -335,6 +337,7 @@ contract('Funds', function([_, user, someone]) {
         const handlerReturn = utils.toBN(
           getHandlerReturn(receipt, ['uint256'])[0]
         );
+
         expect(handlerReturn).to.be.bignumber.eq(value);
         profileGas(receipt);
       });
@@ -358,10 +361,100 @@ contract('Funds', function([_, user, someone]) {
           const handlerReturn = utils.toBN(
             getHandlerReturn(receipt, ['uint256'])[0]
           );
+
           expect(handlerReturn).to.be.bignumber.eq(value);
           profileGas(receipt);
         });
       });
+    });
+  });
+
+  describe('check slippage', function() {
+    before(async function() {
+      this.token0 = await IToken.at(tokenAddresses[0]);
+      this.token1 = await IToken.at(tokenAddresses[1]);
+    });
+
+    it('normal', async function() {
+      const token = [this.token0.address, this.token1.address, ZERO_ADDRESS];
+      const value = [ether('10'), ether('10'), ether('10')];
+      const to = this.hFunds.address;
+      const data = abi.simpleEncode(
+        'checkSlippage(address[],uint256[])',
+        token,
+        value
+      );
+
+      await this.token0.transfer(this.proxy.address, value[0], {
+        from: providerAddresses[0],
+      });
+
+      await this.token1.transfer(this.proxy.address, value[1], {
+        from: providerAddresses[1],
+      });
+
+      const receipt = await this.proxy.execMock(to, data, {
+        from: user,
+        value: value[2],
+      });
+
+      profileGas(receipt);
+    });
+
+    it('should revert: eth slippage', async function() {
+      const token = [this.token0.address, this.token1.address, ZERO_ADDRESS];
+      const value = [ether('10'), ether('10'), ether('10')];
+      const to = this.hFunds.address;
+      const data = abi.simpleEncode(
+        'checkSlippage(address[],uint256[])',
+        token,
+        value
+      );
+
+      await this.token0.transfer(this.proxy.address, value[0], {
+        from: providerAddresses[0],
+      });
+
+      await this.token1.transfer(this.proxy.address, value[1], {
+        from: providerAddresses[1],
+      });
+      revertValue = ether('1');
+
+      await expectRevert(
+        this.proxy.execMock(to, data, {
+          from: user,
+          value: revertValue,
+        }),
+        'HFunds_checkSlippage: error: 2_' + revertValue.toString()
+      );
+    });
+
+    it('should revert: token slippage', async function() {
+      const token = [this.token0.address, this.token1.address, ZERO_ADDRESS];
+      const value = [ether('10'), ether('10'), ether('10')];
+      const to = this.hFunds.address;
+      const data = abi.simpleEncode(
+        'checkSlippage(address[],uint256[])',
+        token,
+        value
+      );
+
+      revertValue = ether('1');
+      await this.token0.transfer(this.proxy.address, revertValue, {
+        from: providerAddresses[0],
+      });
+
+      await this.token1.transfer(this.proxy.address, value[1], {
+        from: providerAddresses[1],
+      });
+
+      await expectRevert(
+        this.proxy.execMock(to, data, {
+          from: user,
+          value: value[2],
+        }),
+        'HFunds_checkSlippage: error: 0_' + revertValue.toString()
+      );
     });
   });
 });

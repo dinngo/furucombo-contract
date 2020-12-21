@@ -13,6 +13,7 @@ All notable changes to this project will be documented in this file.
 - Dynamic input mechanism.
 - Apply new `cache` mapping structure and `LibCache` to handler sender related functions.
 - Cube counting error message handling.
+- Support check slippage function in `HFunds`.
 
 ### Changed
 
