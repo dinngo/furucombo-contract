@@ -40,7 +40,8 @@
     "web3-provider-engine": "^15.0.12"
   },
   "dependencies": {
-    "@openzeppelin/contracts": "^2.5.0"
+    "@openzeppelin/contracts": "^2.5.0",
+    "pify": "^5.0.0"
   },
   "husky": {
     "hooks": {
