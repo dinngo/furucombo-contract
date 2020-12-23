@@ -1,6 +1,6 @@
 {
   "name": "Furucombo",
-  "version": "0.13.0",
+  "version": "0.13.1",
   "description": "Furucombo contracts",
   "main": "truffle-config.js",
   "directories": {
@@ -40,7 +40,8 @@
     "web3-provider-engine": "^15.0.12"
   },
   "dependencies": {
-    "@openzeppelin/contracts": "^2.5.0"
+    "@openzeppelin/contracts": "^2.5.0",
+    "pify": "^5.0.0"
   },
   "husky": {
     "hooks": {

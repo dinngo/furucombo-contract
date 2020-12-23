@@ -128,7 +128,7 @@ contract('BalancerExchange', function([_, user]) {
       const noPools = 4;
       describe('Ether to Token', function() {
         it('normal', async function() {
-          const amount = ether('0.00001');
+          const amount = ether('0.000001');
 
           [, baseAmount] = await getPath(
             this.token1.address,
