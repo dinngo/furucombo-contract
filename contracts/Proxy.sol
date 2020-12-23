@@ -68,6 +68,7 @@ contract Proxy is Cache, Config {
      */
     function execs(address[] memory tos, bytes[] memory datas) public payable {
         require(msg.sender == address(this), "Does not allow external calls");
+        require(cache.length > 0, "Cache should be initialized");
         _execs(tos, datas);
     }
 
