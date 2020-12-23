@@ -28,6 +28,7 @@ contract HMock is HandlerBase {
         IERC20(token).safeApprove(target, amount);
         IFaucet(target).drainToken(token, amount);
         IERC20(token).safeApprove(target, 0);
+        _updateToken(token);
     }
 
     function drainTokens(
@@ -39,6 +40,7 @@ contract HMock is HandlerBase {
             IERC20(tokens[i]).safeApprove(targets[i], amounts[i]);
             IFaucet(targets[i]).drainToken(tokens[i], amounts[i]);
             IERC20(tokens[i]).safeApprove(targets[i], 0);
+            _updateToken(tokens[i]);
         }
     }
 }

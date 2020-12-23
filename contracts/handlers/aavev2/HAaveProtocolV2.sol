@@ -110,7 +110,6 @@ contract HAaveProtocolV2 is HandlerBase, IFlashLoanReceiver {
         address[] calldata assets,
         uint256[] calldata amounts,
         uint256[] calldata modes,
-        address onBehalfOf,
         bytes calldata params
     ) external payable {
         if (assets.length != amounts.length) {
@@ -121,6 +120,7 @@ contract HAaveProtocolV2 is HandlerBase, IFlashLoanReceiver {
             _revertMsg("flashLoan", "assets and modes do not match");
         }
 
+        address onBehalfOf = _getSender();
         address pool =
             ILendingPoolAddressesProviderV2(PROVIDER).getLendingPool();
 
@@ -143,7 +143,7 @@ contract HAaveProtocolV2 is HandlerBase, IFlashLoanReceiver {
         // approve lending pool zero
         for (uint256 i = 0; i < assets.length; i++) {
             IERC20(assets[i]).safeApprove(pool, 0);
-            _updateToken(assets[i]);
+            if (modes[i] != 0) _updateToken(assets[i]);
         }
     }
 
@@ -151,9 +151,13 @@ contract HAaveProtocolV2 is HandlerBase, IFlashLoanReceiver {
         address[] calldata assets,
         uint256[] calldata amounts,
         uint256[] calldata premiums,
-        address initiator, // unused
+        address initiator,
         bytes calldata params
     ) external override returns (bool) {
+        if (initiator != address(this)) {
+            _revertMsg("executeOperation", "not initiated by the proxy");
+        }
+
         (address[] memory tos, bytes32[] memory configs, bytes[] memory datas) =
             abi.decode(params, (address[], bytes32[], bytes[]));
         IProxy(address(this)).execs(tos, configs, datas);
