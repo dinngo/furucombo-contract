@@ -75,7 +75,7 @@ contract Proxy is Storage, Config {
         bytes[] memory datas
     ) public payable {
         require(msg.sender == address(this), "Does not allow external calls");
-        require(cache.length > 0, "Cache should be initialized");
+        require(_getSender() != address(0), "Sender should be initialized");
         _execs(tos, configs, datas);
     }
 
