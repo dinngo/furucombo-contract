@@ -148,11 +148,11 @@ contract HAaveProtocolV2 is HandlerBase, IFlashLoanReceiver {
     }
 
     function executeOperation(
-        address[] calldata assets,
-        uint256[] calldata amounts,
-        uint256[] calldata premiums,
+        address[] memory assets,
+        uint256[] memory amounts,
+        uint256[] memory premiums,
         address initiator,
-        bytes calldata params
+        bytes memory params
     ) external override returns (bool) {
         if (initiator != address(this)) {
             _revertMsg("executeOperation", "not initiated by the proxy");
@@ -166,12 +166,8 @@ contract HAaveProtocolV2 is HandlerBase, IFlashLoanReceiver {
             ILendingPoolAddressesProviderV2(PROVIDER).getLendingPool();
         for (uint256 i = 0; i < assets.length; i++) {
             uint256 amountOwing = amounts[i].add(premiums[i]);
-
-            // compile error: Stack too deep, try removing local variables, when using safeApprove
-            // allows lending pool transferFrom token from address(this) for paying back
-            IERC20(assets[i]).approve(pool, amountOwing);
+            IERC20(assets[i]).safeApprove(pool, amountOwing);
         }
-
         return true;
     }
 }

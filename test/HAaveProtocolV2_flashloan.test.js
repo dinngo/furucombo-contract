@@ -148,10 +148,11 @@ contract('AaveV2 flashloan', function([_, user, someone]) {
         value: ether('0.1'),
       });
 
+      const fee = _getFlashloanFee(value);
       expect(await balanceProxy.get()).to.be.zero;
       expect(await this.tokenA.balanceOf.call(this.proxy.address)).to.be.zero;
       expect(await this.tokenA.balanceOf.call(user)).to.be.bignumber.eq(
-        tokenAUser.add(value).sub(value.mul(new BN('9')).div(new BN('10000')))
+        tokenAUser.add(value).sub(fee)
       );
       expect(await balanceUser.delta()).to.be.bignumber.eq(
         ether('0').sub(new BN(receipt.receipt.gasUsed))
@@ -277,11 +278,12 @@ contract('AaveV2 flashloan', function([_, user, someone]) {
       expect(await this.tokenA.balanceOf.call(this.proxy.address)).to.be.zero;
       expect(await this.tokenB.balanceOf.call(this.proxy.address)).to.be.zero;
 
+      const fee = _getFlashloanFee(value);
       expect(await this.tokenA.balanceOf.call(user)).to.be.bignumber.eq(
-        tokenAUser.add(value).sub(value.mul(new BN('9')).div(new BN('10000')))
+        tokenAUser.add(value).sub(fee)
       );
       expect(await this.tokenB.balanceOf.call(user)).to.be.bignumber.eq(
-        tokenBUser.add(value).sub(value.mul(new BN('9')).div(new BN('10000')))
+        tokenBUser.add(value).sub(fee)
       );
       expect(await balanceUser.delta()).to.be.bignumber.eq(
         ether('0').sub(new BN(receipt.receipt.gasUsed))
@@ -625,7 +627,7 @@ contract('AaveV2 flashloan', function([_, user, someone]) {
       expect(await this.tokenA.balanceOf.call(this.proxy.address)).to.be.zero;
       expect(await this.tokenB.balanceOf.call(this.proxy.address)).to.be.zero;
 
-      const fee = value.mul(new BN('9')).div(new BN('10000'));
+      const fee = _getFlashloanFee(value);
       expect(await this.tokenA.balanceOf.call(user)).to.be.bignumber.eq(
         tokenAUser.add(value).sub(fee)
       );
@@ -686,7 +688,7 @@ contract('AaveV2 flashloan', function([_, user, someone]) {
       expect(await this.tokenA.balanceOf.call(this.proxy.address)).to.be.zero;
       expect(await this.tokenB.balanceOf.call(this.proxy.address)).to.be.zero;
 
-      const fee = value.mul(new BN('9')).div(new BN('10000'));
+      const fee = _getFlashloanFee(value);
       expect(await this.tokenA.balanceOf.call(user)).to.be.bignumber.eq(
         tokenAUser.add(value).sub(fee)
       );
@@ -695,6 +697,40 @@ contract('AaveV2 flashloan', function([_, user, someone]) {
       );
       expect(await balanceUser.delta()).to.be.bignumber.eq(
         ether('0').sub(new BN(receipt.receipt.gasUsed))
+      );
+    });
+  });
+
+  describe('Non-proxy', function() {
+    beforeEach(async function() {
+      await this.tokenA.transfer(this.faucet.address, ether('100'), {
+        from: this.tokenAProvider,
+      });
+    });
+
+    it('should revert: not initiated by the proxy', async function() {
+      const value = ether('1');
+      // Setup 1st flashloan cube
+      const params = _getFlashloanParams(
+        [this.hMock.address],
+        [ZERO_BYTES32],
+        [this.faucet.address],
+        [this.tokenA.address],
+        [value]
+      );
+
+      await expectRevert(
+        this.lendingPool.flashLoan(
+          this.proxy.address,
+          [this.tokenA.address],
+          [value],
+          [AAVE_RATEMODE.NODEBT],
+          someone,
+          params,
+          0,
+          { from: someone }
+        ),
+        'HAaveProtocolV2_executeOperation: not initiated by the proxy'
       );
     });
   });
@@ -729,4 +765,8 @@ function _getFlashloanCubeData(assets, amounts, modes, params) {
     util.toBuffer(params)
   );
   return data;
+}
+
+function _getFlashloanFee(value) {
+  return value.mul(new BN('9')).div(new BN('10000'));
 }
