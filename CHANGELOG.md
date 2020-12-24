@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+## [0.13.1] - 2020-12-23
+
+### Fixed
+
+- Fixed execs issue.
+
 ## [0.13.0] - 2020-12-08
 
 ### Added
