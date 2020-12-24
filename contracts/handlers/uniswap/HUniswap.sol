@@ -1,4 +1,4 @@
-pragma solidity ^0.5.0;
+pragma solidity ^0.6.0;
 
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 
@@ -9,16 +9,29 @@ import "./IUniswapExchange.sol";
 contract HUniswap is HandlerBase {
     using SafeERC20 for IERC20;
 
-    address constant UNISWAP_FACTORY = 0xc0a47dFe034B400B47bDaD5FecDa2621de6c4d95;
+    // prettier-ignore
+    address public constant UNISWAP_FACTORY = 0xc0a47dFe034B400B47bDaD5FecDa2621de6c4d95;
+
+    function getContractName() public pure override returns (string memory) {
+        return "HUniswap";
+    }
 
     function addLiquidity(
         uint256 value,
         address token,
-        uint256 max_tokens
+        uint256 maxTokens
     ) external payable returns (uint256 liquidity) {
         IUniswapExchange uniswap = _getExchange(token);
-        IERC20(token).safeApprove(address(uniswap), max_tokens);
-        liquidity = uniswap.addLiquidity.value(value)(1, max_tokens, now + 1);
+        IERC20(token).safeApprove(address(uniswap), maxTokens);
+        try uniswap.addLiquidity{value: value}(1, maxTokens, now + 1) returns (
+            uint256 ret
+        ) {
+            liquidity = ret;
+        } catch Error(string memory reason) {
+            _revertMsg("addLiquidity", reason);
+        } catch {
+            _revertMsg("addLiquidity");
+        }
         IERC20(token).safeApprove(address(uniswap), 0);
 
         // Update involved token
@@ -28,17 +41,21 @@ contract HUniswap is HandlerBase {
     function removeLiquidity(
         address token,
         uint256 amount,
-        uint256 min_eth,
-        uint256 min_tokens
-    ) external payable returns (uint256 eth_gain, uint256 token_gain) {
+        uint256 minEth,
+        uint256 minTokens
+    ) external payable returns (uint256 ethGain, uint256 tokenGain) {
         IUniswapExchange uniswap = _getExchange(token);
         IERC20(address(uniswap)).safeApprove(address(uniswap), amount);
-        (eth_gain, token_gain) = uniswap.removeLiquidity(
-            amount,
-            min_eth,
-            min_tokens,
-            now + 1
-        );
+        try
+            uniswap.removeLiquidity(amount, minEth, minTokens, now + 1)
+        returns (uint256 ret1, uint256 ret2) {
+            ethGain = ret1;
+            tokenGain = ret2;
+        } catch Error(string memory reason) {
+            _revertMsg("removeLiquidity", reason);
+        } catch {
+            _revertMsg("removeLiquidity");
+        }
         IERC20(address(uniswap)).safeApprove(address(uniswap), 0);
 
         // Update involved token
@@ -48,13 +65,18 @@ contract HUniswap is HandlerBase {
     function ethToTokenSwapInput(
         uint256 value,
         address token,
-        uint256 min_tokens
-    ) external payable returns (uint256 tokens_bought) {
+        uint256 minTokens
+    ) external payable returns (uint256 tokensBought) {
         IUniswapExchange uniswap = _getExchange(token);
-        tokens_bought = uniswap.ethToTokenSwapInput.value(value)(
-            min_tokens,
-            now
-        );
+        try uniswap.ethToTokenSwapInput{value: value}(minTokens, now) returns (
+            uint256 ret
+        ) {
+            tokensBought = ret;
+        } catch Error(string memory reason) {
+            _revertMsg("ethToTokenSwapInput", reason);
+        } catch {
+            _revertMsg("ethToTokenSwapInput");
+        }
 
         // Update involved token
         _updateToken(token);
@@ -63,13 +85,18 @@ contract HUniswap is HandlerBase {
     function ethToTokenSwapOutput(
         uint256 value,
         address token,
-        uint256 tokens_bought
-    ) external payable returns (uint256 eth_sold) {
+        uint256 tokensBought
+    ) external payable returns (uint256 ethSold) {
         IUniswapExchange uniswap = _getExchange(token);
-        eth_sold = uniswap.ethToTokenSwapOutput.value(value)(
-            tokens_bought,
-            now
-        );
+        try
+            uniswap.ethToTokenSwapOutput{value: value}(tokensBought, now)
+        returns (uint256 ret) {
+            ethSold = ret;
+        } catch Error(string memory reason) {
+            _revertMsg("ethToTokenSwapOutput", reason);
+        } catch {
+            _revertMsg("ethToTokenSwapOutput");
+        }
 
         // Update involved token
         _updateToken(token);
@@ -77,66 +104,98 @@ contract HUniswap is HandlerBase {
 
     function tokenToEthSwapInput(
         address token,
-        uint256 tokens_sold,
-        uint256 min_eth
-    ) external payable returns (uint256 eth_bought) {
+        uint256 tokensSold,
+        uint256 minEth
+    ) external payable returns (uint256 ethBought) {
         IUniswapExchange uniswap = _getExchange(token);
-        IERC20(token).safeApprove(address(uniswap), tokens_sold);
-        eth_bought = uniswap.tokenToEthSwapInput(tokens_sold, min_eth, now);
+        IERC20(token).safeApprove(address(uniswap), tokensSold);
+        try uniswap.tokenToEthSwapInput(tokensSold, minEth, now) returns (
+            uint256 ret
+        ) {
+            ethBought = ret;
+        } catch Error(string memory reason) {
+            _revertMsg("tokenToEthSwapInput", reason);
+        } catch {
+            _revertMsg("tokenToEthSwapInput");
+        }
         IERC20(token).safeApprove(address(uniswap), 0);
     }
 
     function tokenToEthSwapOutput(
         address token,
-        uint256 eth_bought,
-        uint256 max_tokens
-    ) external payable returns (uint256 tokens_sold) {
+        uint256 ethBought,
+        uint256 maxTokens
+    ) external payable returns (uint256 tokensSold) {
         IUniswapExchange uniswap = _getExchange(token);
-        IERC20(token).safeApprove(address(uniswap), max_tokens);
-        tokens_sold = uniswap.tokenToEthSwapOutput(eth_bought, max_tokens, now);
+        IERC20(token).safeApprove(address(uniswap), maxTokens);
+        try uniswap.tokenToEthSwapOutput(ethBought, maxTokens, now) returns (
+            uint256 ret
+        ) {
+            tokensSold = ret;
+        } catch Error(string memory reason) {
+            _revertMsg("tokenToEthSwapOutput", reason);
+        } catch {
+            _revertMsg("tokenToEthSwapOutput");
+        }
         IERC20(token).safeApprove(address(uniswap), 0);
     }
 
     function tokenToTokenSwapInput(
         address token,
-        uint256 tokens_sold,
-        uint256 min_tokens_bought,
-        address token_addr
-    ) external payable returns (uint256 tokens_bought) {
+        uint256 tokensSold,
+        uint256 minTokensBought,
+        address tokenAddr
+    ) external payable returns (uint256 tokensBought) {
         IUniswapExchange uniswap = _getExchange(token);
-        IERC20(token).safeApprove(address(uniswap), tokens_sold);
-        tokens_bought = uniswap.tokenToTokenSwapInput(
-            tokens_sold,
-            min_tokens_bought,
-            1,
-            now,
-            token_addr
-        );
+        IERC20(token).safeApprove(address(uniswap), tokensSold);
+        try
+            uniswap.tokenToTokenSwapInput(
+                tokensSold,
+                minTokensBought,
+                1,
+                now,
+                tokenAddr
+            )
+        returns (uint256 ret) {
+            tokensBought = ret;
+        } catch Error(string memory reason) {
+            _revertMsg("tokenToTokenSwapInput", reason);
+        } catch {
+            _revertMsg("tokenToTokenSwapInput");
+        }
         IERC20(token).safeApprove(address(uniswap), 0);
 
         // Update involved token
-        _updateToken(token_addr);
+        _updateToken(tokenAddr);
     }
 
     function tokenToTokenSwapOutput(
         address token,
-        uint256 tokens_bought,
-        uint256 max_tokens_sold,
-        address token_addr
-    ) external payable returns (uint256 tokens_sold) {
+        uint256 tokensBought,
+        uint256 maxTokensSold,
+        address tokenAddr
+    ) external payable returns (uint256 tokensSold) {
         IUniswapExchange uniswap = _getExchange(token);
-        IERC20(token).safeApprove(address(uniswap), max_tokens_sold);
-        tokens_sold = uniswap.tokenToTokenSwapOutput(
-            tokens_bought,
-            max_tokens_sold,
-            0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff,
-            now,
-            token_addr
-        );
+        IERC20(token).safeApprove(address(uniswap), maxTokensSold);
+        try
+            uniswap.tokenToTokenSwapOutput(
+                tokensBought,
+                maxTokensSold,
+                0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff,
+                now,
+                tokenAddr
+            )
+        returns (uint256 ret) {
+            tokensSold = ret;
+        } catch Error(string memory reason) {
+            _revertMsg("tokenToTokenSwapOutput", reason);
+        } catch {
+            _revertMsg("tokenToTokenSwapOutput");
+        }
         IERC20(token).safeApprove(address(uniswap), 0);
 
         // Update involved token
-        _updateToken(token_addr);
+        _updateToken(tokenAddr);
     }
 
     function _getExchange(address token)

@@ -66,10 +66,12 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
     );
     // Use SingletonFactory to deploy FCompoundActions using CREATE2
     this.singletonFactory = await ISingletonFactory.at(CREATE2_FACTORY);
+
     await this.singletonFactory.deploy(
       getFCompoundActionsBytecodeBySolc(),
       FCOMPOUND_ACTIONS_SALT
     );
+
     this.dsRegistry = await IDSProxyRegistry.at(MAKER_PROXY_REGISTRY);
     // User build DSProxy
     await this.dsRegistry.build(user);
@@ -179,7 +181,7 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
         this.proxy.execMock(to, data, {
           from: someone,
         }),
-        'Not owner of the DSProxy'
+        'HSCompound_General: Not owner of the DSProxy'
       );
     });
   });
@@ -196,15 +198,17 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
       );
       // Transfer ether to DSProxy for withdrawal
       await send.ether(_, this.userProxy.address, amount);
-      const ethUserBefore = await balance.current(user);
 
+      const ethUserBefore = await balance.current(user);
       const receipt = await this.proxy.execMock(to, data, {
         from: user,
         value: ether('0.1'),
       });
+
       const ethUserProxyAfter = await balance.current(this.userProxy.address);
       const ethProxyAfter = await balance.current(this.proxy.address);
       const ethUserAfter = await balance.current(user);
+
       expect(ethUserProxyAfter).to.be.zero;
       expect(ethProxyAfter).to.be.zero;
       expect(ethUserAfter).to.be.bignumber.eq(
@@ -262,7 +266,7 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
         this.proxy.execMock(to, data, {
           from: someone,
         }),
-        'Not owner of the DSProxy'
+        'HSCompound_General: Not owner of the DSProxy'
       );
     });
   });
@@ -318,7 +322,7 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
           this.proxy.execMock(to, data, {
             from: someone,
           }),
-          'Not owner of the DSProxy'
+          'HSCompound_General: Not owner of the DSProxy'
         );
       });
     });
@@ -391,7 +395,7 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
           this.proxy.execMock(to, data, {
             from: someone,
           }),
-          'Not owner of the DSProxy'
+          'HSCompound_General: Not owner of the DSProxy'
         );
       });
     });
@@ -466,7 +470,7 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
           this.proxy.execMock(to, data, {
             from: someone,
           }),
-          'Not owner of the DSProxy'
+          'HSCompound_General: Not owner of the DSProxy'
         );
       });
     });
@@ -749,11 +753,11 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
           )
         ).to.be.false;
         // Expect to be reverted since collateral not enter market
-        await expectRevert.unspecified(
+        await expectRevert(
           this.proxy.execMock(to, data, {
             from: user,
           }),
-          'FCompoundActions: borrow failed'
+          'HSCompound_borrow: Unspecified'
         );
       });
 
@@ -787,7 +791,7 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
           this.proxy.execMock(to, data, {
             from: someone,
           }),
-          'Not owner of the DSProxy'
+          'HSCompound_General: Not owner of the DSProxy'
         );
       });
     });
@@ -1141,7 +1145,7 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
           this.proxy.execMock(to, data, {
             from: someone,
           }),
-          'Not owner of the DSProxy'
+          'HSCompound_General: Not owner of the DSProxy'
         );
       });
     });
@@ -1200,7 +1204,7 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
         this.proxy.execMock(to, data, {
           from: someone,
         }),
-        'Not owner of the DSProxy'
+        'HSCompound_General: Not owner of the DSProxy'
       );
     });
   });

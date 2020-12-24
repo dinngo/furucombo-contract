@@ -1,6 +1,6 @@
 const { BN, ether } = require('@openzeppelin/test-helpers');
 const fetch = require('node-fetch');
-const { ETH_PROVIDER } = require('./constants');
+const { ETH_PROVIDER, RecordHandlerResultSig } = require('./constants');
 
 function profileGas(receipt) {
   receipt.logs.forEach(element => {
@@ -74,6 +74,20 @@ function cUnit(amount) {
   return new BN(amount).mul(new BN('100000000'));
 }
 
+function getHandlerReturn(receipt, dataTypes) {
+  var handlerResult;
+  receipt.receipt.rawLogs.forEach(element => {
+    if (element.topics[0] === RecordHandlerResultSig) {
+      const bytesData = web3.eth.abi.decodeParameters(
+        ['bytes'],
+        element.data
+      )[0];
+      handlerResult = web3.eth.abi.decodeParameters(dataTypes, bytesData);
+    }
+  });
+  return handlerResult;
+}
+
 module.exports = {
   profileGas,
   evmSnapshot,
@@ -81,4 +95,5 @@ module.exports = {
   evmRevertAndSnapshot,
   mulPercent,
   cUnit,
+  getHandlerReturn,
 };

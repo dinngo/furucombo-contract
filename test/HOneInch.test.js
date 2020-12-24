@@ -29,6 +29,7 @@ const {
   evmSnapshot,
   mulPercent,
   profileGas,
+  getHandlerReturn,
 } = require('./utils/utils');
 const fetch = require('node-fetch');
 const queryString = require('query-string');
@@ -105,7 +106,13 @@ contract('OneInch Swap', function([_, user]) {
           value: value,
         });
 
-        expect(await this.token.balanceOf.call(user)).to.be.bignumber.gte(
+        const tokenUserEnd = await this.token.balanceOf.call(user);
+        const handlerReturn = utils.toBN(
+          getHandlerReturn(receipt, ['uint256'])[0]
+        );
+        expect(handlerReturn).to.be.bignumber.eq(tokenUserEnd.sub(tokenUser));
+
+        expect(tokenUserEnd).to.be.bignumber.gte(
           // sub 1 more percent to tolerate the slippage calculation difference with 1inch
           tokenUser.add(mulPercent(quote, 100 - slippage - 1))
         );
@@ -149,7 +156,13 @@ contract('OneInch Swap', function([_, user]) {
           value: value.add(ether('1')),
         });
 
-        expect(await this.token.balanceOf.call(user)).to.be.bignumber.gte(
+        const tokenUserEnd = await this.token.balanceOf.call(user);
+        const handlerReturn = utils.toBN(
+          getHandlerReturn(receipt, ['uint256'])[0]
+        );
+        expect(handlerReturn).to.be.bignumber.eq(tokenUserEnd.sub(tokenUser));
+
+        expect(tokenUserEnd).to.be.bignumber.gte(
           // sub 1 more percent to tolerate the slippage calculation difference with 1inch
           tokenUser.add(mulPercent(quote, 100 - slippage - 1))
         );
@@ -220,6 +233,15 @@ contract('OneInch Swap', function([_, user]) {
           value: ether('0.1'),
         });
 
+        const balanceUserDelta = await balanceUser.delta();
+
+        const handlerReturn = utils.toBN(
+          getHandlerReturn(receipt, ['uint256'])[0]
+        );
+        expect(handlerReturn).to.be.bignumber.eq(
+          balanceUserDelta.add(new BN(receipt.receipt.gasUsed))
+        );
+
         expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
           tokenUser
         );
@@ -227,7 +249,7 @@ contract('OneInch Swap', function([_, user]) {
           await this.token.balanceOf.call(this.proxy.address)
         ).to.be.bignumber.eq(ether('0'));
         expect(await balanceProxy.get()).to.be.bignumber.eq(ether('0'));
-        expect(await balanceUser.delta()).to.be.bignumber.gte(
+        expect(balanceUserDelta).to.be.bignumber.gte(
           ether('0')
             // sub 1 more percent to tolerate the slippage calculation difference with 1inch
             .add(mulPercent(quote, 100 - slippage - 1))
@@ -291,6 +313,12 @@ contract('OneInch Swap', function([_, user]) {
           from: user,
           value: ether('0.1'),
         });
+
+        const token1UserEnd = await this.token1.balanceOf.call(user);
+        const handlerReturn = utils.toBN(
+          getHandlerReturn(receipt, ['uint256'])[0]
+        );
+        expect(handlerReturn).to.be.bignumber.eq(token1UserEnd.sub(token1User));
 
         expect(await this.token0.balanceOf.call(user)).to.be.bignumber.eq(
           token0User

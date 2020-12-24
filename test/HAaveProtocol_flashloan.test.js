@@ -8,6 +8,7 @@ const {
   time,
 } = require('@openzeppelin/test-helpers');
 const { tracker } = balance;
+const { ZERO_BYTES32 } = constants;
 const { latest } = time;
 const abi = require('ethereumjs-abi');
 const util = require('ethereumjs-util');
@@ -76,6 +77,7 @@ contract('Aave flashloan', function([_, user]) {
     it('normal', async function() {
       const value = ether('1');
       const testTo = [this.hMock.address];
+      const testConfig = [ZERO_BYTES32];
       const testData = [
         '0x' +
           abi
@@ -83,8 +85,8 @@ contract('Aave flashloan', function([_, user]) {
             .toString('hex'),
       ];
       const test = web3.eth.abi.encodeParameters(
-        ['address[]', 'bytes[]'],
-        [testTo, testData]
+        ['address[]', 'bytes32[]', 'bytes[]'],
+        [testTo, testConfig, testData]
       );
       const to = this.hAave.address;
       const data = abi.simpleEncode(
@@ -125,6 +127,7 @@ contract('Aave flashloan', function([_, user]) {
     it('normal', async function() {
       const value = ether('1');
       const testTo = [this.hMock.address];
+      const testConfig = [ZERO_BYTES32];
       const testData = [
         '0x' +
           abi
@@ -137,8 +140,8 @@ contract('Aave flashloan', function([_, user]) {
             .toString('hex'),
       ];
       const test = web3.eth.abi.encodeParameters(
-        ['address[]', 'bytes[]'],
-        [testTo, testData]
+        ['address[]', 'bytes32[]', 'bytes[]'],
+        [testTo, testConfig, testData]
       );
       const to = this.hAave.address;
       const data = abi.simpleEncode(
@@ -180,6 +183,7 @@ contract('Aave flashloan', function([_, user]) {
     it('sequential', async function() {
       const value = ether('1');
       const test1To = [this.hMock.address];
+      const test1Config = [ZERO_BYTES32];
       const test1Data = [
         '0x' +
           abi
@@ -187,11 +191,12 @@ contract('Aave flashloan', function([_, user]) {
             .toString('hex'),
       ];
       const test1 = web3.eth.abi.encodeParameters(
-        ['address[]', 'bytes[]'],
-        [test1To, test1Data]
+        ['address[]', 'bytes32[]', 'bytes[]'],
+        [test1To, test1Config, test1Data]
       );
 
       const test2To = [this.hMock.address];
+      const test2Config = [ZERO_BYTES32];
       const test2Data = [
         '0x' +
           abi
@@ -204,11 +209,12 @@ contract('Aave flashloan', function([_, user]) {
             .toString('hex'),
       ];
       const test2 = web3.eth.abi.encodeParameters(
-        ['address[]', 'bytes[]'],
-        [test2To, test2Data]
+        ['address[]', 'bytes32[]', 'bytes[]'],
+        [test2To, test2Config, test2Data]
       );
 
       const to = [this.hAave.address, this.hAave.address];
+      const config = [ZERO_BYTES32, ZERO_BYTES32];
       const data = [
         abi.simpleEncode(
           'flashLoan(address,uint256,bytes)',
@@ -224,7 +230,7 @@ contract('Aave flashloan', function([_, user]) {
         ),
       ];
 
-      const receipt = await this.proxy.batchExec(to, data, {
+      const receipt = await this.proxy.batchExec(to, config, data, {
         from: user,
         value: ether('0.1'),
       });
@@ -241,6 +247,7 @@ contract('Aave flashloan', function([_, user]) {
     it('nested', async function() {
       const value = ether('1');
       const execTo = [this.hMock.address, this.hMock.address];
+      const execConfig = [ZERO_BYTES32, ZERO_BYTES32];
       const execData = [
         '0x' +
           abi
@@ -257,10 +264,11 @@ contract('Aave flashloan', function([_, user]) {
             .toString('hex'),
       ];
       const exec = web3.eth.abi.encodeParameters(
-        ['address[]', 'bytes[]'],
-        [execTo, execData]
+        ['address[]', 'bytes32[]', 'bytes[]'],
+        [execTo, execConfig, execData]
       );
       const flashTokenTo = [this.hAave.address];
+      const flashConfig = [ZERO_BYTES32];
       const flashTokenData = [
         '0x' +
           abi
@@ -273,8 +281,8 @@ contract('Aave flashloan', function([_, user]) {
             .toString('hex'),
       ];
       const flashToken = web3.eth.abi.encodeParameters(
-        ['address[]', 'bytes[]'],
-        [flashTokenTo, flashTokenData]
+        ['address[]', 'bytes32[]', 'bytes[]'],
+        [flashTokenTo, flashConfig, flashTokenData]
       );
       const to = this.hAave.address;
       const data = abi.simpleEncode(

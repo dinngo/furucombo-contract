@@ -16,6 +16,19 @@ All notable changes to this project will be documented in this file.
 
 - Support Compound borrow, repayBorrow and claimComp with DSProxy in `HSCompound` and `FCompoundActions`.
 - Support Stake, unstake and claimAll `$COMBO` in `HFurucombo`.
+- Dynamic input mechanism.
+- Apply new `cache` mapping structure and `LibCache` to handler sender related functions.
+- Cube counting error message handling.
+- Support check slippage function in `HFunds`.
+
+### Changed
+
+- Update to solidity 0.6.x.
+- Sender related functions is removed from `LibCache` and implemented in `contract Storage`.
+- `Cache.sol` is changed to `Storage.sol`.
+- `Cache` is now `Stack`. `LibCache` is now `LibStack`.
+- `Registry` allows to register non-deprecated registration to apply new info.
+- Rename `handlers` to `infos` in `Registry`.
 
 ## [0.12.1] - 2020-10-28
 

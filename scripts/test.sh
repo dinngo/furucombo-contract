@@ -1,4 +1,5 @@
 # Exit script as soon as a command fails.
+# Exit script as soon as a command fails.
 set -o errexit
 
 # Executes cleanup function at script exit.

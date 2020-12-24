@@ -55,9 +55,11 @@ contract('Registry', function([_, handler1, handler2, someone]) {
       );
     });
 
-    it('registered', async function() {
+    it('set info', async function() {
       await this.registry.register(handler1, info);
-      await expectRevert(this.registry.register(handler1, info), 'registered');
+      const info2 = utils.fromAscii('test2');
+      await this.registry.register(handler1, info2);
+      expect(await this.registry.isValid.call(handler1)).to.be.true;
     });
 
     it('unregistered', async function() {
@@ -101,13 +103,13 @@ contract('Registry', function([_, handler1, handler2, someone]) {
     });
 
     it('normal', async function() {
-      const result = await this.registry.getInfo.call(handler1);
+      const result = await this.registry.infos.call(handler1);
       expect(result).eq(utils.padRight(utils.asciiToHex('test'), 64));
     });
 
     it('unregistered', async function() {
       await this.registry.unregister(handler1);
-      const result = await this.registry.getInfo.call(handler1);
+      const result = await this.registry.infos.call(handler1);
       expect(result).eq(utils.padRight(utils.asciiToHex('deprecated'), 64));
     });
   });

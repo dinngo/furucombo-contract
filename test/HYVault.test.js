@@ -12,7 +12,12 @@ const {
   ALINK_PROVIDER,
   YEARN_ALINK_VAULT,
 } = require('./utils/constants');
-const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
+const {
+  evmRevert,
+  evmSnapshot,
+  profileGas,
+  getHandlerReturn,
+} = require('./utils/utils');
 
 const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('ProxyMock');
@@ -61,6 +66,14 @@ contract('YVault', function([_, user]) {
         value: ether('0.1'),
       });
 
+      // Get handler return result
+      const handlerReturn = utils.toBN(
+        getHandlerReturn(receipt, ['uint256'])[0]
+      );
+      expect(handlerReturn).to.be.bignumber.eq(
+        await vault.balanceOf.call(user)
+      );
+
       // Check proxy balance
       expect(await vault.balanceOf.call(this.proxy.address)).to.be.zero;
       expect(await token.balanceOf.call(this.proxy.address)).to.be.zero;
@@ -93,6 +106,14 @@ contract('YVault', function([_, user]) {
         from: user,
         value: value,
       });
+
+      // Get handler return result
+      const handlerReturn = utils.toBN(
+        getHandlerReturn(receipt, ['uint256'])[0]
+      );
+      expect(handlerReturn).to.be.bignumber.eq(
+        await vault.balanceOf.call(user)
+      );
 
       // Check proxy balance
       expect(await vault.balanceOf.call(this.proxy.address)).to.be.zero;
@@ -147,11 +168,19 @@ contract('YVault', function([_, user]) {
         from: user,
       });
       await this.proxy.updateTokenMock(vault.address);
+      const tokenUser = await token.balanceOf.call(user);
       const ratio = await vault.getPricePerFullShare.call();
       const receipt = await this.proxy.execMock(this.hYVault.address, data, {
         from: user,
         value: ether('0.1'),
       });
+
+      // Get handler return result
+      const handlerReturn = utils.toBN(
+        getHandlerReturn(receipt, ['uint256'])[0]
+      );
+      const tokenUserEnd = await token.balanceOf.call(user);
+      expect(handlerReturn).to.be.bignumber.eq(tokenUserEnd.sub(tokenUser));
 
       // Check proxy balance
       expect(await vault.balanceOf.call(this.proxy.address)).to.be.zero;
@@ -161,10 +190,10 @@ contract('YVault', function([_, user]) {
       expect(await vault.balanceOf.call(user)).to.be.zero;
 
       // Check user token balance <= 100.1% expected result
-      expect(await token.balanceOf.call(user)).to.be.bignumber.gte(
+      expect(tokenUserEnd).to.be.bignumber.gte(
         amount.mul(ratio).div(ether('1'))
       );
-      expect(await token.balanceOf.call(user)).to.be.bignumber.lte(
+      expect(tokenUserEnd).to.be.bignumber.lte(
         amount
           .mul(ratio)
           .div(ether('1'))
@@ -203,6 +232,15 @@ contract('YVault', function([_, user]) {
         value: ether('0.1'),
       });
 
+      // Get handler return result
+      const handlerReturn = utils.toBN(
+        getHandlerReturn(receipt, ['uint256'])[0]
+      );
+      const delta = await balanceUser.delta();
+      expect(delta).to.be.bignumber.eq(
+        handlerReturn.sub(new BN(receipt.receipt.gasUsed))
+      );
+
       // Check proxy balance
       expect(await vault.balanceOf.call(this.proxy.address)).to.be.zero;
       expect(await balance.current(this.proxy.address)).to.be.zero;
@@ -211,7 +249,6 @@ contract('YVault', function([_, user]) {
       expect(await vault.balanceOf.call(user)).to.be.zero;
 
       // Check user eth balance <= 100.1% expected result
-      const delta = await balanceUser.delta();
       expect(delta).to.be.bignumber.gte(
         amount
           .mul(ratio)

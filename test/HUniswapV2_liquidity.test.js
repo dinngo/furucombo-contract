@@ -22,7 +22,12 @@ const {
   UNISWAPV2_BAT_DAI,
   UNISWAPV2_ROUTER02,
 } = require('./utils/constants');
-const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
+const {
+  evmRevert,
+  evmSnapshot,
+  profileGas,
+  getHandlerReturn,
+} = require('./utils/utils');
 
 const HUniswapV2 = artifacts.require('HUniswapV2');
 const Registry = artifacts.require('Registry');
@@ -82,12 +87,15 @@ contract('UniswapV2 Liquidity', function([_, user]) {
 
   describe('Add ETH', function() {
     beforeEach(async function() {
+      tokenAUserAmount = await this.tokenA.balanceOf.call(user);
       // Send Token to proxy
       await this.tokenA.transfer(this.proxy.address, ether('100'), {
         from: user,
       });
       // Add Token to cache for return user after handler execution
       await this.proxy.updateTokenMock(this.tokenA.address);
+      // tokenAUserAmount = await this.tokenA.balanceOf.call(user);
+      uniTokenUserAmount = await this.uniTokenEth.balanceOf.call(user);
     });
 
     it('normal', async function() {
@@ -113,9 +121,34 @@ contract('UniswapV2 Liquidity', function([_, user]) {
         value: value,
       });
 
+      // Get handler return result
+      const handlerReturn = getHandlerReturn(receipt, [
+        'uint256',
+        'uint256',
+        'uint256',
+      ]);
+
+      const tokenAUserAmountEnd = await this.tokenA.balanceOf.call(user);
+      const uniTokenUserAmountEnd = await this.uniTokenEth.balanceOf.call(user);
+      const userBalanceDelta = await balanceUser.delta();
+
+      expect(utils.toBN(handlerReturn[0])).to.be.bignumber.eq(
+        tokenAUserAmount.sub(tokenAUserAmountEnd)
+      );
+
+      expect(userBalanceDelta).to.be.bignumber.eq(
+        ether('0')
+          .sub(utils.toBN(handlerReturn[1]))
+          .sub(new BN(receipt.receipt.gasUsed))
+      );
+
+      expect(utils.toBN(handlerReturn[2])).to.be.bignumber.eq(
+        uniTokenUserAmountEnd.sub(uniTokenUserAmount)
+      );
+
       // Result Verification
       // Verify spent ether
-      expect(await balanceUser.delta()).to.be.bignumber.lte(
+      expect(userBalanceDelta).to.be.bignumber.lte(
         ether('0')
           .sub(minEthAmount)
           .sub(new BN(receipt.receipt.gasUsed))
@@ -145,6 +178,8 @@ contract('UniswapV2 Liquidity', function([_, user]) {
 
   describe('Add Token', function() {
     beforeEach(async function() {
+      tokenAUserAmount = await this.tokenA.balanceOf.call(user);
+      tokenBUserAmount = await this.tokenB.balanceOf.call(user);
       // Send tokens to proxy
       await this.tokenA.transfer(this.proxy.address, ether('100'), {
         from: user,
@@ -156,6 +191,7 @@ contract('UniswapV2 Liquidity', function([_, user]) {
       // Add tokens to cache for return user after handler execution
       await this.proxy.updateTokenMock(this.tokenA.address);
       await this.proxy.updateTokenMock(this.tokenB.address);
+      uniTokenUserAmount = await this.uniTokenToken.balanceOf.call(user);
     });
 
     it('normal', async function() {
@@ -179,6 +215,29 @@ contract('UniswapV2 Liquidity', function([_, user]) {
       const receipt = await this.proxy.execMock(to, data, {
         from: user,
       });
+
+      // Get handler return result
+      const handlerReturn = getHandlerReturn(receipt, [
+        'uint256',
+        'uint256',
+        'uint256',
+      ]);
+
+      const tokenAUserAmountEnd = await this.tokenA.balanceOf.call(user);
+      const tokenBUserAmountEnd = await this.tokenB.balanceOf.call(user);
+      const uniTokenUserAmountEnd = await this.uniTokenToken.balanceOf.call(
+        user
+      );
+
+      expect(utils.toBN(handlerReturn[0])).to.be.bignumber.eq(
+        tokenAUserAmount.sub(tokenAUserAmountEnd)
+      );
+      expect(utils.toBN(handlerReturn[1])).to.be.bignumber.eq(
+        tokenBUserAmount.sub(tokenBUserAmountEnd)
+      );
+      expect(utils.toBN(handlerReturn[2])).to.be.bignumber.eq(
+        uniTokenUserAmountEnd.sub(uniTokenUserAmount)
+      );
 
       // Verify user tokens
       expect(await this.tokenA.balanceOf.call(user)).to.be.bignumber.lte(
@@ -270,6 +329,17 @@ contract('UniswapV2 Liquidity', function([_, user]) {
       await balanceUser.get();
       const receipt = await this.proxy.execMock(to, data, { from: user });
 
+      // Get handler return result
+      const handlerReturn = getHandlerReturn(receipt, ['uint256', 'uint256']);
+      const tokenAUserAmountEnd = await this.tokenA.balanceOf.call(user);
+      const userBalanceDelta = await balanceUser.delta();
+      expect(utils.toBN(handlerReturn[0])).to.be.bignumber.eq(
+        tokenAUserAmountEnd.sub(tokenAUserAmount)
+      );
+      expect(userBalanceDelta).to.be.bignumber.eq(
+        utils.toBN(handlerReturn[1]).sub(new BN(receipt.receipt.gasUsed))
+      );
+
       // Verify User Token
       expect(await this.tokenA.balanceOf.call(user)).to.be.bignumber.eq(
         tokenAUserAmount.add(result[0])
@@ -288,7 +358,7 @@ contract('UniswapV2 Liquidity', function([_, user]) {
       expect(await balanceProxy.get()).to.be.bignumber.eq(ether('0'));
 
       // Verify spent ETH
-      expect(await balanceUser.delta()).to.be.bignumber.eq(
+      expect(userBalanceDelta).to.be.bignumber.eq(
         result[1].sub(new BN(receipt.receipt.gasUsed))
       );
 
@@ -378,6 +448,18 @@ contract('UniswapV2 Liquidity', function([_, user]) {
       // Execute handler
       await balanceUser.get();
       const receipt = await this.proxy.execMock(to, data, { from: user });
+
+      // Get handler return result
+      const handlerReturn = getHandlerReturn(receipt, ['uint256', 'uint256']);
+      const tokenAUserAmountEnd = await this.tokenA.balanceOf.call(user);
+      const tokenBUserAmountEnd = await this.tokenB.balanceOf.call(user);
+
+      expect(utils.toBN(handlerReturn[0])).to.be.bignumber.eq(
+        tokenAUserAmountEnd.sub(tokenAUserAmount)
+      );
+      expect(utils.toBN(handlerReturn[1])).to.be.bignumber.eq(
+        tokenBUserAmountEnd.sub(tokenBUserAmount)
+      );
 
       // Verify user token
       expect(await this.tokenA.balanceOf.call(user)).to.be.bignumber.eq(

@@ -1,4 +1,4 @@
-pragma solidity ^0.5.0;
+pragma solidity ^0.6.0;
 
 interface ILiquidityGauge {
     function lp_token() external view returns (address);

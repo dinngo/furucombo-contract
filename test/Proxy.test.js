@@ -7,6 +7,7 @@ const {
   expectRevert,
 } = require('@openzeppelin/test-helpers');
 const { tracker } = balance;
+const { ZERO_BYTES32, MAX_UINT256 } = constants;
 const abi = require('ethereumjs-abi');
 const utils = web3.utils;
 
@@ -22,6 +23,8 @@ const Foo2Factory = artifacts.require('Foo2Factory');
 const Foo2Handler = artifacts.require('Foo2Handler');
 const Foo3 = artifacts.require('Foo3');
 const Foo3Handler = artifacts.require('Foo3Handler');
+const Foo4 = artifacts.require('Foo4');
+const Foo4Handler = artifacts.require('Foo4Handler');
 const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('ProxyMock');
 
@@ -82,12 +85,13 @@ contract('Proxy', function([_, deployer, user]) {
         this.fooHandler.address,
         this.fooHandler.address,
       ];
+      const config = [ZERO_BYTES32, ZERO_BYTES32, ZERO_BYTES32];
       const data = [
         abi.simpleEncode('bar(uint256,uint256):(uint256)', index[0], num[0]),
         abi.simpleEncode('bar(uint256,uint256):(uint256)', index[1], num[1]),
         abi.simpleEncode('bar(uint256,uint256):(uint256)', index[2], num[2]),
       ];
-      await this.proxy.batchExec(to, data);
+      await this.proxy.batchExec(to, config, data);
       const result = [
         await this.foo0.accounts.call(this.proxy.address),
         await this.foo1.accounts.call(this.proxy.address),
@@ -145,12 +149,13 @@ contract('Proxy', function([_, deployer, user]) {
         this.fooHandler.address,
         this.fooHandler.address,
       ];
+      const config = [ZERO_BYTES32, ZERO_BYTES32, ZERO_BYTES32];
       const data = [
         abi.simpleEncode('bar(uint256,uint256):(uint256)', value[0], index[0]),
         abi.simpleEncode('bar(uint256,uint256):(uint256)', value[1], index[1]),
         abi.simpleEncode('bar(uint256,uint256):(uint256)', value[2], index[2]),
       ];
-      const receipt = await this.proxy.batchExec(to, data, {
+      const receipt = await this.proxy.batchExec(to, config, data, {
         from: user,
         value: ether('1'),
       });
@@ -225,6 +230,262 @@ contract('Proxy', function([_, deployer, user]) {
       const data = abi.simpleEncode('bar2(address)', this.foo.address);
       await this.proxy.execMock(to, data, { value: ether('1') });
       expect(await this.foo.num.call()).to.be.bignumber.eq(new BN('2'));
+    });
+  });
+
+  describe('dynamic parameter', function() {
+    before(async function() {
+      this.foo = await Foo4.new();
+      this.fooHandler = await Foo4Handler.new();
+      await this.registry.register(
+        this.fooHandler.address,
+        utils.asciiToHex('foo4')
+      );
+    });
+
+    it('static parameter', async function() {
+      const tos = [this.fooHandler.address];
+      const a =
+        '0x00000000000000000000000000000000000000000000000000000000000000ff';
+      const configs = [
+        '0x0000000000000000000000000000000000000000000000000000000000000000',
+      ];
+      const datas = [
+        abi.simpleEncode('bar1(address,bytes32)', this.foo.address, a),
+      ];
+
+      await this.proxy.batchExec(tos, configs, datas, {
+        from: user,
+        value: ether('1'),
+      });
+
+      expect(await this.foo.bValue.call()).eq(a);
+    });
+
+    it('replace parameter', async function() {
+      const tos = [this.fooHandler.address, this.fooHandler.address];
+      const r = await this.foo.bar.call();
+      const a =
+        '0x0000000000000000000000000000000000000000000000000000000000000000';
+      const configs = [
+        // 1 32-bytes return value to be referenced
+        '0x0001000000000000000000000000000000000000000000000000000000000000',
+        '0x0100000000000000000200ffffffffffffffffffffffffffffffffffffffffff',
+      ];
+      const datas = [
+        abi.simpleEncode('bar(address)', this.foo.address),
+        abi.simpleEncode('bar1(address,bytes32)', this.foo.address, a),
+      ];
+
+      await this.proxy.batchExec(tos, configs, datas, {
+        from: user,
+        value: ether('1'),
+      });
+
+      expect(await this.foo.bValue.call()).eq(r);
+    });
+
+    it('replace parameter with dynamic array return', async function() {
+      const tos = [this.fooHandler.address, this.fooHandler.address];
+      const secAmt = ether('1');
+      const ratio = ether('0.7');
+
+      // local stack idx start from [+2] if using dynamic array
+      // because it will store 2 extra data(pointer and array length) to local stack in the first and second index
+      const configs = [
+        // 5 32-bytes return value to be referenced
+        '0x0005000000000000000000000000000000000000000000000000000000000000', // be referenced
+        '0x0100000000000000000203ffffffffffffffffffffffffffffffffffffffffff', //replace params[1] -> local stack[3]
+      ];
+
+      const datas = [
+        abi.simpleEncode(
+          'barUList(address,uint256,uint256,uint256)',
+          this.foo.address,
+          ether('1'),
+          secAmt,
+          ether('1')
+        ),
+        abi.simpleEncode('barUint1(address,uint256)', this.foo.address, ratio),
+      ];
+
+      const receipt = await this.proxy.batchExec(tos, configs, datas, {
+        from: user,
+        value: ether('1'),
+      });
+
+      expect(await this.foo.nValue.call()).to.be.bignumber.eq(
+        secAmt.mul(ratio).div(ether('1'))
+      );
+    });
+
+    it('replace third parameter', async function() {
+      const tos = [this.fooHandler.address, this.fooHandler.address];
+      const r = await this.foo.bar.call();
+      const a =
+        '0x000000000000000000000000000000000000000000000000000000000000000a';
+      const b =
+        '0x0000000000000000000000000000000000000000000000000000000000000000';
+      const configs = [
+        '0x0001000000000000000000000000000000000000000000000000000000000000',
+        '0x0100000000000000000400ffffffffffffffffffffffffffffffffffffffffff',
+      ];
+      const datas = [
+        abi.simpleEncode('bar(address)', this.foo.address),
+        abi.simpleEncode(
+          'bar2(address,bytes32,bytes32)',
+          this.foo.address,
+          a,
+          b
+        ),
+      ];
+
+      await this.proxy.batchExec(tos, configs, datas, {
+        from: user,
+        value: ether('1'),
+      });
+
+      expect(await this.foo.bValue.call()).eq(r);
+    });
+
+    it('replace parameter by 50% of ref value', async function() {
+      const tos = [this.fooHandler.address, this.fooHandler.address];
+      const r = await this.foo.barUint.call();
+      const a = ether('0.5');
+      const configs = [
+        '0x0001000000000000000000000000000000000000000000000000000000000000',
+        '0x0100000000000000000200ffffffffffffffffffffffffffffffffffffffffff',
+      ];
+      const datas = [
+        abi.simpleEncode('barUint(address)', this.foo.address),
+        abi.simpleEncode('barUint1(address,uint256)', this.foo.address, a),
+      ];
+
+      await this.proxy.batchExec(tos, configs, datas, {
+        from: user,
+        value: ether('1'),
+      });
+
+      expect(await this.foo.nValue.call()).to.be.bignumber.eq(
+        r.mul(a).div(ether('1'))
+      );
+    });
+
+    it('should revert: location count less than ref count', async function() {
+      const tos = [this.fooHandler.address, this.fooHandler.address];
+      const r = await this.foo.bar.call();
+      const a =
+        '0x0000000000000000000000000000000000000000000000000000000000000000';
+      const configs = [
+        // 1 32-bytes return value to be referenced
+        '0x0001000000000000000000000000000000000000000000000000000000000000',
+        '0x010000000000000000020000ffffffffffffffffffffffffffffffffffffffff', // (locCount, refCount) = (1, 2)
+      ];
+      const datas = [
+        abi.simpleEncode('bar(address)', this.foo.address),
+        abi.simpleEncode('bar1(address,bytes32)', this.foo.address, a),
+      ];
+
+      await expectRevert(
+        this.proxy.batchExec(tos, configs, datas, {
+          from: user,
+          value: ether('1'),
+        }),
+        'Location count less than ref count'
+      );
+    });
+
+    it('should revert: location count greater than ref count', async function() {
+      const tos = [this.fooHandler.address, this.fooHandler.address];
+      const r = await this.foo.bar.call();
+      const a =
+        '0x0000000000000000000000000000000000000000000000000000000000000000';
+      const configs = [
+        // 1 32-bytes return value to be referenced
+        '0x0001000000000000000000000000000000000000000000000000000000000000',
+        '0x0100000000000000000300ffffffffffffffffffffffffffffffffffffffffff', // (locCount, refCount) = (2, 1)
+      ];
+      const datas = [
+        abi.simpleEncode('bar(address)', this.foo.address),
+        abi.simpleEncode('bar1(address,bytes32)', this.foo.address, a),
+      ];
+
+      await expectRevert(
+        this.proxy.batchExec(tos, configs, datas, {
+          from: user,
+          value: ether('1'),
+        }),
+        'Location count exceeds ref count'
+      );
+    });
+
+    it('should revert: ref to out of localStack', async function() {
+      const tos = [this.fooHandler.address, this.fooHandler.address];
+      const r = await this.foo.bar.call();
+      const a =
+        '0x0000000000000000000000000000000000000000000000000000000000000000';
+      const configs = [
+        // 1 32-bytes return value to be referenced
+        '0x0001000000000000000000000000000000000000000000000000000000000000', // set localStack[0]
+        '0x0100000000000000000201ffffffffffffffffffffffffffffffffffffffffff', // ref to localStack[1]
+      ];
+      const datas = [
+        abi.simpleEncode('bar(address)', this.foo.address),
+        abi.simpleEncode('bar1(address,bytes32)', this.foo.address, a),
+      ];
+
+      await expectRevert(
+        this.proxy.batchExec(tos, configs, datas, {
+          from: user,
+          value: ether('1'),
+        }),
+        'Reference to out of localStack'
+      );
+    });
+
+    it('should revert: expected return amount not match', async function() {
+      const tos = [this.fooHandler.address, this.fooHandler.address];
+      const r = await this.foo.bar.call();
+      const a =
+        '0x0000000000000000000000000000000000000000000000000000000000000000';
+      const configs = [
+        // expect 2 32-bytes return but will only get 1
+        '0x0002000000000000000000000000000000000000000000000000000000000000',
+        '0x0100000000000000000200ffffffffffffffffffffffffffffffffffffffffff',
+      ];
+      const datas = [
+        abi.simpleEncode('bar(address)', this.foo.address),
+        abi.simpleEncode('bar1(address,bytes32)', this.foo.address, a),
+      ];
+
+      await expectRevert(
+        this.proxy.batchExec(tos, configs, datas, {
+          from: user,
+          value: ether('1'),
+        }),
+        'Return num and parsed return num not matched'
+      );
+    });
+
+    it('should revert: overflow during trimming', async function() {
+      const tos = [this.fooHandler.address, this.fooHandler.address];
+      const r = await this.foo.barUint.call();
+      const a = MAX_UINT256; // multiply by any num greater than 0 will cause overflow
+      const configs = [
+        '0x0001000000000000000000000000000000000000000000000000000000000000',
+        '0x0100000000000000000200ffffffffffffffffffffffffffffffffffffffffff',
+      ];
+      const datas = [
+        abi.simpleEncode('barUint(address)', this.foo.address),
+        abi.simpleEncode('barUint1(address,uint256)', this.foo.address, a),
+      ];
+
+      await expectRevert.unspecified(
+        this.proxy.batchExec(tos, configs, datas, {
+          from: user,
+          value: ether('1'),
+        })
+      );
     });
   });
 });

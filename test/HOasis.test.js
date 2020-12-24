@@ -28,6 +28,7 @@ const {
   evmSnapshot,
   mulPercent,
   profileGas,
+  getHandlerReturn,
 } = require('./utils/utils');
 
 const HOasis = artifacts.require('HOasis');
@@ -102,6 +103,13 @@ contract('Oasis Swap', function([_, user, someone]) {
           from: user,
           value: value,
         });
+
+        const tokenUserEnd = await this.token.balanceOf.call(user);
+        const handlerReturn = utils.toBN(
+          getHandlerReturn(receipt, ['uint256'])[0]
+        );
+        expect(handlerReturn).to.be.bignumber.eq(tokenUserEnd.sub(tokenUser));
+
         // TODO: modified the expect below when using exact amount
         expect(await this.token.balanceOf.call(user)).to.be.bignumber.gt(
           tokenUser.add(getBuyBuffer(oasisAmount))
@@ -136,8 +144,9 @@ contract('Oasis Swap', function([_, user, someone]) {
           tokenAddress,
           get110x(oasisAmount)
         );
-        await expectRevert.unspecified(
-          this.proxy.execMock(to, data, { from: user, value: value })
+        await expectRevert(
+          this.proxy.execMock(to, data, { from: user, value: value }),
+          'HOasis_sellAllAmountPayEth: Unspecified'
         );
         expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
           tokenUser
@@ -173,6 +182,15 @@ contract('Oasis Swap', function([_, user, someone]) {
           from: user,
           value: value,
         });
+
+        const balanceUserDelta = await balanceUser.delta();
+        const handlerReturn = utils.toBN(
+          getHandlerReturn(receipt, ['uint256'])[0]
+        );
+        expect(handlerReturn).to.be.bignumber.eq(
+          balanceUserDelta.add(new BN(receipt.receipt.gasUsed)).neg()
+        );
+
         expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
           tokenUser.add(buyAmt)
         );
@@ -181,7 +199,7 @@ contract('Oasis Swap', function([_, user, someone]) {
         ).to.be.bignumber.eq(ether('0'));
         expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
         // TODO: modified the expect below when using exact amount
-        expect(await balanceUser.delta()).to.be.bignumber.gt(
+        expect(balanceUserDelta).to.be.bignumber.gt(
           ether('0')
             .sub(getPayBuffer(oasisAmount))
             .sub(new BN(receipt.receipt.gasUsed))
@@ -200,11 +218,12 @@ contract('Oasis Swap', function([_, user, someone]) {
           buyAmt,
           WETH_TOKEN
         );
-        await expectRevert.unspecified(
+        await expectRevert(
           this.proxy.execMock(to, data, {
             from: user,
             value: value,
-          })
+          }),
+          'HOasis_buyAllAmountPayEth: Unspecified'
         );
       });
     });
@@ -260,6 +279,14 @@ contract('Oasis Swap', function([_, user, someone]) {
         // or find out why inaccuracy exists
         const receipt = await this.proxy.execMock(to, data, { from: user });
 
+        const balanceUserDelta = await balanceUser.delta();
+        const handlerReturn = utils.toBN(
+          getHandlerReturn(receipt, ['uint256'])[0]
+        );
+        expect(handlerReturn).to.be.bignumber.eq(
+          balanceUserDelta.add(new BN(receipt.receipt.gasUsed))
+        );
+
         expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
           tokenUser
         );
@@ -268,7 +295,7 @@ contract('Oasis Swap', function([_, user, someone]) {
         ).to.be.bignumber.eq(ether('0'));
         expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
         // TODO: modified the expect below when using exact amount
-        expect(await balanceUser.delta()).to.be.bignumber.gt(
+        expect(balanceUserDelta).to.be.bignumber.gt(
           getBuyBuffer(result).sub(new BN(receipt.receipt.gasUsed))
         );
         profileGas(receipt);
@@ -303,8 +330,9 @@ contract('Oasis Swap', function([_, user, someone]) {
           get110x(result)
         );
 
-        await expectRevert.unspecified(
-          this.proxy.execMock(to, data, { from: user })
+        await expectRevert(
+          this.proxy.execMock(to, data, { from: user }),
+          'HOasis_sellAllAmountBuyEth: Unspecified'
         );
       });
     });
@@ -341,6 +369,17 @@ contract('Oasis Swap', function([_, user, someone]) {
         const receipt = await this.proxy.execMock(to, data, {
           from: user,
         });
+
+        const tokenUserEnd = await this.token.balanceOf.call(user);
+        const handlerReturn = utils.toBN(
+          getHandlerReturn(receipt, ['uint256'])[0]
+        );
+        expect(handlerReturn).to.be.bignumber.eq(
+          tokenUserEnd
+            .sub(value)
+            .sub(tokenUser)
+            .neg()
+        );
         // TODO: modified the expect below when using exact amount
         expect(await this.token.balanceOf.call(user)).to.be.bignumber.gt(
           tokenUser.add(value).sub(getPayBuffer(result))
@@ -370,10 +409,11 @@ contract('Oasis Swap', function([_, user, someone]) {
           from: providerAddress,
         });
         await this.proxy.updateTokenMock(this.token.address);
-        await expectRevert.unspecified(
+        await expectRevert(
           this.proxy.execMock(to, data, {
             from: user,
-          })
+          }),
+          'HOasis_buyAllAmountBuyEth: Unspecified'
         );
       });
     });
@@ -431,6 +471,12 @@ contract('Oasis Swap', function([_, user, someone]) {
         // or find out why inaccuracy exists
         const receipt = await this.proxy.execMock(to, data, { from: user });
 
+        const token1UserEnd = await this.token1.balanceOf.call(user);
+        const handlerReturn = utils.toBN(
+          getHandlerReturn(receipt, ['uint256'])[0]
+        );
+        expect(handlerReturn).to.be.bignumber.eq(token1UserEnd.sub(token1User));
+
         expect(await this.token0.balanceOf.call(user)).to.be.bignumber.eq(
           token0User
         );
@@ -478,8 +524,9 @@ contract('Oasis Swap', function([_, user, someone]) {
           get110x(result)
         );
 
-        await expectRevert.unspecified(
-          this.proxy.execMock(to, data, { from: user })
+        await expectRevert(
+          this.proxy.execMock(to, data, { from: user }),
+          'HOasis_sellAllAmount: Unspecified'
         );
       });
     });
@@ -517,6 +564,17 @@ contract('Oasis Swap', function([_, user, someone]) {
         // or find out why inaccuracy exists
         const receipt = await this.proxy.execMock(to, data, { from: user });
 
+        const token0UserEnd = await this.token0.balanceOf.call(user);
+        const handlerReturn = utils.toBN(
+          getHandlerReturn(receipt, ['uint256'])[0]
+        );
+        expect(handlerReturn).to.be.bignumber.eq(
+          token0UserEnd
+            .sub(value)
+            .sub(token0User)
+            .neg()
+        );
+
         // TODO: modified the expect below when using exact amount
         expect(await this.token0.balanceOf.call(user)).to.be.bignumber.gt(
           token0User.add(value).sub(getPayBuffer(result))
@@ -549,8 +607,9 @@ contract('Oasis Swap', function([_, user, someone]) {
         });
         await this.proxy.updateTokenMock(this.token0.address);
 
-        await expectRevert.unspecified(
-          this.proxy.execMock(to, data, { from: user })
+        await expectRevert(
+          this.proxy.execMock(to, data, { from: user }),
+          'HOasis_buyAllAmount: Unspecified'
         );
       });
     });

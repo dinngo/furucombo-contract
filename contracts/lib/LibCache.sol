@@ -1,56 +1,49 @@
-pragma solidity ^0.5.0;
+pragma solidity ^0.6.0;
 
 library LibCache {
-    function setAddress(bytes32[] storage _cache, address _input) internal {
-        _cache.push(bytes32(uint256(uint160(_input))));
+    function set(
+        mapping(bytes32 => bytes32) storage _cache,
+        bytes32 _key,
+        bytes32 _value
+    ) internal {
+        _cache[_key] = _value;
     }
 
-    function set(bytes32[] storage _cache, bytes32 _input) internal {
-        _cache.push(_input);
+    function setAddress(
+        mapping(bytes32 => bytes32) storage _cache,
+        bytes32 _key,
+        address _value
+    ) internal {
+        _cache[_key] = bytes32(uint256(uint160(_value)));
     }
 
-    function setHandlerType(bytes32[] storage _cache, uint256 _input) internal {
-        require(_input < uint96(-1), "Invalid Handler Type");
-        _cache.push(bytes12(uint96(_input)));
+    function setUint256(
+        mapping(bytes32 => bytes32) storage _cache,
+        bytes32 _key,
+        uint256 _value
+    ) internal {
+        _cache[_key] = bytes32(_value);
     }
 
-    function setSender(bytes32[] storage _cache, address _input) internal {
-        require(_cache.length == 0, "cache not empty");
-        setAddress(_cache, _input);
+    function getAddress(
+        mapping(bytes32 => bytes32) storage _cache,
+        bytes32 _key
+    ) internal view returns (address ret) {
+        ret = address(uint160(uint256(_cache[_key])));
     }
 
-    function getAddress(bytes32[] storage _cache)
-        internal
-        returns (address ret)
-    {
-        ret = address(uint160(uint256(peek(_cache))));
-        _cache.pop();
+    function getUint256(
+        mapping(bytes32 => bytes32) storage _cache,
+        bytes32 _key
+    ) internal view returns (uint256 ret) {
+        ret = uint256(_cache[_key]);
     }
 
-    function getSig(bytes32[] storage _cache) internal returns (bytes4 ret) {
-        ret = bytes4(peek(_cache));
-        _cache.pop();
-    }
-
-    function get(bytes32[] storage _cache) internal returns (bytes32 ret) {
-        ret = peek(_cache);
-        _cache.pop();
-    }
-
-    function peek(bytes32[] storage _cache)
+    function get(mapping(bytes32 => bytes32) storage _cache, bytes32 _key)
         internal
         view
         returns (bytes32 ret)
     {
-        require(_cache.length > 0, "cache empty");
-        ret = _cache[_cache.length - 1];
-    }
-
-    function getSender(bytes32[] storage _cache)
-        internal
-        returns (address ret)
-    {
-        require(_cache.length > 0, "cache empty");
-        ret = address(uint160(uint256(_cache[0])));
+        ret = _cache[_key];
     }
 }

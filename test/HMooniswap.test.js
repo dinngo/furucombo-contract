@@ -23,7 +23,12 @@ const {
   MOONISWAP_ETH_DAI,
   MOONISWAP_YFI_DAI,
 } = require('./utils/constants');
-const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
+const {
+  evmRevert,
+  evmSnapshot,
+  profileGas,
+  getHandlerReturn,
+} = require('./utils/utils');
 
 const HMooniswap = artifacts.require('HMooniswap');
 const Registry = artifacts.require('Registry');
@@ -60,11 +65,15 @@ contract('Mooniswap', function([_, user]) {
     this.moonPoolBToken = await IToken.at(moonPoolBAddress);
     this.moonPoolA = await IMoonPool.at(moonPoolAAddress);
     this.moonPoolB = await IMoonPool.at(moonPoolBAddress);
+    console.log(tokenAProviderAddress);
+    console.log(
+      (await this.tokenA.balanceOf(tokenAProviderAddress)).toString()
+    );
 
-    await this.tokenA.transfer(user, ether('1000'), {
+    await this.tokenA.transfer(user, ether('900'), {
       from: tokenAProviderAddress,
     });
-    await this.tokenB.transfer(user, ether('1000'), {
+    await this.tokenB.transfer(user, ether('900'), {
       from: tokenBProviderAddress,
     });
   });
@@ -109,7 +118,10 @@ contract('Mooniswap', function([_, user]) {
       const expectedPoolAmountOut = await this.moonPoolA.deposit.call(
         amounts,
         minAmounts,
-        { from: user, value: value }
+        {
+          from: user,
+          value: value,
+        }
       );
 
       // Send tokens to proxy
@@ -124,6 +136,12 @@ contract('Mooniswap', function([_, user]) {
         from: user,
         value: value,
       });
+
+      // Get handler return result
+      const handlerReturn = utils.toBN(
+        getHandlerReturn(receipt, ['uint256'])[0]
+      );
+      expect(handlerReturn).to.be.bignumber.eq(expectedPoolAmountOut);
 
       // Verify proxy balance should be zero
       expect(await balanceProxy.get()).to.be.bignumber.eq(ether('0'));
@@ -196,6 +214,12 @@ contract('Mooniswap', function([_, user]) {
         value: ether('0.1'),
       });
 
+      // Get handler return result
+      const handlerReturn = utils.toBN(
+        getHandlerReturn(receipt, ['uint256'])[0]
+      );
+      expect(handlerReturn).to.be.bignumber.eq(expectedPoolAmountOut);
+
       // Verify proxy balance should be zero
       expect(await balanceProxy.get()).to.be.bignumber.eq(ether('0'));
       expect(
@@ -245,7 +269,7 @@ contract('Mooniswap', function([_, user]) {
           from: user,
           value: amounts[0].add(amounts[1]),
         }),
-        'wrong tokens order'
+        'HMooniswap_deposit: same tokens'
       );
     });
 
@@ -267,7 +291,7 @@ contract('Mooniswap', function([_, user]) {
       // Execute handler
       await expectRevert(
         this.proxy.execMock(to, data, { from: user, value: value }),
-        'wrong amounts length'
+        'HMooniswap_deposit: wrong amounts length'
       );
     });
 
@@ -292,7 +316,7 @@ contract('Mooniswap', function([_, user]) {
           from: user,
           value: value,
         }),
-        'wrong tokens order'
+        'HMooniswap_deposit: wrong tokens order'
       );
     });
   });
@@ -347,6 +371,17 @@ contract('Mooniswap', function([_, user]) {
         value: value,
       });
 
+      // Get handler return result
+      const handlerReturn = getHandlerReturn(receipt, ['uint256[]'])[0];
+      const userTokenBAmountEnd = await this.tokenB.balanceOf.call(user);
+      const balanceDelta = await balanceUser.delta();
+      expect(balanceDelta).to.be.bignumber.eq(
+        utils.toBN(handlerReturn[0]).sub(new BN(receipt.receipt.gasUsed))
+      );
+      expect(utils.toBN(handlerReturn[1])).to.be.bignumber.eq(
+        userTokenBAmountEnd.sub(tokenBUserAmount)
+      );
+
       // Verify proxy balance should be zero
       expect(await balanceProxy.get()).to.be.bignumber.eq(ether('0'));
       expect(
@@ -363,7 +398,7 @@ contract('Mooniswap', function([_, user]) {
       expect(await this.moonPoolAToken.balanceOf.call(user)).to.be.bignumber.eq(
         PoolATokenUserAmount.sub(amount)
       );
-      expect(await balanceUser.delta()).to.be.bignumber.gte(
+      expect(balanceDelta).to.be.bignumber.gte(
         ether('0')
           .add(minReturns[0])
           .sub(new BN(receipt.receipt.gasUsed))
@@ -414,6 +449,18 @@ contract('Mooniswap', function([_, user]) {
         from: user,
         value: ether('0.1'),
       });
+
+      // Get handler return result
+      const handlerReturn = getHandlerReturn(receipt, ['uint256[]'])[0];
+      const userTokenBAmountEnd = await this.tokenB.balanceOf.call(user);
+      const userTokenAAmountEnd = await this.tokenA.balanceOf.call(user);
+
+      expect(utils.toBN(handlerReturn[0])).to.be.bignumber.eq(
+        userTokenAAmountEnd.sub(tokenAUserAmount)
+      );
+      expect(utils.toBN(handlerReturn[1])).to.be.bignumber.eq(
+        userTokenBAmountEnd.sub(tokenBUserAmount)
+      );
 
       // Verify proxy balance should be zero
       expect(await balanceProxy.get()).to.be.bignumber.eq(ether('0'));

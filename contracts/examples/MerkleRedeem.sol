@@ -1,8 +1,8 @@
-pragma solidity ^0.5.0;
+pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
 import "@openzeppelin/contracts/cryptography/MerkleProof.sol";
-import "@openzeppelin/contracts/ownership/Ownable.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract MerkleRedeem is Ownable {
@@ -112,9 +112,8 @@ contract MerkleRedeem is Ownable {
         uint256 _claimedBalance,
         bytes32[] memory _merkleProof
     ) public view returns (bool valid) {
-        bytes32 leaf = keccak256(
-            abi.encodePacked(_liquidityProvider, _claimedBalance)
-        );
+        bytes32 leaf =
+            keccak256(abi.encodePacked(_liquidityProvider, _claimedBalance));
         return MerkleProof.verify(_merkleProof, weekMerkleRoots[_week], leaf);
     }
 
