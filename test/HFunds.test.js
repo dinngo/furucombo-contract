@@ -7,7 +7,7 @@ const {
   expectRevert,
   time,
 } = require('@openzeppelin/test-helpers');
-const { ZERO_ADDRESS } = constants;
+const { ZERO_ADDRESS, MAX_UINT256 } = constants;
 const { tracker } = balance;
 const { latest } = time;
 const abi = require('ethereumjs-abi');
@@ -255,6 +255,38 @@ contract('Funds', function([_, user, someone]) {
         profileGas(receipt);
       });
 
+      it('maximum', async function() {
+        const token = this.token.address;
+        const providerAddress = providerAddresses[0];
+        const value = ether('10');
+        const receiver = someone;
+        const to = this.hFunds.address;
+        const data = abi.simpleEncode(
+          'sendToken(address,uint256,address)',
+          token,
+          MAX_UINT256,
+          receiver
+        );
+        await this.token.transfer(this.proxy.address, value, {
+          from: providerAddress,
+        });
+        await this.proxy.updateTokenMock(this.token.address);
+        const tokenSomeone = await this.token.balanceOf.call(someone);
+        const receipt = await this.proxy.execMock(to, data, {
+          from: user,
+          value: ether('0.1'),
+        });
+
+        await expectEvent.inTransaction(receipt.tx, this.token, 'Transfer', {
+          from: this.proxy.address,
+          to: someone,
+          value: value,
+        });
+        const tokenSomeoneEnd = await this.token.balanceOf.call(someone);
+        expect(tokenSomeoneEnd.sub(tokenSomeone)).to.be.bignumber.eq(value);
+        profileGas(receipt);
+      });
+
       it('insufficient token', async function() {
         const token = this.token.address;
         const providerAddress = providerAddresses[0];
@@ -287,6 +319,24 @@ contract('Funds', function([_, user, someone]) {
         const receiver = someone;
         const to = this.hFunds.address;
         const data = abi.simpleEncode('send(uint256,address)', value, receiver);
+        let balanceSomeone = await tracker(someone);
+        const receipt = await this.proxy.execMock(to, data, {
+          from: user,
+          value: value,
+        });
+        expect(await balanceSomeone.delta()).to.be.bignumber.eq(value);
+        profileGas(receipt);
+      });
+
+      it('maximum', async function() {
+        const value = ether('1');
+        const receiver = someone;
+        const to = this.hFunds.address;
+        const data = abi.simpleEncode(
+          'send(uint256,address)',
+          MAX_UINT256,
+          receiver
+        );
         let balanceSomeone = await tracker(someone);
         const receipt = await this.proxy.execMock(to, data, {
           from: user,
