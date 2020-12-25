@@ -19,9 +19,9 @@ contract HMooniswap is HandlerBase {
     }
 
     function deposit(
-        address[2] calldata tokens,
-        uint256[] calldata amounts,
-        uint256[] calldata minAmounts
+        address[2] memory tokens,
+        uint256[] memory amounts,
+        uint256[] memory minAmounts
     ) external payable returns (uint256 fairSupply) {
         if (tokens[0] > tokens[1]) _revertMsg("deposit", "wrong tokens order");
         if (tokens[0] == tokens[1]) _revertMsg("deposit", "same tokens");
@@ -32,12 +32,15 @@ contract HMooniswap is HandlerBase {
         IMooniswap mooniswap = IMooniswap(factory.pools(tokens[0], tokens[1]));
 
         // Approve token
+        amounts[0] = _getProxyBalance(tokens[0], amounts[0]);
+        amounts[1] = _getProxyBalance(tokens[1], amounts[1]);
         uint256 value = 0;
         if (tokens[0] == address(0)) {
             value = amounts[0];
         } else {
             IERC20(tokens[0]).safeApprove(address(mooniswap), amounts[0]);
         }
+
         IERC20(tokens[1]).safeApprove(address(mooniswap), amounts[1]);
 
         // Add liquidity
@@ -80,6 +83,7 @@ contract HMooniswap is HandlerBase {
         }
 
         // Remove liquidity
+        amount = _getProxyBalance(pool, amount);
         try mooniswap.withdraw(amount, minReturns) {} catch Error(
             string memory reason
         ) {
