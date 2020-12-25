@@ -21,6 +21,9 @@ contract HUniswap is HandlerBase {
         address token,
         uint256 maxTokens
     ) external payable returns (uint256 liquidity) {
+        // if amount == uint256(-1) return balance of Proxy
+        value = _getProxyBalance(address(0), value);
+
         IUniswapExchange uniswap = _getExchange(token);
         IERC20(token).safeApprove(address(uniswap), maxTokens);
         try uniswap.addLiquidity{value: value}(1, maxTokens, now + 1) returns (
@@ -45,6 +48,9 @@ contract HUniswap is HandlerBase {
         uint256 minTokens
     ) external payable returns (uint256 ethGain, uint256 tokenGain) {
         IUniswapExchange uniswap = _getExchange(token);
+
+        // if amount == uint256(-1) return balance of Proxy
+        amount = _getProxyBalance(address(uniswap), amount);
         IERC20(address(uniswap)).safeApprove(address(uniswap), amount);
         try
             uniswap.removeLiquidity(amount, minEth, minTokens, now + 1)
@@ -67,6 +73,9 @@ contract HUniswap is HandlerBase {
         address token,
         uint256 minTokens
     ) external payable returns (uint256 tokensBought) {
+        // if amount == uint256(-1) return balance of Proxy
+        value = _getProxyBalance(token, value);
+
         IUniswapExchange uniswap = _getExchange(token);
         try uniswap.ethToTokenSwapInput{value: value}(minTokens, now) returns (
             uint256 ret
@@ -107,6 +116,9 @@ contract HUniswap is HandlerBase {
         uint256 tokensSold,
         uint256 minEth
     ) external payable returns (uint256 ethBought) {
+        // if amount == uint256(-1) return balance of Proxy
+        tokensSold = _getProxyBalance(token, tokensSold);
+
         IUniswapExchange uniswap = _getExchange(token);
         IERC20(token).safeApprove(address(uniswap), tokensSold);
         try uniswap.tokenToEthSwapInput(tokensSold, minEth, now) returns (
@@ -146,6 +158,8 @@ contract HUniswap is HandlerBase {
         uint256 minTokensBought,
         address tokenAddr
     ) external payable returns (uint256 tokensBought) {
+        // if amount == uint256(-1) return balance of Proxy
+        tokensSold = _getProxyBalance(token, tokensSold);
         IUniswapExchange uniswap = _getExchange(token);
         IERC20(token).safeApprove(address(uniswap), tokensSold);
         try

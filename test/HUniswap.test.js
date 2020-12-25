@@ -409,6 +409,55 @@ contract('Uniswap Swap', function([_, user, someone]) {
         );
         profileGas(receipt);
       });
+
+      it('max amount', async function() {
+        const value = ether('100');
+        const to = this.hUniswap.address;
+        await this.token0.transfer(someone, value, {
+          from: providerAddress,
+        });
+        await this.token0.approve(this.swap.address, value, {
+          from: someone,
+        });
+        const deadline = (await latest()).add(new BN('100'));
+        const result = await this.swap.tokenToTokenSwapInput.call(
+          value,
+          new BN('1'),
+          new BN('1'),
+          deadline,
+          token1Address,
+          { from: someone }
+        );
+        const minAmount = mulPercent(result, new BN('100').sub(slippage));
+        const data = abi.simpleEncode(
+          'tokenToTokenSwapInput(address,uint256,uint256,address):(uint256)',
+          token0Address,
+          MAX_UINT256,
+          minAmount,
+          token1Address
+        );
+        await this.token0.transfer(this.proxy.address, value, {
+          from: providerAddress,
+        });
+        await this.proxy.updateTokenMock(this.token0.address);
+        const receipt = await this.proxy.execMock(to, data, { from: user });
+        const handlerReturn = utils.toBN(
+          getHandlerReturn(receipt, ['uint256'])[0]
+        );
+        const token1UserEnd = await this.token1.balanceOf.call(user);
+        expect(handlerReturn).to.be.bignumber.eq(token1UserEnd.sub(token1User));
+
+        expect(await this.token0.balanceOf.call(user)).to.be.bignumber.eq(
+          token0User
+        );
+        expect(
+          await this.token0.balanceOf.call(this.proxy.address)
+        ).to.be.bignumber.eq(ether('0'));
+        expect(await this.token1.balanceOf.call(user)).to.be.bignumber.gte(
+          token1User.add(minAmount)
+        );
+        profileGas(receipt);
+      });
     });
 
     describe('Exact output', function() {
