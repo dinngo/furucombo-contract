@@ -19,6 +19,7 @@ contract HFurucomboStaking is HandlerBase {
         IStaking staking = IStaking(pool);
         address stakeToken = staking.stakingToken();
 
+        amount = _getProxyBalance(stakeToken, amount);
         IERC20(stakeToken).safeApprove(pool, amount);
         staking.stakeFor(_getSender(), amount);
         IERC20(stakeToken).safeApprove(pool, 0);
