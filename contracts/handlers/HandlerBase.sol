@@ -86,6 +86,7 @@ abstract contract HandlerBase is Storage, Config {
             return amount;
         }
 
+        // TODO: check token == 0xeeee.eeeee case?
         if (token == address(0)) {
             return address(this).balance;
         }

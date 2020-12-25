@@ -187,6 +187,66 @@ contract('BalancerExchange', function([_, user]) {
           );
           profileGas(receipt);
         });
+
+        it('max amount', async function() {
+          const amount = ether('0.000001');
+
+          [, baseAmount] = await getPath(
+            this.token1.address,
+            this.token0.address,
+            amount,
+            0,
+            noPools,
+            swapType
+          );
+
+          const minAmount = mulPercent(baseAmount, new BN('100').sub(slippage));
+          let swaps;
+          let totalReturnWei;
+
+          [swaps, totalReturnWei] = await getPath(
+            this.token1.address,
+            this.token0.address,
+            amount,
+            minAmount,
+            noPools,
+            swapType
+          );
+
+          const to = this.hBalancerExchange.address;
+          const data = abi.encodeFunctionCall(multihopBatchSwapExactInAbi, [
+            swaps,
+            ETH_TOKEN,
+            this.token0.address,
+            MAX_UINT256.toString(),
+            minAmount.toString(),
+          ]);
+          await balanceUser.get();
+          const receipt = await this.proxy.execMock(to, data, {
+            from: user,
+            value: amount,
+          });
+          // Get handler return
+          const handlerReturn = utils.toBN(
+            getHandlerReturn(receipt, ['uint256'])[0]
+          );
+          expect(handlerReturn).to.be.bignumber.eq(
+            await this.token0.balanceOf.call(user)
+          );
+          expect(await balanceProxy.get()).to.be.zero;
+          expect(
+            await this.token0.balanceOf.call(this.proxy.address)
+          ).to.be.zero;
+          expect(await balanceUser.delta()).to.be.bignumber.eq(
+            ether('0')
+              .sub(amount)
+              .sub(new BN(receipt.receipt.gasUsed))
+          );
+          expect(await this.token0.balanceOf.call(user)).to.be.bignumber.eq(
+            totalReturnWei
+          );
+          profileGas(receipt);
+        });
       });
 
       describe('Token to Ether', function() {
@@ -245,6 +305,62 @@ contract('BalancerExchange', function([_, user]) {
           );
           profileGas(receipt);
         });
+
+        it('max amount', async function() {
+          const amount = ether('0.00001');
+          [, baseAmount] = await getPath(
+            this.token0.address,
+            this.token1.address,
+            amount,
+            0,
+            noPools,
+            swapType
+          );
+          const minAmount = mulPercent(baseAmount, new BN('100').sub(slippage));
+          let swaps;
+          let totalReturnWei;
+          [swaps, totalReturnWei] = await getPath(
+            this.token0.address,
+            this.token1.address,
+            amount,
+            minAmount,
+            noPools,
+            swapType
+          );
+          const to = this.hBalancerExchange.address;
+          const data = abi.encodeFunctionCall(multihopBatchSwapExactInAbi, [
+            swaps,
+            this.token0.address,
+            ETH_TOKEN,
+            MAX_UINT256.toString(),
+            minAmount.toString(),
+          ]);
+          await this.token0.transfer(this.proxy.address, amount, {
+            from: token0Provider,
+          });
+          await this.proxy.updateTokenMock(this.token0.address);
+          await balanceUser.get();
+          const receipt = await this.proxy.execMock(to, data, {
+            from: user,
+            value: ether('0.1'),
+          });
+
+          // Check handler return amount
+          const handlerReturn = utils.toBN(
+            getHandlerReturn(receipt, ['uint256'])[0]
+          );
+          expect(handlerReturn).to.be.bignumber.eq(totalReturnWei);
+
+          expect(await balanceProxy.get()).to.be.zero;
+          expect(
+            await this.token0.balanceOf.call(this.proxy.address)
+          ).to.be.zero;
+          expect(await this.token0.balanceOf.call(user)).to.be.zero;
+          expect(await balanceUser.delta()).to.be.bignumber.eq(
+            totalReturnWei.sub(new BN(receipt.receipt.gasUsed))
+          );
+          profileGas(receipt);
+        });
       });
 
       describe('Token to Token', function() {
@@ -275,6 +391,66 @@ contract('BalancerExchange', function([_, user]) {
             this.token0.address,
             this.token1.address,
             amount.toString(),
+            minAmount.toString(),
+          ]);
+          await this.token0.transfer(this.proxy.address, amount, {
+            from: token0Provider,
+          });
+          await this.proxy.updateTokenMock(this.token0.address);
+          const receipt = await this.proxy.execMock(to, data, {
+            from: user,
+            value: ether('0.1'),
+          });
+
+          // Check handler return amount
+          const handlerReturn = utils.toBN(
+            getHandlerReturn(receipt, ['uint256'])[0]
+          );
+          expect(handlerReturn).to.be.bignumber.eq(
+            await this.token1.balanceOf.call(user)
+          );
+
+          expect(await balanceProxy.get()).to.be.zero;
+          expect(
+            await this.token0.balanceOf.call(this.proxy.address)
+          ).to.be.zero;
+          expect(
+            await this.token1.balanceOf.call(this.proxy.address)
+          ).to.be.zero;
+          expect(await this.token0.balanceOf.call(user)).to.be.zero;
+          expect(await this.token1.balanceOf.call(user)).to.be.bignumber.eq(
+            totalReturnWei
+          );
+          profileGas(receipt);
+        });
+
+        it('max amount', async function() {
+          const amount = ether('0.00001');
+          [, baseAmount] = await getPath(
+            this.token0.address,
+            this.token1.address,
+            amount,
+            0,
+            noPools,
+            swapType
+          );
+          const minAmount = mulPercent(baseAmount, new BN('100').sub(slippage));
+          let swaps;
+          let totalReturnWei;
+          [swaps, totalReturnWei] = await getPath(
+            this.token0.address,
+            this.token1.address,
+            amount,
+            minAmount,
+            noPools,
+            swapType
+          );
+          const to = this.hBalancerExchange.address;
+          const data = abi.encodeFunctionCall(multihopBatchSwapExactInAbi, [
+            swaps,
+            this.token0.address,
+            this.token1.address,
+            MAX_UINT256.toString(),
             minAmount.toString(),
           ]);
           await this.token0.transfer(this.proxy.address, amount, {
