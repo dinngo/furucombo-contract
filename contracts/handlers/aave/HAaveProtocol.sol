@@ -54,19 +54,12 @@ contract HAaveProtocol is HandlerBase, FlashLoanReceiverBase {
         transferFundsBackToPoolInternal(_reserve, _amount.add(_fee));
     }
 
-    function deposit(address _reserve, uint256 _amount)
-        external
-        payable
-        returns (uint256 aTokenAmount)
-    {
+    function deposit(address _reserve, uint256 _amount) external payable {
         ILendingPool lendingPool =
             ILendingPool(
                 ILendingPoolAddressesProvider(PROVIDER).getLendingPool()
             );
-
-        // Get AToken before depositing
         address aToken = _getAToken(_reserve);
-        uint256 beforeATokenBalance = IERC20(aToken).balanceOf(address(this));
 
         if (_reserve == ETHADDRESS) {
             try
@@ -94,10 +87,7 @@ contract HAaveProtocol is HandlerBase, FlashLoanReceiverBase {
             IERC20(_reserve).safeApprove(lendingPoolCore, 0);
         }
 
-        // Get AToken after depositing
-        uint256 afterATokenBalance = IERC20(aToken).balanceOf(address(this));
         _updateToken(aToken);
-        return (afterATokenBalance.sub(beforeATokenBalance));
     }
 
     function redeem(address _aToken, uint256 _amount)

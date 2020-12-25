@@ -43,7 +43,14 @@ contract Proxy is Storage, Config {
 
             address target =
                 address(bytes20(IRegistry(_getRegistry()).infos(msg.sender)));
-            _exec(target, msg.data);
+            bytes memory result = _exec(target, msg.data);
+
+            // return result for aave v2 flashloan()
+            uint256 size = result.length;
+            assembly {
+                let loc := add(result, 0x20)
+                return(loc, size)
+            }
         }
     }
 
@@ -240,8 +247,11 @@ contract Proxy is Storage, Config {
         // If the stack length equals 0, just skip
         // If the top is a custom post-process, replace it with the handler
         // address.
-        if (stack.length == 0) return;
-        else if (stack.peek() == bytes32(bytes12(uint96(HandlerType.Custom)))) {
+        if (stack.length == 0) {
+            return;
+        } else if (
+            stack.peek() == bytes32(bytes12(uint96(HandlerType.Custom)))
+        ) {
             stack.pop();
             // Check if the handler is already set.
             if (bytes4(stack.peek()) != 0x00000000) stack.setAddress(_to);

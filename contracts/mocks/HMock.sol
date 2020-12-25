@@ -28,5 +28,19 @@ contract HMock is HandlerBase {
         IERC20(token).safeApprove(target, amount);
         IFaucet(target).drainToken(token, amount);
         IERC20(token).safeApprove(target, 0);
+        _updateToken(token);
+    }
+
+    function drainTokens(
+        address[] calldata targets,
+        address[] calldata tokens,
+        uint256[] calldata amounts
+    ) external payable {
+        for (uint256 i = 0; i < targets.length; i++) {
+            IERC20(tokens[i]).safeApprove(targets[i], amounts[i]);
+            IFaucet(targets[i]).drainToken(tokens[i], amounts[i]);
+            IERC20(tokens[i]).safeApprove(targets[i], 0);
+            _updateToken(tokens[i]);
+        }
     }
 }
