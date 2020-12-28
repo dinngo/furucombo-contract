@@ -208,6 +208,7 @@ contract HSCompound is HandlerBase {
         external
         payable
         isDSProxyOwner(dsProxy)
+        returns (uint256)
     {
         try IComptroller(COMPTROLLER).claimComp(dsProxy) {} catch Error(
             string memory reason
@@ -220,6 +221,8 @@ contract HSCompound is HandlerBase {
         // Withdraw whole COMP balance of DSProxy
         _withdraw(dsProxy, COMP_ADDRESS, balance);
         _updateToken(COMP_ADDRESS);
+
+        return balance;
     }
 
     /* ========== INTERNAL FUNCTIONS ========== */
