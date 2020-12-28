@@ -9,6 +9,7 @@ import "../HandlerBase.sol";
 import "./ILendingPoolV2.sol";
 import "./IFlashLoanReceiver.sol";
 import "./ILendingPoolAddressesProviderV2.sol";
+import "./libraries/DataTypes.sol";
 
 contract HAaveProtocolV2 is HandlerBase, IFlashLoanReceiver {
     using SafeERC20 for IERC20;
@@ -69,22 +70,26 @@ contract HAaveProtocolV2 is HandlerBase, IFlashLoanReceiver {
         uint256 amount,
         uint256 rateMode,
         address onBehalfOf
-    ) external payable returns (uint256 repayAmount) {
+    ) external payable returns (uint256 remainDebt) {
         address pool =
             ILendingPoolAddressesProviderV2(PROVIDER).getLendingPool();
         IERC20(asset).safeApprove(pool, amount);
 
         try
             ILendingPoolV2(pool).repay(asset, amount, rateMode, onBehalfOf)
-        returns (uint256 ret) {
-            repayAmount = ret;
-        } catch Error(string memory reason) {
+        {} catch Error(string memory reason) {
             _revertMsg("repay", reason);
         } catch {
             _revertMsg("repay");
         }
 
         IERC20(asset).safeApprove(pool, 0);
+
+        DataTypes.ReserveData memory reserve =
+            ILendingPoolV2(pool).getReserveData(asset);
+        remainDebt = rateMode == 1
+            ? IERC20(reserve.stableDebtTokenAddress).balanceOf(onBehalfOf)
+            : IERC20(reserve.variableDebtTokenAddress).balanceOf(onBehalfOf);
     }
 
     function _getLendingPoolAndAToken(address underlying)
