@@ -19,6 +19,9 @@ contract HOneInchExchange is HandlerBase {
         return "HOneInchV2";
     }
 
+    // Discounted swap is the swapping function that applies
+    // gas token.
+    // Might be ok to remove since we support gas token natively.
     function discountedSwap(uint256 value, bytes calldata data)
         external
         payable
@@ -52,6 +55,8 @@ contract HOneInchExchange is HandlerBase {
             _updateToken(address(desc.dstToken));
     }
 
+    // TODO: srcToken, dstToken, amount can be fetched from the
+    // SwapDescription in data.
     function swap(
         uint256 value,
         IERC20 srcToken,
