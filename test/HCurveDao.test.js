@@ -1,4 +1,11 @@
-const { BN, ether, expectRevert, time } = require('@openzeppelin/test-helpers');
+const {
+  BN,
+  ether,
+  expectRevert,
+  time,
+  constants,
+} = require('@openzeppelin/test-helpers');
+const { MAX_UINT256 } = constants;
 const { expect } = require('chai');
 const abi = require('ethereumjs-abi');
 const utils = web3.utils;
@@ -73,6 +80,34 @@ contract('Curve DAO', function([_, user]) {
         'deposit(address,uint256)',
         this.gauge0.address,
         gauge0Amount
+      );
+      await this.gauge0.set_approve_deposit(this.proxy.address, true, {
+        from: user,
+      });
+
+      const depositUser = await this.gauge0.balanceOf.call(user);
+      const receipt = await this.proxy.execMock(to, data, {
+        from: user,
+        value: ether('0.1'),
+      });
+
+      const depositUserEnd = await this.gauge0.balanceOf.call(user);
+      expect(depositUserEnd.sub(depositUser)).to.be.bignumber.eq(gauge0Amount);
+      expect(
+        await this.token0.balanceOf.call(this.proxy.address)
+      ).to.be.bignumber.eq(ether('0'));
+      profileGas(receipt);
+    });
+
+    it('max amount', async function() {
+      await this.token0.transfer(this.proxy.address, gauge0Amount, {
+        from: token0Provider,
+      });
+      const to = this.hCurveDao.address;
+      const data = abi.simpleEncode(
+        'deposit(address,uint256)',
+        this.gauge0.address,
+        MAX_UINT256
       );
       await this.gauge0.set_approve_deposit(this.proxy.address, true, {
         from: user,

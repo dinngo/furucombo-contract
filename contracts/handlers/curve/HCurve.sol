@@ -29,6 +29,8 @@ contract HCurve is HandlerBase {
     ) external payable returns (uint256) {
         ICurveHandler curveHandler = ICurveHandler(handler);
         uint256 beforeTokenJBalance = IERC20(tokenJ).balanceOf(address(this));
+        // if amount == uint256(-1) return balance of Proxy
+        dx = _getProxyBalance(tokenI, dx);
         IERC20(tokenI).safeApprove(address(curveHandler), dx);
         try curveHandler.exchange(i, j, dx, minDy) {} catch Error(
             string memory reason
@@ -56,6 +58,8 @@ contract HCurve is HandlerBase {
     ) external payable returns (uint256) {
         ICurveHandler curveHandler = ICurveHandler(handler);
         uint256 beforeTokenJBalance = IERC20(tokenJ).balanceOf(address(this));
+        // if amount == uint256(-1) return balance of Proxy
+        dx = _getProxyBalance(tokenI, dx);
         IERC20(tokenI).safeApprove(address(curveHandler), dx);
         try curveHandler.exchange_underlying(i, j, dx, minDy) {} catch Error(
             string memory reason
@@ -82,6 +86,8 @@ contract HCurve is HandlerBase {
     ) external payable returns (uint256) {
         IOneSplit oneSplit = IOneSplit(ONE_SPLIT);
         uint256 beforeToTokenBalance = IERC20(toToken).balanceOf(address(this));
+        // if amount == uint256(-1) return balance of Proxy
+        amount = _getProxyBalance(fromToken, amount);
         IERC20(fromToken).safeApprove(address(oneSplit), amount);
         try
             oneSplit.swap(
@@ -108,8 +114,8 @@ contract HCurve is HandlerBase {
     function addLiquidity(
         address handler,
         address pool,
-        address[] calldata tokens,
-        uint256[] calldata amounts,
+        address[] memory tokens,
+        uint256[] memory amounts,
         uint256 minMintAmount
     ) external payable returns (uint256) {
         ICurveHandler curveHandler = ICurveHandler(handler);
@@ -118,6 +124,8 @@ contract HCurve is HandlerBase {
         // Approve non-zero amount erc20 token
         for (uint256 i = 0; i < amounts.length; i++) {
             if (amounts[i] == 0) continue;
+            // if amount == uint256(-1) return balance of Proxy
+            amounts[i] = _getProxyBalance(tokens[i], amounts[i]);
             IERC20(tokens[i]).safeApprove(address(curveHandler), amounts[i]);
         }
 
