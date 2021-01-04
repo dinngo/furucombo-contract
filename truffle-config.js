@@ -46,7 +46,7 @@ module.exports = {
       gasPrice: 0x01,
       gas: 5000000,
     },
-    migration_test: {
+    migration: {
       host: 'localhost',
       port: 8545,
       network_id: '*',

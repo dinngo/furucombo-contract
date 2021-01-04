@@ -11,7 +11,8 @@
     "compile": "truffle compile",
     "test": "scripts/test.sh --network development",
     "lint:solhint": "solhint \"contracts/**/*.sol\"",
-    "lint:prettier": "scripts/prettier.sh"
+    "lint:prettier": "scripts/prettier.sh",
+    "test-migration": "scripts/test.sh --network migration"
   },
   "repository": {
     "type": "git",
