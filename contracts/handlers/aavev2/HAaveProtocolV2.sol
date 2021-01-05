@@ -87,7 +87,8 @@ contract HAaveProtocolV2 is HandlerBase, IFlashLoanReceiver {
 
         DataTypes.ReserveData memory reserve =
             ILendingPoolV2(pool).getReserveData(asset);
-        remainDebt = rateMode == 1
+        remainDebt = DataTypes.InterestRateMode(rateMode) ==
+            DataTypes.InterestRateMode.STABLE
             ? IERC20(reserve.stableDebtTokenAddress).balanceOf(onBehalfOf)
             : IERC20(reserve.variableDebtTokenAddress).balanceOf(onBehalfOf);
     }
