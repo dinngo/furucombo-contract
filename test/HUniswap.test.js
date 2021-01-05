@@ -194,7 +194,7 @@ contract('Uniswap Swap', function([_, user, someone]) {
       });
 
       it('insufficient ether', async function() {
-        const value = ether('0.1');
+        const value = ether('0.01');
         const to = this.hUniswap.address;
         const data = abi.simpleEncode(
           'ethToTokenSwapOutput(uint256,address,uint256):(uint256)',
@@ -291,7 +291,7 @@ contract('Uniswap Swap', function([_, user, someone]) {
 
     describe('Exact output', function() {
       it('normal', async function() {
-        const value = ether('100');
+        const value = ether('1000');
         const to = this.hUniswap.address;
         await this.token.transfer(someone, value, { from: providerAddress });
         await this.token.approve(this.swap.address, value, {

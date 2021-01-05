@@ -74,7 +74,7 @@ contract('Uniswap Liquidity', function([_, user]) {
     });
 
     it('normal', async function() {
-      const value = ether('0.1');
+      const value = ether('0.01');
       const to = this.hUniswap.address;
       const data = abi.simpleEncode(
         'addLiquidity(uint256,address,uint256):(uint256)',
@@ -90,11 +90,11 @@ contract('Uniswap Liquidity', function([_, user]) {
         new BN('1'),
         ether('100'),
         deadline,
-        { from: user, value: ether('0.1') }
+        { from: user, value: value }
       );
       const receipt = await this.proxy.execMock(to, data, {
         from: user,
-        value: ether('0.1'),
+        value: value,
       });
 
       const handlerReturn = utils.toBN(
@@ -121,7 +121,7 @@ contract('Uniswap Liquidity', function([_, user]) {
       deadline = (await latest()).add(new BN('100'));
       await this.swap.addLiquidity(new BN('1'), ether('100'), deadline, {
         from: user,
-        value: ether('0.1'),
+        value: ether('0.01'),
       });
       tokenUser = await this.token.balanceOf.call(user);
       uniTokenUser = await this.swap.balanceOf.call(user);
