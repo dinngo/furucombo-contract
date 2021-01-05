@@ -35,6 +35,7 @@ const {
   profileGas,
   mulPercent,
   cUnit,
+  getHandlerReturn,
 } = require('./utils/utils');
 const { getFCompoundActionsBytecodeBySolc } = require('./utils/getBytecode');
 
@@ -1182,6 +1183,10 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
         from: user,
         value: ether('0.1'),
       });
+      // Get handler return result
+      const handlerReturn = utils.toBN(
+        getHandlerReturn(receipt, ['uint256'])[0]
+      );
       const compUserAfter = await this.comp.balanceOf.call(user);
       const compUserProxyAfter = await this.comp.balanceOf.call(
         this.userProxy.address
@@ -1191,6 +1196,7 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
       expect(compProxyAfter).to.be.zero;
       // Can't get the exact result so we only check if the amount is greater than before
       expect(compUserAfter).to.be.bignumber.gt(compUserProxyBefore);
+      expect(compUserAfter).to.be.bignumber.eq(handlerReturn);
       profileGas(receipt);
     });
 
