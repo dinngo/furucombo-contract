@@ -339,7 +339,7 @@ contract('Oasis Swap', function([_, user, someone]) {
 
     describe('Exact output', function() {
       it('normal', async function() {
-        const value = ether('100');
+        const value = ether('2000');
         const buyAmt = ether('0.1');
         const to = this.hOasis.address;
         const result = await this.otc.getPayAmount.call(
