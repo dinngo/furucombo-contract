@@ -21,6 +21,8 @@ All notable changes to this project will be documented in this file.
 - Cube counting error message handling.
 - Support check slippage function in `HFunds`.
 - Support Aave v2 deposit/withdraw/repay/flashloan in `HAaveProtocolV2`.
+- Support get proxy current balance by using `-1` feature in several handlers.
+- Speed up CI process by contract migration improvement.
 
 ### Changed
 
