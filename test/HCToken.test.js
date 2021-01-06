@@ -106,55 +106,55 @@ const IComptroller = artifacts.require('IComptroller');
 //       profileGas(receipt);
 //     });
 
-    it('max amount', async function() {
-      const value = ether('10');
-      const to = this.hCToken.address;
-      const data = abi.simpleEncode(
-        'mint(address,uint256)',
-        cTokenAddress,
-        MAX_UINT256
-      );
-      await this.token.transfer(this.proxy.address, value, {
-        from: providerAddress,
-      });
-      await this.proxy.updateTokenMock(this.token.address);
-      cTokenUser = await this.cToken.balanceOf.call(user);
+//   it('max amount', async function() {
+//     const value = ether('10');
+//     const to = this.hCToken.address;
+//     const data = abi.simpleEncode(
+//       'mint(address,uint256)',
+//       cTokenAddress,
+//       MAX_UINT256
+//     );
+//     await this.token.transfer(this.proxy.address, value, {
+//       from: providerAddress,
+//     });
+//     await this.proxy.updateTokenMock(this.token.address);
+//     cTokenUser = await this.cToken.balanceOf.call(user);
 
-      const rate = await this.cToken.exchangeRateStored.call();
-      const result = value.mul(ether('1')).div(rate);
-      const receipt = await this.proxy.execMock(to, data, { from: user });
+//     const rate = await this.cToken.exchangeRateStored.call();
+//     const result = value.mul(ether('1')).div(rate);
+//     const receipt = await this.proxy.execMock(to, data, { from: user });
 
-      // Get handler return result
-      const handlerReturn = utils.toBN(
-        getHandlerReturn(receipt, ['uint256'])[0]
-      );
+//     // Get handler return result
+//     const handlerReturn = utils.toBN(
+//       getHandlerReturn(receipt, ['uint256'])[0]
+//     );
 
-      cTokenUserEnd = await this.cToken.balanceOf.call(user);
-      expect(cTokenUserEnd.sub(cTokenUser)).to.be.bignumber.eq(handlerReturn);
-      expect(
-        cTokenUserEnd.mul(new BN('1000')).divRound(result)
-      ).to.be.bignumber.eq(new BN('1000'));
-      expect(await balanceUser.delta()).to.be.bignumber.eq(
-        ether('0').sub(new BN(receipt.receipt.gasUsed))
-      );
-      profileGas(receipt);
-    });
+//     cTokenUserEnd = await this.cToken.balanceOf.call(user);
+//     expect(cTokenUserEnd.sub(cTokenUser)).to.be.bignumber.eq(handlerReturn);
+//     expect(
+//       cTokenUserEnd.mul(new BN('1000')).divRound(result)
+//     ).to.be.bignumber.eq(new BN('1000'));
+//     expect(await balanceUser.delta()).to.be.bignumber.eq(
+//       ether('0').sub(new BN(receipt.receipt.gasUsed))
+//     );
+//     profileGas(receipt);
+//   });
 
-    it('revert', async function() {
-      const value = ether('10');
-      const to = this.hCToken.address;
-      const data = abi.simpleEncode(
-        'mint(address,uint256)',
-        cTokenAddress,
-        value
-      );
-      await this.proxy.updateTokenMock(this.token.address);
-      await expectRevert(
-        this.proxy.execMock(to, data, { from: user }),
-        'HCToken_mint: error 13'
-      );
-    });
-  });
+//   it('revert', async function() {
+//     const value = ether('10');
+//     const to = this.hCToken.address;
+//     const data = abi.simpleEncode(
+//       'mint(address,uint256)',
+//       cTokenAddress,
+//       value
+//     );
+//     await this.proxy.updateTokenMock(this.token.address);
+//     await expectRevert(
+//       this.proxy.execMock(to, data, { from: user }),
+//       'HCToken_mint: error 13'
+//     );
+//   });
+// });
 
 //     it('revert', async function() {
 //       const value = ether('10');
@@ -208,7 +208,6 @@ const IComptroller = artifacts.require('IComptroller');
 //       tokenUserEnd = await this.token.balanceOf.call(user);
 //       expect(tokenUserEnd.sub(tokenUser)).to.be.bignumber.eq(handlerReturn);
 
-
 //       expect(await this.cToken.balanceOf.call(user)).to.be.bignumber.eq(
 //         ether('0')
 //       );
@@ -221,64 +220,63 @@ const IComptroller = artifacts.require('IComptroller');
 //       profileGas(receipt);
 //     });
 
-    it('max amount', async function() {
-      const value = cTokenUser;
-      const to = this.hCToken.address;
-      const data = abi.simpleEncode(
-        'redeem(address,uint256)',
-        this.cToken.address,
-        value
-      );
-      const rate = await this.cToken.exchangeRateStored.call();
-      const result = value.mul(rate).div(ether('1'));
-      await this.cToken.transfer(this.proxy.address, value, { from: user });
-      await this.proxy.updateTokenMock(this.cToken.address);
-      tokenUser = await this.token.balanceOf.call(user);
-      cTokenUser = await this.cToken.balanceOf.call(user);
-      const receipt = await this.proxy.execMock(to, data, {
-        from: user,
-        value: ether('0.1'),
-      });
+//   it('max amount', async function() {
+//     const value = cTokenUser;
+//     const to = this.hCToken.address;
+//     const data = abi.simpleEncode(
+//       'redeem(address,uint256)',
+//       this.cToken.address,
+//       value
+//     );
+//     const rate = await this.cToken.exchangeRateStored.call();
+//     const result = value.mul(rate).div(ether('1'));
+//     await this.cToken.transfer(this.proxy.address, value, { from: user });
+//     await this.proxy.updateTokenMock(this.cToken.address);
+//     tokenUser = await this.token.balanceOf.call(user);
+//     cTokenUser = await this.cToken.balanceOf.call(user);
+//     const receipt = await this.proxy.execMock(to, data, {
+//       from: user,
+//       value: ether('0.1'),
+//     });
 
-      // Get handler return result
-      const handlerReturn = utils.toBN(
-        getHandlerReturn(receipt, ['uint256'])[0]
-      );
+//     // Get handler return result
+//     const handlerReturn = utils.toBN(
+//       getHandlerReturn(receipt, ['uint256'])[0]
+//     );
 
-      tokenUserEnd = await this.token.balanceOf.call(user);
-      expect(tokenUserEnd.sub(tokenUser)).to.be.bignumber.eq(handlerReturn);
+//     tokenUserEnd = await this.token.balanceOf.call(user);
+//     expect(tokenUserEnd.sub(tokenUser)).to.be.bignumber.eq(handlerReturn);
 
-      expect(await this.cToken.balanceOf.call(user)).to.be.bignumber.eq(
-        ether('0')
-      );
-      expect(
-        (await this.token.balanceOf.call(user))
-          .sub(tokenUser)
-          .mul(new BN('1000'))
-          .divRound(result)
-      ).to.be.bignumber.eq(new BN('1000'));
-      profileGas(receipt);
-    });
+//     expect(await this.cToken.balanceOf.call(user)).to.be.bignumber.eq(
+//       ether('0')
+//     );
+//     expect(
+//       (await this.token.balanceOf.call(user))
+//         .sub(tokenUser)
+//         .mul(new BN('1000'))
+//         .divRound(result)
+//     ).to.be.bignumber.eq(new BN('1000'));
+//     profileGas(receipt);
+//   });
 
-    it('revert', async function() {
-      const value = cTokenUser;
-      const to = this.hCToken.address;
-      const data = abi.simpleEncode(
-        'redeem(address,uint256)',
-        this.cToken.address,
-        value
-      );
-      await this.proxy.updateTokenMock(this.cToken.address);
-      await expectRevert(
-        this.proxy.execMock(to, data, {
-          from: user,
-          value: ether('0.1'),
-        }),
-        'HCToken_redeem: error 9'
-      );
-    });
-  });
-
+//   it('revert', async function() {
+//     const value = cTokenUser;
+//     const to = this.hCToken.address;
+//     const data = abi.simpleEncode(
+//       'redeem(address,uint256)',
+//       this.cToken.address,
+//       value
+//     );
+//     await this.proxy.updateTokenMock(this.cToken.address);
+//     await expectRevert(
+//       this.proxy.execMock(to, data, {
+//         from: user,
+//         value: ether('0.1'),
+//       }),
+//       'HCToken_redeem: error 9'
+//     );
+//   });
+// });
 
 //     it('revert', async function() {
 //       const value = cTokenUser;
