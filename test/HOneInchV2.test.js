@@ -99,16 +99,7 @@ contract('OneInch Swap', function([_, user]) {
 
         const swapResponse = await fetch(swapReq);
         const swapData = await swapResponse.json();
-        const txData = swapData.tx.data;
-        const txValue = swapData.tx.value;
-        const data = abi.simpleEncode(
-          'swap(uint256,address,address,uint256,bytes)',
-          txValue,
-          swapData.fromToken.address,
-          swapData.toToken.address,
-          swapData.fromTokenAmount,
-          util.toBuffer(txData)
-        );
+        const data = swapData.tx.data;
         const quote = swapData.toTokenAmount;
         const receipt = await this.proxy.execMock(to, data, {
           from: user,
@@ -157,16 +148,7 @@ contract('OneInch Swap', function([_, user]) {
 
         const swapResponse = await fetch(swapReq);
         const swapData = await swapResponse.json();
-        const txData = swapData.tx.data;
-        const txValue = swapData.tx.value;
-        const data = abi.simpleEncode(
-          'swap(uint256,address,address,uint256,bytes)',
-          txValue,
-          swapData.fromToken.address,
-          swapData.toToken.address,
-          swapData.fromTokenAmount,
-          util.toBuffer(txData)
-        );
+        const data = swapData.tx.data;
         const quote = swapData.toTokenAmount;
         const receipt = await this.proxy.execMock(to, data, {
           from: user,
@@ -242,16 +224,7 @@ contract('OneInch Swap', function([_, user]) {
 
         const swapResponse = await fetch(swapReq);
         const swapData = await swapResponse.json();
-        const txData = swapData.tx.data;
-        const txValue = swapData.tx.value;
-        const data = abi.simpleEncode(
-          'swap(uint256,address,address,uint256,bytes)',
-          txValue,
-          swapData.fromToken.address,
-          swapData.toToken.address,
-          swapData.fromTokenAmount,
-          util.toBuffer(txData)
-        );
+        const data = swapData.tx.data;
         const quote = swapData.toTokenAmount;
         const receipt = await this.proxy.execMock(to, data, {
           from: user,
@@ -331,16 +304,7 @@ contract('OneInch Swap', function([_, user]) {
 
         const swapResponse = await fetch(swapReq);
         const swapData = await swapResponse.json();
-        const txData = swapData.tx.data;
-        const txValue = swapData.tx.value;
-        const data = abi.simpleEncode(
-          'swap(uint256,address,address,uint256,bytes)',
-          txValue,
-          swapData.fromToken.address,
-          swapData.toToken.address,
-          swapData.fromTokenAmount,
-          util.toBuffer(txData)
-        );
+        const data = swapData.tx.data;
         const quote = swapData.toTokenAmount;
         const receipt = await this.proxy.execMock(to, data, {
           from: user,

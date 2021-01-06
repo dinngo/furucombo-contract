@@ -12,79 +12,51 @@ contract HOneInchExchange is HandlerBase {
 
     // prettier-ignore
     address public constant ONEINCH_SPENDER = 0x111111125434b319222CdBf8C261674aDB56F3ae;
-    address public constant ETH_ADDRESS =
-        0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
+    // prettier-ignore
+    address public constant REFERRER = 0xBcb909975715DC8fDe643EE44b89e3FD6A35A259;
+    // prettier-ignore
+    address public constant ETH_ADDRESS = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
     function getContractName() public pure override returns (string memory) {
         return "HOneInchV2";
     }
 
-    // Discounted swap is the swapping function that applies
-    // gas token.
-    // Might be ok to remove since we support gas token natively.
-    function discountedSwap(uint256 value, bytes calldata data)
-        external
-        payable
-        returns (uint256 returnAmount)
-    {
-        (, , IOneInchExchangeV2.SwapDescription memory desc, ) =
-            abi.decode(
-                data,
-                (
-                    bytes4,
-                    IOneInchCaller,
-                    IOneInchExchangeV2.SwapDescription,
-                    IOneInchCaller.CallDescription[]
-                )
-            );
-
-        if (address(desc.srcToken) != ETH_ADDRESS)
+    function swap(
+        IOneInchCaller caller,
+        IOneInchExchangeV2.SwapDescription memory desc,
+        IOneInchCaller.CallDescription[] calldata calls
+    ) external payable returns (uint256 returnAmount) {
+        desc.referrer = REFERRER;
+        if (address(desc.srcToken) != ETH_ADDRESS) {
             desc.srcToken.safeApprove(ONEINCH_SPENDER, desc.amount);
-        (bool success, bytes memory ret) =
-            ONEINCH_SPENDER.call{value: value}(data);
-        if (success) {
-            (returnAmount) = abi.decode(ret, (uint256));
-        } else {
-            _revertMsg("discountedSwap", string(ret));
-        }
-        if (address(desc.srcToken) != ETH_ADDRESS)
+            try
+                IOneInchExchangeV2(ONEINCH_SPENDER).swap(caller, desc, calls)
+            returns (uint256 amount) {
+                returnAmount = amount;
+            } catch Error(string memory message) {
+                _revertMsg("swap", message);
+            } catch {
+                _revertMsg("swap");
+            }
             desc.srcToken.safeApprove(ONEINCH_SPENDER, 0);
+        } else {
+            try
+                IOneInchExchangeV2(ONEINCH_SPENDER).swap{value: desc.amount}(
+                    caller,
+                    desc,
+                    calls
+                )
+            returns (uint256 amount) {
+                returnAmount = amount;
+            } catch Error(string memory message) {
+                _revertMsg("swap", message);
+            } catch {
+                _revertMsg("swap");
+            }
+        }
 
         // Update involved token
         if (address(desc.dstToken) != ETH_ADDRESS)
             _updateToken(address(desc.dstToken));
-    }
-
-    // TODO: srcToken, dstToken, amount can be fetched from the
-    // SwapDescription in data.
-    function swap(
-        uint256 value,
-        IERC20 srcToken,
-        IERC20 dstToken,
-        uint256 amount,
-        bytes memory data
-    ) public payable returns (uint256 returnAmount) {
-        if (address(srcToken) != ETH_ADDRESS) {
-            srcToken.safeApprove(ONEINCH_SPENDER, amount);
-            (bool success, bytes memory ret) =
-                ONEINCH_SPENDER.call{value: value}(data);
-            if (success) {
-                (returnAmount) = abi.decode(ret, (uint256));
-            } else {
-                _revertMsg("swap", string(ret));
-            }
-            srcToken.safeApprove(ONEINCH_SPENDER, 0);
-        } else {
-            (bool success, bytes memory ret) =
-                ONEINCH_SPENDER.call{value: value}(data);
-            if (success) {
-                (returnAmount) = abi.decode(ret, (uint256));
-            } else {
-                _revertMsg("swap", string(ret));
-            }
-        }
-
-        // Update involved token
-        if (address(dstToken) != ETH_ADDRESS) _updateToken(address(dstToken));
     }
 }
