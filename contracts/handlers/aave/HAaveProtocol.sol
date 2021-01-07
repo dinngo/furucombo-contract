@@ -61,8 +61,8 @@ contract HAaveProtocol is HandlerBase, FlashLoanReceiverBase {
             );
         address aToken = _getAToken(_reserve);
 
+        _amount = _getBalance(_reserve, _amount);
         if (_reserve == ETHADDRESS) {
-            _amount = _getBalance(address(0), _amount);
             try
                 lendingPool.deposit{value: _amount}(
                     _reserve,
@@ -77,7 +77,6 @@ contract HAaveProtocol is HandlerBase, FlashLoanReceiverBase {
         } else {
             address lendingPoolCore =
                 ILendingPoolAddressesProvider(PROVIDER).getLendingPoolCore();
-            _amount = _getBalance(_reserve, _amount);
             IERC20(_reserve).safeApprove(lendingPoolCore, _amount);
             try
                 lendingPool.deposit(_reserve, _amount, REFERRAL_CODE)
