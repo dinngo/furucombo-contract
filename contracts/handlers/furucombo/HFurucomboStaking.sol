@@ -15,11 +15,11 @@ contract HFurucomboStaking is HandlerBase {
     }
 
     function stake(address pool, uint256 amount) external payable {
-        require(amount > 0, "HFurucombo: stake amount = 0");
         IStaking staking = IStaking(pool);
         address stakeToken = staking.stakingToken();
-
         amount = _getBalance(stakeToken, amount);
+        require(amount > 0, "HFurucombo: stake amount = 0");
+
         IERC20(stakeToken).safeApprove(pool, amount);
         staking.stakeFor(_getSender(), amount);
         IERC20(stakeToken).safeApprove(pool, 0);

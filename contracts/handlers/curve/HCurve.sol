@@ -213,6 +213,7 @@ contract HCurve is HandlerBase {
     ) external payable returns (uint256) {
         ICurveHandler curveHandler = ICurveHandler(handler);
         uint256 beforeTokenIBalance = IERC20(tokenI).balanceOf(address(this));
+        tokenAmount = _getBalance(pool, tokenAmount);
         IERC20(pool).safeApprove(address(curveHandler), tokenAmount);
         try
             curveHandler.remove_liquidity_one_coin(tokenAmount, i, minAmount)
@@ -240,6 +241,7 @@ contract HCurve is HandlerBase {
     ) external payable returns (uint256) {
         ICurveHandler curveHandler = ICurveHandler(handler);
         uint256 beforeTokenIBalance = IERC20(tokenI).balanceOf(address(this));
+        tokenAmount = _getBalance(pool, tokenAmount);
         IERC20(pool).safeApprove(address(curveHandler), tokenAmount);
         try
             curveHandler.remove_liquidity_one_coin(

@@ -37,6 +37,7 @@ contract HUniswapV2 is HandlerBase {
         IUniswapV2Router02 router = IUniswapV2Router02(UNISWAPV2_ROUTER);
 
         // Approve token
+        value = _getBalance(address(0), value);
         amountTokenDesired = _getBalance(token, amountTokenDesired);
         IERC20(token).safeApprove(UNISWAPV2_ROUTER, amountTokenDesired);
 

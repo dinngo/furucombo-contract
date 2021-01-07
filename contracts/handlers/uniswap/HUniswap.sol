@@ -23,6 +23,7 @@ contract HUniswap is HandlerBase {
     ) external payable returns (uint256 liquidity) {
         // if amount == uint256(-1) return balance of Proxy
         value = _getBalance(address(0), value);
+        maxTokens = _getBalance(token, maxTokens);
 
         IUniswapExchange uniswap = _getExchange(token);
         IERC20(token).safeApprove(address(uniswap), maxTokens);

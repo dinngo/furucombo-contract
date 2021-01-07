@@ -74,6 +74,7 @@ contract HBalancerExchange is HandlerBase {
         uint256 maxTotalAmountIn
     ) external payable returns (uint256 totalAmountIn) {
         IExchangeProxy balancer = IExchangeProxy(EXCHANGE_PROXY);
+        maxTotalAmountIn = _getBalance(tokenIn, maxTotalAmountIn);
 
         if (tokenIn == ETH_ADDRESS) {
             try
@@ -167,6 +168,7 @@ contract HBalancerExchange is HandlerBase {
         uint256 maxTotalAmountIn
     ) external payable returns (uint256 totalAmountIn) {
         IExchangeProxy balancer = IExchangeProxy(EXCHANGE_PROXY);
+        maxTotalAmountIn = _getBalance(tokenIn, maxTotalAmountIn);
 
         if (tokenIn == ETH_ADDRESS) {
             try
@@ -262,6 +264,7 @@ contract HBalancerExchange is HandlerBase {
         uint256 nPools
     ) external payable returns (uint256 totalAmountIn) {
         IExchangeProxy balancer = IExchangeProxy(EXCHANGE_PROXY);
+        maxTotalAmountIn = _getBalance(tokenIn, maxTotalAmountIn);
 
         if (tokenIn == ETH_ADDRESS) {
             try

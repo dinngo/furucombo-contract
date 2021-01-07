@@ -75,23 +75,23 @@ contract('Uniswap Liquidity', function([_, user]) {
     });
 
     it('normal', async function() {
-      const value = ether('0.1');
+      const value = ether('0.0001');
       const to = this.hUniswap.address;
       const data = abi.simpleEncode(
         'addLiquidity(uint256,address,uint256):(uint256)',
         value,
         tokenAddress,
-        ether('100')
+        ether('500')
       );
       const deadline = (await latest()).add(new BN('100'));
       await this.token.approve(this.swap.address, ether('1000'), {
         from: user,
       });
       const result = await this.swap.addLiquidity.call(
-        new BN('1'),
-        ether('100'),
+        value,
+        ether('500'),
         deadline,
-        { from: user, value: ether('0.1') }
+        { from: user, value: value }
       );
       const receipt = await this.proxy.execMock(to, data, {
         from: user,
@@ -111,21 +111,21 @@ contract('Uniswap Liquidity', function([_, user]) {
     });
 
     it('max amount', async function() {
-      const value = ether('0.1');
+      const value = ether('0.00001');
       const to = this.hUniswap.address;
       const data = abi.simpleEncode(
         'addLiquidity(uint256,address,uint256):(uint256)',
         MAX_UINT256,
         tokenAddress,
-        ether('100')
+        ether('500')
       );
       const deadline = (await latest()).add(new BN('100'));
       await this.token.approve(this.swap.address, ether('1000'), {
         from: user,
       });
       const result = await this.swap.addLiquidity.call(
-        new BN('1'),
-        ether('100'),
+        value,
+        ether('500'),
         deadline,
         { from: user, value: value }
       );
