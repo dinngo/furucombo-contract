@@ -76,7 +76,7 @@ contract HCurveDao is HandlerBase {
         address user = _getSender();
 
         // if amount == uint256(-1) return balance of Proxy
-        _value = _getProxyBalance(token, _value);
+        _value = _getBalance(token, _value);
         IERC20(token).safeApprove(gaugeAddress, _value);
         try gauge.deposit(_value, user) {} catch Error(string memory reason) {
             _revertMsg("deposit", reason);

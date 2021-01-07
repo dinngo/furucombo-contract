@@ -62,7 +62,7 @@ contract HAaveProtocol is HandlerBase, FlashLoanReceiverBase {
         address aToken = _getAToken(_reserve);
 
         if (_reserve == ETHADDRESS) {
-            _amount = _getProxyBalance(address(0), _amount);
+            _amount = _getBalance(address(0), _amount);
             try
                 lendingPool.deposit{value: _amount}(
                     _reserve,
@@ -77,7 +77,7 @@ contract HAaveProtocol is HandlerBase, FlashLoanReceiverBase {
         } else {
             address lendingPoolCore =
                 ILendingPoolAddressesProvider(PROVIDER).getLendingPoolCore();
-            _amount = _getProxyBalance(_reserve, _amount);
+            _amount = _getBalance(_reserve, _amount);
             IERC20(_reserve).safeApprove(lendingPoolCore, _amount);
             try
                 lendingPool.deposit(_reserve, _amount, REFERRAL_CODE)
@@ -99,7 +99,7 @@ contract HAaveProtocol is HandlerBase, FlashLoanReceiverBase {
     {
         // Get proxy balance before redeem
         uint256 beforeUnderlyingAssetAmount;
-        _amount = _getProxyBalance(_aToken, _amount);
+        _amount = _getBalance(_aToken, _amount);
         address underlyingAsset = IAToken(_aToken).underlyingAssetAddress();
         if (underlyingAsset != ETHADDRESS) {
             beforeUnderlyingAssetAmount = IERC20(underlyingAsset).balanceOf(

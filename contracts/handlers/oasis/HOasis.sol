@@ -26,7 +26,7 @@ contract HOasis is HandlerBase {
     ) external payable returns (uint256 buyAmt) {
         IOasisDirectProxy oasis = IOasisDirectProxy(OASIS_DIRECT_PROXY);
         // if amount == uint256(-1) return balance of Proxy
-        payAmt = _getProxyBalance(payToken, payAmt);
+        payAmt = _getBalance(payToken, payAmt);
         IERC20(payToken).safeApprove(address(oasis), payAmt);
         try
             oasis.sellAllAmount(
@@ -57,7 +57,7 @@ contract HOasis is HandlerBase {
     ) external payable returns (uint256 buyAmt) {
         IOasisDirectProxy oasis = IOasisDirectProxy(OASIS_DIRECT_PROXY);
         // if amount == uint256(-1) return balance of Proxy
-        value = _getProxyBalance(address(0), value);
+        value = _getBalance(address(0), value);
         try
             oasis.sellAllAmountPayEth{value: value}(
                 MAKER_OTC,
@@ -85,7 +85,7 @@ contract HOasis is HandlerBase {
     ) external payable returns (uint256 wethAmt) {
         IOasisDirectProxy oasis = IOasisDirectProxy(OASIS_DIRECT_PROXY);
         // if amount == uint256(-1) return balance of Proxy
-        payAmt = _getProxyBalance(payToken, payAmt);
+        payAmt = _getBalance(payToken, payAmt);
         IERC20(payToken).safeApprove(address(oasis), payAmt);
         try
             oasis.sellAllAmountBuyEth(

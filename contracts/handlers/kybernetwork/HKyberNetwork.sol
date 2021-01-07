@@ -24,7 +24,7 @@ contract HKyberNetwork is HandlerBase {
         uint256 minRate
     ) external payable returns (uint256 destAmount) {
         IKyberNetworkProxy kyber = IKyberNetworkProxy(KYBERNETWORK_PROXY);
-        value = _getProxyBalance(address(0), value);
+        value = _getBalance(ETH_TOKEN_ADDRESS, value);
         try
             kyber.swapEtherToToken.value(value)(IERC20(token), minRate)
         returns (uint256 amount) {
@@ -45,7 +45,7 @@ contract HKyberNetwork is HandlerBase {
         uint256 minRate
     ) external payable returns (uint256 destAmount) {
         IKyberNetworkProxy kyber = IKyberNetworkProxy(KYBERNETWORK_PROXY);
-        tokenQty = _getProxyBalance(token, tokenQty);
+        tokenQty = _getBalance(token, tokenQty);
         IERC20(token).safeApprove(address(kyber), tokenQty);
         try kyber.swapTokenToEther(IERC20(token), tokenQty, minRate) returns (
             uint256 amount
@@ -66,7 +66,7 @@ contract HKyberNetwork is HandlerBase {
         uint256 minRate
     ) external payable returns (uint256 destAmount) {
         IKyberNetworkProxy kyber = IKyberNetworkProxy(KYBERNETWORK_PROXY);
-        srcQty = _getProxyBalance(srcToken, srcQty);
+        srcQty = _getBalance(srcToken, srcQty);
         IERC20(srcToken).safeApprove(address(kyber), srcQty);
         try
             kyber.swapTokenToToken(

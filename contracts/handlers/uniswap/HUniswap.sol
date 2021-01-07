@@ -22,7 +22,7 @@ contract HUniswap is HandlerBase {
         uint256 maxTokens
     ) external payable returns (uint256 liquidity) {
         // if amount == uint256(-1) return balance of Proxy
-        value = _getProxyBalance(address(0), value);
+        value = _getBalance(address(0), value);
 
         IUniswapExchange uniswap = _getExchange(token);
         IERC20(token).safeApprove(address(uniswap), maxTokens);
@@ -50,7 +50,7 @@ contract HUniswap is HandlerBase {
         IUniswapExchange uniswap = _getExchange(token);
 
         // if amount == uint256(-1) return balance of Proxy
-        amount = _getProxyBalance(address(uniswap), amount);
+        amount = _getBalance(address(uniswap), amount);
         IERC20(address(uniswap)).safeApprove(address(uniswap), amount);
         try
             uniswap.removeLiquidity(amount, minEth, minTokens, now + 1)
@@ -74,7 +74,7 @@ contract HUniswap is HandlerBase {
         uint256 minTokens
     ) external payable returns (uint256 tokensBought) {
         // if amount == uint256(-1) return balance of Proxy
-        value = _getProxyBalance(token, value);
+        value = _getBalance(token, value);
 
         IUniswapExchange uniswap = _getExchange(token);
         try uniswap.ethToTokenSwapInput{value: value}(minTokens, now) returns (
@@ -117,7 +117,7 @@ contract HUniswap is HandlerBase {
         uint256 minEth
     ) external payable returns (uint256 ethBought) {
         // if amount == uint256(-1) return balance of Proxy
-        tokensSold = _getProxyBalance(token, tokensSold);
+        tokensSold = _getBalance(token, tokensSold);
 
         IUniswapExchange uniswap = _getExchange(token);
         IERC20(token).safeApprove(address(uniswap), tokensSold);
@@ -159,7 +159,7 @@ contract HUniswap is HandlerBase {
         address tokenAddr
     ) external payable returns (uint256 tokensBought) {
         // if amount == uint256(-1) return balance of Proxy
-        tokensSold = _getProxyBalance(token, tokensSold);
+        tokensSold = _getBalance(token, tokensSold);
         IUniswapExchange uniswap = _getExchange(token);
         IERC20(token).safeApprove(address(uniswap), tokensSold);
         try

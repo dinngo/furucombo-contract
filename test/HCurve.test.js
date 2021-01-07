@@ -223,7 +223,6 @@ contract('Curve', function([_, user]) {
           mulPercent(answer, new BN('100').sub(slippage))
         );
 
-        console.log(this.token0.transfer);
         await this.token0.transfer(this.proxy.address, value, {
           from: providerAddress,
         });

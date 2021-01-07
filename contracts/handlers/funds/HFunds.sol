@@ -35,12 +35,12 @@ contract HFunds is HandlerBase {
         uint256 amount,
         address receiver
     ) external payable {
-        amount = _getProxyBalance(token, amount);
+        amount = _getBalance(token, amount);
         IERC20(token).safeTransfer(receiver, amount);
     }
 
     function send(uint256 amount, address payable receiver) external payable {
-        amount = _getProxyBalance(address(0), amount);
+        amount = _getBalance(address(0), amount);
         receiver.transfer(amount);
     }
 

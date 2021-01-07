@@ -26,9 +26,9 @@ contract HBalancerExchange is HandlerBase {
         uint256 minTotalAmountOut
     ) external payable returns (uint256 totalAmountOut) {
         IExchangeProxy balancer = IExchangeProxy(EXCHANGE_PROXY);
+        totalAmountIn = _getBalance(tokenIn, totalAmountIn);
 
         if (tokenIn == ETH_ADDRESS) {
-            totalAmountIn = _getProxyBalance(address(0), totalAmountIn);
             try
                 balancer.batchSwapExactIn{value: totalAmountIn}(
                     swaps,
@@ -45,7 +45,6 @@ contract HBalancerExchange is HandlerBase {
                 _revertMsg("batchSwapExactIn");
             }
         } else {
-            totalAmountIn = _getProxyBalance(tokenIn, totalAmountIn);
             IERC20(tokenIn).safeApprove(EXCHANGE_PROXY, totalAmountIn);
             try
                 balancer.batchSwapExactIn(
@@ -121,9 +120,8 @@ contract HBalancerExchange is HandlerBase {
         uint256 minTotalAmountOut
     ) external payable returns (uint256 totalAmountOut) {
         IExchangeProxy balancer = IExchangeProxy(EXCHANGE_PROXY);
-
+        totalAmountIn = _getBalance(tokenIn, totalAmountIn);
         if (tokenIn == ETH_ADDRESS) {
-            totalAmountIn = _getProxyBalance(address(0), totalAmountIn);
             try
                 balancer.multihopBatchSwapExactIn{value: totalAmountIn}(
                     swapSequences,
@@ -140,7 +138,6 @@ contract HBalancerExchange is HandlerBase {
                 _revertMsg("multihopBatchSwapExactIn");
             }
         } else {
-            totalAmountIn = _getProxyBalance(tokenIn, totalAmountIn);
             IERC20(tokenIn).safeApprove(EXCHANGE_PROXY, totalAmountIn);
             try
                 balancer.multihopBatchSwapExactIn(
@@ -217,8 +214,8 @@ contract HBalancerExchange is HandlerBase {
     ) external payable returns (uint256 totalAmountOut) {
         IExchangeProxy balancer = IExchangeProxy(EXCHANGE_PROXY);
 
+        totalAmountIn = _getBalance(tokenIn, totalAmountIn);
         if (tokenIn == ETH_ADDRESS) {
-            totalAmountIn = _getProxyBalance(address(0), totalAmountIn);
             try
                 balancer.smartSwapExactIn{value: totalAmountIn}(
                     tokenIn,
@@ -235,7 +232,6 @@ contract HBalancerExchange is HandlerBase {
                 _revertMsg("smartSwapExactIn");
             }
         } else {
-            totalAmountIn = _getProxyBalance(tokenIn, totalAmountIn);
             IERC20(tokenIn).safeApprove(EXCHANGE_PROXY, totalAmountIn);
             try
                 balancer.smartSwapExactIn(

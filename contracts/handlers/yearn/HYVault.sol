@@ -24,7 +24,7 @@ contract HYVault is HandlerBase {
 
         address token = yVault.token();
         // if amount == uint256(-1) return balance of Proxy
-        _amount = _getProxyBalance(token, _amount);
+        _amount = _getBalance(token, _amount);
         IERC20(token).safeApprove(address(yVault), _amount);
         try yVault.deposit(_amount) {} catch Error(string memory reason) {
             _revertMsg("deposit", reason);
@@ -49,7 +49,7 @@ contract HYVault is HandlerBase {
         uint256 beforeYTokenBalance =
             IERC20(address(yVault)).balanceOf(address(this));
         // if amount == uint256(-1) return balance of Proxy
-        value = _getProxyBalance(address(0), value);
+        value = _getBalance(address(0), value);
         try yVault.depositETH{value: value}() {} catch Error(
             string memory reason
         ) {
@@ -73,7 +73,7 @@ contract HYVault is HandlerBase {
         address token = yVault.token();
         uint256 beforeTokenBalance = IERC20(token).balanceOf(address(this));
         // if amount == uint256(-1) return balance of Proxy
-        _shares = _getProxyBalance(vault, _shares);
+        _shares = _getBalance(vault, _shares);
 
         try yVault.withdraw(_shares) {} catch Error(string memory reason) {
             _revertMsg("withdraw", reason);
@@ -94,7 +94,7 @@ contract HYVault is HandlerBase {
         uint256 beforeETHBalance = address(this).balance;
         IYVault yVault = IYVault(vault);
         // if amount == uint256(-1) return balance of Proxy
-        _shares = _getProxyBalance(vault, _shares);
+        _shares = _getBalance(vault, _shares);
         try yVault.withdrawETH(_shares) {} catch Error(string memory reason) {
             _revertMsg("withdrawETH", reason);
         } catch {

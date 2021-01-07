@@ -77,7 +77,7 @@ abstract contract HandlerBase is Storage, Config {
         }
     }
 
-    function _getProxyBalance(address token, uint256 amount)
+    function _getBalance(address token, uint256 amount)
         internal
         view
         returns (uint256)
@@ -86,10 +86,14 @@ abstract contract HandlerBase is Storage, Config {
             return amount;
         }
 
-        // TODO: check token == 0xeeee.eeeee case?
-        if (token == address(0)) {
+        // ETH case
+        if (
+            token == address(0) ||
+            token == address(0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE)
+        ) {
             return address(this).balance;
         }
+        // ERC20 token case
         return IERC20(token).balanceOf(address(this));
     }
 }
