@@ -61,218 +61,266 @@ contract('Oasis Swap', function([_, user, someone]) {
     await evmRevert(id);
   });
 
-  // describe('Ether to Token', function() {
-  //   const tokenAddress = BAT_TOKEN;
-  //   const oasisAddress = OASIS_DIRECT_PROXY;
+  describe('Ether to Token', function() {
+    const tokenAddress = BAT_TOKEN;
+    const oasisAddress = OASIS_DIRECT_PROXY;
 
-  //   let balanceUser;
-  //   let balanceProxy;
-  //   let tokenUser;
+    let balanceUser;
+    let balanceProxy;
+    let tokenUser;
 
-  //   before(async function() {
-  //     this.token = await IToken.at(tokenAddress);
-  //     this.swap = await IOasisDirectProxy.at(oasisAddress);
-  //   });
+    before(async function() {
+      this.token = await IToken.at(tokenAddress);
+      this.swap = await IOasisDirectProxy.at(oasisAddress);
+    });
 
-  //   beforeEach(async function() {
-  //     balanceUser = await tracker(user);
-  //     balanceProxy = await tracker(this.proxy.address);
-  //     tokenUser = await this.token.balanceOf.call(user);
-  //   });
+    beforeEach(async function() {
+      balanceUser = await tracker(user);
+      balanceProxy = await tracker(this.proxy.address);
+      tokenUser = await this.token.balanceOf.call(user);
+    });
 
-  //   describe('Exact input', function() {
-  //     it('normal', async function() {
-  //       const value = ether('1');
-  //       const to = this.hOasis.address;
-  //       const oasisAmount = await this.otc.getBuyAmount.call(
-  //         tokenAddress,
-  //         WETH_TOKEN,
-  //         value,
-  //         { from: someone }
-  //       );
-  //       const data = abi.simpleEncode(
-  //         'sellAllAmountPayEth(uint256,address,address,uint256):(uint256)',
-  //         value,
-  //         WETH_TOKEN,
-  //         tokenAddress,
-  //         mulPercent(oasisAmount, new BN('100').sub(slippage))
-  //       );
-  //       // TODO: get exact amount using same function call
-  //       // or find out why inaccuracy exists
-  //       const receipt = await this.proxy.execMock(to, data, {
-  //         from: user,
-  //         value: value,
-  //       });
+    describe('Exact input', function() {
+      it('normal', async function() {
+        const value = ether('1');
+        const to = this.hOasis.address;
+        const oasisAmount = await this.otc.getBuyAmount.call(
+          tokenAddress,
+          WETH_TOKEN,
+          value,
+          { from: someone }
+        );
+        const data = abi.simpleEncode(
+          'sellAllAmountPayEth(uint256,address,address,uint256):(uint256)',
+          value,
+          WETH_TOKEN,
+          tokenAddress,
+          mulPercent(oasisAmount, new BN('100').sub(slippage))
+        );
+        // TODO: get exact amount using same function call
+        // or find out why inaccuracy exists
+        const receipt = await this.proxy.execMock(to, data, {
+          from: user,
+          value: value,
+        });
 
-  //       const tokenUserEnd = await this.token.balanceOf.call(user);
-  //       const handlerReturn = utils.toBN(
-  //         getHandlerReturn(receipt, ['uint256'])[0]
-  //       );
-  //       expect(handlerReturn).to.be.bignumber.eq(tokenUserEnd.sub(tokenUser));
+        const tokenUserEnd = await this.token.balanceOf.call(user);
+        const handlerReturn = utils.toBN(
+          getHandlerReturn(receipt, ['uint256'])[0]
+        );
+        expect(handlerReturn).to.be.bignumber.eq(tokenUserEnd.sub(tokenUser));
 
-  //       // TODO: modified the expect below when using exact amount
-  //       expect(await this.token.balanceOf.call(user)).to.be.bignumber.gt(
-  //         tokenUser.add(getBuyBuffer(oasisAmount))
-  //       );
-  //       expect(
-  //         await this.token.balanceOf.call(this.proxy.address)
-  //       ).to.be.bignumber.eq(ether('0'));
-  //       expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
-  //       expect(await balanceUser.delta()).to.be.bignumber.eq(
-  //         ether('0')
-  //           .sub(value)
-  //           .sub(new BN(receipt.receipt.gasUsed))
-  //       );
-  //       profileGas(receipt);
-  //     });
+        //TODO: modified the expect below when using exact amount
+        expect(await this.token.balanceOf.call(user)).to.be.bignumber.gt(
+          tokenUser.add(getBuyBuffer(oasisAmount))
+        );
+        expect(
+          await this.token.balanceOf.call(this.proxy.address)
+        ).to.be.bignumber.eq(ether('0'));
+        expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
+        expect(await balanceUser.delta()).to.be.bignumber.eq(
+          ether('0')
+            .sub(value)
+            .sub(new BN(receipt.receipt.gasUsed))
+        );
+        profileGas(receipt);
+      });
 
-  //     it('max amount', async function() {
-  //       const value = ether('1');
-  //       const to = this.hOasis.address;
-  //       const oasisAmount = await this.otc.getBuyAmount.call(
-  //         tokenAddress,
-  //         WETH_TOKEN,
-  //         value,
-  //         { from: someone }
-  //       );
-  //       const data = abi.simpleEncode(
-  //         'sellAllAmountPayEth(uint256,address,address,uint256):(uint256)',
-  //         MAX_UINT256,
-  //         WETH_TOKEN,
-  //         tokenAddress,
-  //         mulPercent(oasisAmount, new BN('100').sub(slippage))
-  //       );
-  //       // TODO: get exact amount using same function call
-  //       // or find out why inaccuracy exists
-  //       const receipt = await this.proxy.execMock(to, data, {
-  //         from: user,
-  //         value: value,
-  //       });
+      it('max amount', async function() {
+        const value = ether('1');
+        const to = this.hOasis.address;
+        const oasisAmount = await this.otc.getBuyAmount.call(
+          tokenAddress,
+          WETH_TOKEN,
+          value,
+          { from: someone }
+        );
+        const data = abi.simpleEncode(
+          'sellAllAmountPayEth(uint256,address,address,uint256):(uint256)',
+          MAX_UINT256,
+          WETH_TOKEN,
+          tokenAddress,
+          mulPercent(oasisAmount, new BN('100').sub(slippage))
+        );
+        // TODO: get exact amount using same function call
+        // or find out why inaccuracy exists
+        const receipt = await this.proxy.execMock(to, data, {
+          from: user,
+          value: value,
+        });
 
-  //       const tokenUserEnd = await this.token.balanceOf.call(user);
-  //       const handlerReturn = utils.toBN(
-  //         getHandlerReturn(receipt, ['uint256'])[0]
-  //       );
-  //       expect(handlerReturn).to.be.bignumber.eq(tokenUserEnd.sub(tokenUser));
+        const tokenUserEnd = await this.token.balanceOf.call(user);
+        const handlerReturn = utils.toBN(
+          getHandlerReturn(receipt, ['uint256'])[0]
+        );
+        expect(handlerReturn).to.be.bignumber.eq(tokenUserEnd.sub(tokenUser));
 
-  //       // TODO: modified the expect below when using exact amount
-  //       expect(await this.token.balanceOf.call(user)).to.be.bignumber.gt(
-  //         tokenUser.add(getBuyBuffer(oasisAmount))
-  //       );
-  //       expect(
-  //         await this.token.balanceOf.call(this.proxy.address)
-  //       ).to.be.bignumber.eq(ether('0'));
-  //       expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
-  //       expect(await balanceUser.delta()).to.be.bignumber.eq(
-  //         ether('0')
-  //           .sub(value)
-  //           .sub(new BN(receipt.receipt.gasUsed))
-  //       );
-  //       profileGas(receipt);
-  //     });
+        // TODO: modified the expect below when using exact amount
+        expect(await this.token.balanceOf.call(user)).to.be.bignumber.gt(
+          tokenUser.add(getBuyBuffer(oasisAmount))
+        );
+        expect(
+          await this.token.balanceOf.call(this.proxy.address)
+        ).to.be.bignumber.eq(ether('0'));
+        expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
+        expect(await balanceUser.delta()).to.be.bignumber.eq(
+          ether('0')
+            .sub(value)
+            .sub(new BN(receipt.receipt.gasUsed))
+        );
+        profileGas(receipt);
+      });
 
-  //     it('min amount too high', async function() {
-  //       const value = ether('1');
-  //       const to = this.hOasis.address;
-  //       // TODO: get exact amount using same function call
-  //       // or find out why inaccuracy exists
-  //       const oasisAmount = await this.otc.getBuyAmount.call(
-  //         tokenAddress,
-  //         WETH_TOKEN,
-  //         value,
-  //         { from: someone }
-  //       );
-  //       const data = abi.simpleEncode(
-  //         'sellAllAmountPayEth(uint256,address,address,uint256):(uint256)',
-  //         value,
-  //         WETH_TOKEN,
-  //         tokenAddress,
-  //         get110x(oasisAmount)
-  //       );
-  //       await expectRevert(
-  //         this.proxy.execMock(to, data, { from: user, value: value }),
-  //         'HOasis_sellAllAmountPayEth: Unspecified'
-  //       );
-  //       expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
-  //         tokenUser
-  //       );
-  //       expect(
-  //         await this.token.balanceOf.call(this.proxy.address)
-  //       ).to.be.bignumber.eq(ether('0'));
-  //       expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
-  //     });
-  //   });
+      it('min amount too high', async function() {
+        const value = ether('1');
+        const to = this.hOasis.address;
+        // TODO: get exact amount using same function call
+        // or find out why inaccuracy exists
+        const oasisAmount = await this.otc.getBuyAmount.call(
+          tokenAddress,
+          WETH_TOKEN,
+          value,
+          { from: someone }
+        );
+        const data = abi.simpleEncode(
+          'sellAllAmountPayEth(uint256,address,address,uint256):(uint256)',
+          value,
+          WETH_TOKEN,
+          tokenAddress,
+          get110x(oasisAmount)
+        );
+        await expectRevert(
+          this.proxy.execMock(to, data, { from: user, value: value }),
+          'HOasis_sellAllAmountPayEth: Unspecified'
+        );
+        expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
+          tokenUser
+        );
+        expect(
+          await this.token.balanceOf.call(this.proxy.address)
+        ).to.be.bignumber.eq(ether('0'));
+        expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
+      });
+    });
 
-  //   describe('Exact output', function() {
-  //     it('normal', async function() {
-  //       const value = ether('1');
-  //       const buyAmt = ether('100');
-  //       const to = this.hOasis.address;
-  //       const oasisAmount = await this.otc.getPayAmount.call(
-  //         WETH_TOKEN,
-  //         tokenAddress,
-  //         buyAmt,
-  //         { from: someone }
-  //       );
-  //       const data = abi.simpleEncode(
-  //         'buyAllAmountPayEth(uint256,address,uint256,address):(uint256)',
-  //         mulPercent(oasisAmount, new BN('100').add(slippage)),
-  //         tokenAddress,
-  //         buyAmt,
-  //         WETH_TOKEN
-  //       );
-  //       // TODO: get exact amount using same function call
-  //       // or find out why inaccuracy exists
-  //       const receipt = await this.proxy.execMock(to, data, {
-  //         from: user,
-  //         value: value,
-  //       });
+    describe('Exact output', function() {
+      it('normal', async function() {
+        const value = ether('1');
+        const buyAmt = ether('100');
+        const to = this.hOasis.address;
+        const oasisAmount = await this.otc.getPayAmount.call(
+          WETH_TOKEN,
+          tokenAddress,
+          buyAmt,
+          { from: someone }
+        );
+        const data = abi.simpleEncode(
+          'buyAllAmountPayEth(uint256,address,uint256,address):(uint256)',
+          mulPercent(oasisAmount, new BN('100').add(slippage)),
+          tokenAddress,
+          buyAmt,
+          WETH_TOKEN
+        );
+        // TODO: get exact amount using same function call
+        // or find out why inaccuracy exists
+        const receipt = await this.proxy.execMock(to, data, {
+          from: user,
+          value: value,
+        });
 
-  //       const balanceUserDelta = await balanceUser.delta();
-  //       const handlerReturn = utils.toBN(
-  //         getHandlerReturn(receipt, ['uint256'])[0]
-  //       );
-  //       expect(handlerReturn).to.be.bignumber.eq(
-  //         balanceUserDelta.add(new BN(receipt.receipt.gasUsed)).neg()
-  //       );
+        const balanceUserDelta = await balanceUser.delta();
+        const handlerReturn = utils.toBN(
+          getHandlerReturn(receipt, ['uint256'])[0]
+        );
+        expect(handlerReturn).to.be.bignumber.eq(
+          balanceUserDelta.add(new BN(receipt.receipt.gasUsed)).neg()
+        );
 
-  //       expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
-  //         tokenUser.add(buyAmt)
-  //       );
-  //       expect(
-  //         await this.token.balanceOf.call(this.proxy.address)
-  //       ).to.be.bignumber.eq(ether('0'));
-  //       expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
-  //       // TODO: modified the expect below when using exact amount
-  //       expect(balanceUserDelta).to.be.bignumber.gt(
-  //         ether('0')
-  //           .sub(getPayBuffer(oasisAmount))
-  //           .sub(new BN(receipt.receipt.gasUsed))
-  //       );
-  //       profileGas(receipt);
-  //     });
+        expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
+          tokenUser.add(buyAmt)
+        );
+        expect(
+          await this.token.balanceOf.call(this.proxy.address)
+        ).to.be.bignumber.eq(ether('0'));
+        expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
+        // TODO: modified the expect below when using exact amount
+        expect(balanceUserDelta).to.be.bignumber.gt(
+          ether('0')
+            .sub(getPayBuffer(oasisAmount))
+            .sub(new BN(receipt.receipt.gasUsed))
+        );
+        profileGas(receipt);
+      });
 
-  //     it('insufficient ether', async function() {
-  //       const value = ether('0.001');
-  //       const buyAmt = ether('100');
-  //       const to = this.hOasis.address;
-  //       const data = abi.simpleEncode(
-  //         'buyAllAmountPayEth(uint256,address,uint256,address):(uint256)',
-  //         value,
-  //         tokenAddress,
-  //         buyAmt,
-  //         WETH_TOKEN
-  //       );
-  //       await expectRevert(
-  //         this.proxy.execMock(to, data, {
-  //           from: user,
-  //           value: value,
-  //         }),
-  //         'HOasis_buyAllAmountPayEth: Unspecified'
-  //       );
-  //     });
-  //   });
-  // });
+      it('max amount', async function() {
+        const value = ether('1');
+        const buyAmt = ether('100');
+        const to = this.hOasis.address;
+        const oasisAmount = await this.otc.getPayAmount.call(
+          WETH_TOKEN,
+          tokenAddress,
+          buyAmt,
+          { from: someone }
+        );
+        const data = abi.simpleEncode(
+          'buyAllAmountPayEth(uint256,address,uint256,address):(uint256)',
+          MAX_UINT256,
+          tokenAddress,
+          buyAmt,
+          WETH_TOKEN
+        );
+        // TODO: get exact amount using same function call
+        // or find out why inaccuracy exists
+        const receipt = await this.proxy.execMock(to, data, {
+          from: user,
+          value: value,
+        });
+
+        const balanceUserDelta = await balanceUser.delta();
+        const handlerReturn = utils.toBN(
+          getHandlerReturn(receipt, ['uint256'])[0]
+        );
+        expect(handlerReturn).to.be.bignumber.eq(
+          balanceUserDelta.add(new BN(receipt.receipt.gasUsed)).neg()
+        );
+
+        expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
+          tokenUser.add(buyAmt)
+        );
+        expect(
+          await this.token.balanceOf.call(this.proxy.address)
+        ).to.be.bignumber.eq(ether('0'));
+        expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
+        // TODO: modified the expect below when using exact amount
+        expect(balanceUserDelta).to.be.bignumber.gt(
+          ether('0')
+            .sub(getPayBuffer(oasisAmount))
+            .sub(new BN(receipt.receipt.gasUsed))
+        );
+        profileGas(receipt);
+      });
+
+      it('insufficient ether', async function() {
+        const value = ether('0.001');
+        const buyAmt = ether('100');
+        const to = this.hOasis.address;
+        const data = abi.simpleEncode(
+          'buyAllAmountPayEth(uint256,address,uint256,address):(uint256)',
+          value,
+          tokenAddress,
+          buyAmt,
+          WETH_TOKEN
+        );
+        await expectRevert(
+          this.proxy.execMock(to, data, {
+            from: user,
+            value: value,
+          }),
+          'HOasis_buyAllAmountPayEth: Unspecified'
+        );
+      });
+    });
+  });
 
   describe('Token to Ether', function() {
     const tokenAddress = DAI_TOKEN;
@@ -450,6 +498,62 @@ contract('Oasis Swap', function([_, user, someone]) {
           buyAmt,
           tokenAddress,
           mulPercent(result, new BN('100').add(slippage))
+        );
+        await this.token.transfer(this.proxy.address, value, {
+          from: providerAddress,
+        });
+        await this.proxy.updateTokenMock(this.token.address);
+        await this.token.transfer(someone, value, { from: providerAddress });
+        await this.token.approve(this.swap.address, value, {
+          from: someone,
+        });
+
+        // TODO: get exact amount using same function call
+        // or find out why inaccuracy exists
+        const receipt = await this.proxy.execMock(to, data, {
+          from: user,
+        });
+
+        const tokenUserEnd = await this.token.balanceOf.call(user);
+        const handlerReturn = utils.toBN(
+          getHandlerReturn(receipt, ['uint256'])[0]
+        );
+        expect(handlerReturn).to.be.bignumber.eq(
+          tokenUserEnd
+            .sub(value)
+            .sub(tokenUser)
+            .neg()
+        );
+        // TODO: modified the expect below when using exact amount
+        expect(await this.token.balanceOf.call(user)).to.be.bignumber.gt(
+          tokenUser.add(value).sub(getPayBuffer(result))
+        );
+        expect(
+          await this.token.balanceOf.call(this.proxy.address)
+        ).to.be.bignumber.eq(ether('0'));
+        expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
+        expect(await balanceUser.delta()).to.be.bignumber.eq(
+          buyAmt.sub(new BN(receipt.receipt.gasUsed))
+        );
+        profileGas(receipt);
+      });
+
+      it('max amount', async function() {
+        const value = ether('2000');
+        const buyAmt = ether('0.1');
+        const to = this.hOasis.address;
+        const result = await this.otc.getPayAmount.call(
+          tokenAddress,
+          WETH_TOKEN,
+          buyAmt,
+          { from: someone }
+        );
+        const data = abi.simpleEncode(
+          'buyAllAmountBuyEth(address,uint256,address,uint256):(uint256)',
+          WETH_TOKEN,
+          buyAmt,
+          tokenAddress,
+          MAX_UINT256
         );
         await this.token.transfer(this.proxy.address, value, {
           from: providerAddress,
@@ -697,6 +801,65 @@ contract('Oasis Swap', function([_, user, someone]) {
           buyAmt,
           token0Address,
           mulPercent(result, new BN('100').add(slippage))
+        );
+        await this.token0.transfer(this.proxy.address, value, {
+          from: providerAddress,
+        });
+        await this.proxy.updateTokenMock(this.token0.address);
+        await this.token0.transfer(someone, value, {
+          from: providerAddress,
+        });
+        await this.token0.approve(this.swap.address, value, {
+          from: someone,
+        });
+
+        // TODO: get exact amount using same function call
+        // or find out why inaccuracy exists
+        const receipt = await this.proxy.execMock(to, data, { from: user });
+
+        const token0UserEnd = await this.token0.balanceOf.call(user);
+        const handlerReturn = utils.toBN(
+          getHandlerReturn(receipt, ['uint256'])[0]
+        );
+        expect(handlerReturn).to.be.bignumber.eq(
+          token0UserEnd
+            .sub(value)
+            .sub(token0User)
+            .neg()
+        );
+
+        // TODO: modified the expect below when using exact amount
+        expect(await this.token0.balanceOf.call(user)).to.be.bignumber.gt(
+          token0User.add(value).sub(getPayBuffer(result))
+        );
+        expect(
+          await this.token0.balanceOf.call(this.proxy.address)
+        ).to.be.bignumber.eq(ether('0'));
+        expect(
+          await this.token1.balanceOf.call(this.proxy.address)
+        ).to.be.bignumber.eq(ether('0'));
+        expect(await this.token1.balanceOf.call(user)).to.be.bignumber.eq(
+          token1User.add(buyAmt)
+        );
+        profileGas(receipt);
+      });
+
+      it('max amount', async function() {
+        const value = ether('100');
+        const buyAmt = new BN('10').mul(new BN(1000000));
+        const to = this.hOasis.address;
+        const result = await this.otc.getPayAmount.call(
+          token0Address,
+          token1Address,
+          buyAmt,
+          { from: someone }
+        );
+        const data = abi.simpleEncode(
+          'buyAllAmount(address,uint256,address,uint256):(uint256)',
+          token1Address,
+          buyAmt,
+          token0Address,
+          MAX_UINT256
         );
         await this.token0.transfer(this.proxy.address, value, {
           from: providerAddress,

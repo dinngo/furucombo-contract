@@ -253,6 +253,9 @@ contract HUniswapV2 is HandlerBase {
         // Get uniswapV2 router
         IUniswapV2Router02 router = IUniswapV2Router02(UNISWAPV2_ROUTER);
 
+        // if amount == uint256(-1) return balance of Proxy
+        value = _getBalance(address(0), value);
+
         try
             router.swapETHForExactTokens{value: value}(
                 amountOut,
@@ -318,6 +321,9 @@ contract HUniswapV2 is HandlerBase {
 
         // Get uniswapV2 router
         IUniswapV2Router02 router = IUniswapV2Router02(UNISWAPV2_ROUTER);
+
+        // if amount == uint256(-1) return balance of Proxy
+        amountInMax = _getBalance(tokenIn, amountInMax);
 
         // Approve token
         IERC20(tokenIn).safeApprove(UNISWAPV2_ROUTER, amountInMax);
@@ -393,6 +399,9 @@ contract HUniswapV2 is HandlerBase {
 
         // Get uniswapV2 router
         IUniswapV2Router02 router = IUniswapV2Router02(UNISWAPV2_ROUTER);
+
+        // if amount == uint256(-1) return balance of Proxy
+        amountInMax = _getBalance(tokenIn, amountInMax);
 
         // Approve token
         IERC20(tokenIn).safeApprove(UNISWAPV2_ROUTER, amountInMax);

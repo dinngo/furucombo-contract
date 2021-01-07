@@ -74,7 +74,7 @@ contract HUniswap is HandlerBase {
         uint256 minTokens
     ) external payable returns (uint256 tokensBought) {
         // if amount == uint256(-1) return balance of Proxy
-        value = _getBalance(token, value);
+        value = _getBalance(address(0), value);
 
         IUniswapExchange uniswap = _getExchange(token);
         try uniswap.ethToTokenSwapInput{value: value}(minTokens, now) returns (
@@ -97,6 +97,9 @@ contract HUniswap is HandlerBase {
         uint256 tokensBought
     ) external payable returns (uint256 ethSold) {
         IUniswapExchange uniswap = _getExchange(token);
+        // if amount == uint256(-1) return balance of Proxy
+        value = _getBalance(address(0), value);
+
         try
             uniswap.ethToTokenSwapOutput{value: value}(tokensBought, now)
         returns (uint256 ret) {
@@ -139,6 +142,9 @@ contract HUniswap is HandlerBase {
         uint256 maxTokens
     ) external payable returns (uint256 tokensSold) {
         IUniswapExchange uniswap = _getExchange(token);
+        // if amount == uint256(-1) return balance of Proxy
+        maxTokens = _getBalance(token, maxTokens);
+
         IERC20(token).safeApprove(address(uniswap), maxTokens);
         try uniswap.tokenToEthSwapOutput(ethBought, maxTokens, now) returns (
             uint256 ret
@@ -190,6 +196,9 @@ contract HUniswap is HandlerBase {
         address tokenAddr
     ) external payable returns (uint256 tokensSold) {
         IUniswapExchange uniswap = _getExchange(token);
+        // if amount == uint256(-1) return balance of Proxy
+        maxTokensSold = _getBalance(token, maxTokensSold);
+
         IERC20(token).safeApprove(address(uniswap), maxTokensSold);
         try
             uniswap.tokenToTokenSwapOutput(
