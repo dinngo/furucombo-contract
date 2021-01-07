@@ -523,7 +523,7 @@ contract('Aave V2', function([_, user]) {
       await this.proxy.updateTokenMock(this.mockToken.address);
       await expectRevert(
         this.proxy.execMock(to, data, { from: user }),
-        'HAaveProtocolV2_General: aToken should not be zero address'
+        'HAaveProtocolV2_repay: Unspecified'
       );
     });
 
@@ -734,7 +734,7 @@ contract('Aave V2', function([_, user]) {
       await this.proxy.updateTokenMock(this.mockToken.address);
       await expectRevert(
         this.proxy.execMock(to, data, { from: user }),
-        'HAaveProtocolV2_General: aToken should not be zero address'
+        'HAaveProtocolV2_repay: Unspecified'
       );
     });
 
