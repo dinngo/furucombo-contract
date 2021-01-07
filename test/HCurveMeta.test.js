@@ -103,7 +103,11 @@ contract('Curve Meta', function([_, user]) {
         // get_dy_underlying flow is different from exchange_underlying,
         // and actual balance is larger than expectation.
         expect(await this.token1.balanceOf.call(user)).to.be.bignumber.gte(
-          token1User.add(answer)
+          token1User.add(mulPercent(answer, new BN('99')))
+        );
+
+        expect(await this.token1.balanceOf.call(user)).to.be.bignumber.lte(
+          token1User.add(mulPercent(answer, new BN('101')))
         );
         profileGas(receipt);
       });
