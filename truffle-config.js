@@ -46,6 +46,13 @@ module.exports = {
       gasPrice: 0x01,
       gas: 5000000,
     },
+    migration: {
+      host: 'localhost',
+      port: 8545,
+      network_id: '*',
+      gasPrice: 0x01,
+      gas: 5000000,
+    },
     beta: {
       provider: function() {
         return new HDWalletProvider(

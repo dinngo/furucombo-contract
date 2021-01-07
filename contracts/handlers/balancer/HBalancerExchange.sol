@@ -26,6 +26,7 @@ contract HBalancerExchange is HandlerBase {
         uint256 minTotalAmountOut
     ) external payable returns (uint256 totalAmountOut) {
         IExchangeProxy balancer = IExchangeProxy(EXCHANGE_PROXY);
+        totalAmountIn = _getBalance(tokenIn, totalAmountIn);
 
         if (tokenIn == ETH_ADDRESS) {
             try
@@ -73,6 +74,7 @@ contract HBalancerExchange is HandlerBase {
         uint256 maxTotalAmountIn
     ) external payable returns (uint256 totalAmountIn) {
         IExchangeProxy balancer = IExchangeProxy(EXCHANGE_PROXY);
+        maxTotalAmountIn = _getBalance(tokenIn, maxTotalAmountIn);
 
         if (tokenIn == ETH_ADDRESS) {
             try
@@ -119,7 +121,7 @@ contract HBalancerExchange is HandlerBase {
         uint256 minTotalAmountOut
     ) external payable returns (uint256 totalAmountOut) {
         IExchangeProxy balancer = IExchangeProxy(EXCHANGE_PROXY);
-
+        totalAmountIn = _getBalance(tokenIn, totalAmountIn);
         if (tokenIn == ETH_ADDRESS) {
             try
                 balancer.multihopBatchSwapExactIn{value: totalAmountIn}(
@@ -166,6 +168,7 @@ contract HBalancerExchange is HandlerBase {
         uint256 maxTotalAmountIn
     ) external payable returns (uint256 totalAmountIn) {
         IExchangeProxy balancer = IExchangeProxy(EXCHANGE_PROXY);
+        maxTotalAmountIn = _getBalance(tokenIn, maxTotalAmountIn);
 
         if (tokenIn == ETH_ADDRESS) {
             try
@@ -213,6 +216,7 @@ contract HBalancerExchange is HandlerBase {
     ) external payable returns (uint256 totalAmountOut) {
         IExchangeProxy balancer = IExchangeProxy(EXCHANGE_PROXY);
 
+        totalAmountIn = _getBalance(tokenIn, totalAmountIn);
         if (tokenIn == ETH_ADDRESS) {
             try
                 balancer.smartSwapExactIn{value: totalAmountIn}(
@@ -260,6 +264,7 @@ contract HBalancerExchange is HandlerBase {
         uint256 nPools
     ) external payable returns (uint256 totalAmountIn) {
         IExchangeProxy balancer = IExchangeProxy(EXCHANGE_PROXY);
+        maxTotalAmountIn = _getBalance(tokenIn, maxTotalAmountIn);
 
         if (tokenIn == ETH_ADDRESS) {
             try

@@ -4,6 +4,9 @@ const utils = web3.utils;
 const AAVE_LENDING_POOL_CORE = '0x398ec7346dcd622edc5ae82352f02be94c62d119';
 
 module.exports = function(deployer) {
+  if (deployer.network === 'development') {
+    return;
+  }
   deployer
     .deploy(Handler)
     .then(function() {

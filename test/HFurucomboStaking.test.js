@@ -7,6 +7,7 @@ const {
   expectRevert,
   time,
 } = require('@openzeppelin/test-helpers');
+const { MAX_UINT256 } = constants;
 const { tracker } = balance;
 const { latest } = time;
 const abi = require('ethereumjs-abi');
@@ -74,6 +75,48 @@ contract('Furucombo', function([_, user, someone]) {
         'stake(address,uint256)',
         this.staking.address,
         stakeAmount
+      );
+
+      // Send token to proxy
+      await this.token.transfer(this.proxy.address, stakeAmount, {
+        from: providerAddress,
+      });
+      await this.proxy.updateTokenMock(this.token.address);
+
+      // Execute proxy handler
+      const receipt = await this.proxy.execMock(to, data, {
+        from: user,
+        value: ether('0.1'),
+      });
+
+      // Verify
+      expect(await this.token.balanceOf.call(this.proxy.address)).to.be.zero;
+      expect(await balanceProxy.get()).to.be.zero;
+      expect(await this.token.balanceOf.call(user)).to.be.zero;
+      expect(await balanceUser.delta()).to.be.bignumber.eq(
+        ether('0').sub(new BN(receipt.receipt.gasUsed))
+      );
+      expect(await this.staking.balanceOf(user)).to.be.bignumber.eq(
+        stakeAmount
+      );
+
+      // Verify event
+      await expectEvent.inTransaction(receipt.tx, this.staking, 'Staked', {
+        sender: this.proxy.address,
+        onBehalfOf: user,
+        amount: stakeAmount,
+      });
+
+      profileGas(receipt);
+    });
+
+    it('max amount', async function() {
+      const stakeAmount = ether('100');
+      const to = this.hFurucombo.address;
+      const data = abi.simpleEncode(
+        'stake(address,uint256)',
+        this.staking.address,
+        MAX_UINT256
       );
 
       // Send token to proxy

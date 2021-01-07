@@ -31,6 +31,7 @@ contract HBalancer is HandlerBase {
         uint256 beforePoolAmount = IERC20(pool).balanceOf(address(this));
 
         // Execute "joinswapExternAmountIn" by using DSProxy
+        tokenAmountIn = _getBalance(tokenIn, tokenAmountIn);
         IERC20(tokenIn).safeApprove(address(proxy), tokenAmountIn);
         try
             proxy.execute(
@@ -60,7 +61,7 @@ contract HBalancer is HandlerBase {
     function joinPool(
         address pool,
         uint256 poolAmountOut,
-        uint256[] calldata maxAmountsIn
+        uint256[] memory maxAmountsIn
     ) external payable returns (uint256[] memory) {
         // Get all tokens of pool
         IBPool bPool = IBPool(pool);
@@ -74,6 +75,7 @@ contract HBalancer is HandlerBase {
 
         // Approve all erc20 token to Proxy
         for (uint256 i = 0; i < tokens.length; i++) {
+            maxAmountsIn[i] = _getBalance(tokens[i], maxAmountsIn[i]);
             IERC20(tokens[i]).safeApprove(address(proxy), maxAmountsIn[i]);
             amountsIn[i] = IERC20(tokens[i]).balanceOf(address(this));
         }
@@ -119,6 +121,7 @@ contract HBalancer is HandlerBase {
         IBPool bPool = IBPool(pool);
 
         // Call exitswapPoolAmountIn function of balancer pool
+        poolAmountIn = _getBalance(address(bPool), poolAmountIn);
         try
             bPool.exitswapPoolAmountIn(tokenOut, poolAmountIn, minAmountOut)
         returns (uint256 amount) {
@@ -152,6 +155,7 @@ contract HBalancer is HandlerBase {
         }
 
         // Call exitPool function of balancer pool
+        poolAmountIn = _getBalance(address(bPool), poolAmountIn);
         try bPool.exitPool(poolAmountIn, minAmountsOut) {} catch Error(
             string memory reason
         ) {

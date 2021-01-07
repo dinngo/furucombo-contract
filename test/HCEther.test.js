@@ -99,6 +99,41 @@ contract('CEther', function([_, user]) {
 
       profileGas(receipt);
     });
+
+    it('max amount', async function() {
+      const value = ether('0.1');
+      const to = this.hCEther.address;
+      const data = abi.simpleEncode('mint(uint256)', MAX_UINT256);
+      const rate = await this.cEther.exchangeRateStored.call();
+      const result = value.mul(ether('1')).div(rate);
+      const cEtherUser = await this.cEther.balanceOf.call(user);
+
+      const receipt = await this.proxy.execMock(to, data, {
+        from: user,
+        value: ether('0.1'),
+      });
+
+      // Get handler return result
+      const handlerReturn = utils.toBN(
+        getHandlerReturn(receipt, ['uint256'])[0]
+      );
+      const cEtherUserEnd = await this.cEther.balanceOf.call(user);
+      expect(cEtherUserEnd.sub(cEtherUser)).to.be.bignumber.eq(handlerReturn);
+      expect(
+        cEtherUserEnd
+          .sub(cEtherUser)
+          .mul(new BN('1000'))
+          .divRound(result)
+      ).to.be.bignumber.eq(new BN('1000'));
+
+      expect(await balanceUser.delta()).to.be.bignumber.eq(
+        ether('0')
+          .sub(ether('0.1'))
+          .sub(new BN(receipt.receipt.gasUsed))
+      );
+
+      profileGas(receipt);
+    });
   });
 
   describe('Redeem', function() {
@@ -114,6 +149,43 @@ contract('CEther', function([_, user]) {
       const value = cEtherUser;
       const to = this.hCEther.address;
       const data = abi.simpleEncode('redeem(uint256)', value);
+      const rate = await this.cEther.exchangeRateStored.call();
+      const result = value.mul(rate).div(ether('1'));
+      await this.cEther.transfer(this.proxy.address, value, { from: user });
+      await this.proxy.updateTokenMock(this.cEther.address);
+      await balanceUser.get();
+
+      const receipt = await this.proxy.execMock(to, data, {
+        from: user,
+        value: ether('0.1'),
+      });
+
+      // Get handler return result
+      const handlerReturn = utils.toBN(
+        getHandlerReturn(receipt, ['uint256'])[0]
+      );
+
+      const balanceDelta = await balanceUser.delta();
+      expect(balanceDelta).to.be.bignumber.eq(
+        handlerReturn.sub(new BN(receipt.receipt.gasUsed))
+      );
+
+      expect(await this.cEther.balanceOf.call(user)).to.be.bignumber.eq(
+        ether('0')
+      );
+      expect(
+        balanceDelta
+          .mul(new BN('1000'))
+          .divRound(result.sub(new BN(receipt.receipt.gasUsed)))
+      ).to.be.bignumber.eq(new BN('1000'));
+
+      profileGas(receipt);
+    });
+
+    it('max amount', async function() {
+      const value = cEtherUser;
+      const to = this.hCEther.address;
+      const data = abi.simpleEncode('redeem(uint256)', MAX_UINT256);
       const rate = await this.cEther.exchangeRateStored.call();
       const result = value.mul(rate).div(ether('1'));
       await this.cEther.transfer(this.proxy.address, value, { from: user });

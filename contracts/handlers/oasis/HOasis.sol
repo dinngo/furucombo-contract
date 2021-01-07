@@ -25,6 +25,8 @@ contract HOasis is HandlerBase {
         uint256 minBuyAmt
     ) external payable returns (uint256 buyAmt) {
         IOasisDirectProxy oasis = IOasisDirectProxy(OASIS_DIRECT_PROXY);
+        // if amount == uint256(-1) return balance of Proxy
+        payAmt = _getBalance(payToken, payAmt);
         IERC20(payToken).safeApprove(address(oasis), payAmt);
         try
             oasis.sellAllAmount(
@@ -54,6 +56,8 @@ contract HOasis is HandlerBase {
         uint256 minBuyAmt
     ) external payable returns (uint256 buyAmt) {
         IOasisDirectProxy oasis = IOasisDirectProxy(OASIS_DIRECT_PROXY);
+        // if amount == uint256(-1) return balance of Proxy
+        value = _getBalance(address(0), value);
         try
             oasis.sellAllAmountPayEth{value: value}(
                 MAKER_OTC,
@@ -80,6 +84,8 @@ contract HOasis is HandlerBase {
         uint256 minBuyAmt
     ) external payable returns (uint256 wethAmt) {
         IOasisDirectProxy oasis = IOasisDirectProxy(OASIS_DIRECT_PROXY);
+        // if amount == uint256(-1) return balance of Proxy
+        payAmt = _getBalance(payToken, payAmt);
         IERC20(payToken).safeApprove(address(oasis), payAmt);
         try
             oasis.sellAllAmountBuyEth(
@@ -107,6 +113,8 @@ contract HOasis is HandlerBase {
         uint256 maxPayAmt
     ) external payable returns (uint256 payAmt) {
         IOasisDirectProxy oasis = IOasisDirectProxy(OASIS_DIRECT_PROXY);
+        // if amount == uint256(-1) return balance of Proxy
+        maxPayAmt = _getBalance(payToken, maxPayAmt);
         IERC20(payToken).safeApprove(address(oasis), maxPayAmt);
         try
             oasis.buyAllAmount(MAKER_OTC, buyToken, buyAmt, payToken, maxPayAmt)
@@ -130,6 +138,8 @@ contract HOasis is HandlerBase {
         address wethToken
     ) external payable returns (uint256 wethAmt) {
         IOasisDirectProxy oasis = IOasisDirectProxy(OASIS_DIRECT_PROXY);
+        // if amount == uint256(-1) return balance of Proxy
+        value = _getBalance(address(0), value);
         try
             oasis.buyAllAmountPayEth{value: value}(
                 MAKER_OTC,
@@ -156,6 +166,8 @@ contract HOasis is HandlerBase {
         uint256 maxPayAmt
     ) external payable returns (uint256 payAmt) {
         IOasisDirectProxy oasis = IOasisDirectProxy(OASIS_DIRECT_PROXY);
+        // if amount == uint256(-1) return balance of Proxy
+        maxPayAmt = _getBalance(payToken, maxPayAmt);
         IERC20(payToken).safeApprove(address(oasis), maxPayAmt);
         try
             oasis.buyAllAmountBuyEth(

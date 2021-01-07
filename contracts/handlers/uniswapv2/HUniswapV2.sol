@@ -37,6 +37,8 @@ contract HUniswapV2 is HandlerBase {
         IUniswapV2Router02 router = IUniswapV2Router02(UNISWAPV2_ROUTER);
 
         // Approve token
+        value = _getBalance(address(0), value);
+        amountTokenDesired = _getBalance(token, amountTokenDesired);
         IERC20(token).safeApprove(UNISWAPV2_ROUTER, amountTokenDesired);
 
         // Add liquidity ETH
@@ -88,6 +90,8 @@ contract HUniswapV2 is HandlerBase {
         IUniswapV2Router02 router = IUniswapV2Router02(UNISWAPV2_ROUTER);
 
         // Approve token
+        amountADesired = _getBalance(tokenA, amountADesired);
+        amountBDesired = _getBalance(tokenB, amountBDesired);
         IERC20(tokenA).safeApprove(UNISWAPV2_ROUTER, amountADesired);
         IERC20(tokenB).safeApprove(UNISWAPV2_ROUTER, amountBDesired);
 
@@ -135,9 +139,10 @@ contract HUniswapV2 is HandlerBase {
             UniswapV2Library.pairFor(router.factory(), token, router.WETH());
 
         // Approve token
+        liquidity = _getBalance(pair, liquidity);
         IERC20(pair).safeApprove(UNISWAPV2_ROUTER, liquidity);
 
-        // Add liquidity ETH
+        // remove liquidityETH
         try
             router.removeLiquidityETH(
                 token,
@@ -176,9 +181,10 @@ contract HUniswapV2 is HandlerBase {
             UniswapV2Library.pairFor(router.factory(), tokenA, tokenB);
 
         // Approve token
+        liquidity = _getBalance(pair, liquidity);
         IERC20(pair).safeApprove(UNISWAPV2_ROUTER, liquidity);
 
-        // Add liquidity ETH
+        // remove liquidity
         try
             router.removeLiquidity(
                 tokenA,
@@ -217,6 +223,7 @@ contract HUniswapV2 is HandlerBase {
 
         // Get uniswapV2 router
         IUniswapV2Router02 router = IUniswapV2Router02(UNISWAPV2_ROUTER);
+        value = _getBalance(address(0), value);
         try
             router.swapExactETHForTokens{value: value}(
                 amountOutMin,
@@ -246,6 +253,9 @@ contract HUniswapV2 is HandlerBase {
 
         // Get uniswapV2 router
         IUniswapV2Router02 router = IUniswapV2Router02(UNISWAPV2_ROUTER);
+
+        // if amount == uint256(-1) return balance of Proxy
+        value = _getBalance(address(0), value);
 
         try
             router.swapETHForExactTokens{value: value}(
@@ -278,6 +288,7 @@ contract HUniswapV2 is HandlerBase {
         IUniswapV2Router02 router = IUniswapV2Router02(UNISWAPV2_ROUTER);
 
         // Approve token
+        amountIn = _getBalance(tokenIn, amountIn);
         IERC20(tokenIn).safeApprove(UNISWAPV2_ROUTER, amountIn);
 
         try
@@ -311,6 +322,9 @@ contract HUniswapV2 is HandlerBase {
 
         // Get uniswapV2 router
         IUniswapV2Router02 router = IUniswapV2Router02(UNISWAPV2_ROUTER);
+
+        // if amount == uint256(-1) return balance of Proxy
+        amountInMax = _getBalance(tokenIn, amountInMax);
 
         // Approve token
         IERC20(tokenIn).safeApprove(UNISWAPV2_ROUTER, amountInMax);
@@ -349,6 +363,7 @@ contract HUniswapV2 is HandlerBase {
         IUniswapV2Router02 router = IUniswapV2Router02(UNISWAPV2_ROUTER);
 
         // Approve token
+        amountIn = _getBalance(tokenIn, amountIn);
         IERC20(tokenIn).safeApprove(UNISWAPV2_ROUTER, amountIn);
 
         try
@@ -385,6 +400,9 @@ contract HUniswapV2 is HandlerBase {
 
         // Get uniswapV2 router
         IUniswapV2Router02 router = IUniswapV2Router02(UNISWAPV2_ROUTER);
+
+        // if amount == uint256(-1) return balance of Proxy
+        amountInMax = _getBalance(tokenIn, amountInMax);
 
         // Approve token
         IERC20(tokenIn).safeApprove(UNISWAPV2_ROUTER, amountInMax);

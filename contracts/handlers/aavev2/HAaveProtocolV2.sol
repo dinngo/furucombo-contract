@@ -25,6 +25,7 @@ contract HAaveProtocolV2 is HandlerBase, IFlashLoanReceiver {
 
     function deposit(address asset, uint256 amount) external payable {
         (address pool, address aToken) = _getLendingPoolAndAToken(asset);
+        amount = _getBalance(asset, amount);
         IERC20(asset).safeApprove(pool, amount);
 
         try
@@ -49,8 +50,8 @@ contract HAaveProtocolV2 is HandlerBase, IFlashLoanReceiver {
         payable
         returns (uint256 withdrawAmount)
     {
-        address pool =
-            ILendingPoolAddressesProviderV2(PROVIDER).getLendingPool();
+        (address pool, address aToken) = _getLendingPoolAndAToken(asset);
+        amount = _getBalance(aToken, amount);
 
         try
             ILendingPoolV2(pool).withdraw(asset, amount, address(this))
