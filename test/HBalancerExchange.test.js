@@ -54,7 +54,7 @@ const IToken = artifacts.require('IERC20');
 const IExchangeProxy = artifacts.require('IExchangeProxy');
 
 contract('BalancerExchange', function([_, user]) {
-  const slippage = new BN('3');
+  const slippage = new BN('5');
   let id;
   const token0 = DAI_TOKEN;
   const token1 = WETH_TOKEN;
@@ -783,7 +783,7 @@ contract('BalancerExchange', function([_, user]) {
           profileGas(receipt);
         });
 
-        it('normal', async function() {
+        it('max amount', async function() {
           const amount = ether('0.0001');
           [, baseAmount] = await getPath(
             this.token0.address,

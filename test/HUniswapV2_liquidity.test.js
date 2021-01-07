@@ -185,7 +185,7 @@ contract('UniswapV2 Liquidity', function([_, user]) {
       const to = this.hUniswapV2.address;
       const data = abi.simpleEncode(
         'addLiquidityETH(uint256,address,uint256,uint256,uint256):(uint256,uint256,uint256)',
-        value,
+        MAX_UINT256,
         tokenAAddress,
         MAX_UINT256,
         minTokenAmount,
