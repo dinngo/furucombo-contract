@@ -7,6 +7,7 @@ const {
   expectRevert,
   time,
 } = require('@openzeppelin/test-helpers');
+const { MAX_UINT256 } = constants;
 const { tracker } = balance;
 const { latest } = time;
 const abi = require('ethereumjs-abi');
@@ -109,8 +110,50 @@ contract('Furucombo', function([_, user, someone]) {
       profileGas(receipt);
     });
 
-    it('should revert: stake insufficient amount', async function() {
+    it('max amount', async function() {
       const stakeAmount = ether('100');
+      const to = this.hFurucombo.address;
+      const data = abi.simpleEncode(
+        'stake(address,uint256)',
+        this.staking.address,
+        MAX_UINT256
+      );
+
+      // Send token to proxy
+      await this.token.transfer(this.proxy.address, stakeAmount, {
+        from: providerAddress,
+      });
+      await this.proxy.updateTokenMock(this.token.address);
+
+      // Execute proxy handler
+      const receipt = await this.proxy.execMock(to, data, {
+        from: user,
+        value: ether('0.1'),
+      });
+
+      // Verify
+      expect(await this.token.balanceOf.call(this.proxy.address)).to.be.zero;
+      expect(await balanceProxy.get()).to.be.zero;
+      expect(await this.token.balanceOf.call(user)).to.be.zero;
+      expect(await balanceUser.delta()).to.be.bignumber.eq(
+        ether('0').sub(new BN(receipt.receipt.gasUsed))
+      );
+      expect(await this.staking.balanceOf(user)).to.be.bignumber.eq(
+        stakeAmount
+      );
+
+      // Verify event
+      await expectEvent.inTransaction(receipt.tx, this.staking, 'Staked', {
+        sender: this.proxy.address,
+        onBehalfOf: user,
+        amount: stakeAmount,
+      });
+
+      profileGas(receipt);
+    });
+
+    it('should revert: stake insufficient amount', async function() {
+      const stakeAmount = ether('50');
       const to = this.hFurucombo.address;
       const data = abi.simpleEncode(
         'stake(address,uint256)',
@@ -118,6 +161,9 @@ contract('Furucombo', function([_, user, someone]) {
         stakeAmount
       );
 
+      console.log(
+        (await this.token.balanceOf.call(providerAddress)).toString()
+      );
       // Send token to proxy
       await this.token.transfer(this.proxy.address, ether('1'), {
         from: providerAddress,
@@ -129,7 +175,7 @@ contract('Furucombo', function([_, user, someone]) {
           from: user,
           value: ether('0.1'),
         }),
-        'SafeERC20: low-level call failed'
+        'ERR_INSUFFICIENT_BAL'
       );
     });
 
@@ -163,7 +209,7 @@ contract('Furucombo', function([_, user, someone]) {
     beforeEach(async function() {
       balanceUser = await tracker(user);
       balanceProxy = await tracker(this.proxy.address);
-      await this.token.transfer(user, ether('1000'), {
+      await this.token.transfer(user, ether('500'), {
         from: providerAddress,
       });
 

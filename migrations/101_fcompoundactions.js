@@ -3,18 +3,25 @@ const {
   FCOMPOUND_ACTIONS_SALT,
   FCOMPOUND_ACTIONS,
 } = require('../test/utils/constants');
-const { getFCompoundActionsBytecodeBySolc } = require('../test/utils/getBytecode');
+const {
+  getFCompoundActionsBytecodeBySolc,
+} = require('../test/utils/getBytecode');
 const ISingletonFactory = artifacts.require('ISingletonFactory');
 
 module.exports = async function(deployer) {
+  if (deployer.network === 'development') {
+    return;
+  }
   const singletonFactory = await ISingletonFactory.at(CREATE2_FACTORY);
   // Check if deployed contract address is same to the predicted one
   const deployAddr = await singletonFactory.deploy.call(
     getFCompoundActionsBytecodeBySolc(),
     FCOMPOUND_ACTIONS_SALT
   );
-  if(deployAddr != FCOMPOUND_ACTIONS) {
-    console.error(`!!!!! Got different FCompoundActions address with predicted one !!!!!`);
+  if (deployAddr != FCOMPOUND_ACTIONS) {
+    console.error(
+      `!!!!! Got different FCompoundActions address with predicted one !!!!!`
+    );
     console.error(`!!!!! Predicted: ${FCOMPOUND_ACTIONS} !!!!!`);
     console.error(`!!!!! Going To Deploy At: ${deployAddr} !!!!!`);
     console.error(`!!!!! Deploy process rejected !!!!!`);

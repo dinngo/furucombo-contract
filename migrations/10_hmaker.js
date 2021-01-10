@@ -6,6 +6,9 @@ const utils = web3.utils;
 const MAKER_PROXY_REGISTRY = '0x4678f0a6958e4d2bc4f1baf7bc52e8f3564f3fe4';
 
 module.exports = async function(deployer) {
+  if (deployer.network === 'development') {
+    return;
+  }
   await deployer.deploy(Handler);
   const dsRegistry = await DSProxyRegistry.at(MAKER_PROXY_REGISTRY);
   const registry = await Registry.deployed();

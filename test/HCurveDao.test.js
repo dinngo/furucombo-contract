@@ -1,4 +1,11 @@
-const { BN, ether, expectRevert, time } = require('@openzeppelin/test-helpers');
+const {
+  BN,
+  ether,
+  expectRevert,
+  time,
+  constants,
+} = require('@openzeppelin/test-helpers');
+const { MAX_UINT256 } = constants;
 const { expect } = require('chai');
 const abi = require('ethereumjs-abi');
 const utils = web3.utils;
@@ -13,7 +20,12 @@ const {
   CURVE_TCRV_GAUGE,
   CURVE_MINTER,
 } = require('./utils/constants');
-const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
+const {
+  evmRevert,
+  evmSnapshot,
+  profileGas,
+  getHandlerReturn,
+} = require('./utils/utils');
 
 const Proxy = artifacts.require('ProxyMock');
 const Registry = artifacts.require('Registry');
@@ -78,6 +90,35 @@ contract('Curve DAO', function([_, user]) {
         from: user,
         value: ether('0.1'),
       });
+
+      const depositUserEnd = await this.gauge0.balanceOf.call(user);
+      expect(depositUserEnd.sub(depositUser)).to.be.bignumber.eq(gauge0Amount);
+      expect(
+        await this.token0.balanceOf.call(this.proxy.address)
+      ).to.be.bignumber.eq(ether('0'));
+      profileGas(receipt);
+    });
+
+    it('max amount', async function() {
+      await this.token0.transfer(this.proxy.address, gauge0Amount, {
+        from: token0Provider,
+      });
+      const to = this.hCurveDao.address;
+      const data = abi.simpleEncode(
+        'deposit(address,uint256)',
+        this.gauge0.address,
+        MAX_UINT256
+      );
+      await this.gauge0.set_approve_deposit(this.proxy.address, true, {
+        from: user,
+      });
+
+      const depositUser = await this.gauge0.balanceOf.call(user);
+      const receipt = await this.proxy.execMock(to, data, {
+        from: user,
+        value: ether('0.1'),
+      });
+
       const depositUserEnd = await this.gauge0.balanceOf.call(user);
       expect(depositUserEnd.sub(depositUser)).to.be.bignumber.eq(gauge0Amount);
       expect(
@@ -96,11 +137,12 @@ contract('Curve DAO', function([_, user]) {
         this.gauge0.address,
         gauge0Amount
       );
-      await expectRevert.unspecified(
+      await expectRevert(
         this.proxy.execMock(to, data, {
           from: user,
           value: ether('0.1'),
-        })
+        }),
+        'HCurveDao_deposit: Not approved'
       );
     });
   });
@@ -141,7 +183,13 @@ contract('Curve DAO', function([_, user]) {
           value: ether('0.1'),
         });
 
+        // Get handler return result
+        const handlerReturn = utils.toBN(
+          getHandlerReturn(receipt, ['uint256'])[0]
+        );
         const crvUserEnd = await this.crv.balanceOf.call(user);
+        expect(handlerReturn).to.be.bignumber.eq(crvUserEnd.sub(crvUser));
+
         expect(crvUserEnd.sub(crvUser)).to.be.bignumber.gte(claimableToken);
         expect(
           await this.token0.balanceOf.call(this.proxy.address)
@@ -155,11 +203,12 @@ contract('Curve DAO', function([_, user]) {
       it('without approval', async function() {
         const to = this.hCurveDao.address;
         const data = abi.simpleEncode('mint(address)', this.gauge0.address);
-        await expectRevert.unspecified(
+        await expectRevert(
           this.proxy.execMock(to, data, {
             from: user,
             value: ether('0.1'),
-          })
+          }),
+          'HCurveDao_mint: not allowed to mint'
         );
       });
     });
@@ -215,7 +264,13 @@ contract('Curve DAO', function([_, user]) {
           value: ether('0.1'),
         });
 
-        const crvUserEnd = await this.crv.balanceOf(user);
+        // Get handler return result
+        const handlerReturn = utils.toBN(
+          getHandlerReturn(receipt, ['uint256'])[0]
+        );
+        const crvUserEnd = await this.crv.balanceOf.call(user);
+        expect(handlerReturn).to.be.bignumber.eq(crvUserEnd.sub(crvUser));
+
         expect(crvUserEnd.sub(crvUser)).to.be.bignumber.gte(
           claimableToken0.add(claimableToken1)
         );
@@ -237,11 +292,12 @@ contract('Curve DAO', function([_, user]) {
           this.gauge0.address,
           this.gauge1.address,
         ]);
-        await expectRevert.unspecified(
+        await expectRevert(
           this.proxy.execMock(to, data, {
             from: user,
             value: ether('0.1'),
-          })
+          }),
+          'HCurveDao_mintMany: not allowed to mint'
         );
       });
     });

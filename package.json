@@ -1,6 +1,6 @@
 {
   "name": "Furucombo",
-  "version": "0.13.1",
+  "version": "1.0.0",
   "description": "Furucombo contracts",
   "main": "truffle-config.js",
   "directories": {
@@ -11,7 +11,8 @@
     "compile": "truffle compile",
     "test": "scripts/test.sh --network development",
     "lint:solhint": "solhint \"contracts/**/*.sol\"",
-    "lint:prettier": "scripts/prettier.sh"
+    "lint:prettier": "scripts/prettier.sh",
+    "test-migration": "scripts/test.sh --network migration"
   },
   "repository": {
     "type": "git",
@@ -31,16 +32,17 @@
     "ganache-cli": "6.11.0",
     "husky": "^4.2.5",
     "node-fetch": "^2.6.0",
+    "pify": "^5.0.0",
     "prettier": "^1.19.1",
-    "prettier-plugin-solidity": "^1.0.0-alpha.57",
+    "prettier-plugin-solidity": "^1.0.0-beta.1",
     "query-string": "^6.13.1",
-    "solc": "0.5.16",
+    "solc": "0.6.12",
     "solhint": "^3.0.0",
     "truffle": "^5.1.42",
     "web3-provider-engine": "^15.0.12"
   },
   "dependencies": {
-    "@openzeppelin/contracts": "^2.5.0",
+    "@openzeppelin/contracts": "^3.2.0",
     "pify": "^5.0.0"
   },
   "husky": {

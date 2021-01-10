@@ -1,18 +1,49 @@
-pragma solidity ^0.5.0;
+pragma solidity ^0.6.0;
 
 import "../HandlerBase.sol";
 import "./IComptroller.sol";
+import "@openzeppelin/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 
 contract HComptroller is HandlerBase {
-    address constant COMPTROLLER = 0x3d9819210A31b4961b30EF54bE2aeD79B9c9Cd3B;
+    using SafeERC20 for IERC20;
+    using SafeMath for uint256;
 
-    function claimComp() external payable {
-        IComptroller comptroller = IComptroller(COMPTROLLER);
-        comptroller.claimComp(cache.getSender());
+    // prettier-ignore
+    address public constant COMPTROLLER = 0x3d9819210A31b4961b30EF54bE2aeD79B9c9Cd3B;
+
+    function getContractName() public pure override returns (string memory) {
+        return "HComptroller";
     }
 
-    function claimComp(address holder) external payable {
+    function claimComp() external payable returns (uint256) {
         IComptroller comptroller = IComptroller(COMPTROLLER);
-        comptroller.claimComp(holder);
+        address comp = comptroller.getCompAddress();
+        address sender = _getSender();
+
+        uint256 beforeCompBalance = IERC20(comp).balanceOf(sender);
+        try comptroller.claimComp(sender) {} catch Error(string memory reason) {
+            _revertMsg("claimComp", reason);
+        } catch {
+            _revertMsg("claimComp");
+        }
+        uint256 afterCompBalance = IERC20(comp).balanceOf(sender);
+
+        return afterCompBalance.sub(beforeCompBalance);
+    }
+
+    function claimComp(address holder) external payable returns (uint256) {
+        IComptroller comptroller = IComptroller(COMPTROLLER);
+        address comp = comptroller.getCompAddress();
+
+        uint256 beforeCompBalance = IERC20(comp).balanceOf(holder);
+        try comptroller.claimComp(holder) {} catch Error(string memory reason) {
+            _revertMsg("claimComp", reason);
+        } catch {
+            _revertMsg("claimComp");
+        }
+        uint256 afterCompBalance = IERC20(comp).balanceOf(holder);
+
+        return afterCompBalance.sub(beforeCompBalance);
     }
 }

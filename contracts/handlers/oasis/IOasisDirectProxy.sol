@@ -1,4 +1,4 @@
-pragma solidity ^0.5.0;
+pragma solidity ^0.6.0;
 
 interface IOasisDirectProxy {
     function sellAllAmount(address otc, address payToken, uint payAmt, address buyToken, uint minBuyAmt) external returns (uint buyAmt);

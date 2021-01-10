@@ -3,6 +3,9 @@ const Handler = artifacts.require('HBalancer');
 const utils = web3.utils;
 
 module.exports = function(deployer) {
+  if (deployer.network === 'development') {
+    return;
+  }
   deployer
     .deploy(Handler)
     .then(function() {

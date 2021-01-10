@@ -1,4 +1,4 @@
-pragma solidity ^0.5.0;
+pragma solidity ^0.6.0;
 
 import "../handlers/HandlerBase.sol";
 
@@ -13,6 +13,10 @@ interface IFoo2Factory {
 }
 
 contract Foo2Handler is HandlerBase {
+    function getContractName() public pure override returns (string memory) {
+        return "Foo2Handler";
+    }
+
     function getFooFactory() public pure returns (address target) {
         return 0xaB7D1E16d471065629431aeABED38880170876f2;
     }
@@ -28,6 +32,6 @@ contract Foo2Handler is HandlerBase {
     {
         address target = getFoo(index);
         _updateToken(target);
-        return IFoo2(target).bar.value(value)();
+        return IFoo2(target).bar{value: value}();
     }
 }

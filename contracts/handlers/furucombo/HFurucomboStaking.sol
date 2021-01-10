@@ -1,4 +1,4 @@
-pragma solidity ^0.5.0;
+pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
@@ -10,20 +10,25 @@ import "./IMerkleRedeem.sol";
 contract HFurucomboStaking is HandlerBase {
     using SafeERC20 for IERC20;
 
+    function getContractName() public pure override returns (string memory) {
+        return "HFurucomboStaking";
+    }
+
     function stake(address pool, uint256 amount) external payable {
-        require(amount > 0, "HFurucombo: stake amount = 0");
         IStaking staking = IStaking(pool);
         address stakeToken = staking.stakingToken();
+        amount = _getBalance(stakeToken, amount);
+        require(amount > 0, "HFurucombo: stake amount = 0");
 
         IERC20(stakeToken).safeApprove(pool, amount);
-        staking.stakeFor(cache.getSender(), amount);
+        staking.stakeFor(_getSender(), amount);
         IERC20(stakeToken).safeApprove(pool, 0);
     }
 
     function unstake(address pool, uint256 amount) external payable {
         require(amount > 0, "HFurucombo: unstake amount = 0");
         IStaking staking = IStaking(pool);
-        staking.unstakeFor(cache.getSender(), amount);
+        staking.unstakeFor(_getSender(), amount);
 
         // Update involved token
         _updateToken(staking.stakingToken());

@@ -8,6 +8,7 @@ const {
   time,
 } = require('@openzeppelin/test-helpers');
 const { tracker } = balance;
+const { ZERO_BYTES32 } = constants;
 const { latest } = time;
 const abi = require('ethereumjs-abi');
 const utils = web3.utils;
@@ -144,6 +145,7 @@ contract('Maker', function([_, user]) {
 
         it('normal', async function() {
           const daiUser = await this.dai.balanceOf.call(user);
+          const config = [ZERO_BYTES32, ZERO_BYTES32];
           const to1 = this.hMaker.address;
           const value1 = ether('5');
           const ilkEth = utils.padRight(utils.asciiToHex('ETH-A'), 64);
@@ -166,6 +168,7 @@ contract('Maker', function([_, user]) {
           );
           const receipt = await this.proxy.batchExec(
             [to1, to2],
+            config,
             [data1, data2],
             {
               from: user,

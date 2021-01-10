@@ -7,6 +7,7 @@ const {
   expectRevert,
   time,
 } = require('@openzeppelin/test-helpers');
+const { MAX_UINT256 } = constants;
 const { tracker } = balance;
 const { latest } = time;
 const abi = require('ethereumjs-abi');
@@ -18,7 +19,12 @@ const {
   DAI_PROVIDER,
   ETH_PROVIDER,
 } = require('./utils/constants');
-const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
+const {
+  evmRevert,
+  evmSnapshot,
+  profileGas,
+  getHandlerReturn,
+} = require('./utils/utils');
 
 const HUniswap = artifacts.require('HUniswap');
 const Registry = artifacts.require('Registry');
@@ -69,28 +75,69 @@ contract('Uniswap Liquidity', function([_, user]) {
     });
 
     it('normal', async function() {
-      const value = ether('0.1');
+      const value = ether('0.0001');
       const to = this.hUniswap.address;
       const data = abi.simpleEncode(
         'addLiquidity(uint256,address,uint256):(uint256)',
         value,
         tokenAddress,
-        ether('100')
+        ether('500')
       );
       const deadline = (await latest()).add(new BN('100'));
       await this.token.approve(this.swap.address, ether('1000'), {
         from: user,
       });
       const result = await this.swap.addLiquidity.call(
-        new BN('1'),
-        ether('100'),
+        value,
+        ether('500'),
         deadline,
-        { from: user, value: ether('0.1') }
+        { from: user, value: value }
       );
       const receipt = await this.proxy.execMock(to, data, {
         from: user,
         value: ether('0.1'),
       });
+
+      const handlerReturn = utils.toBN(
+        getHandlerReturn(receipt, ['uint256'])[0]
+      );
+      expect(handlerReturn).to.be.bignumber.eq(result);
+
+      expect(await balanceUser.delta()).to.be.bignumber.lt(ether('0'));
+      expect(await this.swap.balanceOf.call(user)).to.be.bignumber.eq(
+        uniTokenUser.add(result)
+      );
+      profileGas(receipt);
+    });
+
+    it('max amount', async function() {
+      const value = ether('0.00001');
+      const to = this.hUniswap.address;
+      const data = abi.simpleEncode(
+        'addLiquidity(uint256,address,uint256):(uint256)',
+        MAX_UINT256,
+        tokenAddress,
+        ether('500')
+      );
+      const deadline = (await latest()).add(new BN('100'));
+      await this.token.approve(this.swap.address, ether('1000'), {
+        from: user,
+      });
+      const result = await this.swap.addLiquidity.call(
+        value,
+        ether('500'),
+        deadline,
+        { from: user, value: value }
+      );
+      const receipt = await this.proxy.execMock(to, data, {
+        from: user,
+        value: value,
+      });
+
+      const handlerReturn = utils.toBN(
+        getHandlerReturn(receipt, ['uint256'])[0]
+      );
+      expect(handlerReturn).to.be.bignumber.eq(result);
 
       expect(await balanceUser.delta()).to.be.bignumber.lt(ether('0'));
       expect(await this.swap.balanceOf.call(user)).to.be.bignumber.eq(
@@ -111,7 +158,7 @@ contract('Uniswap Liquidity', function([_, user]) {
       deadline = (await latest()).add(new BN('100'));
       await this.swap.addLiquidity(new BN('1'), ether('100'), deadline, {
         from: user,
-        value: ether('0.1'),
+        value: ether('0.01'),
       });
       tokenUser = await this.token.balanceOf.call(user);
       uniTokenUser = await this.swap.balanceOf.call(user);
@@ -143,10 +190,63 @@ contract('Uniswap Liquidity', function([_, user]) {
       await this.proxy.updateTokenMock(this.swap.address);
       await balanceUser.get();
       const receipt = await this.proxy.execMock(to, data, { from: user });
+
+      const handlerReturn = getHandlerReturn(receipt, ['uint256', 'uint256']);
+      const userBalanceDelta = await balanceUser.delta();
+
+      expect(userBalanceDelta).to.be.bignumber.eq(
+        utils.toBN(handlerReturn[0]).sub(new BN(receipt.receipt.gasUsed))
+      );
+      expect(utils.toBN(handlerReturn[1])).to.be.bignumber.eq(result['1']);
+
       expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
         tokenUser.add(result['1'])
       );
-      expect(await balanceUser.delta()).to.be.bignumber.eq(
+      expect(userBalanceDelta).to.be.bignumber.eq(
+        result['0'].sub(new BN(receipt.receipt.gasUsed))
+      );
+      profileGas(receipt);
+    });
+
+    it('max amount', async function() {
+      const value = uniTokenUser;
+      const to = this.hUniswap.address;
+      const data = abi.simpleEncode(
+        'removeLiquidity(address,uint256,uint256,uint256):(uint256,uint256)',
+        tokenAddress,
+        MAX_UINT256,
+        new BN('1'),
+        new BN('1')
+      );
+      await this.swap.approve(this.swap.address, uniTokenUser, {
+        from: user,
+      });
+      const result = await this.swap.removeLiquidity.call(
+        uniTokenUser,
+        new BN('1'),
+        new BN('1'),
+        deadline,
+        { from: user }
+      );
+      await this.swap.transfer(this.proxy.address, uniTokenUser, {
+        from: user,
+      });
+      await this.proxy.updateTokenMock(this.swap.address);
+      await balanceUser.get();
+      const receipt = await this.proxy.execMock(to, data, { from: user });
+
+      const handlerReturn = getHandlerReturn(receipt, ['uint256', 'uint256']);
+      const userBalanceDelta = await balanceUser.delta();
+
+      expect(userBalanceDelta).to.be.bignumber.eq(
+        utils.toBN(handlerReturn[0]).sub(new BN(receipt.receipt.gasUsed))
+      );
+      expect(utils.toBN(handlerReturn[1])).to.be.bignumber.eq(result['1']);
+
+      expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
+        tokenUser.add(result['1'])
+      );
+      expect(userBalanceDelta).to.be.bignumber.eq(
         result['0'].sub(new BN(receipt.receipt.gasUsed))
       );
       profileGas(receipt);

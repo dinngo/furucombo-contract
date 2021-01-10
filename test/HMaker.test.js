@@ -7,6 +7,7 @@ const {
   expectRevert,
   time,
 } = require('@openzeppelin/test-helpers');
+const { MAX_UINT256 } = constants;
 const { tracker } = balance;
 const { latest } = time;
 const abi = require('ethereumjs-abi');
@@ -33,7 +34,12 @@ const {
   MAKER_MCD_JOIN_KNC_A,
   MAKER_MCD_JOIN_DAI,
 } = require('./utils/constants');
-const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
+const {
+  evmRevert,
+  evmSnapshot,
+  profileGas,
+  getHandlerReturn,
+} = require('./utils/utils');
 
 const HMaker = artifacts.require('HMaker');
 const Registry = artifacts.require('Registry');
@@ -148,6 +154,10 @@ contract('Maker', function([_, user1, user2, someone]) {
             from: someone,
             value: ether('10'),
           });
+          const handlerReturn = utils.toBN(
+            getHandlerReturn(receipt, ['uint256'])[0]
+          );
+
           expect(
             await this.cdpManager.count.call(this.dsProxy.address)
           ).to.be.bignumber.eq(new BN('0'));
@@ -156,6 +166,53 @@ contract('Maker', function([_, user1, user2, someone]) {
 
           const [ilk, debt, lock] = await getCdpInfo(cdp);
 
+          expect(cdp).to.be.bignumber.eq(handlerReturn);
+          expect(ilk).eq(ilkEth);
+          expect(debt).to.be.bignumber.gte(wadD.mul(RAY));
+          expect(lock).to.be.bignumber.eq(value);
+          expect(
+            (await this.dai.balanceOf.call(someone)).sub(daiUser)
+          ).to.be.bignumber.eq(wadD);
+          profileGas(receipt);
+        });
+
+        it('User does not has proxy with max amount', async function() {
+          const daiUser = await this.dai.balanceOf.call(someone);
+
+          expect(await this.dsRegistry.proxies.call(this.proxy.address)).not.eq(
+            ZERO_ADDRESS
+          );
+          expect(await this.dsRegistry.proxies.call(someone)).eq(ZERO_ADDRESS);
+
+          const to = this.hMaker.address;
+          const value = ether('5');
+          const ilkEth = utils.padRight(utils.asciiToHex('ETH-A'), 64);
+          const wadD = ether('500');
+          const data = abi.simpleEncode(
+            'openLockETHAndDraw(uint256,address,address,bytes32,uint256)',
+            MAX_UINT256,
+            MAKER_MCD_JOIN_ETH_A,
+            MAKER_MCD_JOIN_DAI,
+            ilkEth,
+            wadD
+          );
+          const receipt = await this.proxy.execMock(to, data, {
+            from: someone,
+            value: value,
+          });
+          const handlerReturn = utils.toBN(
+            getHandlerReturn(receipt, ['uint256'])[0]
+          );
+
+          expect(
+            await this.cdpManager.count.call(this.dsProxy.address)
+          ).to.be.bignumber.eq(new BN('0'));
+          const userProxy = await this.dsRegistry.proxies.call(someone);
+          const cdp = await this.cdpManager.last.call(userProxy);
+
+          const [ilk, debt, lock] = await getCdpInfo(cdp);
+
+          expect(cdp).to.be.bignumber.eq(handlerReturn);
           expect(ilk).eq(ilkEth);
           expect(debt).to.be.bignumber.gte(wadD.mul(RAY));
           expect(lock).to.be.bignumber.eq(value);
@@ -182,6 +239,9 @@ contract('Maker', function([_, user1, user2, someone]) {
             from: user1,
             value: ether('10'),
           });
+          const handlerReturn = utils.toBN(
+            getHandlerReturn(receipt, ['uint256'])[0]
+          );
           expect(
             await this.cdpManager.count.call(this.dsProxy.address)
           ).to.be.bignumber.eq(new BN('0'));
@@ -190,6 +250,45 @@ contract('Maker', function([_, user1, user2, someone]) {
 
           const [ilk, debt, lock] = await getCdpInfo(cdp);
 
+          expect(cdp).to.be.bignumber.eq(handlerReturn);
+          expect(ilk).eq(ilkEth);
+          expect(debt).to.be.bignumber.gte(wadD.mul(RAY));
+          expect(lock).to.be.bignumber.eq(value);
+          expect(
+            (await this.dai.balanceOf.call(user1)).sub(daiUser)
+          ).to.be.bignumber.eq(wadD);
+          profileGas(receipt);
+        });
+
+        it('User has proxy with max amount', async function() {
+          const to = this.hMaker.address;
+          const value = ether('5');
+          const ilkEth = utils.padRight(utils.asciiToHex('ETH-A'), 64);
+          const wadD = ether('500');
+          const data = abi.simpleEncode(
+            'openLockETHAndDraw(uint256,address,address,bytes32,uint256)',
+            MAX_UINT256,
+            MAKER_MCD_JOIN_ETH_A,
+            MAKER_MCD_JOIN_DAI,
+            ilkEth,
+            wadD
+          );
+          const receipt = await this.proxy.execMock(to, data, {
+            from: user1,
+            value: value,
+          });
+          const handlerReturn = utils.toBN(
+            getHandlerReturn(receipt, ['uint256'])[0]
+          );
+          expect(
+            await this.cdpManager.count.call(this.dsProxy.address)
+          ).to.be.bignumber.eq(new BN('0'));
+          const userProxy = await this.dsRegistry.proxies.call(user1);
+          const cdp = await this.cdpManager.last.call(userProxy);
+
+          const [ilk, debt, lock] = await getCdpInfo(cdp);
+
+          expect(cdp).to.be.bignumber.eq(handlerReturn);
           expect(ilk).eq(ilkEth);
           expect(debt).to.be.bignumber.gte(wadD.mul(RAY));
           expect(lock).to.be.bignumber.eq(value);
@@ -234,6 +333,10 @@ contract('Maker', function([_, user1, user2, someone]) {
             from: someone,
             value: ether('1'),
           });
+          const handlerReturn = utils.toBN(
+            getHandlerReturn(receipt, ['uint256'])[0]
+          );
+
           expect(
             await this.cdpManager.count.call(this.dsProxy.address)
           ).to.be.bignumber.eq(new BN('0'));
@@ -242,6 +345,7 @@ contract('Maker', function([_, user1, user2, someone]) {
 
           const [ilk, debt, lock] = await getCdpInfo(cdp);
 
+          expect(cdp).to.be.bignumber.eq(handlerReturn);
           expect(ilk).eq(ilkKnc);
           expect(debt).to.be.bignumber.gte(wadD.mul(RAY));
           expect(lock).to.be.bignumber.eq(wadC);
@@ -272,6 +376,9 @@ contract('Maker', function([_, user1, user2, someone]) {
             from: user1,
             value: ether('1'),
           });
+          const handlerReturn = utils.toBN(
+            getHandlerReturn(receipt, ['uint256'])[0]
+          );
           expect(
             await this.cdpManager.count.call(this.dsProxy.address)
           ).to.be.bignumber.eq(new BN('0'));
@@ -280,6 +387,7 @@ contract('Maker', function([_, user1, user2, someone]) {
 
           const [ilk, debt, lock] = await getCdpInfo(cdp);
 
+          expect(cdp).to.be.bignumber.eq(handlerReturn);
           expect(ilk).eq(ilkKnc);
           expect(debt).to.be.bignumber.gte(wadD.mul(RAY));
           expect(lock).to.be.bignumber.eq(wadC);
@@ -350,6 +458,29 @@ contract('Maker', function([_, user1, user2, someone]) {
         expect(lockEnd.sub(lock)).to.be.bignumber.eq(value);
         profileGas(receipt);
       });
+      it('max amount', async function() {
+        const to = this.hMaker.address;
+        const value = ether('1');
+        const data = abi.simpleEncode(
+          'safeLockETH(uint256,address,uint256)',
+          MAX_UINT256,
+          MAKER_MCD_JOIN_ETH_A,
+          cdp
+        );
+        const receipt = await this.proxy.execMock(to, data, {
+          from: user1,
+          value: value,
+        });
+
+        const [ilkEnd, debtEnd, lockEnd] = await getCdpInfo(cdp);
+        expect(await balanceUser.delta()).to.be.bignumber.eq(
+          ether('0')
+            .sub(value)
+            .sub(new BN(receipt.receipt.gasUsed))
+        );
+        expect(lockEnd.sub(lock)).to.be.bignumber.eq(value);
+        profileGas(receipt);
+      });
     });
 
     describe('Lock Token', function() {
@@ -377,6 +508,29 @@ contract('Maker', function([_, user1, user2, someone]) {
           MAKER_MCD_JOIN_KNC_A,
           cdp,
           wad
+        );
+        await this.token.transfer(this.proxy.address, wad, {
+          from: providerAddress,
+        });
+        await this.proxy.updateTokenMock(this.token.address);
+        const receipt = await this.proxy.execMock(to, data, {
+          from: user2,
+          value: ether('1'),
+        });
+
+        const [ilkEnd, debtEnd, lockEnd] = await getCdpInfo(cdp);
+        expect(lockEnd.sub(lock)).to.be.bignumber.eq(wad);
+        profileGas(receipt);
+      });
+
+      it('max amount', async function() {
+        const to = this.hMaker.address;
+        const wad = ether('500');
+        const data = abi.simpleEncode(
+          'safeLockGem(address,uint256,uint256)',
+          MAKER_MCD_JOIN_KNC_A,
+          cdp,
+          MAX_UINT256
         );
         await this.token.transfer(this.proxy.address, wad, {
           from: providerAddress,
@@ -454,10 +608,11 @@ contract('Maker', function([_, user1, user2, someone]) {
           cdp,
           wad
         );
-        await expectRevert.unspecified(
+        await expectRevert(
           this.proxy.execMock(to, data, {
             from: user1,
-          })
+          }),
+          'HMaker_freeETH: Unspecified'
         );
       });
 
@@ -474,7 +629,7 @@ contract('Maker', function([_, user1, user2, someone]) {
         );
         await expectRevert(
           this.proxy.execMock(to, data),
-          'Unauthorized sender of cdp'
+          'HMaker_General: Unauthorized sender of cdp'
         );
       });
     });
@@ -542,10 +697,11 @@ contract('Maker', function([_, user1, user2, someone]) {
           cdp,
           wad
         );
-        await expectRevert.unspecified(
+        await expectRevert(
           this.proxy.execMock(to, data, {
             from: user1,
-          })
+          }),
+          'HMaker_freeGem: Unspecified'
         );
       });
 
@@ -561,7 +717,7 @@ contract('Maker', function([_, user1, user2, someone]) {
         );
         await expectRevert(
           this.proxy.execMock(to, data),
-          'Unauthorized sender of cdp'
+          'HMaker_General: Unauthorized sender of cdp'
         );
       });
     });
@@ -624,10 +780,11 @@ contract('Maker', function([_, user1, user2, someone]) {
           cdp,
           wad
         );
-        await expectRevert.unspecified(
+        await expectRevert(
           this.proxy.execMock(to, data, {
             from: user1,
-          })
+          }),
+          'HMaker_draw: Unspecified'
         );
       });
 
@@ -643,7 +800,7 @@ contract('Maker', function([_, user1, user2, someone]) {
         );
         await expectRevert(
           this.proxy.execMock(to, data),
-          'Unauthorized sender of cdp'
+          'HMaker_General: Unauthorized sender of cdp'
         );
       });
     });
@@ -711,10 +868,11 @@ contract('Maker', function([_, user1, user2, someone]) {
           cdp,
           wad
         );
-        await expectRevert.unspecified(
+        await expectRevert(
           this.proxy.execMock(to, data, {
             from: user1,
-          })
+          }),
+          'HMaker_draw: Unspecified'
         );
       });
 
@@ -730,7 +888,7 @@ contract('Maker', function([_, user1, user2, someone]) {
         );
         await expectRevert(
           this.proxy.execMock(to, data),
-          'Unauthorized sender of cdp'
+          'HMaker_General: Unauthorized sender of cdp'
         );
       });
     });

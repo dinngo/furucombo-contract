@@ -20,7 +20,12 @@ const {
   COMPOUND_COMPTROLLER,
   COMPOUND_LENS,
 } = require('./utils/constants');
-const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
+const {
+  evmRevert,
+  evmSnapshot,
+  profileGas,
+  getHandlerReturn,
+} = require('./utils/utils');
 
 const HComptroller = artifacts.require('HComptroller');
 const Registry = artifacts.require('Registry');
@@ -112,10 +117,17 @@ contract('Comptroller', function([_, user, someone]) {
           from: user,
           value: ether('0.1'),
         });
+        // Get handler return result
+        const handlerReturn = utils.toBN(
+          getHandlerReturn(receipt, ['uint256'])[0]
+        );
+
         const compUserEnd = await this.comp.balanceOf.call(user);
+        expect(compUserEnd.sub(compUser)).to.be.bignumber.eq(handlerReturn);
         // TODO: Get the ground truth
         // expect(compUserEnd.sub(compUser)).to.be.bignumber.eq(result);
         expect(compUserEnd.sub(compUser)).to.be.bignumber.gt(ether('0'));
+        profileGas(receipt);
       });
     });
 
@@ -128,10 +140,16 @@ contract('Comptroller', function([_, user, someone]) {
           from: someone,
           value: ether('0.1'),
         });
+        // Get handler return result
+        const handlerReturn = utils.toBN(
+          getHandlerReturn(receipt, ['uint256'])[0]
+        );
         const compUserEnd = await this.comp.balanceOf.call(user);
+        expect(compUserEnd.sub(compUser)).to.be.bignumber.eq(handlerReturn);
         // TODO: Get the ground truth
         // expect(compUserEnd.sub(compUser)).to.be.bignumber.eq(result);
         expect(compUserEnd.sub(compUser)).to.be.bignumber.gt(ether('0'));
+        profileGas(receipt);
       });
     });
   });
