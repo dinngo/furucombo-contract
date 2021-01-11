@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+### Added
+
+- Support 1inch v2.
+
 ## [1.0.0] - 2021-01-09
 
 ### Added
