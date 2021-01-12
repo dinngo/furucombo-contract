@@ -1,6 +1,6 @@
 # Chained Input Guideline
 
-Chained Input if for handling the calling parameter of Furucombo dynamically. The details includes config setup and common use cases. Please make sure to review the document.
+Chained Input is for handling the calling parameter of Furucombo dynamically. The details includes config setup and common use cases. Please make sure to review the document.
 
 ## Structure
 
