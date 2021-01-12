@@ -1,6 +1,6 @@
-# Dynamic Cube Input Guideline
+# Chained Input Guideline
 
-The details about dynamic cube input of Furucombo that includes config setup and common use cases. Please make sure to review the document.
+Chained Input if for handling the calling parameter of Furucombo dynamically. The details includes config setup and common use cases. Please make sure to review the document.
 
 ## Structure
 
