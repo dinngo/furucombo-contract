@@ -38,12 +38,16 @@ Every handler MUST inherit [HandlerBase](https://garage.dinngo.co/hackathon-blac
 External parameters should be declared as a constant.
 Handler functions should be declared as **payable** no matter it deals with ether or not.
 Failed external service calls should always be reverted.
+External calls should be handled by `try/catch`. You may use `_revertMsg()` to note the executing function name and reason.
+You may wrap the balance parameter by using `_getBalance()`, which will fetch the current balance in proxy to do the following work by passing `uint256(-1)` in the parameter.
+
+Return value is important to provide information for the execution of other functions. You should return the values received from the external call. If the external call does not provide return values, you may calculate it in the handler. Static types of return value would be the best. If reference types are used, the size MUST be defined by the function parameters. Run-time defined size might cause unexpected problems.
 
 ### Tests
 
 #### Tests should always be implemented
 
-Tests should be short and capable to present the function of handlers.
+Tests should be short and capable to present the function of handlers, including revert cases to prove the robustness.
 
 #### Tests must not be random
 
