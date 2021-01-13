@@ -1,6 +1,6 @@
 # Chained Input Guideline
 
-Chained Input is for handling the calling parameter of Furucombo dynamically. The details includes config setup and common use cases. Please make sure to review the document.
+Chained Input is for handling the calling parameter of Furucombo dynamically. The details include config setup and common use cases. Please make sure to review the document.
 
 ## Structure
 
@@ -53,7 +53,7 @@ config is a bytes32 data represented by hex.
 
 ![](images/reference_config.png)
 
-- `175-0` bits are reserved for Reference location.
+- `175-0` bits are reserved for reference location.
 - Every `byte` indicates which bytes32 of `localStack` contains the referenced data.
 - Should be `ff` if the location is not used.
 - Parameter data replacement order is from right to left except `ff`.
@@ -73,7 +73,7 @@ Return data fall into two broad categories: `Value` and `Reference`.
 
 ### Value Type
 
-Value type return data will store in `localStack` in order (non-array).
+Value type return data will be stored in `localStack` in order (non-array).
 Ex.
 
 - `uint256`
@@ -85,7 +85,7 @@ Ex.
 
 ### Reference Type
 
-Reference type (dynamic array) includes `2` extra data(`pointer` and `length`) except `data`. Every reference type return data count is `+2`, `+1` increased by every data. . `pointer` store in the original position, `length` and `data` will store the location that `pointer` pointer in order.
+Reference type (dynamic array) includes `2` extra data(`pointer` and `length`) except `data`. Every reference type return data count is `+2`, and `+1` increased by every data. `pointer` is stored in the original position, `length` and `data` will be stored in the location pointed by `pointer` in order.
 Ex.
 
 - `uint256[]`
