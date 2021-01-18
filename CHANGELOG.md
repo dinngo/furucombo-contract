@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 - Support 1inch v2.
+- Support Aave v2 depositETH/withdrawETH/repayETH.
 
 ## [1.0.0] - 2021-01-09
 
