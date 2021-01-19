@@ -47,7 +47,7 @@ Return value is important to provide information for the execution of other func
 
 #### Tests should always be implemented
 
-Tests should be short and capable to present the function of handlers, including revert cases to prove the robustness.
+Tests should be short and capable to present the function of handlers, including revert cases to prove the robustness. Test case should be explained through comments in test file if necessary.
 
 #### Tests must not be random
 

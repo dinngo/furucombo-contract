@@ -4,9 +4,9 @@
 
 Base on the structure of Furucombo, there are several [guidelines](GUIDELINES.md) that you should follow. Please make sure to review the document.
 
-## Creating merge requests (MRs)
+## Creating pull requests (PRs)
 
-Any direct modification to develop branch is prohibited. Please work on your own fork and submit merge requests. The MRs will be reviewed and commented. CI test should pass and every comment should be resolved before the MR is merged back to develop.
+Any direct modification to develop branch is prohibited. Please work on your own fork and submit pull requests. The PRs will be reviewed and commented. CI test should pass and every comment should be resolved before the PR is merged back to develop.
 
 ## A typical workflow
 
@@ -41,4 +41,4 @@ git rebase upstream/develop
 git push -f origin some-feature
 ```
 
-6. Issue a new MR.
+6. Issue a new PR.
