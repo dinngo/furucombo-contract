@@ -10,18 +10,14 @@ contract HMaker is HandlerBase {
     using SafeERC20 for IERC20;
 
     // prettier-ignore
-    address public constant PROXY_ACTIONS = 0x82ecD135Dce65Fbc6DbdD0e4237E0AF93FFD5038;
-    // prettier-ignore
-    address public constant CDP_MANAGER = 0x5ef30b9986345249bc32d8928B7ee64DE9435E39;
-    // prettier-ignore
     address public constant PROXY_REGISTRY = 0x4678f0a6958e4D2Bc4F1BAF7Bc52E8F3564f3fE4;
     // prettier-ignore
-    address public constant MCD_JUG = 0x19c0976f590D67707E62397C87829d896Dc0f1F1;
-    // prettier-ignore
     address public constant DAI_TOKEN = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
+    // prettier-ignore
+    address public constant CHAIN_LOG = 0xdA0Ab1e0017DEbCd72Be8599041a2aa3bA7e740F;
 
     modifier cdpAllowed(uint256 cdp) {
-        IMakerManager manager = IMakerManager(CDP_MANAGER);
+        IMakerManager manager = IMakerManager(getCdpManager());
         address owner = manager.owns(cdp);
         address sender = _getSender();
         if (
@@ -31,8 +27,20 @@ contract HMaker is HandlerBase {
         _;
     }
 
-    function getContractName() public pure override returns (string memory) {
+    function getContractName() public pure virtual override returns (string memory) {
         return "HMaker";
+    }
+
+    function getProxyActions() public pure virtual returns (address) {
+        return 0x82ecD135Dce65Fbc6DbdD0e4237E0AF93FFD5038;
+    }
+
+    function getCdpManager() public pure virtual returns (address) {
+        return 0x5ef30b9986345249bc32d8928B7ee64DE9435E39;
+    }
+
+    function getMcdJug() public view returns(address) {
+        return IMakerChainLog(CHAIN_LOG).getAddress("MCD_JUG");
     }
 
     function openLockETHAndDraw(
@@ -48,12 +56,12 @@ contract HMaker is HandlerBase {
 
         try
             proxy.execute.value(value)(
-                PROXY_ACTIONS,
+                getProxyActions(),
                 abi.encodeWithSelector(
                     // selector of "openLockETHAndDraw(address,address,address,address,bytes32,uint256)"
                     0xe685cc04,
-                    CDP_MANAGER,
-                    MCD_JUG,
+                    getCdpManager(),
+                    getMcdJug(),
                     ethJoin,
                     daiJoin,
                     ilk,
@@ -90,12 +98,12 @@ contract HMaker is HandlerBase {
         IERC20(token).safeApprove(address(proxy), wadC);
         try
             proxy.execute(
-                PROXY_ACTIONS,
+                getProxyActions(),
                 abi.encodeWithSelector(
                     // selector of "openLockGemAndDraw(address,address,address,address,bytes32,uint256,uint256,bool)"
                     0xdb802a32,
-                    CDP_MANAGER,
-                    MCD_JUG,
+                    getCdpManager(),
+                    getMcdJug(),
                     gemJoin,
                     daiJoin,
                     ilk,
@@ -131,11 +139,11 @@ contract HMaker is HandlerBase {
 
         try
             proxy.execute.value(value)(
-                PROXY_ACTIONS,
+                getProxyActions(),
                 abi.encodeWithSelector(
                     // selector of "safeLockETH(address,address,uint256,address)"
                     0xee284576,
-                    CDP_MANAGER,
+                    getCdpManager(),
                     ethJoin,
                     cdp,
                     owner
@@ -161,11 +169,11 @@ contract HMaker is HandlerBase {
         IERC20(token).safeApprove(address(proxy), wad);
         try
             proxy.execute(
-                PROXY_ACTIONS,
+                getProxyActions(),
                 abi.encodeWithSelector(
                     // selector of "safeLockGem(address,address,uint256,uint256,bool,address)"
                     0xead64729,
-                    CDP_MANAGER,
+                    getCdpManager(),
                     gemJoin,
                     cdp,
                     wad,
@@ -190,11 +198,11 @@ contract HMaker is HandlerBase {
         IDSProxy proxy = IDSProxy(_getProxy(address(this)));
         try
             proxy.execute(
-                PROXY_ACTIONS,
+                getProxyActions(),
                 abi.encodeWithSelector(
                     // selector of "freeETH(address,address,uint256,uint256)"
                     0x7b5a3b43,
-                    CDP_MANAGER,
+                    getCdpManager(),
                     ethJoin,
                     cdp,
                     wad
@@ -217,11 +225,11 @@ contract HMaker is HandlerBase {
         address token = IMakerGemJoin(gemJoin).gem();
         try
             proxy.execute(
-                PROXY_ACTIONS,
+                getProxyActions(),
                 abi.encodeWithSelector(
                     // selector of "freeGem(address,address,uint256,uint256)"
                     0x6ab6a491,
-                    CDP_MANAGER,
+                    getCdpManager(),
                     gemJoin,
                     cdp,
                     wad
@@ -246,12 +254,12 @@ contract HMaker is HandlerBase {
         IDSProxy proxy = IDSProxy(_getProxy(address(this)));
         try
             proxy.execute(
-                PROXY_ACTIONS,
+                getProxyActions(),
                 abi.encodeWithSelector(
                     // selector of "draw(address,address,address,uint256,uint256)"
                     0x9f6f3d5b,
-                    CDP_MANAGER,
-                    MCD_JUG,
+                    getCdpManager(),
+                    getMcdJug(),
                     daiJoin,
                     cdp,
                     wad
@@ -276,11 +284,11 @@ contract HMaker is HandlerBase {
         IERC20(DAI_TOKEN).safeApprove(address(proxy), wad);
         try
             proxy.execute(
-                PROXY_ACTIONS,
+                getProxyActions(),
                 abi.encodeWithSelector(
                     // selector of "wipe(address,address,uint256,uint256)"
                     0x4b666199,
-                    CDP_MANAGER,
+                    getCdpManager(),
                     daiJoin,
                     cdp,
                     wad
@@ -299,11 +307,11 @@ contract HMaker is HandlerBase {
         IERC20(DAI_TOKEN).safeApprove(address(proxy), uint256(-1));
         try
             proxy.execute(
-                PROXY_ACTIONS,
+                getProxyActions(),
                 abi.encodeWithSelector(
                     // selector of "wipeAll(address,address,uint256)"
                     0x036a2395,
-                    CDP_MANAGER,
+                    getCdpManager(),
                     daiJoin,
                     cdp
                 )
@@ -336,12 +344,12 @@ contract HMaker is HandlerBase {
         IDSProxy proxy = IDSProxy(_getProxy(address(this)));
         try
             proxy.execute(
-                PROXY_ACTIONS,
+                getProxyActions(),
                 abi.encodeWithSelector(
                     // selector of "giveToProxy(address,address,uint256,address)"
                     0x493c2049,
                     PROXY_REGISTRY,
-                    CDP_MANAGER,
+                    getCdpManager(),
                     cdp,
                     _getSender()
                 )

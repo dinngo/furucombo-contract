@@ -2,7 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
-## [unreleased]
+## [unreleased] - 2021-01-20
+
+### Added
+
+- Support for B.Protocol
+
+### Changed
+
+- Small refactor in HMaker.sol to allow overriding CDP_MAGAER and PROXY_ACTIONS addresses
+- Read MCD_JUG address from Maker ChainLog contract. This change would support JUG contract upgardes on Maker side.
 
 ### Changed
 
