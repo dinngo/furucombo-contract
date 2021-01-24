@@ -16,8 +16,10 @@ contract HCurve is HandlerBase {
 
     // prettier-ignore
     address public constant ONE_SPLIT = 0xC586BeF4a0992C495Cf22e1aeEE4E446CECDee0E;
+    // prettier-ignore
+    address public constant ETH_ADDRESS = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
-    // Curve fixed input exchange
+    // Curve fixed input exchange supports eth and token
     function exchange(
         address handler,
         address tokenI,
@@ -28,22 +30,32 @@ contract HCurve is HandlerBase {
         uint256 minDy
     ) external payable returns (uint256) {
         ICurveHandler curveHandler = ICurveHandler(handler);
-        uint256 beforeTokenJBalance = IERC20(tokenJ).balanceOf(address(this));
-        // if amount == uint256(-1) return balance of Proxy
         dx = _getBalance(tokenI, dx);
-        IERC20(tokenI).safeApprove(address(curveHandler), dx);
-        try curveHandler.exchange(i, j, dx, minDy) {} catch Error(
-            string memory reason
-        ) {
-            _revertMsg("exchange", reason);
-        } catch {
-            _revertMsg("exchange");
-        }
-        IERC20(tokenI).safeApprove(address(curveHandler), 0);
-        uint256 afterTokenJBalance = IERC20(tokenJ).balanceOf(address(this));
 
-        _updateToken(tokenJ);
-        return afterTokenJBalance.sub(beforeTokenJBalance);
+        uint256 beforeDy = _getBalance(tokenJ, uint256(-1));
+        if (tokenI == ETH_ADDRESS) {
+            try
+                curveHandler.exchange{value: dx}(i, j, dx, minDy)
+            {} catch Error(string memory reason) {
+                _revertMsg("exchange", reason);
+            } catch {
+                _revertMsg("exchange");
+            }
+        } else {
+            IERC20(tokenI).safeApprove(address(curveHandler), dx);
+            try curveHandler.exchange(i, j, dx, minDy) {} catch Error(
+                string memory reason
+            ) {
+                _revertMsg("exchange", reason);
+            } catch {
+                _revertMsg("exchange");
+            }
+            IERC20(tokenI).safeApprove(address(curveHandler), 0);
+        }
+        uint256 afterDy = _getBalance(tokenJ, uint256(-1));
+
+        if (tokenJ != ETH_ADDRESS) _updateToken(tokenJ);
+        return afterDy.sub(beforeDy);
     }
 
     // Curve fixed input underlying exchange

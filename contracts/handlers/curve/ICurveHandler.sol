@@ -12,7 +12,7 @@ interface ICurveHandler {
         int128 j,
         uint256 dx,
         uint256 min_dy
-    ) external;
+    ) external payable;
 
     function get_dy_underlying(
         int128 i,
