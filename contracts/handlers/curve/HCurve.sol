@@ -59,45 +59,41 @@ contract HCurve is HandlerBase {
     ) internal returns (uint256) {
         ICurveHandler curveHandler = ICurveHandler(handler);
         dx = _getBalance(tokenI, dx);
-
         uint256 beforeDy = _getBalance(tokenJ, uint256(-1));
-        if (tokenI == ETH_ADDRESS) {
-            if (useUnderlying) {
-                try
-                    curveHandler.exchange_underlying{value: dx}(i, j, dx, minDy)
-                {} catch Error(string memory reason) {
-                    _revertMsg("exchangeInternal", reason);
-                } catch {
-                    _revertMsg("exchangeInternal");
-                }
-            } else {
-                try
-                    curveHandler.exchange{value: dx}(i, j, dx, minDy)
-                {} catch Error(string memory reason) {
-                    _revertMsg("exchangeInternal", reason);
-                } catch {
-                    _revertMsg("exchangeInternal");
-                }
+
+        // Approve erc20 token or set eth amount
+        uint256 ethAmount = 0;
+        if (tokenI != ETH_ADDRESS) {
+            IERC20(tokenI).safeApprove(address(curveHandler), dx);
+        } else {
+            ethAmount = dx;
+        }
+
+        if (useUnderlying) {
+            try
+                curveHandler.exchange_underlying{value: ethAmount}(
+                    i,
+                    j,
+                    dx,
+                    minDy
+                )
+            {} catch Error(string memory reason) {
+                _revertMsg("exchangeInternal", reason);
+            } catch {
+                _revertMsg("exchangeInternal");
             }
         } else {
-            IERC20(tokenI).safeApprove(address(curveHandler), dx);
-            if (useUnderlying) {
-                try
-                    curveHandler.exchange_underlying(i, j, dx, minDy)
-                {} catch Error(string memory reason) {
-                    _revertMsg("exchangeInternal", reason);
-                } catch {
-                    _revertMsg("exchangeInternal");
-                }
-            } else {
-                try curveHandler.exchange(i, j, dx, minDy) {} catch Error(
-                    string memory reason
-                ) {
-                    _revertMsg("exchangeInternal", reason);
-                } catch {
-                    _revertMsg("exchangeInternal");
-                }
+            try
+                curveHandler.exchange{value: ethAmount}(i, j, dx, minDy)
+            {} catch Error(string memory reason) {
+                _revertMsg("exchangeInternal", reason);
+            } catch {
+                _revertMsg("exchangeInternal");
             }
+        }
+
+        // Reset zero amount for approval
+        if (tokenI != ETH_ADDRESS) {
             IERC20(tokenI).safeApprove(address(curveHandler), 0);
         }
         uint256 afterDy = _getBalance(tokenJ, uint256(-1));
@@ -363,7 +359,7 @@ contract HCurve is HandlerBase {
         return afterPoolBalance.sub(beforePoolBalance);
     }
 
-    // Curve remove liquidity
+    // Curve remove liquidity one coin
     function removeLiquidityOneCoin(
         address handler,
         address pool,
