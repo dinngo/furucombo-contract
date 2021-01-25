@@ -122,7 +122,7 @@ contract HCurve is HandlerBase {
         return afterToTokenBalance.sub(beforeToTokenBalance);
     }
 
-    // Curve add liquidity need exact array size for each pool
+    // Curve add liquidity
     function addLiquidity(
         address handler,
         address pool,
@@ -130,13 +130,57 @@ contract HCurve is HandlerBase {
         uint256[] memory amounts,
         uint256 minMintAmount
     ) external payable returns (uint256) {
+        return
+            addLiquidityInternal(
+                handler,
+                pool,
+                tokens,
+                amounts,
+                minMintAmount,
+                false
+            );
+    }
+
+    // Curve add liquidity underlying
+    function addLiquidityUnderlying(
+        address handler,
+        address pool,
+        address[] calldata tokens,
+        uint256[] memory amounts,
+        uint256 minMintAmount
+    ) external payable returns (uint256) {
+        return
+            addLiquidityInternal(
+                handler,
+                pool,
+                tokens,
+                amounts,
+                minMintAmount,
+                true
+            );
+    }
+
+    // Curve add liquidity need exact array size for each pool which supports
+    // eth and token
+    function addLiquidityInternal(
+        address handler,
+        address pool,
+        address[] calldata tokens,
+        uint256[] memory amounts,
+        uint256 minMintAmount,
+        bool useUnderlying
+    ) internal returns (uint256) {
         ICurveHandler curveHandler = ICurveHandler(handler);
         uint256 beforePoolBalance = IERC20(pool).balanceOf(address(this));
 
-        // Approve non-zero amount erc20 token
+        // Approve non-zero amount erc20 token and set eth amount
+        uint256 ethAmount = 0;
         for (uint256 i = 0; i < amounts.length; i++) {
             if (amounts[i] == 0) continue;
-            // if amount == uint256(-1) return balance of Proxy
+            if (tokens[i] == ETH_ADDRESS) {
+                ethAmount = amounts[i];
+                continue;
+            }
             amounts[i] = _getBalance(tokens[i], amounts[i]);
             IERC20(tokens[i]).safeApprove(address(curveHandler), amounts[i]);
         }
@@ -144,41 +188,109 @@ contract HCurve is HandlerBase {
         // Execute add_liquidity according to amount array size
         if (amounts.length == 2) {
             uint256[2] memory amts = [amounts[0], amounts[1]];
-            try curveHandler.add_liquidity(amts, minMintAmount) {} catch Error(
-                string memory reason
-            ) {
-                _revertMsg("addLiquidity", reason);
-            } catch {
-                _revertMsg("addLiquidity");
+            if (useUnderlying) {
+                try
+                    curveHandler.add_liquidity{value: ethAmount}(
+                        amts,
+                        minMintAmount,
+                        useUnderlying
+                    )
+                {} catch Error(string memory reason) {
+                    _revertMsg("addLiquidityInternal", reason);
+                } catch {
+                    _revertMsg("addLiquidityInternal");
+                }
+            } else {
+                try
+                    curveHandler.add_liquidity{value: ethAmount}(
+                        amts,
+                        minMintAmount
+                    )
+                {} catch Error(string memory reason) {
+                    _revertMsg("addLiquidityInternal", reason);
+                } catch {
+                    _revertMsg("addLiquidityInternal");
+                }
             }
         } else if (amounts.length == 3) {
             uint256[3] memory amts = [amounts[0], amounts[1], amounts[2]];
-            try curveHandler.add_liquidity(amts, minMintAmount) {} catch Error(
-                string memory reason
-            ) {
-                _revertMsg("addLiquidity", reason);
-            } catch {
-                _revertMsg("addLiquidity");
+            if (useUnderlying) {
+                try
+                    curveHandler.add_liquidity{value: ethAmount}(
+                        amts,
+                        minMintAmount,
+                        useUnderlying
+                    )
+                {} catch Error(string memory reason) {
+                    _revertMsg("addLiquidityInternal", reason);
+                } catch {
+                    _revertMsg("addLiquidityInternal");
+                }
+            } else {
+                try
+                    curveHandler.add_liquidity{value: ethAmount}(
+                        amts,
+                        minMintAmount
+                    )
+                {} catch Error(string memory reason) {
+                    _revertMsg("addLiquidityInternal", reason);
+                } catch {
+                    _revertMsg("addLiquidityInternal");
+                }
             }
         } else if (amounts.length == 4) {
             uint256[4] memory amts =
                 [amounts[0], amounts[1], amounts[2], amounts[3]];
-            try curveHandler.add_liquidity(amts, minMintAmount) {} catch Error(
-                string memory reason
-            ) {
-                _revertMsg("addLiquidity", reason);
-            } catch {
-                _revertMsg("addLiquidity");
+            if (useUnderlying) {
+                try
+                    curveHandler.add_liquidity{value: ethAmount}(
+                        amts,
+                        minMintAmount,
+                        useUnderlying
+                    )
+                {} catch Error(string memory reason) {
+                    _revertMsg("addLiquidityInternal", reason);
+                } catch {
+                    _revertMsg("addLiquidityInternal");
+                }
+            } else {
+                try
+                    curveHandler.add_liquidity{value: ethAmount}(
+                        amts,
+                        minMintAmount
+                    )
+                {} catch Error(string memory reason) {
+                    _revertMsg("addLiquidityInternal", reason);
+                } catch {
+                    _revertMsg("addLiquidityInternal");
+                }
             }
         } else if (amounts.length == 5) {
             uint256[5] memory amts =
                 [amounts[0], amounts[1], amounts[2], amounts[3], amounts[4]];
-            try curveHandler.add_liquidity(amts, minMintAmount) {} catch Error(
-                string memory reason
-            ) {
-                _revertMsg("addLiquidity", reason);
-            } catch {
-                _revertMsg("addLiquidity");
+            if (useUnderlying) {
+                try
+                    curveHandler.add_liquidity{value: ethAmount}(
+                        amts,
+                        minMintAmount,
+                        useUnderlying
+                    )
+                {} catch Error(string memory reason) {
+                    _revertMsg("addLiquidityInternal", reason);
+                } catch {
+                    _revertMsg("addLiquidityInternal");
+                }
+            } else {
+                try
+                    curveHandler.add_liquidity{value: ethAmount}(
+                        amts,
+                        minMintAmount
+                    )
+                {} catch Error(string memory reason) {
+                    _revertMsg("addLiquidityInternal", reason);
+                } catch {
+                    _revertMsg("addLiquidityInternal");
+                }
             }
         } else if (amounts.length == 6) {
             uint256[6] memory amts =
@@ -190,20 +302,38 @@ contract HCurve is HandlerBase {
                     amounts[4],
                     amounts[5]
                 ];
-            try curveHandler.add_liquidity(amts, minMintAmount) {} catch Error(
-                string memory reason
-            ) {
-                _revertMsg("addLiquidity", reason);
-            } catch {
-                _revertMsg("addLiquidity");
+            if (useUnderlying) {
+                try
+                    curveHandler.add_liquidity{value: ethAmount}(
+                        amts,
+                        minMintAmount,
+                        useUnderlying
+                    )
+                {} catch Error(string memory reason) {
+                    _revertMsg("addLiquidityInternal", reason);
+                } catch {
+                    _revertMsg("addLiquidityInternal");
+                }
+            } else {
+                try
+                    curveHandler.add_liquidity{value: ethAmount}(
+                        amts,
+                        minMintAmount
+                    )
+                {} catch Error(string memory reason) {
+                    _revertMsg("addLiquidityInternal", reason);
+                } catch {
+                    _revertMsg("addLiquidityInternal");
+                }
             }
         } else {
-            _revertMsg("addLiquidity", "invalid amount array size");
+            _revertMsg("addLiquidityInternal", "invalid amount array size");
         }
 
         // Reset zero amount for approval
         for (uint256 i = 0; i < amounts.length; i++) {
             if (amounts[i] == 0) continue;
+            if (tokens[i] == ETH_ADDRESS) continue;
             IERC20(tokens[i]).safeApprove(address(curveHandler), 0);
         }
 
@@ -214,31 +344,31 @@ contract HCurve is HandlerBase {
         return afterPoolBalance.sub(beforePoolBalance);
     }
 
-    // Curve remove liquidity one coin
+    // Curve remove liquidity one coin supports eth and token
     function removeLiquidityOneCoin(
         address handler,
         address pool,
         address tokenI,
-        uint256 tokenAmount,
+        uint256 poolAmount,
         int128 i,
         uint256 minAmount
     ) external payable returns (uint256) {
         ICurveHandler curveHandler = ICurveHandler(handler);
-        uint256 beforeTokenIBalance = IERC20(tokenI).balanceOf(address(this));
-        tokenAmount = _getBalance(pool, tokenAmount);
-        IERC20(pool).safeApprove(address(curveHandler), tokenAmount);
+        uint256 beforeTokenIBalance = _getBalance(tokenI, uint256(-1));
+        poolAmount = _getBalance(pool, poolAmount);
+        IERC20(pool).safeApprove(address(curveHandler), poolAmount);
         try
-            curveHandler.remove_liquidity_one_coin(tokenAmount, i, minAmount)
+            curveHandler.remove_liquidity_one_coin(poolAmount, i, minAmount)
         {} catch Error(string memory reason) {
             _revertMsg("removeLiquidityOneCoin", reason);
         } catch {
             _revertMsg("removeLiquidityOneCoin");
         }
         IERC20(pool).safeApprove(address(curveHandler), 0);
-        uint256 afterTokenIBalance = IERC20(tokenI).balanceOf(address(this));
+        uint256 afterTokenIBalance = _getBalance(tokenI, uint256(-1));
 
         // Update post process
-        _updateToken(tokenI);
+        if (tokenI != ETH_ADDRESS) _updateToken(tokenI);
         return afterTokenIBalance.sub(beforeTokenIBalance);
     }
 
@@ -247,17 +377,17 @@ contract HCurve is HandlerBase {
         address handler,
         address pool,
         address tokenI,
-        uint256 tokenAmount,
+        uint256 poolAmount,
         int128 i,
         uint256 minAmount
     ) external payable returns (uint256) {
         ICurveHandler curveHandler = ICurveHandler(handler);
         uint256 beforeTokenIBalance = IERC20(tokenI).balanceOf(address(this));
-        tokenAmount = _getBalance(pool, tokenAmount);
-        IERC20(pool).safeApprove(address(curveHandler), tokenAmount);
+        poolAmount = _getBalance(pool, poolAmount);
+        IERC20(pool).safeApprove(address(curveHandler), poolAmount);
         try
             curveHandler.remove_liquidity_one_coin(
-                tokenAmount,
+                poolAmount,
                 i,
                 minAmount,
                 true // donate_dust

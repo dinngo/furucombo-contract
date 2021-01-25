@@ -28,6 +28,8 @@ const {
   CURVE_YCRV_PROVIDER,
   CURVE_SBTCCRV,
   CURVE_SBTCCRV_PROVIDER,
+  CURVE_SETHCRV,
+  CURVE_SETHCRV_PROVIDER,
   CURVE_YDAI_TOKEN,
   CURVE_YUSDT_TOKEN,
 } = require('./utils/constants');
@@ -578,29 +580,29 @@ contract('Curve', function([_, user]) {
   });
 
   describe('Liquidity', function() {
-    const token0Address = RENBTC_TOKEN;
-    const token1Address = WBTC_TOKEN;
-    const provider0Address = RENBTC_PROVIDER;
-    const provider1Address = WBTC_PROVIDER;
-    const poolTokenAddress = CURVE_SBTCCRV;
-    const poolTokenProvider = CURVE_SBTCCRV_PROVIDER;
-
-    let token0User;
-    let token1User;
-
-    before(async function() {
-      this.token0 = await IToken.at(token0Address);
-      this.token1 = await IToken.at(token1Address);
-      this.poolToken = await IToken.at(poolTokenAddress);
-    });
-
-    beforeEach(async function() {
-      token0User = await this.token0.balanceOf.call(user);
-      token1User = await this.token1.balanceOf.call(user);
-      poolTokenUser = await this.poolToken.balanceOf.call(user);
-    });
-
     describe('sbtc pool', function() {
+      const token0Address = RENBTC_TOKEN;
+      const token1Address = WBTC_TOKEN;
+      const provider0Address = RENBTC_PROVIDER;
+      const provider1Address = WBTC_PROVIDER;
+      const poolTokenAddress = CURVE_SBTCCRV;
+      const poolTokenProvider = CURVE_SBTCCRV_PROVIDER;
+
+      let token0User;
+      let token1User;
+
+      before(async function() {
+        this.token0 = await IToken.at(token0Address);
+        this.token1 = await IToken.at(token1Address);
+        this.poolToken = await IToken.at(poolTokenAddress);
+      });
+
+      beforeEach(async function() {
+        token0User = await this.token0.balanceOf.call(user);
+        token1User = await this.token1.balanceOf.call(user);
+        poolTokenUser = await this.poolToken.balanceOf.call(user);
+      });
+
       it('add renBTC and WBTC to pool by addLiquidity', async function() {
         const token0Amount = new BN('1000000');
         const token1Amount = new BN('2000000');
@@ -856,6 +858,148 @@ contract('Curve', function([_, user]) {
         );
         expect(await this.token1.balanceOf.call(user)).to.be.bignumber.lte(
           token1UserBefore.add(answer.mul(new BN('1001')).div(new BN('1000')))
+        );
+
+        profileGas(receipt);
+      });
+    });
+
+    describe('seth pool', function() {
+      const tokenAddress = SETH_TOKEN;
+      const providerAddress = SETH_PROVIDER;
+      const poolTokenAddress = CURVE_SETHCRV;
+      const poolTokenProvider = CURVE_SETHCRV_PROVIDER;
+
+      let balanceUser;
+      let balanceProxy;
+      let tokenUser;
+
+      before(async function() {
+        this.token = await IToken.at(tokenAddress);
+        this.poolToken = await IToken.at(poolTokenAddress);
+      });
+
+      beforeEach(async function() {
+        balanceUser = await tracker(user);
+        balanceProxy = await tracker(this.proxy.address);
+        tokenUser = await this.token.balanceOf.call(user);
+        poolTokenUser = await this.poolToken.balanceOf.call(user);
+      });
+
+      it('add ETH and sETH to pool by addLiquidity', async function() {
+        const value = ether('1');
+        const tokenAmount = ether('2');
+        const tokens = [ETH_TOKEN, this.token.address];
+        const amounts = [value, tokenAmount];
+
+        // Get expected answer
+        const answer = await this.sethSwap.methods[
+          'calc_token_amount(uint256[2],bool)'
+        ](amounts, true);
+
+        // Execute handler
+        await this.token.transfer(this.proxy.address, tokenAmount, {
+          from: providerAddress,
+        });
+        await this.proxy.updateTokenMock(this.token.address);
+        const minMintAmount = mulPercent(answer, new BN('100').sub(slippage));
+        const data = abi.simpleEncode(
+          'addLiquidity(address,address,address[],uint256[],uint256)',
+          this.sethSwap.address,
+          this.poolToken.address,
+          tokens,
+          amounts,
+          minMintAmount
+        );
+        const receipt = await this.proxy.execMock(this.hCurve.address, data, {
+          from: user,
+          value: value,
+        });
+
+        // Get handler return
+        const handlerReturn = utils.toBN(
+          getHandlerReturn(receipt, ['uint256'])[0]
+        );
+        const poolTokenUserEnd = await this.poolToken.balanceOf.call(user);
+        expect(handlerReturn).to.be.bignumber.eq(
+          poolTokenUserEnd.sub(poolTokenUser)
+        );
+
+        // Check proxy balance
+        expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
+        expect(
+          await this.token.balanceOf.call(this.proxy.address)
+        ).to.be.bignumber.eq(ether('0'));
+        expect(
+          await this.poolToken.balanceOf.call(this.proxy.address)
+        ).to.be.bignumber.eq(ether('0'));
+
+        // Check user balance
+        expect(await balanceUser.delta()).to.be.bignumber.gte(
+          ether('0')
+            .sub(value)
+            .sub(new BN(receipt.receipt.gasUsed))
+        );
+        expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
+          tokenUser
+        );
+
+        // poolToken amount should be greater than answer * 0.999 which is
+        // referenced from tests in curve contract.
+        expect(await this.poolToken.balanceOf.call(user)).to.be.bignumber.gte(
+          answer.mul(new BN('999')).div(new BN('1000'))
+        );
+
+        profileGas(receipt);
+      });
+
+      it('remove from pool to ETH by removeLiquidityOneCoin', async function() {
+        const poolTokenUser = ether('0.1');
+        const answer = await this.sethSwap.calc_withdraw_one_coin.call(
+          poolTokenUser,
+          0
+        );
+        await this.poolToken.transfer(this.proxy.address, poolTokenUser, {
+          from: poolTokenProvider,
+        });
+        await this.proxy.updateTokenMock(this.poolToken.address);
+        const minAmount = mulPercent(answer, new BN('100').sub(slippage));
+        const data = abi.simpleEncode(
+          'removeLiquidityOneCoin(address,address,address,uint256,int128,uint256)',
+          this.sethSwap.address,
+          this.poolToken.address,
+          ETH_TOKEN,
+          poolTokenUser,
+          0,
+          minAmount
+        );
+        const receipt = await this.proxy.execMock(this.hCurve.address, data, {
+          from: user,
+          value: ether('1'),
+        });
+
+        // Check handler return
+        const handlerReturn = utils.toBN(
+          getHandlerReturn(receipt, ['uint256'])[0]
+        );
+        const userBalanceDelta = await balanceUser.delta();
+        expect(userBalanceDelta).to.be.bignumber.eq(
+          ether('0')
+            .add(handlerReturn)
+            .sub(new BN(receipt.receipt.gasUsed))
+        );
+
+        // Check proxy balance
+        expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
+        expect(
+          await this.poolToken.balanceOf.call(this.proxy.address)
+        ).to.be.bignumber.eq(ether('0'));
+
+        // Check user
+        expect(userBalanceDelta).to.be.bignumber.eq(
+          ether('0')
+            .add(answer)
+            .sub(new BN(receipt.receipt.gasUsed))
         );
 
         profileGas(receipt);
