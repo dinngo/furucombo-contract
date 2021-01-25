@@ -19,7 +19,7 @@ contract HCurve is HandlerBase {
     // prettier-ignore
     address public constant ETH_ADDRESS = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
-    // Curve fixed input exchange supports eth and token
+    // Curve fixed input exchange
     function exchange(
         address handler,
         address tokenI,
@@ -29,36 +29,11 @@ contract HCurve is HandlerBase {
         uint256 dx,
         uint256 minDy
     ) external payable returns (uint256) {
-        ICurveHandler curveHandler = ICurveHandler(handler);
-        dx = _getBalance(tokenI, dx);
-
-        uint256 beforeDy = _getBalance(tokenJ, uint256(-1));
-        if (tokenI == ETH_ADDRESS) {
-            try
-                curveHandler.exchange{value: dx}(i, j, dx, minDy)
-            {} catch Error(string memory reason) {
-                _revertMsg("exchange", reason);
-            } catch {
-                _revertMsg("exchange");
-            }
-        } else {
-            IERC20(tokenI).safeApprove(address(curveHandler), dx);
-            try curveHandler.exchange(i, j, dx, minDy) {} catch Error(
-                string memory reason
-            ) {
-                _revertMsg("exchange", reason);
-            } catch {
-                _revertMsg("exchange");
-            }
-            IERC20(tokenI).safeApprove(address(curveHandler), 0);
-        }
-        uint256 afterDy = _getBalance(tokenJ, uint256(-1));
-
-        if (tokenJ != ETH_ADDRESS) _updateToken(tokenJ);
-        return afterDy.sub(beforeDy);
+        return
+            exchangeInternal(handler, tokenI, tokenJ, i, j, dx, minDy, false);
     }
 
-    // Curve fixed input underlying exchange
+    // Curve fixed input exchange underlying
     function exchangeUnderlying(
         address handler,
         address tokenI,
@@ -68,23 +43,67 @@ contract HCurve is HandlerBase {
         uint256 dx,
         uint256 minDy
     ) external payable returns (uint256) {
-        ICurveHandler curveHandler = ICurveHandler(handler);
-        uint256 beforeTokenJBalance = IERC20(tokenJ).balanceOf(address(this));
-        // if amount == uint256(-1) return balance of Proxy
-        dx = _getBalance(tokenI, dx);
-        IERC20(tokenI).safeApprove(address(curveHandler), dx);
-        try curveHandler.exchange_underlying(i, j, dx, minDy) {} catch Error(
-            string memory reason
-        ) {
-            _revertMsg("exchangeUnderlying", reason);
-        } catch {
-            _revertMsg("exchangeUnderlying");
-        }
-        IERC20(tokenI).safeApprove(address(curveHandler), 0);
-        uint256 afterTokenJBalance = IERC20(tokenJ).balanceOf(address(this));
+        return exchangeInternal(handler, tokenI, tokenJ, i, j, dx, minDy, true);
+    }
 
-        _updateToken(tokenJ);
-        return afterTokenJBalance.sub(beforeTokenJBalance);
+    // Curve fixed input exchange supports eth and token
+    function exchangeInternal(
+        address handler,
+        address tokenI,
+        address tokenJ,
+        int128 i,
+        int128 j,
+        uint256 dx,
+        uint256 minDy,
+        bool useUnderlying
+    ) internal returns (uint256) {
+        ICurveHandler curveHandler = ICurveHandler(handler);
+        dx = _getBalance(tokenI, dx);
+
+        uint256 beforeDy = _getBalance(tokenJ, uint256(-1));
+        if (tokenI == ETH_ADDRESS) {
+            if (useUnderlying) {
+                try
+                    curveHandler.exchange_underlying{value: dx}(i, j, dx, minDy)
+                {} catch Error(string memory reason) {
+                    _revertMsg("exchangeInternal", reason);
+                } catch {
+                    _revertMsg("exchangeInternal");
+                }
+            } else {
+                try
+                    curveHandler.exchange{value: dx}(i, j, dx, minDy)
+                {} catch Error(string memory reason) {
+                    _revertMsg("exchangeInternal", reason);
+                } catch {
+                    _revertMsg("exchangeInternal");
+                }
+            }
+        } else {
+            IERC20(tokenI).safeApprove(address(curveHandler), dx);
+            if (useUnderlying) {
+                try
+                    curveHandler.exchange_underlying(i, j, dx, minDy)
+                {} catch Error(string memory reason) {
+                    _revertMsg("exchangeInternal", reason);
+                } catch {
+                    _revertMsg("exchangeInternal");
+                }
+            } else {
+                try curveHandler.exchange(i, j, dx, minDy) {} catch Error(
+                    string memory reason
+                ) {
+                    _revertMsg("exchangeInternal", reason);
+                } catch {
+                    _revertMsg("exchangeInternal");
+                }
+            }
+            IERC20(tokenI).safeApprove(address(curveHandler), 0);
+        }
+        uint256 afterDy = _getBalance(tokenJ, uint256(-1));
+
+        if (tokenJ != ETH_ADDRESS) _updateToken(tokenJ);
+        return afterDy.sub(beforeDy);
     }
 
     // OneSplit fixed input used for Curve swap
@@ -344,7 +363,7 @@ contract HCurve is HandlerBase {
         return afterPoolBalance.sub(beforePoolBalance);
     }
 
-    // Curve remove liquidity one coin supports eth and token
+    // Curve remove liquidity
     function removeLiquidityOneCoin(
         address handler,
         address pool,
@@ -353,16 +372,74 @@ contract HCurve is HandlerBase {
         int128 i,
         uint256 minAmount
     ) external payable returns (uint256) {
+        return
+            removeLiquidityOneCoinInternal(
+                handler,
+                pool,
+                tokenI,
+                poolAmount,
+                i,
+                minAmount,
+                false
+            );
+    }
+
+    // Curve remove liquidity one coin underlying
+    function removeLiquidityOneCoinUnderlying(
+        address handler,
+        address pool,
+        address tokenI,
+        uint256 poolAmount,
+        int128 i,
+        uint256 minAmount
+    ) external payable returns (uint256) {
+        return
+            removeLiquidityOneCoinInternal(
+                handler,
+                pool,
+                tokenI,
+                poolAmount,
+                i,
+                minAmount,
+                true
+            );
+    }
+
+    // Curve remove liquidity one coin supports eth and token
+    function removeLiquidityOneCoinInternal(
+        address handler,
+        address pool,
+        address tokenI,
+        uint256 poolAmount,
+        int128 i,
+        uint256 minAmount,
+        bool useUnderlying
+    ) internal returns (uint256) {
         ICurveHandler curveHandler = ICurveHandler(handler);
         uint256 beforeTokenIBalance = _getBalance(tokenI, uint256(-1));
         poolAmount = _getBalance(pool, poolAmount);
         IERC20(pool).safeApprove(address(curveHandler), poolAmount);
-        try
-            curveHandler.remove_liquidity_one_coin(poolAmount, i, minAmount)
-        {} catch Error(string memory reason) {
-            _revertMsg("removeLiquidityOneCoin", reason);
-        } catch {
-            _revertMsg("removeLiquidityOneCoin");
+        if (useUnderlying) {
+            try
+                curveHandler.remove_liquidity_one_coin(
+                    poolAmount,
+                    i,
+                    minAmount,
+                    useUnderlying
+                )
+            {} catch Error(string memory reason) {
+                _revertMsg("removeLiquidityOneCoinInternal", reason);
+            } catch {
+                _revertMsg("removeLiquidityOneCoinInternal");
+            }
+        } else {
+            try
+                curveHandler.remove_liquidity_one_coin(poolAmount, i, minAmount)
+            {} catch Error(string memory reason) {
+                _revertMsg("removeLiquidityOneCoinInternal", reason);
+            } catch {
+                _revertMsg("removeLiquidityOneCoinInternal");
+            }
         }
         IERC20(pool).safeApprove(address(curveHandler), 0);
         uint256 afterTokenIBalance = _getBalance(tokenI, uint256(-1));

@@ -19,6 +19,9 @@ const {
   SUSD_PROVIDER,
   WBTC_PROVIDER,
   RENBTC_PROVIDER,
+  CURVE_AAVECRV,
+  CURVE_AAVECRV_PROVIDER,
+  CURVE_AAVE_SWAP,
   CURVE_Y_SWAP,
   CURVE_Y_DEPOSIT,
   CURVE_SBTC_SWAP,
@@ -64,6 +67,7 @@ contract('Curve', function([_, user]) {
     this.yDeposit = await ICurveHandler.at(CURVE_Y_DEPOSIT);
     this.sbtcSwap = await ICurveHandler.at(CURVE_SBTC_SWAP);
     this.sethSwap = await ICurveHandler.at(CURVE_SETH_SWAP);
+    this.aaveSwap = await ICurveHandler.at(CURVE_AAVE_SWAP);
     this.oneSplit = await IOneSplit.at(CURVE_ONE_SPLIT);
   });
 
@@ -1001,6 +1005,153 @@ contract('Curve', function([_, user]) {
             .add(answer)
             .sub(new BN(receipt.receipt.gasUsed))
         );
+
+        profileGas(receipt);
+      });
+    });
+
+    describe('aave pool', function() {
+      const token0Address = DAI_TOKEN;
+      const token1Address = USDT_TOKEN;
+      const provider0Address = DAI_PROVIDER;
+      const provider1Address = USDT_PROVIDER;
+      const poolTokenAddress = CURVE_AAVECRV;
+      const poolTokenProvider = CURVE_AAVECRV_PROVIDER;
+
+      let token0User;
+      let token1User;
+
+      before(async function() {
+        this.token0 = await IToken.at(token0Address);
+        this.token1 = await IToken.at(token1Address);
+        this.poolToken = await IToken.at(poolTokenAddress);
+      });
+
+      beforeEach(async function() {
+        token0User = await this.token0.balanceOf.call(user);
+        token1User = await this.token1.balanceOf.call(user);
+        poolTokenUser = await this.poolToken.balanceOf.call(user);
+      });
+
+      it('add DAI and USDT to pool by addLiquidityUnderlying', async function() {
+        const token0Amount = ether('1');
+        const token1Amount = new BN('2000000');
+        const tokens = [
+          this.token0.address,
+          constants.ZERO_ADDRESS,
+          this.token1.address,
+        ];
+        const amounts = [token0Amount, 0, token1Amount];
+
+        // Get expected answer
+        const answer = await this.aaveSwap.methods[
+          'calc_token_amount(uint256[3],bool)'
+        ](amounts, true);
+
+        // Execute handler
+        await this.token0.transfer(this.proxy.address, token0Amount, {
+          from: provider0Address,
+        });
+        await this.token1.transfer(this.proxy.address, token1Amount, {
+          from: provider1Address,
+        });
+        await this.proxy.updateTokenMock(this.token0.address);
+        await this.proxy.updateTokenMock(this.token1.address);
+        const minMintAmount = mulPercent(answer, new BN('100').sub(slippage));
+        const data = abi.simpleEncode(
+          'addLiquidityUnderlying(address,address,address[],uint256[],uint256)',
+          this.aaveSwap.address,
+          this.poolToken.address,
+          tokens,
+          amounts,
+          minMintAmount
+        );
+        const receipt = await this.proxy.execMock(this.hCurve.address, data, {
+          from: user,
+          value: ether('1'),
+        });
+
+        // Get handler return result
+        const handlerReturn = utils.toBN(
+          getHandlerReturn(receipt, ['uint256'])[0]
+        );
+        const poolTokenUserEnd = await this.poolToken.balanceOf.call(user);
+        expect(handlerReturn).to.be.bignumber.eq(
+          poolTokenUserEnd.sub(poolTokenUser)
+        );
+
+        // Check proxy balance
+        expect(
+          await this.token0.balanceOf.call(this.proxy.address)
+        ).to.be.bignumber.eq(ether('0'));
+        expect(
+          await this.token1.balanceOf.call(this.proxy.address)
+        ).to.be.bignumber.eq(ether('0'));
+        expect(
+          await this.poolToken.balanceOf.call(this.proxy.address)
+        ).to.be.bignumber.eq(ether('0'));
+
+        // Check user balance
+        expect(await this.token0.balanceOf.call(user)).to.be.bignumber.eq(
+          token0User
+        );
+        expect(await this.token1.balanceOf.call(user)).to.be.bignumber.eq(
+          token1User
+        );
+        // poolToken amount should be greater than answer * 0.999 which is
+        // referenced from tests in curve contract.
+        expect(poolTokenUserEnd).to.be.bignumber.gte(
+          answer.mul(new BN('999')).div(new BN('1000'))
+        );
+
+        profileGas(receipt);
+      });
+
+      it('remove from pool to USDT by removeLiquidityOneCoinUnderlying', async function() {
+        const poolTokenUser = ether('0.1');
+        const token1UserBefore = await this.token1.balanceOf.call(user);
+        const answer = await this.aaveSwap.calc_withdraw_one_coin.call(
+          poolTokenUser,
+          2
+        );
+        await this.poolToken.transfer(this.proxy.address, poolTokenUser, {
+          from: poolTokenProvider,
+        });
+        await this.proxy.updateTokenMock(this.poolToken.address);
+        const minAmount = mulPercent(answer, new BN('100').sub(slippage));
+        const data = abi.simpleEncode(
+          'removeLiquidityOneCoinUnderlying(address,address,address,uint256,int128,uint256)',
+          this.aaveSwap.address,
+          this.poolToken.address,
+          this.token1.address,
+          poolTokenUser,
+          2,
+          minAmount
+        );
+        const receipt = await this.proxy.execMock(this.hCurve.address, data, {
+          from: user,
+          value: ether('1'),
+        });
+
+        // Get handler return result
+        const handlerReturn = utils.toBN(
+          getHandlerReturn(receipt, ['uint256'])[0]
+        );
+        const token1UserEnd = await this.token1.balanceOf.call(user);
+        expect(handlerReturn).to.be.bignumber.eq(
+          token1UserEnd.sub(token1UserBefore)
+        );
+
+        // Check proxy balance
+        expect(
+          await this.token1.balanceOf.call(this.proxy.address)
+        ).to.be.bignumber.eq(ether('0'));
+        expect(
+          await this.poolToken.balanceOf.call(this.proxy.address)
+        ).to.be.bignumber.eq(ether('0'));
+
+        // Check user
+        expect(token1UserEnd).to.be.bignumber.eq(token1UserBefore.add(answer));
 
         profileGas(receipt);
       });

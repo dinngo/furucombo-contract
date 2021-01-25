@@ -25,7 +25,7 @@ interface ICurveHandler {
         int128 j,
         uint256 dx,
         uint256 min_dy
-    ) external;
+    ) external payable;
 
     // Curve contract only support static array
     function add_liquidity(uint256[2] calldata amounts, uint256 min_mint_amount)
@@ -114,7 +114,7 @@ interface ICurveHandler {
         uint256 _token_amount,
         int128 i,
         uint256 min_uamount,
-        bool donate_dust
+        bool boolean // donate_dust or use_underlying
     ) external;
 
     function calc_withdraw_one_coin(uint256 _token_amount, int128 i)
