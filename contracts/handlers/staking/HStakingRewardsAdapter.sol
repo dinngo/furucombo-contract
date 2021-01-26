@@ -11,7 +11,7 @@ contract HStakingRewardsAdapter is HandlerBase {
     using SafeMath for uint256;
 
     // prettier-ignore
-    IStakingRewardsAdapterRegistry constant public registry = IStakingRewardsAdapterRegistry(0xd769F33F29c7666f1c3C9747A0F613020d53C8Aa);
+    IStakingRewardsAdapterRegistry constant public registry = IStakingRewardsAdapterRegistry(0xCa591346A311A372a20ed69e08bBE5107979e243);
 
     modifier whenAdapterIsValid(address adapter) {
         if (!registry.isValid(adapter)) {
