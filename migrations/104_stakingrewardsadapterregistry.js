@@ -7,6 +7,9 @@ const { getAdapterRegistryBytecodeBySolc } = require('../test/utils/getBytecode'
 const ISingletonFactory = artifacts.require('ISingletonFactory');
 
 module.exports = async function(deployer) {
+  // if (deployer.network === 'development') {
+  //   return;
+  // }
   const singletonFactory = await ISingletonFactory.at(CREATE2_FACTORY);
   // Deploy AdapterRegistry
   const tx = await singletonFactory.deploy(

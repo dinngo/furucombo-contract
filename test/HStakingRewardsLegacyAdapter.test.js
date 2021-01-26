@@ -23,7 +23,12 @@ const {
   STAKING_REWARDS_ADAPTER_REGISTRY_SALT,
   STAKING_REWARDS_ADAPTER_REGISTRY,
 } = require('./utils/constants');
-const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
+const {
+  evmRevert,
+  evmSnapshot,
+  profileGas,
+  getHandlerReturn,
+} = require('./utils/utils');
 const { getAdapterRegistryBytecodeBySolc } = require('./utils/getBytecode');
 
 const Registry = artifacts.require('Registry');
@@ -249,7 +254,7 @@ contract('StakingRewardsLegacyAdapter - Handler', function([_, user, someone]) {
           from: user,
           value: ether('0.1'),
         }),
-        'Invalid adapter'
+        'HStakingRewardsAdapter_General: Invalid adapter'
       );
     });
 
@@ -274,7 +279,7 @@ contract('StakingRewardsLegacyAdapter - Handler', function([_, user, someone]) {
           from: someone,
           value: ether('0.1'),
         }),
-        'Invalid adapter'
+        'HStakingRewardsAdapter_General: Invalid adapter'
       );
     });
   });
@@ -411,7 +416,7 @@ contract('StakingRewardsLegacyAdapter - Handler', function([_, user, someone]) {
           from: user,
           value: ether('0.1'),
         }),
-        'Invalid adapter'
+        'HStakingRewardsAdapter_General: Invalid adapter'
       );
     });
   });
@@ -458,6 +463,8 @@ contract('StakingRewardsLegacyAdapter - Handler', function([_, user, someone]) {
         value: ether('0.1'),
       });
 
+      // Get handler return result
+      const handlerReturn = getHandlerReturn(receipt, ['uint256', 'uint256']);
       // Get balance of user after withdrawFor
       const stakingUserAfter = await this.adapter.balanceOf.call(user);
       const stBalanceUserAfter = await this.st.balanceOf.call(user);
@@ -473,9 +480,13 @@ contract('StakingRewardsLegacyAdapter - Handler', function([_, user, someone]) {
       );
       // Verify user receive unstaked token
       expect(stBalanceUserAfter.sub(stBalanceUser)).to.be.bignumber.eq(sValue);
+      expect(utils.toBN(handlerReturn[0])).to.be.bignumber.eq(sValue);
       // Verify user get the reward he earned
       expect(rtBalanceUserAfter).to.be.bignumber.gte(earnedUser);
       expect(rtBalanceUserAfter).to.be.bignumber.lte(getBuffer(earnedUser));
+      expect(rtBalanceUserAfter).to.be.bignumber.eq(
+        utils.toBN(handlerReturn[1])
+      );
       expect(await balanceUser.delta()).to.be.bignumber.eq(
         ether('0').sub(new BN(receipt.receipt.gasUsed))
       );
@@ -545,7 +556,7 @@ contract('StakingRewardsLegacyAdapter - Handler', function([_, user, someone]) {
           from: user,
           value: ether('0.1'),
         }),
-        'Invalid adapter'
+        'HStakingRewardsAdapter_General: Invalid adapter'
       );
     });
   });
@@ -589,6 +600,10 @@ contract('StakingRewardsLegacyAdapter - Handler', function([_, user, someone]) {
         value: ether('0.1'),
       });
 
+      // Get handler return result
+      const handlerReturn = utils.toBN(
+        getHandlerReturn(receipt, ['uint256'])[0]
+      );
       // Get balance of user after withdrawFor
       const stakingUserAfter = await this.adapter.balanceOf.call(user);
       const stBalanceUserAfter = await this.st.balanceOf.call(user);
@@ -605,6 +620,7 @@ contract('StakingRewardsLegacyAdapter - Handler', function([_, user, someone]) {
       // Verify user get the reward he earned
       expect(rtBalanceUserAfter).to.be.bignumber.gte(earnedUser);
       expect(rtBalanceUserAfter).to.be.bignumber.lte(getBuffer(earnedUser));
+      expect(rtBalanceUserAfter).to.be.bignumber.eq(handlerReturn);
       expect(await balanceUser.delta()).to.be.bignumber.eq(
         ether('0').sub(new BN(receipt.receipt.gasUsed))
       );
@@ -675,7 +691,7 @@ contract('StakingRewardsLegacyAdapter - Handler', function([_, user, someone]) {
           from: user,
           value: ether('0.1'),
         }),
-        'Invalid adapter'
+        'HStakingRewardsAdapter_General: Invalid adapter'
       );
     });
   });

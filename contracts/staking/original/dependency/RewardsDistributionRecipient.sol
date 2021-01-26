@@ -1,13 +1,13 @@
-pragma solidity ^0.5.16;
+pragma solidity ^0.6.0;
 
 // Inheritance
 import "./Owned.sol";
 
 // https://docs.synthetix.io/contracts/RewardsDistributionRecipient
-contract RewardsDistributionRecipient is Owned {
+abstract contract RewardsDistributionRecipient is Owned {
     address public rewardsDistribution;
 
-    function notifyRewardAmount(uint256 reward) external;
+    function notifyRewardAmount(uint256 reward) external virtual;
 
     modifier onlyRewardsDistribution() {
         require(

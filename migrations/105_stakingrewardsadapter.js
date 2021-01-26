@@ -5,6 +5,9 @@ const Factory = artifacts.require('StakingRewardsAdapterFactory');
 const Registry = artifacts.require('StakingRewardsAdapterRegistry');
 
 module.exports = async function(deployer) {
+  if (deployer.network === 'development') {
+    return;
+  }
   const factory = await Factory.deployed();
   const registry = await Registry.at(STAKING_REWARDS_ADAPTER_REGISTRY);
   const mintrs = json.mintrs;

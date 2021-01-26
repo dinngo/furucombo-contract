@@ -1,6 +1,8 @@
-pragma solidity ^0.5.0;
+// SPDX-License-Identifier: MIT
 
-import "@openzeppelin/contracts/ownership/Ownable.sol";
+pragma solidity ^0.6.0;
+
+import "@openzeppelin/contracts/access/Ownable.sol";
 
 /// @notice The stakingRewardsAdapter registry database for Furucombo
 contract StakingRewardsAdapterRegistry is Ownable {

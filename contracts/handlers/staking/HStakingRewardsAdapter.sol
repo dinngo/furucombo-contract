@@ -1,19 +1,27 @@
-pragma solidity ^0.5.0;
+pragma solidity ^0.6.0;
 
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
+import "@openzeppelin/contracts/math/SafeMath.sol";
 import "../HandlerBase.sol";
 import "../../staking/IStakingRewardsAdapter.sol";
 import "../../staking/IStakingRewardsAdapterRegistry.sol";
 
 contract HStakingRewardsAdapter is HandlerBase {
     using SafeERC20 for IERC20;
+    using SafeMath for uint256;
 
     // prettier-ignore
-    IStakingRewardsAdapterRegistry constant public registry = IStakingRewardsAdapterRegistry(0xf60B06f7E41E1cF69eff2667eae88F60f62ae87B);
+    IStakingRewardsAdapterRegistry constant public registry = IStakingRewardsAdapterRegistry(0xd769F33F29c7666f1c3C9747A0F613020d53C8Aa);
 
     modifier whenAdapterIsValid(address adapter) {
-        require(registry.isValid(adapter), "Invalid adapter");
+        if (!registry.isValid(adapter)) {
+            _revertMsg("General", "Invalid adapter");
+        }
         _;
+    }
+
+    function getContractName() public pure override returns (string memory) {
+        return "HStakingRewardsAdapter";
     }
 
     // Stake for msg.sender
@@ -26,7 +34,15 @@ contract HStakingRewardsAdapter is HandlerBase {
         IERC20 token = adapter.stakingToken();
 
         token.safeApprove(address(adapter), amount);
-        adapter.stakeFor(cache.getSender(), amount);
+
+        try adapter.stakeFor(_getSender(), amount) {} catch Error(
+            string memory reason
+        ) {
+            _revertMsg("stake", reason);
+        } catch {
+            _revertMsg("stake");
+        }
+
         token.safeApprove(address(adapter), 0);
     }
 
@@ -40,7 +56,15 @@ contract HStakingRewardsAdapter is HandlerBase {
         IERC20 token = adapter.stakingToken();
 
         token.safeApprove(address(adapter), amount);
-        adapter.stakeFor(account, amount);
+
+        try adapter.stakeFor(account, amount) {} catch Error(
+            string memory reason
+        ) {
+            _revertMsg("stakeFor", reason);
+        } catch {
+            _revertMsg("stakeFor");
+        }
+
         token.safeApprove(address(adapter), 0);
     }
 
@@ -51,7 +75,14 @@ contract HStakingRewardsAdapter is HandlerBase {
         whenAdapterIsValid(adapterAddr)
     {
         IStakingRewardsAdapter adapter = IStakingRewardsAdapter(adapterAddr);
-        adapter.withdrawFor(cache.getSender(), amount);
+
+        try adapter.withdrawFor(_getSender(), amount) {} catch Error(
+            string memory reason
+        ) {
+            _revertMsg("withdraw", reason);
+        } catch {
+            _revertMsg("withdraw");
+        }
 
         _updateToken(address(adapter.stakingToken()));
     }
@@ -61,12 +92,30 @@ contract HStakingRewardsAdapter is HandlerBase {
         external
         payable
         whenAdapterIsValid(adapterAddr)
+        returns (uint256 withdrawAmount, uint256 rewardsAmount)
     {
         IStakingRewardsAdapter adapter = IStakingRewardsAdapter(adapterAddr);
-        adapter.exitFor(cache.getSender());
+        IERC20 stakingToken = adapter.stakingToken();
+        IERC20 rewardsToken = adapter.rewardsToken();
+        uint256 stakingTokenBalance = stakingToken.balanceOf(address(this));
+        uint256 rewardsTokenBalance = rewardsToken.balanceOf(address(this));
 
-        _updateToken(address(adapter.stakingToken()));
-        _updateToken(address(adapter.rewardsToken()));
+        try adapter.exitFor(_getSender()) {} catch Error(string memory reason) {
+            _revertMsg("exit", reason);
+        } catch {
+            _revertMsg("exit");
+        }
+
+        _updateToken(address(stakingToken));
+        _updateToken(address(rewardsToken));
+
+        // Calculate return amounts
+        withdrawAmount = stakingToken.balanceOf(address(this)).sub(
+            stakingTokenBalance
+        );
+        rewardsAmount = rewardsToken.balanceOf(address(this)).sub(
+            rewardsTokenBalance
+        );
     }
 
     // Only getReward for msg.sender
@@ -74,10 +123,25 @@ contract HStakingRewardsAdapter is HandlerBase {
         external
         payable
         whenAdapterIsValid(adapterAddr)
+        returns (uint256 rewardsAmount)
     {
         IStakingRewardsAdapter adapter = IStakingRewardsAdapter(adapterAddr);
-        adapter.getRewardFor(cache.getSender());
+        IERC20 rewardsToken = adapter.rewardsToken();
+        uint256 rewardsTokenBalance = rewardsToken.balanceOf(address(this));
 
-        _updateToken(address(adapter.rewardsToken()));
+        try adapter.getRewardFor(_getSender()) {} catch Error(
+            string memory reason
+        ) {
+            _revertMsg("getReward", reason);
+        } catch {
+            _revertMsg("getReward");
+        }
+
+        _updateToken(address(rewardsToken));
+
+        // Calculate return amount
+        rewardsAmount = rewardsToken.balanceOf(address(this)).sub(
+            rewardsTokenBalance
+        );
     }
 }

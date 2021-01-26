@@ -1,8 +1,8 @@
-pragma solidity ^0.5.16;
+pragma solidity ^0.6.0;
 
 import "@openzeppelin/contracts/math/Math.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
-import "@openzeppelin/contracts/token/ERC20/ERC20Detailed.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
@@ -22,10 +22,10 @@ contract StakingRewards is
 
     /* ========== STATE VARIABLES ========== */
 
-    IERC20 public rewardsToken;
-    IERC20 public stakingToken;
+    IERC20 public override rewardsToken;
+    IERC20 public override stakingToken;
     uint256 public periodFinish = 0;
-    uint256 public rewardRate = 0;
+    uint256 public override rewardRate = 0;
     uint256 public rewardsDuration = 7 days;
     uint256 public lastUpdateTime;
     uint256 public rewardPerTokenStored;
@@ -51,19 +51,24 @@ contract StakingRewards is
 
     /* ========== VIEWS ========== */
 
-    function totalSupply() external view returns (uint256) {
+    function totalSupply() external view override returns (uint256) {
         return _totalSupply;
     }
 
-    function balanceOf(address account) external view returns (uint256) {
+    function balanceOf(address account)
+        external
+        view
+        override
+        returns (uint256)
+    {
         return _balances[account];
     }
 
-    function lastTimeRewardApplicable() public view returns (uint256) {
+    function lastTimeRewardApplicable() public view override returns (uint256) {
         return Math.min(block.timestamp, periodFinish);
     }
 
-    function rewardPerToken() public view returns (uint256) {
+    function rewardPerToken() public view override returns (uint256) {
         if (_totalSupply == 0) {
             return rewardPerTokenStored;
         }
@@ -77,7 +82,7 @@ contract StakingRewards is
             );
     }
 
-    function earned(address account) public view returns (uint256) {
+    function earned(address account) public view override returns (uint256) {
         return
             _balances[account]
                 .mul(rewardPerToken().sub(userRewardPerTokenPaid[account]))
@@ -85,7 +90,7 @@ contract StakingRewards is
                 .add(rewards[account]);
     }
 
-    function getRewardForDuration() external view returns (uint256) {
+    function getRewardForDuration() external view override returns (uint256) {
         return rewardRate.mul(rewardsDuration);
     }
 
@@ -93,6 +98,7 @@ contract StakingRewards is
 
     function stake(uint256 amount)
         external
+        override
         nonReentrant
         notPaused
         updateReward(msg.sender)
@@ -106,6 +112,7 @@ contract StakingRewards is
 
     function withdraw(uint256 amount)
         public
+        override
         nonReentrant
         updateReward(msg.sender)
     {
@@ -116,7 +123,7 @@ contract StakingRewards is
         emit Withdrawn(msg.sender, amount);
     }
 
-    function getReward() public nonReentrant updateReward(msg.sender) {
+    function getReward() public override nonReentrant updateReward(msg.sender) {
         uint256 reward = rewards[msg.sender];
         if (reward > 0) {
             rewards[msg.sender] = 0;
@@ -125,7 +132,7 @@ contract StakingRewards is
         }
     }
 
-    function exit() external {
+    function exit() external override {
         withdraw(_balances[msg.sender]);
         getReward();
     }
@@ -134,6 +141,7 @@ contract StakingRewards is
 
     function notifyRewardAmount(uint256 reward)
         external
+        override(IStakingRewards, RewardsDistributionRecipient)
         onlyRewardsDistribution
         updateReward(address(0))
     {
@@ -166,8 +174,9 @@ contract StakingRewards is
         onlyOwner
     {
         // If it's SNX we have to query the token symbol to ensure its not a proxy or underlying
-        bool isSNX = (keccak256(bytes("SNX")) ==
-            keccak256(bytes(ERC20Detailed(tokenAddress).symbol())));
+        bool isSNX =
+            (keccak256(bytes("SNX")) ==
+                keccak256(bytes(ERC20(tokenAddress).symbol())));
         // Cannot recover the staking token or the rewards token
         require(
             tokenAddress != address(stakingToken) &&

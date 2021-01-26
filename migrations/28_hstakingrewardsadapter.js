@@ -3,6 +3,9 @@ const Handler = artifacts.require('HStakingRewardsAdapter');
 const utils = web3.utils;
 
 module.exports = async function(deployer) {
+  if (deployer.network === 'development') {
+    return;
+  }
   await deployer.deploy(Handler);
   const registry = await Registry.deployed();
   await registry.register(Handler.address, utils.asciiToHex('HStakingRewardsAdapter'));

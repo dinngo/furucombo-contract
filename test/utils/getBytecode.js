@@ -102,7 +102,7 @@ function findImports(path) {
     return {
       contents: Address.source,
     };
-  else if (path === '@openzeppelin/contracts/ownership/Ownable.sol')
+  else if (path === '@openzeppelin/contracts/access/Ownable.sol')
     return {
       contents: Ownable.source,
     };
