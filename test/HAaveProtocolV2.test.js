@@ -17,7 +17,6 @@ const utils = web3.utils;
 const { expect } = require('chai');
 
 const {
-  ETH_TOKEN,
   WETH_TOKEN,
   WETH_PROVIDER,
   DAI_TOKEN,
@@ -53,7 +52,6 @@ contract('Aave V2', function([_, user, someone]) {
   const tokenAddress = DAI_TOKEN;
   const providerAddress = DAI_PROVIDER;
   const awethAddress = AWETH_V2;
-  const etherAddress = ETH_TOKEN;
   const wethAddress = WETH_TOKEN;
   const wethProviderAddress = WETH_PROVIDER;
 
