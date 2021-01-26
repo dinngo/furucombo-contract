@@ -6,6 +6,7 @@ import "@openzeppelin/contracts/math/SafeMath.sol";
 
 import "../../interface/IProxy.sol";
 import "../HandlerBase.sol";
+import "../weth/IWETH9.sol";
 import "./ILendingPoolV2.sol";
 import "./IFlashLoanReceiver.sol";
 import "./ILendingPoolAddressesProviderV2.sol";
@@ -17,6 +18,10 @@ contract HAaveProtocolV2 is HandlerBase, IFlashLoanReceiver {
 
     // prettier-ignore
     address public constant PROVIDER = 0xB53C1a33016B2DC2fF3653530bfF1848a515c8c5;
+    // prettier-ignore
+    address payable public constant WETH = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
+    // prettier-ignore
+    address payable public constant ETHER = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
     uint16 public constant REFERRAL_CODE = 56;
 
     function getContractName() public pure override returns (string memory) {
@@ -24,25 +29,16 @@ contract HAaveProtocolV2 is HandlerBase, IFlashLoanReceiver {
     }
 
     function deposit(address asset, uint256 amount) external payable {
-        (address pool, address aToken) = _getLendingPoolAndAToken(asset);
         amount = _getBalance(asset, amount);
-        IERC20(asset).safeApprove(pool, amount);
+        _deposit(asset, amount);
+    }
 
-        try
-            ILendingPoolV2(pool).deposit(
-                asset,
-                amount,
-                address(this),
-                REFERRAL_CODE
-            )
-        {} catch Error(string memory reason) {
-            _revertMsg("deposit", reason);
-        } catch {
-            _revertMsg("deposit");
-        }
+    function depositETH(uint256 amount) external payable {
+        amount = _getBalance(ETHER, amount);
+        IWETH9(WETH).deposit{value: amount}();
+        _deposit(WETH, amount);
 
-        IERC20(asset).safeApprove(pool, 0);
-        _updateToken(aToken);
+        _updateToken(WETH);
     }
 
     function withdraw(address asset, uint256 amount)
@@ -50,20 +46,18 @@ contract HAaveProtocolV2 is HandlerBase, IFlashLoanReceiver {
         payable
         returns (uint256 withdrawAmount)
     {
-        (address pool, address aToken) = _getLendingPoolAndAToken(asset);
-        amount = _getBalance(aToken, amount);
-
-        try
-            ILendingPoolV2(pool).withdraw(asset, amount, address(this))
-        returns (uint256 ret) {
-            withdrawAmount = ret;
-        } catch Error(string memory reason) {
-            _revertMsg("withdraw", reason);
-        } catch {
-            _revertMsg("withdraw");
-        }
+        withdrawAmount = _withdraw(asset, amount);
 
         _updateToken(asset);
+    }
+
+    function withdrawETH(uint256 amount)
+        external
+        payable
+        returns (uint256 withdrawAmount)
+    {
+        withdrawAmount = _withdraw(WETH, amount);
+        IWETH9(WETH).withdraw(withdrawAmount);
     }
 
     function repay(
@@ -72,45 +66,18 @@ contract HAaveProtocolV2 is HandlerBase, IFlashLoanReceiver {
         uint256 rateMode,
         address onBehalfOf
     ) external payable returns (uint256 remainDebt) {
-        address pool =
-            ILendingPoolAddressesProviderV2(PROVIDER).getLendingPool();
-        IERC20(asset).safeApprove(pool, amount);
-
-        try
-            ILendingPoolV2(pool).repay(asset, amount, rateMode, onBehalfOf)
-        {} catch Error(string memory reason) {
-            _revertMsg("repay", reason);
-        } catch {
-            _revertMsg("repay");
-        }
-
-        IERC20(asset).safeApprove(pool, 0);
-
-        DataTypes.ReserveData memory reserve =
-            ILendingPoolV2(pool).getReserveData(asset);
-        remainDebt = DataTypes.InterestRateMode(rateMode) ==
-            DataTypes.InterestRateMode.STABLE
-            ? IERC20(reserve.stableDebtTokenAddress).balanceOf(onBehalfOf)
-            : IERC20(reserve.variableDebtTokenAddress).balanceOf(onBehalfOf);
+        remainDebt = _repay(asset, amount, rateMode, onBehalfOf);
     }
 
-    function _getLendingPoolAndAToken(address underlying)
-        internal
-        view
-        returns (address pool, address aToken)
-    {
-        pool = ILendingPoolAddressesProviderV2(PROVIDER).getLendingPool();
-        try ILendingPoolV2(pool).getReserveData(underlying) returns (
-            DataTypes.ReserveData memory data
-        ) {
-            aToken = data.aTokenAddress;
-            if (aToken == address(0))
-                _revertMsg("General", "aToken should not be zero address");
-        } catch Error(string memory reason) {
-            _revertMsg("General", reason);
-        } catch {
-            _revertMsg("General");
-        }
+    function repayETH(
+        uint256 amount,
+        uint256 rateMode,
+        address onBehalfOf
+    ) external payable returns (uint256 remainDebt) {
+        IWETH9(WETH).deposit{value: amount}();
+        remainDebt = _repay(WETH, amount, rateMode, onBehalfOf);
+
+        _updateToken(WETH);
     }
 
     function flashLoan(
@@ -176,5 +143,91 @@ contract HAaveProtocolV2 is HandlerBase, IFlashLoanReceiver {
             IERC20(assets[i]).safeApprove(pool, amountOwing);
         }
         return true;
+    }
+
+    function _deposit(address asset, uint256 amount) internal {
+        (address pool, address aToken) = _getLendingPoolAndAToken(asset);
+        IERC20(asset).safeApprove(pool, amount);
+
+        try
+            ILendingPoolV2(pool).deposit(
+                asset,
+                amount,
+                address(this),
+                REFERRAL_CODE
+            )
+        {} catch Error(string memory reason) {
+            _revertMsg("deposit", reason);
+        } catch {
+            _revertMsg("deposit");
+        }
+
+        IERC20(asset).safeApprove(pool, 0);
+        _updateToken(aToken);
+    }
+
+    function _withdraw(address asset, uint256 amount)
+        internal
+        returns (uint256 withdrawAmount)
+    {
+        (address pool, address aToken) = _getLendingPoolAndAToken(asset);
+        amount = _getBalance(aToken, amount);
+
+        try
+            ILendingPoolV2(pool).withdraw(asset, amount, address(this))
+        returns (uint256 ret) {
+            withdrawAmount = ret;
+        } catch Error(string memory reason) {
+            _revertMsg("withdraw", reason);
+        } catch {
+            _revertMsg("withdraw");
+        }
+    }
+
+    function _repay(
+        address asset,
+        uint256 amount,
+        uint256 rateMode,
+        address onBehalfOf
+    ) internal returns (uint256 remainDebt) {
+        address pool =
+            ILendingPoolAddressesProviderV2(PROVIDER).getLendingPool();
+        IERC20(asset).safeApprove(pool, amount);
+
+        try
+            ILendingPoolV2(pool).repay(asset, amount, rateMode, onBehalfOf)
+        {} catch Error(string memory reason) {
+            _revertMsg("repay", reason);
+        } catch {
+            _revertMsg("repay");
+        }
+
+        IERC20(asset).safeApprove(pool, 0);
+
+        DataTypes.ReserveData memory reserve =
+            ILendingPoolV2(pool).getReserveData(asset);
+        remainDebt = DataTypes.InterestRateMode(rateMode) ==
+            DataTypes.InterestRateMode.STABLE
+            ? IERC20(reserve.stableDebtTokenAddress).balanceOf(onBehalfOf)
+            : IERC20(reserve.variableDebtTokenAddress).balanceOf(onBehalfOf);
+    }
+
+    function _getLendingPoolAndAToken(address underlying)
+        internal
+        view
+        returns (address pool, address aToken)
+    {
+        pool = ILendingPoolAddressesProviderV2(PROVIDER).getLendingPool();
+        try ILendingPoolV2(pool).getReserveData(underlying) returns (
+            DataTypes.ReserveData memory data
+        ) {
+            aToken = data.aTokenAddress;
+            if (aToken == address(0))
+                _revertMsg("General", "aToken should not be zero address");
+        } catch Error(string memory reason) {
+            _revertMsg("General", reason);
+        } catch {
+            _revertMsg("General");
+        }
     }
 }
