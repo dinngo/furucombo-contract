@@ -11,6 +11,10 @@ All notable changes to this project will be documented in this file.
 - Support 1inch v2.
 - Support Aave v2 depositETH/withdrawETH/repayETH.
 
+### Changed
+
+- Update curve handler to support eth and aave pools.
+
 ## [1.0.0] - 2021-01-09
 
 ### Added
