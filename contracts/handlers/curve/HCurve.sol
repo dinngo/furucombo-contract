@@ -4,7 +4,6 @@ import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "../HandlerBase.sol";
 import "./ICurveHandler.sol";
-import "./IOneSplit.sol";
 
 contract HCurve is HandlerBase {
     using SafeERC20 for IERC20;
@@ -14,8 +13,6 @@ contract HCurve is HandlerBase {
         return "HCurve";
     }
 
-    // prettier-ignore
-    address public constant ONE_SPLIT = 0xC586BeF4a0992C495Cf22e1aeEE4E446CECDee0E;
     // prettier-ignore
     address public constant ETH_ADDRESS = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
@@ -101,41 +98,6 @@ contract HCurve is HandlerBase {
 
         if (tokenJ != ETH_ADDRESS) _updateToken(tokenJ);
         return afterDy.sub(beforeDy);
-    }
-
-    // OneSplit fixed input used for Curve swap
-    function swap(
-        address fromToken,
-        address toToken,
-        uint256 amount,
-        uint256 minReturn,
-        uint256[] calldata distribution,
-        uint256 featureFlags
-    ) external payable returns (uint256) {
-        IOneSplit oneSplit = IOneSplit(ONE_SPLIT);
-        uint256 beforeToTokenBalance = IERC20(toToken).balanceOf(address(this));
-        // if amount == uint256(-1) return balance of Proxy
-        amount = _getBalance(fromToken, amount);
-        IERC20(fromToken).safeApprove(address(oneSplit), amount);
-        try
-            oneSplit.swap(
-                fromToken,
-                toToken,
-                amount,
-                minReturn,
-                distribution,
-                featureFlags
-            )
-        {} catch Error(string memory reason) {
-            _revertMsg("swap", reason);
-        } catch {
-            _revertMsg("swap");
-        }
-        IERC20(fromToken).safeApprove(address(oneSplit), 0);
-        uint256 afterToTokenBalance = IERC20(toToken).balanceOf(address(this));
-
-        _updateToken(toToken);
-        return afterToTokenBalance.sub(beforeToTokenBalance);
     }
 
     // Curve add liquidity

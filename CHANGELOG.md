@@ -14,6 +14,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - Update curve handler to support eth and aave pools.
+- Update curve handler to remove onesplit swap.
 
 ## [1.0.0] - 2021-01-09
 
