@@ -12,7 +12,7 @@ interface ICurveHandler {
         int128 j,
         uint256 dx,
         uint256 min_dy
-    ) external;
+    ) external payable;
 
     function get_dy_underlying(
         int128 i,
@@ -25,23 +25,59 @@ interface ICurveHandler {
         int128 j,
         uint256 dx,
         uint256 min_dy
-    ) external;
+    ) external payable;
 
     // Curve contract only support static array
     function add_liquidity(uint256[2] calldata amounts, uint256 min_mint_amount)
-        external;
+        external
+        payable;
 
     function add_liquidity(uint256[3] calldata amounts, uint256 min_mint_amount)
-        external;
+        external
+        payable;
 
     function add_liquidity(uint256[4] calldata amounts, uint256 min_mint_amount)
-        external;
+        external
+        payable;
 
     function add_liquidity(uint256[5] calldata amounts, uint256 min_mint_amount)
-        external;
+        external
+        payable;
 
     function add_liquidity(uint256[6] calldata amounts, uint256 min_mint_amount)
-        external;
+        external
+        payable;
+
+    // Curve underlying
+    function add_liquidity(
+        uint256[2] calldata amounts,
+        uint256 min_mint_amount,
+        bool use_underlying
+    ) external payable;
+
+    function add_liquidity(
+        uint256[3] calldata amounts,
+        uint256 min_mint_amount,
+        bool use_underlying
+    ) external payable;
+
+    function add_liquidity(
+        uint256[4] calldata amounts,
+        uint256 min_mint_amount,
+        bool use_underlying
+    ) external payable;
+
+    function add_liquidity(
+        uint256[5] calldata amounts,
+        uint256 min_mint_amount,
+        bool use_underlying
+    ) external payable;
+
+    function add_liquidity(
+        uint256[6] calldata amounts,
+        uint256 min_mint_amount,
+        bool use_underlying
+    ) external payable;
 
     function calc_token_amount(uint256[2] calldata amounts, bool deposit)
         external
@@ -78,7 +114,7 @@ interface ICurveHandler {
         uint256 _token_amount,
         int128 i,
         uint256 min_uamount,
-        bool donate_dust
+        bool boolean // donate_dust or use_underlying
     ) external;
 
     function calc_withdraw_one_coin(uint256 _token_amount, int128 i)
