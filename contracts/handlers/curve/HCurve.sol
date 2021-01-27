@@ -30,7 +30,7 @@ contract HCurve is HandlerBase {
         uint256 minDy
     ) external payable returns (uint256) {
         return
-            exchangeInternal(handler, tokenI, tokenJ, i, j, dx, minDy, false);
+            _exchangeInternal(handler, tokenI, tokenJ, i, j, dx, minDy, false);
     }
 
     // Curve fixed input exchange underlying
@@ -43,11 +43,12 @@ contract HCurve is HandlerBase {
         uint256 dx,
         uint256 minDy
     ) external payable returns (uint256) {
-        return exchangeInternal(handler, tokenI, tokenJ, i, j, dx, minDy, true);
+        return
+            _exchangeInternal(handler, tokenI, tokenJ, i, j, dx, minDy, true);
     }
 
     // Curve fixed input exchange supports eth and token
-    function exchangeInternal(
+    function _exchangeInternal(
         address handler,
         address tokenI,
         address tokenJ,
@@ -78,9 +79,9 @@ contract HCurve is HandlerBase {
                     minDy
                 )
             {} catch Error(string memory reason) {
-                _revertMsg("exchangeInternal", reason);
+                _revertMsg("exchangeInternal: use underlying", reason);
             } catch {
-                _revertMsg("exchangeInternal");
+                _revertMsg("exchangeInternal: use underlying");
             }
         } else {
             try
@@ -142,11 +143,11 @@ contract HCurve is HandlerBase {
         address handler,
         address pool,
         address[] calldata tokens,
-        uint256[] memory amounts,
+        uint256[] calldata amounts,
         uint256 minMintAmount
     ) external payable returns (uint256) {
         return
-            addLiquidityInternal(
+            _addLiquidityInternal(
                 handler,
                 pool,
                 tokens,
@@ -161,11 +162,11 @@ contract HCurve is HandlerBase {
         address handler,
         address pool,
         address[] calldata tokens,
-        uint256[] memory amounts,
+        uint256[] calldata amounts,
         uint256 minMintAmount
     ) external payable returns (uint256) {
         return
-            addLiquidityInternal(
+            _addLiquidityInternal(
                 handler,
                 pool,
                 tokens,
@@ -177,7 +178,7 @@ contract HCurve is HandlerBase {
 
     // Curve add liquidity need exact array size for each pool which supports
     // eth and token
-    function addLiquidityInternal(
+    function _addLiquidityInternal(
         address handler,
         address pool,
         address[] calldata tokens,
@@ -211,9 +212,9 @@ contract HCurve is HandlerBase {
                         useUnderlying
                     )
                 {} catch Error(string memory reason) {
-                    _revertMsg("addLiquidityInternal", reason);
+                    _revertMsg("addLiquidityInternal: use underlying", reason);
                 } catch {
-                    _revertMsg("addLiquidityInternal");
+                    _revertMsg("addLiquidityInternal: use underlying");
                 }
             } else {
                 try
@@ -237,9 +238,9 @@ contract HCurve is HandlerBase {
                         useUnderlying
                     )
                 {} catch Error(string memory reason) {
-                    _revertMsg("addLiquidityInternal", reason);
+                    _revertMsg("addLiquidityInternal: use underlying", reason);
                 } catch {
-                    _revertMsg("addLiquidityInternal");
+                    _revertMsg("addLiquidityInternal: use underlying");
                 }
             } else {
                 try
@@ -264,9 +265,9 @@ contract HCurve is HandlerBase {
                         useUnderlying
                     )
                 {} catch Error(string memory reason) {
-                    _revertMsg("addLiquidityInternal", reason);
+                    _revertMsg("addLiquidityInternal: use underlying", reason);
                 } catch {
-                    _revertMsg("addLiquidityInternal");
+                    _revertMsg("addLiquidityInternal: use underlying");
                 }
             } else {
                 try
@@ -291,9 +292,9 @@ contract HCurve is HandlerBase {
                         useUnderlying
                     )
                 {} catch Error(string memory reason) {
-                    _revertMsg("addLiquidityInternal", reason);
+                    _revertMsg("addLiquidityInternal: use underlying", reason);
                 } catch {
-                    _revertMsg("addLiquidityInternal");
+                    _revertMsg("addLiquidityInternal: use underlying");
                 }
             } else {
                 try
@@ -325,9 +326,9 @@ contract HCurve is HandlerBase {
                         useUnderlying
                     )
                 {} catch Error(string memory reason) {
-                    _revertMsg("addLiquidityInternal", reason);
+                    _revertMsg("addLiquidityInternal: use underlying", reason);
                 } catch {
-                    _revertMsg("addLiquidityInternal");
+                    _revertMsg("addLiquidityInternal: use underlying");
                 }
             } else {
                 try
@@ -369,7 +370,7 @@ contract HCurve is HandlerBase {
         uint256 minAmount
     ) external payable returns (uint256) {
         return
-            removeLiquidityOneCoinInternal(
+            _removeLiquidityOneCoinInternal(
                 handler,
                 pool,
                 tokenI,
@@ -390,7 +391,7 @@ contract HCurve is HandlerBase {
         uint256 minAmount
     ) external payable returns (uint256) {
         return
-            removeLiquidityOneCoinInternal(
+            _removeLiquidityOneCoinInternal(
                 handler,
                 pool,
                 tokenI,
@@ -402,7 +403,7 @@ contract HCurve is HandlerBase {
     }
 
     // Curve remove liquidity one coin supports eth and token
-    function removeLiquidityOneCoinInternal(
+    function _removeLiquidityOneCoinInternal(
         address handler,
         address pool,
         address tokenI,
@@ -424,9 +425,12 @@ contract HCurve is HandlerBase {
                     useUnderlying
                 )
             {} catch Error(string memory reason) {
-                _revertMsg("removeLiquidityOneCoinInternal", reason);
+                _revertMsg(
+                    "removeLiquidityOneCoinInternal: use underlying",
+                    reason
+                );
             } catch {
-                _revertMsg("removeLiquidityOneCoinInternal");
+                _revertMsg("removeLiquidityOneCoinInternal: use underlying");
             }
         } else {
             try
