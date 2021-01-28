@@ -191,12 +191,12 @@ module.exports = {
   /* Event Signature */
   RecordHandlerResultSig:
     '0x90c726ff5efa7268723ee48df835144384bc0f012e89750782886764b5e54f16',
-  // TODO: change to mainnet adapter registry address, below one is handler registry now.
-  STAKING_ADAPTER_REGISTRY: '0xAf1134A479c0d3eCae95CEc4490B97305Ac17970',
-  STAKING_ADAPTER_REGISTRY_OWNER: '0xbcb909975715dc8fde643ee44b89e3fd6a35a259',
+    
   // salt: web3.utils.asciiToHex('StakingRewardsAdapterRegistry')
   STAKING_REWARDS_ADAPTER_REGISTRY_SALT:
     '0x5374616b696e6752657761726473416461707465725265676973747279',
+  // TODO: change to mainnet adapter registry address and owner.
   STAKING_REWARDS_ADAPTER_REGISTRY:
     '0xCa591346A311A372a20ed69e08bBE5107979e243',
+  STAKING_REWARDS_ADAPTER_REGISTRY_OWNER: '0xbE8F6FeFe32F18ea5fBdb51c76EFFC5481a45e00',
 };

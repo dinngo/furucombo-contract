@@ -11,18 +11,25 @@ module.exports = async function(deployer) {
   //   return;
   // }
   const singletonFactory = await ISingletonFactory.at(CREATE2_FACTORY);
-  // Deploy AdapterRegistry
-  const tx = await singletonFactory.deploy(
+  // Check if deployed contract address is same to the predicted one
+  const deployAddr = await singletonFactory.deploy.call(
     getAdapterRegistryBytecodeBySolc(),
     STAKING_REWARDS_ADAPTER_REGISTRY_SALT
   );
-  // Check if deployed contract address is same to the predicted one
-  const log = tx.receipt.rawLogs[1];
-  const registryAddr = log.address;
-  if(registryAddr != STAKING_REWARDS_ADAPTER_REGISTRY) {
-    console.error(`!!!!! Got different deployed AdapterRegistry with predicted one !!!!!`);
+  if (deployAddr != STAKING_REWARDS_ADAPTER_REGISTRY) {
+    console.error(
+      `!!!!! Got different AdapterRegistry address with predicted one !!!!!`
+    );
     console.error(`!!!!! Predicted: ${STAKING_REWARDS_ADAPTER_REGISTRY} !!!!!`);
-    console.error(`!!!!! Deployed: ${registryAddr} !!!!!`);
+    console.error(`!!!!! Going To Deploy At: ${deployAddr} !!!!!`);
+    console.error(`!!!!! Deploy process rejected !!!!!`);
+    return false;
   }
+  // Deploy AdapterRegistry
+  await singletonFactory.deploy(
+    getAdapterRegistryBytecodeBySolc(),
+    STAKING_REWARDS_ADAPTER_REGISTRY_SALT
+  );
+  console.log(`Deployed AdapterRegistry: ${deployAddr}`);
 };
 
