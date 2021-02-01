@@ -44,7 +44,7 @@ module.exports = {
       port: 8545,
       network_id: '*',
       gasPrice: 0x01,
-      gas: 5000000,
+      gas: 10000000,
       networkCheckTimeout: 10000,
     },
     migration: {
@@ -52,7 +52,7 @@ module.exports = {
       port: 8545,
       network_id: '*',
       gasPrice: 0x01,
-      gas: 5000000,
+      gas: 10000000,
       networkCheckTimeout: 10000,
     },
     beta: {

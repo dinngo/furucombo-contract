@@ -10,7 +10,7 @@ cache: &global_cache
 
 before_script:
   - npm install
-  - FILES=( $(find -H -L ./test/* -regex "^.*.test.js" \( ! -name "./test/YVault.test.js" \)) )
+  - FILES=( $(find -H -L ./test/* -regex "^.*.test.js" \( ! -name "./test/HYVault.test.js" \)) )
   - len=${#FILES[@]}
   - RUNNER_COUNT=8
   - >
@@ -158,7 +158,7 @@ test_8:
     - docker
   script:
     - apt-get update && apt-get install -y netcat
-    - npm run test "./test/YVault.test.js"
+    - npm run test "./test/HYVault.test.js"
   cache:
     <<: *global_cache
 
