@@ -49,6 +49,7 @@ const IUniswapExchange = artifacts.require('IUniswapExchange');
 
 const RAY = new BN('1000000000000000000000000000');
 const RAD = new BN('1000000000000000000000000000000000000000000000');
+GenerateDaiLimit = ether('2000');
 
 async function getCdpInfo(cdp) {
   const cdpManager = await IMakerManager.at(MAKER_CDP_MANAGER);
@@ -149,7 +150,7 @@ contract('Maker', function([_, user]) {
           const to1 = this.hMaker.address;
           const value1 = ether('5');
           const ilkEth = utils.padRight(utils.asciiToHex('ETH-A'), 64);
-          const wadD = ether('500');
+          const wadD = GenerateDaiLimit;
           const data1 = abi.simpleEncode(
             'openLockETHAndDraw(uint256,address,address,bytes32,uint256)',
             value1,
@@ -158,7 +159,7 @@ contract('Maker', function([_, user]) {
             ilkEth,
             wadD
           );
-          const value2 = ether('500');
+          const value2 = GenerateDaiLimit;
           const to2 = this.hUniswap.address;
           const data2 = abi.simpleEncode(
             'tokenToEthSwapInput(address,uint256,uint256):(uint256)',

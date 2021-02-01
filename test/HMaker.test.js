@@ -52,6 +52,7 @@ const IMakerVat = artifacts.require('IMakerVat');
 
 const RAY = new BN('1000000000000000000000000000');
 const RAD = new BN('1000000000000000000000000000000000000000000000');
+GenerateDaiLimit = ether('2000');
 
 async function getCdpInfo(cdp) {
   const cdpManager = await IMakerManager.at(MAKER_CDP_MANAGER);
@@ -141,7 +142,7 @@ contract('Maker', function([_, user1, user2, someone]) {
           const to = this.hMaker.address;
           const value = ether('5');
           const ilkEth = utils.padRight(utils.asciiToHex('ETH-A'), 64);
-          const wadD = ether('500');
+          const wadD = GenerateDaiLimit;
           const data = abi.simpleEncode(
             'openLockETHAndDraw(uint256,address,address,bytes32,uint256)',
             value,
@@ -187,7 +188,7 @@ contract('Maker', function([_, user1, user2, someone]) {
           const to = this.hMaker.address;
           const value = ether('5');
           const ilkEth = utils.padRight(utils.asciiToHex('ETH-A'), 64);
-          const wadD = ether('500');
+          const wadD = GenerateDaiLimit;
           const data = abi.simpleEncode(
             'openLockETHAndDraw(uint256,address,address,bytes32,uint256)',
             MAX_UINT256,
@@ -226,7 +227,7 @@ contract('Maker', function([_, user1, user2, someone]) {
           const to = this.hMaker.address;
           const value = ether('5');
           const ilkEth = utils.padRight(utils.asciiToHex('ETH-A'), 64);
-          const wadD = ether('500');
+          const wadD = GenerateDaiLimit;
           const data = abi.simpleEncode(
             'openLockETHAndDraw(uint256,address,address,bytes32,uint256)',
             value,
@@ -264,7 +265,7 @@ contract('Maker', function([_, user1, user2, someone]) {
           const to = this.hMaker.address;
           const value = ether('5');
           const ilkEth = utils.padRight(utils.asciiToHex('ETH-A'), 64);
-          const wadD = ether('500');
+          const wadD = GenerateDaiLimit;
           const data = abi.simpleEncode(
             'openLockETHAndDraw(uint256,address,address,bytes32,uint256)',
             MAX_UINT256,
@@ -315,8 +316,8 @@ contract('Maker', function([_, user1, user2, someone]) {
 
           const to = this.hMaker.address;
           const ilkKnc = utils.padRight(utils.asciiToHex('KNC-A'), 64);
-          const wadC = ether('1500');
-          const wadD = ether('500');
+          const wadC = GenerateDaiLimit.mul(new BN(3));
+          const wadD = GenerateDaiLimit;
           const data = abi.simpleEncode(
             'openLockGemAndDraw(address,address,bytes32,uint256,uint256)',
             MAKER_MCD_JOIN_KNC_A,
@@ -358,8 +359,8 @@ contract('Maker', function([_, user1, user2, someone]) {
         it('User has proxy', async function() {
           const to = this.hMaker.address;
           const ilkKnc = utils.padRight(utils.asciiToHex('KNC-A'), 64);
-          const wadC = ether('1500');
-          const wadD = ether('500');
+          const wadC = GenerateDaiLimit.mul(new BN(3));
+          const wadD = GenerateDaiLimit;
           const data = abi.simpleEncode(
             'openLockGemAndDraw(address,address,bytes32,uint256,uint256)',
             MAKER_MCD_JOIN_KNC_A,
@@ -502,7 +503,7 @@ contract('Maker', function([_, user1, user2, someone]) {
 
       it('normal', async function() {
         const to = this.hMaker.address;
-        const wad = ether('500');
+        const wad = GenerateDaiLimit;
         const data = abi.simpleEncode(
           'safeLockGem(address,uint256,uint256)',
           MAKER_MCD_JOIN_KNC_A,
@@ -525,7 +526,7 @@ contract('Maker', function([_, user1, user2, someone]) {
 
       it('max amount', async function() {
         const to = this.hMaker.address;
-        const wad = ether('500');
+        const wad = GenerateDaiLimit;
         const data = abi.simpleEncode(
           'safeLockGem(address,uint256,uint256)',
           MAKER_MCD_JOIN_KNC_A,
@@ -754,7 +755,7 @@ contract('Maker', function([_, user1, user2, someone]) {
       it('normal', async function() {
         await approveCdp(cdp, user1, this.dsProxy.address);
         const to = this.hMaker.address;
-        const wad = ether('500');
+        const wad = GenerateDaiLimit;
         const data = abi.simpleEncode(
           'draw(address,uint256,uint256)',
           MAKER_MCD_JOIN_DAI,
@@ -773,7 +774,7 @@ contract('Maker', function([_, user1, user2, someone]) {
 
       it('without cdp approval', async function() {
         const to = this.hMaker.address;
-        const wad = ether('500');
+        const wad = GenerateDaiLimit;
         const data = abi.simpleEncode(
           'draw(address,uint256,uint256)',
           MAKER_MCD_JOIN_DAI,
@@ -791,7 +792,7 @@ contract('Maker', function([_, user1, user2, someone]) {
       it('approved but triggered by unauthorized user', async function() {
         await approveCdp(cdp, user1, this.dsProxy.address);
         const to = this.hMaker.address;
-        const wad = ether('500');
+        const wad = GenerateDaiLimit;
         const data = abi.simpleEncode(
           'draw(address,uint256,uint256)',
           MAKER_MCD_JOIN_DAI,
@@ -813,7 +814,7 @@ contract('Maker', function([_, user1, user2, someone]) {
       let daiUser;
 
       beforeEach(async function() {
-        const tokenAmount = ether('1500');
+        const tokenAmount = GenerateDaiLimit.mul(new BN(3));
         const new2 = abi.simpleEncode(
           'openLockGemAndDraw(address,address,address,address,bytes32,uint256,uint256,bool)',
           MAKER_CDP_MANAGER,
@@ -842,7 +843,7 @@ contract('Maker', function([_, user1, user2, someone]) {
       it('normal', async function() {
         await approveCdp(cdp, user1, this.dsProxy.address);
         const to = this.hMaker.address;
-        const wad = ether('500');
+        const wad = GenerateDaiLimit;
         const data = abi.simpleEncode(
           'draw(address,uint256,uint256)',
           MAKER_MCD_JOIN_DAI,
@@ -861,7 +862,7 @@ contract('Maker', function([_, user1, user2, someone]) {
 
       it('without cdp approval', async function() {
         const to = this.hMaker.address;
-        const wad = ether('500');
+        const wad = GenerateDaiLimit;
         const data = abi.simpleEncode(
           'draw(address,uint256,uint256)',
           MAKER_MCD_JOIN_DAI,
@@ -879,7 +880,7 @@ contract('Maker', function([_, user1, user2, someone]) {
       it('approved but triggered by unauthorized user', async function() {
         await approveCdp(cdp, user1, this.dsProxy.address);
         const to = this.hMaker.address;
-        const wad = ether('500');
+        const wad = GenerateDaiLimit;
         const data = abi.simpleEncode(
           'draw(address,uint256,uint256)',
           MAKER_MCD_JOIN_DAI,
@@ -904,7 +905,7 @@ contract('Maker', function([_, user1, user2, someone]) {
 
       beforeEach(async function() {
         const etherAmount = ether('10');
-        const daiAmount = ether('510');
+        const daiAmount = GenerateDaiLimit.add(ether('10'));
         const new1 = abi.simpleEncode(
           'openLockETHAndDraw(address,address,address,address,bytes32,uint256)',
           MAKER_CDP_MANAGER,
@@ -960,9 +961,15 @@ contract('Maker', function([_, user1, user2, someone]) {
           from: DAI_PROVIDER,
         });
         daiUser = await this.dai.balanceOf.call(user1);
-        await this.dai.transfer(this.proxy.address, ether('520'), {
-          from: user1,
-        });
+
+        await this.dai.transfer(
+          this.proxy.address,
+          GenerateDaiLimit.add(ether('20')),
+          {
+            from: user1,
+          }
+        );
+
         await this.proxy.updateTokenMock(this.dai.address);
         [ilk, debt, lock] = await getCdpInfo(cdp);
         const receipt = await this.proxy.execMock(to, data, {
@@ -986,8 +993,8 @@ contract('Maker', function([_, user1, user2, someone]) {
       let daiUser;
 
       beforeEach(async function() {
-        const tokenAmount = ether('2000');
-        const daiAmount = ether('510');
+        const tokenAmount = ether('3000');
+        const daiAmount = GenerateDaiLimit.add(ether('10'));
         const new2 = abi.simpleEncode(
           'openLockGemAndDraw(address,address,address,address,bytes32,uint256,uint256,bool)',
           MAKER_CDP_MANAGER,
@@ -1050,9 +1057,13 @@ contract('Maker', function([_, user1, user2, someone]) {
           from: DAI_PROVIDER,
         });
         daiUser = await this.dai.balanceOf.call(user1);
-        await this.dai.transfer(this.proxy.address, ether('520'), {
-          from: user1,
-        });
+        await this.dai.transfer(
+          this.proxy.address,
+          GenerateDaiLimit.add(ether('20')),
+          {
+            from: user1,
+          }
+        );
         await this.proxy.updateTokenMock(this.dai.address);
         [ilk, debt, lock] = await getCdpInfo(cdp);
         const receipt = await this.proxy.execMock(to, data, {
