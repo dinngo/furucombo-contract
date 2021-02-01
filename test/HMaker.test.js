@@ -68,6 +68,14 @@ async function getCdpInfo(cdp) {
   return [ilk, debt, ink];
 }
 
+async function getGenerateLimitAndMinCollateral(ilk) {
+  const vat = await IMakerVat.at(MAKER_MCD_VAT);
+  const conf = await vat.ilks.call(ilk);
+  const generateLimit = conf[4].div(ether('1000000000'));
+  const minCollateral = conf[4].div(conf[2]).mul(new BN(2));
+  return [generateLimit, minCollateral];
+}
+
 async function approveCdp(cdp, owner, user) {
   const registry = await IDSProxyRegistry.at(MAKER_PROXY_REGISTRY);
   const proxyAddress = await registry.proxies.call(owner);
@@ -142,7 +150,11 @@ contract('Maker', function([_, user1, user2, someone]) {
           const to = this.hMaker.address;
           const value = ether('5');
           const ilkEth = utils.padRight(utils.asciiToHex('ETH-A'), 64);
-          const wadD = GenerateDaiLimit;
+          const [
+            generateLimit,
+            minCollateral,
+          ] = await getGenerateLimitAndMinCollateral(ilkEth);
+          const wadD = generateLimit;
           const data = abi.simpleEncode(
             'openLockETHAndDraw(uint256,address,address,bytes32,uint256)',
             value,
@@ -188,7 +200,11 @@ contract('Maker', function([_, user1, user2, someone]) {
           const to = this.hMaker.address;
           const value = ether('5');
           const ilkEth = utils.padRight(utils.asciiToHex('ETH-A'), 64);
-          const wadD = GenerateDaiLimit;
+          const [
+            generateLimit,
+            minCollateral,
+          ] = await getGenerateLimitAndMinCollateral(ilkEth);
+          const wadD = generateLimit;
           const data = abi.simpleEncode(
             'openLockETHAndDraw(uint256,address,address,bytes32,uint256)',
             MAX_UINT256,
@@ -227,7 +243,11 @@ contract('Maker', function([_, user1, user2, someone]) {
           const to = this.hMaker.address;
           const value = ether('5');
           const ilkEth = utils.padRight(utils.asciiToHex('ETH-A'), 64);
-          const wadD = GenerateDaiLimit;
+          const [
+            generateLimit,
+            minCollateral,
+          ] = await getGenerateLimitAndMinCollateral(ilkEth);
+          const wadD = generateLimit;
           const data = abi.simpleEncode(
             'openLockETHAndDraw(uint256,address,address,bytes32,uint256)',
             value,
@@ -265,7 +285,11 @@ contract('Maker', function([_, user1, user2, someone]) {
           const to = this.hMaker.address;
           const value = ether('5');
           const ilkEth = utils.padRight(utils.asciiToHex('ETH-A'), 64);
-          const wadD = GenerateDaiLimit;
+          const [
+            generateLimit,
+            minCollateral,
+          ] = await getGenerateLimitAndMinCollateral(ilkEth);
+          const wadD = generateLimit;
           const data = abi.simpleEncode(
             'openLockETHAndDraw(uint256,address,address,bytes32,uint256)',
             MAX_UINT256,
@@ -316,8 +340,13 @@ contract('Maker', function([_, user1, user2, someone]) {
 
           const to = this.hMaker.address;
           const ilkKnc = utils.padRight(utils.asciiToHex('KNC-A'), 64);
-          const wadC = GenerateDaiLimit.mul(new BN(3));
-          const wadD = GenerateDaiLimit;
+          const [
+            generateLimit,
+            minCollateral,
+          ] = await getGenerateLimitAndMinCollateral(ilkKnc);
+          const wadD = generateLimit;
+          console.log('minCollateral', minCollateral.toString());
+          const wadC = minCollateral;
           const data = abi.simpleEncode(
             'openLockGemAndDraw(address,address,bytes32,uint256,uint256)',
             MAKER_MCD_JOIN_KNC_A,
@@ -359,8 +388,12 @@ contract('Maker', function([_, user1, user2, someone]) {
         it('User has proxy', async function() {
           const to = this.hMaker.address;
           const ilkKnc = utils.padRight(utils.asciiToHex('KNC-A'), 64);
-          const wadC = GenerateDaiLimit.mul(new BN(3));
-          const wadD = GenerateDaiLimit;
+          const [
+            generateLimit,
+            minCollateral,
+          ] = await getGenerateLimitAndMinCollateral(ilkKnc);
+          const wadC = minCollateral;
+          const wadD = generateLimit;
           const data = abi.simpleEncode(
             'openLockGemAndDraw(address,address,bytes32,uint256,uint256)',
             MAKER_MCD_JOIN_KNC_A,
@@ -503,7 +536,13 @@ contract('Maker', function([_, user1, user2, someone]) {
 
       it('normal', async function() {
         const to = this.hMaker.address;
-        const wad = GenerateDaiLimit;
+        const [
+          generateLimit,
+          minCollateral,
+        ] = await getGenerateLimitAndMinCollateral(
+          utils.padRight(utils.asciiToHex('KNC-A'), 64)
+        );
+        const wad = generateLimit;
         const data = abi.simpleEncode(
           'safeLockGem(address,uint256,uint256)',
           MAKER_MCD_JOIN_KNC_A,
@@ -526,7 +565,13 @@ contract('Maker', function([_, user1, user2, someone]) {
 
       it('max amount', async function() {
         const to = this.hMaker.address;
-        const wad = GenerateDaiLimit;
+        const [
+          generateLimit,
+          minCollateral,
+        ] = await getGenerateLimitAndMinCollateral(
+          utils.padRight(utils.asciiToHex('KNC-A'), 64)
+        );
+        const wad = generateLimit;
         const data = abi.simpleEncode(
           'safeLockGem(address,uint256,uint256)',
           MAKER_MCD_JOIN_KNC_A,
@@ -755,7 +800,13 @@ contract('Maker', function([_, user1, user2, someone]) {
       it('normal', async function() {
         await approveCdp(cdp, user1, this.dsProxy.address);
         const to = this.hMaker.address;
-        const wad = GenerateDaiLimit;
+        const [
+          generateLimit,
+          minCollateral,
+        ] = await getGenerateLimitAndMinCollateral(
+          utils.padRight(utils.asciiToHex('ETH-A'), 64)
+        );
+        const wad = generateLimit;
         const data = abi.simpleEncode(
           'draw(address,uint256,uint256)',
           MAKER_MCD_JOIN_DAI,
@@ -774,7 +825,13 @@ contract('Maker', function([_, user1, user2, someone]) {
 
       it('without cdp approval', async function() {
         const to = this.hMaker.address;
-        const wad = GenerateDaiLimit;
+        const [
+          generateLimit,
+          minCollateral,
+        ] = await getGenerateLimitAndMinCollateral(
+          utils.padRight(utils.asciiToHex('ETH-A'), 64)
+        );
+        const wad = generateLimit;
         const data = abi.simpleEncode(
           'draw(address,uint256,uint256)',
           MAKER_MCD_JOIN_DAI,
@@ -792,7 +849,13 @@ contract('Maker', function([_, user1, user2, someone]) {
       it('approved but triggered by unauthorized user', async function() {
         await approveCdp(cdp, user1, this.dsProxy.address);
         const to = this.hMaker.address;
-        const wad = GenerateDaiLimit;
+        const [
+          generateLimit,
+          minCollateral,
+        ] = await getGenerateLimitAndMinCollateral(
+          utils.padRight(utils.asciiToHex('ETH-A'), 64)
+        );
+        const wad = generateLimit;
         const data = abi.simpleEncode(
           'draw(address,uint256,uint256)',
           MAKER_MCD_JOIN_DAI,
@@ -814,7 +877,13 @@ contract('Maker', function([_, user1, user2, someone]) {
       let daiUser;
 
       beforeEach(async function() {
-        const tokenAmount = GenerateDaiLimit.mul(new BN(3));
+        const [
+          generateLimit,
+          minCollateral,
+        ] = await getGenerateLimitAndMinCollateral(
+          utils.padRight(utils.asciiToHex('KNC-A'), 64)
+        );
+        const tokenAmount = minCollateral;
         const new2 = abi.simpleEncode(
           'openLockGemAndDraw(address,address,address,address,bytes32,uint256,uint256,bool)',
           MAKER_CDP_MANAGER,
@@ -843,7 +912,13 @@ contract('Maker', function([_, user1, user2, someone]) {
       it('normal', async function() {
         await approveCdp(cdp, user1, this.dsProxy.address);
         const to = this.hMaker.address;
-        const wad = GenerateDaiLimit;
+        const [
+          generateLimit,
+          minCollateral,
+        ] = await getGenerateLimitAndMinCollateral(
+          utils.padRight(utils.asciiToHex('ETH-A'), 64)
+        );
+        const wad = generateLimit;
         const data = abi.simpleEncode(
           'draw(address,uint256,uint256)',
           MAKER_MCD_JOIN_DAI,
@@ -862,7 +937,13 @@ contract('Maker', function([_, user1, user2, someone]) {
 
       it('without cdp approval', async function() {
         const to = this.hMaker.address;
-        const wad = GenerateDaiLimit;
+        const [
+          generateLimit,
+          minCollateral,
+        ] = await getGenerateLimitAndMinCollateral(
+          utils.padRight(utils.asciiToHex('ETH-A'), 64)
+        );
+        const wad = generateLimit;
         const data = abi.simpleEncode(
           'draw(address,uint256,uint256)',
           MAKER_MCD_JOIN_DAI,
@@ -880,7 +961,13 @@ contract('Maker', function([_, user1, user2, someone]) {
       it('approved but triggered by unauthorized user', async function() {
         await approveCdp(cdp, user1, this.dsProxy.address);
         const to = this.hMaker.address;
-        const wad = GenerateDaiLimit;
+        const [
+          generateLimit,
+          minCollateral,
+        ] = await getGenerateLimitAndMinCollateral(
+          utils.padRight(utils.asciiToHex('ETH-A'), 64)
+        );
+        const wad = generateLimit;
         const data = abi.simpleEncode(
           'draw(address,uint256,uint256)',
           MAKER_MCD_JOIN_DAI,
@@ -902,10 +989,15 @@ contract('Maker', function([_, user1, user2, someone]) {
       let debt;
       let lock;
       let daiUser;
+      let generateLimit;
+      let minCollateral;
 
       beforeEach(async function() {
         const etherAmount = ether('10');
-        const daiAmount = GenerateDaiLimit.add(ether('10'));
+        [generateLimit, minCollateral] = await getGenerateLimitAndMinCollateral(
+          utils.padRight(utils.asciiToHex('ETH-A'), 64)
+        );
+        const daiAmount = generateLimit.add(ether('10'));
         const new1 = abi.simpleEncode(
           'openLockETHAndDraw(address,address,address,address,bytes32,uint256)',
           MAKER_CDP_MANAGER,
@@ -933,6 +1025,7 @@ contract('Maker', function([_, user1, user2, someone]) {
           cdp,
           wad
         );
+
         await this.dai.transfer(this.proxy.address, wad, {
           from: user1,
         });
@@ -957,14 +1050,14 @@ contract('Maker', function([_, user1, user2, someone]) {
           MAKER_MCD_JOIN_DAI,
           cdp
         );
-        await this.dai.transfer(user1, ether('10'), {
+        await this.dai.transfer(user1, ether('20'), {
           from: DAI_PROVIDER,
         });
         daiUser = await this.dai.balanceOf.call(user1);
 
         await this.dai.transfer(
           this.proxy.address,
-          GenerateDaiLimit.add(ether('20')),
+          generateLimit.add(ether('20')),
           {
             from: user1,
           }
@@ -994,7 +1087,14 @@ contract('Maker', function([_, user1, user2, someone]) {
 
       beforeEach(async function() {
         const tokenAmount = ether('3000');
-        const daiAmount = GenerateDaiLimit.add(ether('10'));
+        const [
+          generateLimit,
+          minCollateral,
+        ] = await getGenerateLimitAndMinCollateral(
+          utils.padRight(utils.asciiToHex('KNC-A'), 64)
+        );
+
+        const daiAmount = generateLimit.add(ether('10'));
         const new2 = abi.simpleEncode(
           'openLockGemAndDraw(address,address,address,address,bytes32,uint256,uint256,bool)',
           MAKER_CDP_MANAGER,
@@ -1057,9 +1157,15 @@ contract('Maker', function([_, user1, user2, someone]) {
           from: DAI_PROVIDER,
         });
         daiUser = await this.dai.balanceOf.call(user1);
+        const [
+          generateLimit,
+          minCollateral,
+        ] = await getGenerateLimitAndMinCollateral(
+          utils.padRight(utils.asciiToHex('ETH-A'), 64)
+        );
         await this.dai.transfer(
           this.proxy.address,
-          GenerateDaiLimit.add(ether('20')),
+          generateLimit.add(ether('20')),
           {
             from: user1,
           }
