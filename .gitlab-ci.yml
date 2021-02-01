@@ -10,7 +10,7 @@ cache: &global_cache
 
 before_script:
   - npm install
-  - FILES=( $(find -H -L ./test/* -regex "^.*.test.js" \( ! -name "./test/HYVault.test.js" \)) )
+  - FILES=( $(find -H -L ./test/* -regex "^.*.test.js" \( ! -name "HYVault.test.js" \)) )
   - len=${#FILES[@]}
   - RUNNER_COUNT=8
   - >
