@@ -45,6 +45,7 @@ module.exports = {
       network_id: '*',
       gasPrice: 0x01,
       gas: 5000000,
+      networkCheckTimeout: 10000,
     },
     migration: {
       host: 'localhost',
@@ -52,6 +53,7 @@ module.exports = {
       network_id: '*',
       gasPrice: 0x01,
       gas: 5000000,
+      networkCheckTimeout: 10000,
     },
     beta: {
       provider: function() {
