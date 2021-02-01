@@ -10,7 +10,7 @@ cache: &global_cache
 
 before_script:
   - npm install
-  - FILES=( $(find -H -L ./test/* -regex "^.*.test.js") )
+  - FILES=( $(find -H -L ./test/* -regex "^.*.test.js" \( ! -name "./test/HSCompound.test.js" \)) )
   - len=${#FILES[@]}
   - RUNNER_COUNT=8
   - >
@@ -149,6 +149,16 @@ test_7:
   script:
     - apt-get update && apt-get install -y netcat
     - npm run test ${UNITTEST_FILES[7]}
+  cache:
+    <<: *global_cache
+
+test_8:
+  stage: test
+  tags:
+    - docker
+  script:
+    - apt-get update && apt-get install -y netcat
+    - npm run test "./test/HSCompound.test.js"
   cache:
     <<: *global_cache
 
