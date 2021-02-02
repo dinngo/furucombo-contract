@@ -10,10 +10,9 @@ cache: &global_cache
 
 before_script:
   - npm install
-  # - FILES=( $(find -H -L ./test/* -regex "^.*.test.js" \( ! -name "HGasTokens.test.js" \)) )
+  - RUNNER_COUNT=12
   - FILES=( $(find -H -L ./test/* -regex "^.*.test.js") )
   - len=${#FILES[@]}
-  - RUNNER_COUNT=12
   - >
     for (( i=0; i<${RUNNER_COUNT}; i+=1 )); do
         RUNNER_TEST_CNTS[$i]=0
@@ -192,96 +191,6 @@ test_11:
     - npm run test ${UNITTEST_FILES[11]}
   cache:
     <<: *global_cache
-
-# test_12:
-#   stage: test
-#   tags:
-#     - docker
-#   script:
-#     - apt-get update && apt-get install -y netcat
-#     - npm run test ${UNITTEST_FILES[12]}
-#   cache:
-#     <<: *global_cache
-
-# test_13:
-#   stage: test
-#   tags:
-#     - docker
-#   script:
-#     - apt-get update && apt-get install -y netcat
-#     - npm run test ${UNITTEST_FILES[13]}
-#   cache:
-#     <<: *global_cache
-
-# test_14:
-#   stage: test
-#   tags:
-#     - docker
-#   script:
-#     - apt-get update && apt-get install -y netcat
-#     - npm run test ${UNITTEST_FILES[14]}
-#   cache:
-#     <<: *global_cache
-
-# test_15:
-#   stage: test
-#   tags:
-#     - docker
-#   script:
-#     - apt-get update && apt-get install -y netcat
-#     - npm run test ${UNITTEST_FILES[15]}
-#   cache:
-#     <<: *global_cache
-
-# test_16:
-#   stage: test
-#   tags:
-#     - docker
-#   script:
-#     - apt-get update && apt-get install -y netcat
-#     - npm run test-migration ${UNITTEST_FILES[16]}
-#   cache:
-#     <<: *global_cache
-
-# test_17:
-#   stage: test
-#   tags:
-#     - docker
-#   script:
-#     - apt-get update && apt-get install -y netcat
-#     - npm run test ${UNITTEST_FILES[17]}
-#   cache:
-#     <<: *global_cache
-
-# test_18:
-#   stage: test
-#   tags:
-#     - docker
-#   script:
-#     - apt-get update && apt-get install -y netcat
-#     - npm run test ${UNITTEST_FILES[18]}
-#   cache:
-#     <<: *global_cache
-
-# test_19:
-#   stage: test
-#   tags:
-#     - docker
-#   script:
-#     - apt-get update && apt-get install -y netcat
-#     - npm run test ${UNITTEST_FILES[19]}
-#   cache:
-#     <<: *global_cache
-
-# test_8:
-#   stage: test
-#   tags:
-#     - docker
-#   script:
-#     - apt-get update && apt-get install -y netcat
-#     - npm run test "./test/HGasTokens.test.js"
-#   cache:
-#     <<: *global_cache
 
 deploy:
   stage: deploy
