@@ -49,6 +49,7 @@ const IUniswapExchange = artifacts.require('IUniswapExchange');
 
 const RAY = new BN('1000000000000000000000000000');
 const RAD = new BN('1000000000000000000000000000000000000000000000');
+// GenerateDaiLimit = ether('2000');
 
 async function getCdpInfo(cdp) {
   const cdpManager = await IMakerManager.at(MAKER_CDP_MANAGER);
@@ -62,6 +63,14 @@ async function getCdpInfo(cdp) {
   const debt = art.mul(conf[1]);
 
   return [ilk, debt, ink];
+}
+
+async function getGenerateLimitAndMinCollateral(ilk) {
+  const vat = await IMakerVat.at(MAKER_MCD_VAT);
+  const conf = await vat.ilks.call(ilk);
+  const generateLimit = conf[4].div(ether('1000000000'));
+  const minCollateral = conf[4].div(conf[2]);
+  return [generateLimit, minCollateral];
 }
 
 async function approveCdp(cdp, owner, user) {
@@ -80,6 +89,7 @@ async function approveCdp(cdp, owner, user) {
 
 contract('Maker', function([_, user]) {
   let id;
+  let generateLimt;
   const tokenAddress = DAI_TOKEN;
   const uniswapAddress = DAI_UNISWAP;
   const providerAddress = DAI_PROVIDER;
@@ -149,7 +159,12 @@ contract('Maker', function([_, user]) {
           const to1 = this.hMaker.address;
           const value1 = ether('5');
           const ilkEth = utils.padRight(utils.asciiToHex('ETH-A'), 64);
-          const wadD = ether('500');
+
+          const [
+            generateLimit,
+            minCollateral,
+          ] = await getGenerateLimitAndMinCollateral(ilkEth);
+          const wadD = generateLimit;
           const data1 = abi.simpleEncode(
             'openLockETHAndDraw(uint256,address,address,bytes32,uint256)',
             value1,
@@ -158,7 +173,7 @@ contract('Maker', function([_, user]) {
             ilkEth,
             wadD
           );
-          const value2 = ether('500');
+          const value2 = generateLimit;
           const to2 = this.hUniswap.address;
           const data2 = abi.simpleEncode(
             'tokenToEthSwapInput(address,uint256,uint256):(uint256)',

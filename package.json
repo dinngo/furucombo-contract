@@ -38,7 +38,7 @@
     "query-string": "^6.13.1",
     "solc": "0.6.12",
     "solhint": "^3.0.0",
-    "truffle": "^5.1.42",
+    "truffle": "5.1.60",
     "web3-provider-engine": "^15.0.12"
   },
   "dependencies": {
