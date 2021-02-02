@@ -52,7 +52,6 @@ const IMakerVat = artifacts.require('IMakerVat');
 
 const RAY = new BN('1000000000000000000000000000');
 const RAD = new BN('1000000000000000000000000000000000000000000000');
-GenerateDaiLimit = ether('2000');
 
 async function getCdpInfo(cdp) {
   const cdpManager = await IMakerManager.at(MAKER_CDP_MANAGER);
