@@ -93,8 +93,7 @@ contract('StakingRewardsLegacyAdapter - Handler', function([_, user, someone]) {
     // Register adapter to AdapterRegistry
     await this.adapterRegistry.register(
       this.adapter.address,
-      utils.asciiToHex('DAI-KNC'),
-      { from: STAKING_REWARDS_ADAPTER_REGISTRY_OWNER}
+      utils.asciiToHex('DAI-KNC')
     );
     // Deploy another adapter which will not be registered in AdapterRegistry
     await this.factory.newAdapter(this.staking.address, stAddress, rtAddress);
