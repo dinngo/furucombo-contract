@@ -63,6 +63,8 @@ All notable changes to this project will be documented in this file.
 
 - Support CHI and GST2 gas tokens in `HGasTokens`.
 - Support Balancer multihop swapping in `HBalancerExchange`.
+- Support Synthetix `StakingRewards` contract by adding `StakingRewardsAdapter` contract template.
+- Support stake/withdraw/getReward/exit onbehalf of user through `StakingRewardsAdapter` in `HStakingRewardsAdapter`.
 
 ## [0.11.0] - 2020-09-21
 
