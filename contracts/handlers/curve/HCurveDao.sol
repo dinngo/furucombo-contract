@@ -77,12 +77,14 @@ contract HCurveDao is HandlerBase {
 
         // if amount == uint256(-1) return balance of Proxy
         _value = _getBalance(token, _value);
-        IERC20(token).safeApprove(gaugeAddress, _value);
+        _tokenApprove(token, gaugeAddress, _value);
+        // IERC20(token).safeApprove(gaugeAddress, _value);
+
         try gauge.deposit(_value, user) {} catch Error(string memory reason) {
             _revertMsg("deposit", reason);
         } catch {
             _revertMsg("deposit");
         }
-        IERC20(token).safeApprove(gaugeAddress, 0);
+        // IERC20(token).safeApprove(gaugeAddress, 0);
     }
 }

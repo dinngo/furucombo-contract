@@ -1,6 +1,9 @@
 pragma solidity ^0.6.0;
 
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
+// import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "./IERC20Usdt.sol";
 
 import "../Config.sol";
 import "../Storage.sol";
@@ -95,5 +98,16 @@ abstract contract HandlerBase is Storage, Config {
         }
         // ERC20 token case
         return IERC20(token).balanceOf(address(this));
+    }
+
+    function _tokenApprove(
+        address token,
+        address spender,
+        uint256 amount
+    ) internal {
+        try IERC20Usdt(token).approve(spender, amount) {} catch {
+            IERC20(token).safeApprove(spender, 0);
+            IERC20(token).safeApprove(spender, amount);
+        }
     }
 }

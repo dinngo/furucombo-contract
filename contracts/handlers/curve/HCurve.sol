@@ -62,7 +62,7 @@ contract HCurve is HandlerBase {
         // Approve erc20 token or set eth amount
         uint256 ethAmount = 0;
         if (tokenI != ETH_ADDRESS) {
-            IERC20(tokenI).safeApprove(address(curveHandler), dx);
+            _tokenApprove(tokenI, address(curveHandler), dx);
         } else {
             ethAmount = dx;
         }
@@ -91,9 +91,9 @@ contract HCurve is HandlerBase {
         }
 
         // Reset zero amount for approval
-        if (tokenI != ETH_ADDRESS) {
-            IERC20(tokenI).safeApprove(address(curveHandler), 0);
-        }
+        // if (tokenI != ETH_ADDRESS) {
+        //     IERC20(tokenI).safeApprove(address(curveHandler), 0);
+        // }
         uint256 afterDy = _getBalance(tokenJ, uint256(-1));
 
         if (tokenJ != ETH_ADDRESS) _updateToken(tokenJ);
@@ -160,7 +160,7 @@ contract HCurve is HandlerBase {
                 continue;
             }
             amounts[i] = _getBalance(tokens[i], amounts[i]);
-            IERC20(tokens[i]).safeApprove(address(curveHandler), amounts[i]);
+            _tokenApprove(tokens[i], address(curveHandler), amounts[i]);
         }
 
         // Execute add_liquidity according to amount array size
@@ -309,11 +309,11 @@ contract HCurve is HandlerBase {
         }
 
         // Reset zero amount for approval
-        for (uint256 i = 0; i < amounts.length; i++) {
-            if (amounts[i] == 0) continue;
-            if (tokens[i] == ETH_ADDRESS) continue;
-            IERC20(tokens[i]).safeApprove(address(curveHandler), 0);
-        }
+        // for (uint256 i = 0; i < amounts.length; i++) {
+        //     if (amounts[i] == 0) continue;
+        //     if (tokens[i] == ETH_ADDRESS) continue;
+        //     IERC20(tokens[i]).safeApprove(address(curveHandler), 0);
+        // }
 
         uint256 afterPoolBalance = IERC20(pool).balanceOf(address(this));
 
@@ -377,7 +377,7 @@ contract HCurve is HandlerBase {
         ICurveHandler curveHandler = ICurveHandler(handler);
         uint256 beforeTokenIBalance = _getBalance(tokenI, uint256(-1));
         poolAmount = _getBalance(pool, poolAmount);
-        IERC20(pool).safeApprove(address(curveHandler), poolAmount);
+        _tokenApprove(pool, address(curveHandler), poolAmount);
         if (useUnderlying) {
             try
                 curveHandler.remove_liquidity_one_coin(
@@ -403,7 +403,7 @@ contract HCurve is HandlerBase {
                 _revertMsg("removeLiquidityOneCoinInternal");
             }
         }
-        IERC20(pool).safeApprove(address(curveHandler), 0);
+        // IERC20(pool).safeApprove(address(curveHandler), 0);
         uint256 afterTokenIBalance = _getBalance(tokenI, uint256(-1));
 
         // Update post process
@@ -423,7 +423,7 @@ contract HCurve is HandlerBase {
         ICurveHandler curveHandler = ICurveHandler(handler);
         uint256 beforeTokenIBalance = IERC20(tokenI).balanceOf(address(this));
         poolAmount = _getBalance(pool, poolAmount);
-        IERC20(pool).safeApprove(address(curveHandler), poolAmount);
+        _tokenApprove(pool, address(curveHandler), poolAmount);
         try
             curveHandler.remove_liquidity_one_coin(
                 poolAmount,
@@ -436,7 +436,7 @@ contract HCurve is HandlerBase {
         } catch {
             _revertMsg("removeLiquidityOneCoinDust");
         }
-        IERC20(pool).safeApprove(address(curveHandler), 0);
+        // IERC20(pool).safeApprove(address(curveHandler), 0);
         uint256 afterTokenIBalance = IERC20(tokenI).balanceOf(address(this));
 
         // Update post process

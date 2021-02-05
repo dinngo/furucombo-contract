@@ -1,4 +1,5 @@
 const { balance, BN, ether, constants } = require('@openzeppelin/test-helpers');
+const { web3 } = require('@openzeppelin/test-helpers/src/setup');
 const { tracker } = balance;
 const { MAX_UINT256 } = constants;
 const { expect } = require('chai');
@@ -12,6 +13,7 @@ const {
   SETH_TOKEN,
   SUSD_TOKEN,
   WBTC_TOKEN,
+  HBTC_TOKEN,
   RENBTC_TOKEN,
   DAI_PROVIDER,
   USDT_PROVIDER,
@@ -19,6 +21,7 @@ const {
   SUSD_PROVIDER,
   WBTC_PROVIDER,
   RENBTC_PROVIDER,
+  HBTC_PROVIDER,
   CURVE_AAVECRV,
   CURVE_AAVECRV_PROVIDER,
   CURVE_AAVE_SWAP,
@@ -32,8 +35,11 @@ const {
   CURVE_SBTCCRV_PROVIDER,
   CURVE_SETHCRV,
   CURVE_SETHCRV_PROVIDER,
+  CURVE_HBTCCRV,
+  CURVE_HBTCCRV_PROVIDER,
   CURVE_YDAI_TOKEN,
   CURVE_YUSDT_TOKEN,
+  CURVE_HBTC_SWAP,
 } = require('./utils/constants');
 const {
   evmRevert,
@@ -65,6 +71,7 @@ contract('Curve', function([_, user]) {
     this.yDeposit = await ICurveHandler.at(CURVE_Y_DEPOSIT);
     this.sbtcSwap = await ICurveHandler.at(CURVE_SBTC_SWAP);
     this.sethSwap = await ICurveHandler.at(CURVE_SETH_SWAP);
+    this.hbtcSwap = await ICurveHandler.at(CURVE_HBTC_SWAP);
     this.aaveSwap = await ICurveHandler.at(CURVE_AAVE_SWAP);
   });
 
@@ -299,6 +306,124 @@ contract('Curve', function([_, user]) {
         );
         expect(await this.token1.balanceOf.call(user)).to.be.bignumber.lte(
           token1User.add(answer)
+        );
+        profileGas(receipt);
+      });
+    });
+
+    describe('hbtc pool', function() {
+      const tokenAddress = HBTC_TOKEN;
+      const providerAddress = HBTC_PROVIDER;
+
+      let balanceUser;
+      let balanceProxy;
+      let tokenUser;
+
+      before(async function() {
+        this.token = await IToken.at(tokenAddress);
+      });
+
+      beforeEach(async function() {
+        balanceUser = await tracker(user);
+        balanceProxy = await tracker(this.proxy.address);
+        tokenUser = await this.token.balanceOf.call(user);
+      });
+
+      it('Exact input swap HBTC to WBTC by exchange', async function() {
+        const value = ether('1');
+        const answer = await this.hbtcSwap.get_dy.call(0, 1, value, {
+          from: user,
+        });
+
+        const data = abi.simpleEncode(
+          'exchange(address,address,address,int128,int128,uint256,uint256)',
+          this.hbtcSwap.address,
+          this.token.address,
+          WBTC_TOKEN,
+          0,
+          1,
+          value,
+          mulPercent(answer, new BN('100').sub(slippage))
+        );
+        await this.token.transfer(this.proxy.address, value, {
+          from: providerAddress,
+        });
+        await this.proxy.updateTokenMock(this.token.address);
+        const receipt = await this.proxy.execMock(this.hCurve.address, data, {
+          from: user,
+          value: ether('1'), // Ensure handler can correctly deal with ether
+        });
+
+        // Check handler return
+        const handlerReturn = utils.toBN(
+          getHandlerReturn(receipt, ['uint256'])[0]
+        );
+        const userBalanceDelta = await balanceUser.delta();
+        expect(userBalanceDelta).to.be.bignumber.eq(
+          ether('0').sub(new BN(receipt.receipt.gasUsed))
+        );
+
+        // Check proxy
+        expect(await balanceProxy.get()).to.be.zero;
+        expect(await this.token.balanceOf.call(this.proxy.address)).to.be.zero;
+
+        // Check user
+        expect(handlerReturn).to.be.bignumber.lte(answer);
+        expect(handlerReturn).to.be.bignumber.gt(
+          mulPercent(answer, new BN('100').sub(slippage))
+        );
+        expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
+          tokenUser
+        );
+        profileGas(receipt);
+      });
+
+      it('Exact input swap HBTC to WBTC by exchange', async function() {
+        const value = ether('1');
+        const answer = await this.hbtcSwap.get_dy.call(0, 1, value, {
+          from: user,
+        });
+
+        console.log('answer', answer.toString());
+        const data = abi.simpleEncode(
+          'exchange(address,address,address,int128,int128,uint256,uint256)',
+          this.hbtcSwap.address,
+          this.token.address,
+          WBTC_TOKEN,
+          0,
+          1,
+          value,
+          mulPercent(answer, new BN('100').sub(slippage))
+        );
+        await this.token.transfer(this.proxy.address, value, {
+          from: providerAddress,
+        });
+        await this.proxy.updateTokenMock(this.token.address);
+        const receipt = await this.proxy.execMock(this.hCurve.address, data, {
+          from: user,
+          value: ether('1'), // Ensure handler can correctly deal with ether
+        });
+
+        // Check handler return
+        const handlerReturn = utils.toBN(
+          getHandlerReturn(receipt, ['uint256'])[0]
+        );
+        const userBalanceDelta = await balanceUser.delta();
+        expect(userBalanceDelta).to.be.bignumber.eq(
+          ether('0').sub(new BN(receipt.receipt.gasUsed))
+        );
+
+        // Check proxy
+        expect(await balanceProxy.get()).to.be.zero;
+        expect(await this.token.balanceOf.call(this.proxy.address)).to.be.zero;
+
+        // Check user
+        expect(handlerReturn).to.be.bignumber.lte(answer);
+        expect(handlerReturn).to.be.bignumber.gt(
+          mulPercent(answer, new BN('100').sub(slippage))
+        );
+        expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
+          tokenUser
         );
         profileGas(receipt);
       });
@@ -829,6 +954,101 @@ contract('Curve', function([_, user]) {
           ether('0')
             .add(answer)
             .sub(new BN(receipt.receipt.gasUsed))
+        );
+
+        profileGas(receipt);
+      });
+    });
+
+    describe('hbtc pool', function() {
+      const tokenAddress = HBTC_TOKEN;
+      const providerAddress0 = HBTC_PROVIDER;
+      const providerAddress1 = WBTC_PROVIDER;
+      const poolTokenAddress = CURVE_HBTCCRV;
+
+      let balanceUser;
+      let balanceProxy;
+      let tokenUser;
+
+      before(async function() {
+        this.token = await IToken.at(tokenAddress);
+        this.wbtc = await IToken.at(WBTC_TOKEN);
+        this.poolToken = await IToken.at(poolTokenAddress);
+      });
+
+      beforeEach(async function() {
+        balanceUser = await tracker(user);
+        balanceProxy = await tracker(this.proxy.address);
+        tokenUser = await this.token.balanceOf.call(user);
+        poolTokenUser = await this.poolToken.balanceOf.call(user);
+      });
+
+      it('add HBTC and WBTC to pool by addLiquidity', async function() {
+        // const value = ether('1');
+        const tokenAmount = new BN('100000000');
+        const tokens = [this.token.address, WBTC_TOKEN];
+        const amounts = [tokenAmount, tokenAmount];
+
+        // Get expected answer
+        const answer = await this.hbtcSwap.methods[
+          'calc_token_amount(uint256[2],bool)'
+        ](amounts, true);
+
+        // Execute handler
+        await this.token.transfer(this.proxy.address, tokenAmount, {
+          from: providerAddress0,
+        });
+
+        await this.wbtc.transfer(this.proxy.address, tokenAmount, {
+          from: providerAddress1,
+        });
+
+        await this.proxy.updateTokenMock(this.token.address);
+        const minMintAmount = mulPercent(answer, new BN('100').sub(slippage));
+        const data = abi.simpleEncode(
+          'addLiquidity(address,address,address[],uint256[],uint256)',
+          this.hbtcSwap.address,
+          this.poolToken.address,
+          tokens,
+          amounts,
+          minMintAmount
+        );
+        const receipt = await this.proxy.execMock(this.hCurve.address, data, {
+          from: user,
+          value: ether('0.1'),
+        });
+
+        // Get handler return
+        const handlerReturn = utils.toBN(
+          getHandlerReturn(receipt, ['uint256'])[0]
+        );
+        const poolTokenUserEnd = await this.poolToken.balanceOf.call(user);
+        expect(handlerReturn).to.be.bignumber.eq(
+          poolTokenUserEnd.sub(poolTokenUser)
+        );
+
+        // Check proxy balance
+        expect(await balanceProxy.get()).to.be.zero;
+        expect(await this.token.balanceOf.call(this.proxy.address)).to.be.zero;
+        expect(
+          await this.poolToken.balanceOf.call(this.proxy.address)
+        ).to.be.zero;
+
+        // Check user balance
+        expect(await balanceUser.delta()).to.be.bignumber.eq(
+          ether('0').sub(new BN(receipt.receipt.gasUsed))
+        );
+        expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
+          tokenUser
+        );
+
+        // poolToken amount should be greater than answer * 0.999 which is
+        // referenced from tests in curve contract.
+        expect(await this.poolToken.balanceOf.call(user)).to.be.bignumber.gte(
+          answer.mul(new BN('999')).div(new BN('1000'))
+        );
+        expect(await this.poolToken.balanceOf.call(user)).to.be.bignumber.lte(
+          answer
         );
 
         profileGas(receipt);

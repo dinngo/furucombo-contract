@@ -39,7 +39,7 @@ contract HUniswapV2 is HandlerBase {
         // Approve token
         value = _getBalance(address(0), value);
         amountTokenDesired = _getBalance(token, amountTokenDesired);
-        IERC20(token).safeApprove(UNISWAPV2_ROUTER, amountTokenDesired);
+        _tokenApprove(token, UNISWAPV2_ROUTER, amountTokenDesired);
 
         // Add liquidity ETH
         try
@@ -60,9 +60,6 @@ contract HUniswapV2 is HandlerBase {
         } catch {
             _revertMsg("addLiquidityETH");
         }
-
-        // Approve token 0
-        IERC20(token).safeApprove(UNISWAPV2_ROUTER, 0);
 
         // Update involved token
         address pair =
@@ -92,8 +89,8 @@ contract HUniswapV2 is HandlerBase {
         // Approve token
         amountADesired = _getBalance(tokenA, amountADesired);
         amountBDesired = _getBalance(tokenB, amountBDesired);
-        IERC20(tokenA).safeApprove(UNISWAPV2_ROUTER, amountADesired);
-        IERC20(tokenB).safeApprove(UNISWAPV2_ROUTER, amountBDesired);
+        _tokenApprove(tokenA, UNISWAPV2_ROUTER, amountADesired);
+        _tokenApprove(tokenB, UNISWAPV2_ROUTER, amountBDesired);
 
         // Add liquidity
         try
@@ -117,10 +114,6 @@ contract HUniswapV2 is HandlerBase {
             _revertMsg("addLiquidity");
         }
 
-        // Approve token 0
-        IERC20(tokenA).safeApprove(UNISWAPV2_ROUTER, 0);
-        IERC20(tokenB).safeApprove(UNISWAPV2_ROUTER, 0);
-
         // Update involved token
         address pair =
             UniswapV2Library.pairFor(router.factory(), tokenA, tokenB);
@@ -140,7 +133,7 @@ contract HUniswapV2 is HandlerBase {
 
         // Approve token
         liquidity = _getBalance(pair, liquidity);
-        IERC20(pair).safeApprove(UNISWAPV2_ROUTER, liquidity);
+        _tokenApprove(pair, UNISWAPV2_ROUTER, liquidity);
 
         // remove liquidityETH
         try
@@ -161,9 +154,6 @@ contract HUniswapV2 is HandlerBase {
             _revertMsg("removeLiquidityETH");
         }
 
-        // Approve token 0
-        IERC20(pair).safeApprove(UNISWAPV2_ROUTER, 0);
-
         // Update involved token
         _updateToken(token);
     }
@@ -182,7 +172,7 @@ contract HUniswapV2 is HandlerBase {
 
         // Approve token
         liquidity = _getBalance(pair, liquidity);
-        IERC20(pair).safeApprove(UNISWAPV2_ROUTER, liquidity);
+        _tokenApprove(pair, UNISWAPV2_ROUTER, liquidity);
 
         // remove liquidity
         try
@@ -203,9 +193,6 @@ contract HUniswapV2 is HandlerBase {
         } catch {
             _revertMsg("removeLiquidity");
         }
-
-        // Approve token 0
-        IERC20(pair).safeApprove(UNISWAPV2_ROUTER, 0);
 
         // Update involved token
         _updateToken(tokenA);
@@ -289,7 +276,7 @@ contract HUniswapV2 is HandlerBase {
 
         // Approve token
         amountIn = _getBalance(tokenIn, amountIn);
-        IERC20(tokenIn).safeApprove(UNISWAPV2_ROUTER, amountIn);
+        _tokenApprove(tokenIn, UNISWAPV2_ROUTER, amountIn);
 
         try
             router.swapExactTokensForETH(
@@ -306,9 +293,6 @@ contract HUniswapV2 is HandlerBase {
         } catch {
             _revertMsg("swapExactTokensForETH");
         }
-
-        // Approve token 0
-        IERC20(tokenIn).safeApprove(UNISWAPV2_ROUTER, 0);
     }
 
     function swapTokensForExactETH(
@@ -327,7 +311,7 @@ contract HUniswapV2 is HandlerBase {
         amountInMax = _getBalance(tokenIn, amountInMax);
 
         // Approve token
-        IERC20(tokenIn).safeApprove(UNISWAPV2_ROUTER, amountInMax);
+        _tokenApprove(tokenIn, UNISWAPV2_ROUTER, amountInMax);
 
         try
             router.swapTokensForExactETH(
@@ -344,9 +328,6 @@ contract HUniswapV2 is HandlerBase {
         } catch {
             _revertMsg("swapTokensForExactETH");
         }
-
-        // Approve token 0
-        IERC20(tokenIn).safeApprove(UNISWAPV2_ROUTER, 0);
     }
 
     function swapExactTokensForTokens(
@@ -364,7 +345,7 @@ contract HUniswapV2 is HandlerBase {
 
         // Approve token
         amountIn = _getBalance(tokenIn, amountIn);
-        IERC20(tokenIn).safeApprove(UNISWAPV2_ROUTER, amountIn);
+        _tokenApprove(tokenIn, UNISWAPV2_ROUTER, amountIn);
 
         try
             router.swapExactTokensForTokens(
@@ -381,9 +362,6 @@ contract HUniswapV2 is HandlerBase {
         } catch {
             _revertMsg("swapExactTokensForTokens");
         }
-
-        // Approve token 0
-        IERC20(tokenIn).safeApprove(UNISWAPV2_ROUTER, 0);
 
         _updateToken(tokenOut);
     }
@@ -405,7 +383,7 @@ contract HUniswapV2 is HandlerBase {
         amountInMax = _getBalance(tokenIn, amountInMax);
 
         // Approve token
-        IERC20(tokenIn).safeApprove(UNISWAPV2_ROUTER, amountInMax);
+        _tokenApprove(tokenIn, UNISWAPV2_ROUTER, amountInMax);
 
         try
             router.swapTokensForExactTokens(
@@ -422,9 +400,6 @@ contract HUniswapV2 is HandlerBase {
         } catch {
             _revertMsg("swapTokensForExactTokens");
         }
-
-        // Approve token 0
-        IERC20(tokenIn).safeApprove(UNISWAPV2_ROUTER, 0);
 
         _updateToken(tokenOut);
     }
