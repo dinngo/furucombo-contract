@@ -10,8 +10,53 @@ cache: &global_cache
 
 before_script:
   - npm install
+  - RUNNER_COUNT=12
   - FILES=( $(find -H -L ./test/* -regex "^.*.test.js") )
   - len=${#FILES[@]}
+  - >
+    for (( i=0; i<${RUNNER_COUNT}; i+=1 )); do
+        RUNNER_TEST_CNTS[$i]=0
+    done
+  - >
+    for (( i=0; i<${len}; i+=1 )); do
+        TestCases[$i]=$(grep -o " it(" ${FILES[$i]} | wc -l)
+    done
+  - >
+    for ((i = 0; i<${len}; i++))
+    do
+        for((j = 0; j<${len}-i-1; j++))
+        do
+            if [ ${TestCases[j]} -lt ${TestCases[$((j+1))]} ]
+            then
+                # swap
+                temp=${TestCases[j]}
+                TestCases[$j]=${TestCases[$((j+1))]}
+                TestCases[$((j+1))]=$temp
+
+                temp=${FILES[j]}
+                FILES[$j]=${FILES[$((j+1))]}
+                FILES[$((j+1))]=$temp
+            fi
+        done
+    done
+
+  - MIN=${RUNNER_TEST_CNTS[0]}
+  - MINIDX=0
+  - >
+    for (( i=0; i<${len}; i+=1 )); do
+        for j in ${!RUNNER_TEST_CNTS[@]};
+        do
+            if [ ${MIN} -gt ${RUNNER_TEST_CNTS[$j]} ]
+            then
+                MIN=${RUNNER_TEST_CNTS[${j}]}
+                MINIDX=${j}
+            fi
+        done
+
+        UNITTEST_FILES[$MINIDX]+=' '"${FILES[$i]}"
+        RUNNER_TEST_CNTS[$MINIDX]=`expr ${TestCases[$i]} + ${RUNNER_TEST_CNTS[$MINIDX]}`
+        MIN=${RUNNER_TEST_CNTS[$MINIDX]}
+    done
 
 stages:
   - build
@@ -33,11 +78,7 @@ test_0:
     - docker
   script:
     - apt-get update && apt-get install -y netcat
-    - >
-      for (( i=0; i<${len}; i+=4 )); do
-        UNITTEST_FILES+=(${FILES[$i]})
-      done
-    - npm run test-migration "${UNITTEST_FILES[@]}"
+    - npm run test-migration ${UNITTEST_FILES[0]}
   cache:
     <<: *global_cache
 
@@ -47,11 +88,7 @@ test_1:
     - docker
   script:
     - apt-get update && apt-get install -y netcat
-    - >
-      for (( i=1; i<${len}; i+=4 )); do
-        UNITTEST_FILES+=(${FILES[$i]})
-      done
-    - npm run test "${UNITTEST_FILES[@]}"
+    - npm run test ${UNITTEST_FILES[1]}
   cache:
     <<: *global_cache
 
@@ -61,11 +98,7 @@ test_2:
     - docker
   script:
     - apt-get update && apt-get install -y netcat
-    - >
-      for (( i=2; i<${len}; i+=4 )); do
-        UNITTEST_FILES+=(${FILES[$i]})
-      done
-    - npm run test "${UNITTEST_FILES[@]}"
+    - npm run test ${UNITTEST_FILES[2]}
   cache:
     <<: *global_cache
 
@@ -75,11 +108,87 @@ test_3:
     - docker
   script:
     - apt-get update && apt-get install -y netcat
-    - >
-      for (( i=3; i<${len}; i+=4 )); do
-        UNITTEST_FILES+=(${FILES[$i]})
-      done
-    - npm run test "${UNITTEST_FILES[@]}"
+    - npm run test ${UNITTEST_FILES[3]}
+  cache:
+    <<: *global_cache
+
+test_4:
+  stage: test
+  tags:
+    - docker
+  script:
+    - apt-get update && apt-get install -y netcat
+    - npm run test ${UNITTEST_FILES[4]}
+  cache:
+    <<: *global_cache
+
+test_5:
+  stage: test
+  tags:
+    - docker
+  script:
+    - apt-get update && apt-get install -y netcat
+    - npm run test ${UNITTEST_FILES[5]}
+  cache:
+    <<: *global_cache
+
+test_6:
+  stage: test
+  tags:
+    - docker
+  script:
+    - apt-get update && apt-get install -y netcat
+    - npm run test ${UNITTEST_FILES[6]}
+  cache:
+    <<: *global_cache
+
+test_7:
+  stage: test
+  tags:
+    - docker
+  script:
+    - apt-get update && apt-get install -y netcat
+    - npm run test ${UNITTEST_FILES[7]}
+  cache:
+    <<: *global_cache
+
+test_8:
+  stage: test
+  tags:
+    - docker
+  script:
+    - apt-get update && apt-get install -y netcat
+    - npm run test-migration ${UNITTEST_FILES[8]}
+  cache:
+    <<: *global_cache
+
+test_9:
+  stage: test
+  tags:
+    - docker
+  script:
+    - apt-get update && apt-get install -y netcat
+    - npm run test ${UNITTEST_FILES[9]}
+  cache:
+    <<: *global_cache
+
+test_10:
+  stage: test
+  tags:
+    - docker
+  script:
+    - apt-get update && apt-get install -y netcat
+    - npm run test ${UNITTEST_FILES[10]}
+  cache:
+    <<: *global_cache
+
+test_11:
+  stage: test
+  tags:
+    - docker
+  script:
+    - apt-get update && apt-get install -y netcat
+    - npm run test ${UNITTEST_FILES[11]}
   cache:
     <<: *global_cache
 

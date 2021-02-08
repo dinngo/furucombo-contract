@@ -1,7 +1,20 @@
 # Change Log
 
 All notable changes to this project will be documented in this file.
+
 ## [unreleased]
+
+## [1.3.0] - 2021-02-04
+
+### Added
+
+- Support Synthetix `StakingRewards` contract by adding `StakingRewardsAdapter` contract template.
+- Support stake/withdraw/getReward/exit onbehalf of user through `StakingRewardsAdapter` in `HStakingRewardsAdapter`.
+
+### Changed
+
+- Fix openzeppelin contracts dependency to 3.3.0.
+- Update Maker unit test for dust handling.
 
 ## [1.2.0] - 2021-01-28
 
