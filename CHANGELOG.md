@@ -3,6 +3,7 @@
 All notable changes to this project will be documented in this file.
 
 ## [unreleased]
+- Replace safeApprove with _tokenApprove in Curve and UniswapV2 handler
 
 ### Added
 - Support Aave v2 borrowETH/borrow.
