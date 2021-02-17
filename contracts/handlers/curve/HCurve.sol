@@ -392,7 +392,6 @@ contract HCurve is HandlerBase {
                 _revertMsg("removeLiquidityOneCoinInternal");
             }
         }
-        // IERC20(pool).safeApprove(address(curveHandler), 0);
         uint256 afterTokenIBalance = _getBalance(tokenI, uint256(-1));
 
         // Update post process
