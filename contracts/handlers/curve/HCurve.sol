@@ -90,10 +90,6 @@ contract HCurve is HandlerBase {
             }
         }
 
-        // Reset zero amount for approval
-        // if (tokenI != ETH_ADDRESS) {
-        //     IERC20(tokenI).safeApprove(address(curveHandler), 0);
-        // }
         uint256 afterDy = _getBalance(tokenJ, uint256(-1));
 
         if (tokenJ != ETH_ADDRESS) _updateToken(tokenJ);
@@ -308,13 +304,6 @@ contract HCurve is HandlerBase {
             _revertMsg("addLiquidityInternal", "invalid amount array size");
         }
 
-        // Reset zero amount for approval
-        // for (uint256 i = 0; i < amounts.length; i++) {
-        //     if (amounts[i] == 0) continue;
-        //     if (tokens[i] == ETH_ADDRESS) continue;
-        //     IERC20(tokens[i]).safeApprove(address(curveHandler), 0);
-        // }
-
         uint256 afterPoolBalance = IERC20(pool).balanceOf(address(this));
 
         // Update post process
@@ -436,7 +425,6 @@ contract HCurve is HandlerBase {
         } catch {
             _revertMsg("removeLiquidityOneCoinDust");
         }
-        // IERC20(pool).safeApprove(address(curveHandler), 0);
         uint256 afterTokenIBalance = IERC20(tokenI).balanceOf(address(this));
 
         // Update post process
