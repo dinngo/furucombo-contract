@@ -36,12 +36,16 @@ contract HFunds is HandlerBase {
         address receiver
     ) external payable {
         amount = _getBalance(token, amount);
-        IERC20(token).safeTransfer(receiver, amount);
+        if (amount != 0) {
+            IERC20(token).safeTransfer(receiver, amount);
+        }
     }
 
     function send(uint256 amount, address payable receiver) external payable {
         amount = _getBalance(address(0), amount);
-        receiver.transfer(amount);
+        if (amount != 0) {
+            receiver.transfer(amount);
+        }
     }
 
     function checkSlippage(
