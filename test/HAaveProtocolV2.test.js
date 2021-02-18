@@ -24,10 +24,6 @@ const {
   ADAI_V2,
   AWETH_V2,
   AAVEPROTOCOL_V2_PROVIDER,
-  AWETH_V2_DEBT_STABLE,
-  AWETH_V2_DEBT_VARIABLE,
-  ATUSD_V2_DEBT_STABLE,
-  ATUSD_V2_DEBT_VARIABLE,
   AAVE_RATEMODE,
 } = require('./utils/constants');
 const {
@@ -330,13 +326,10 @@ contract('Aave V2', function([_, user, someone]) {
           this.token.address,
           value
         );
-        const aTokenUserBefore1 = await this.aToken.balanceOf.call(user);
 
         await this.aToken.transfer(this.proxy.address, value, { from: user });
         await this.proxy.updateTokenMock(this.aToken.address);
         await balanceUser.get();
-
-        const aTokenUserBefore = await this.aToken.balanceOf.call(user);
         const receipt = await this.proxy.execMock(to, data, {
           from: user,
           value: ether('0.1'),

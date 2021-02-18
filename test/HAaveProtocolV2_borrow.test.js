@@ -129,7 +129,7 @@ contract('Aave V2', function([_, user, someone]) {
       debtWETHUserBefore = await this.debtWETH.balanceOf.call(user);
     });
 
-    it('borrow token ', async function() {
+    it('borrow token', async function() {
       const borrowAmount = ether('100');
       const to = this.hAaveV2.address;
       const data = abi.simpleEncode(
@@ -173,7 +173,7 @@ contract('Aave V2', function([_, user, someone]) {
       profileGas(receipt);
     });
 
-    it('borrow weth ', async function() {
+    it('borrow weth', async function() {
       const borrowAmount = ether('2');
       const to = this.hAaveV2.address;
       const data = abi.simpleEncode(
@@ -218,7 +218,7 @@ contract('Aave V2', function([_, user, someone]) {
       profileGas(receipt);
     });
 
-    it('borrow eth ', async function() {
+    it('borrow eth', async function() {
       const borrowAmount = ether('2');
       const to = this.hAaveV2.address;
       const data = abi.simpleEncode(
@@ -239,9 +239,6 @@ contract('Aave V2', function([_, user, someone]) {
       const debtWETHUserAfter = await this.debtWETH.balanceOf.call(user);
       // Verify proxy balance
       expect(await balanceProxy.get()).to.be.zero;
-      expect(
-        await this.borrowToken.balanceOf.call(this.proxy.address)
-      ).to.be.zero;
       expect(
         await this.debtToken.balanceOf.call(this.proxy.address)
       ).to.be.zero;
@@ -296,7 +293,31 @@ contract('Aave V2', function([_, user, someone]) {
       );
     });
 
-    it('should revert: borrow token that is not in aaveV2 pool', async function() {
+    it('should revert: borrow token approveDelegation < borrow amount', async function() {
+      const borrowAmount = ether('2');
+      const to = this.hAaveV2.address;
+      const data = abi.simpleEncode(
+        'borrow(address,uint256,uint256)',
+        this.borrowToken.address,
+        borrowAmount,
+        rateMode
+      );
+
+      await this.debtWETH.approveDelegation(
+        this.proxy.address,
+        borrowAmount.sub(ether('1')),
+        {
+          from: user,
+        }
+      );
+
+      await expectRevert(
+        this.proxy.execMock(to, data, { from: user }),
+        'HAaveProtocolV2_borrow: 59' // AAVEV2 Error Code: BORROW_ALLOWANCE_NOT_ENOUGH
+      );
+    });
+
+    it('should revert: borrow token with is not in aaveV2 pool', async function() {
       const borrowAmount = ether('2');
       const to = this.hAaveV2.address;
       const data = abi.simpleEncode(
@@ -312,7 +333,7 @@ contract('Aave V2', function([_, user, someone]) {
       );
     });
 
-    it('should revert: borrow token that is not in aaveV2 pool', async function() {
+    it('should revert: borrow token with no collateral ', async function() {
       const borrowAmount = ether('2');
       const to = this.hAaveV2.address;
       const data = abi.simpleEncode(
@@ -328,7 +349,7 @@ contract('Aave V2', function([_, user, someone]) {
       );
     });
 
-    it('should revert: borrow toke is the same with collateral', async function() {
+    it('should revert: borrow token is the same with collateral', async function() {
       const borrowAmount = ether('2');
       const to = this.hAaveV2.address;
       const data = abi.simpleEncode(
@@ -340,7 +361,7 @@ contract('Aave V2', function([_, user, someone]) {
 
       await expectRevert(
         this.proxy.execMock(to, data, { from: user }),
-        'HAaveProtocolV2_borrow: 13' // AAVEV2 Error Code: BORROW_ALLOWANCE_NOT_ENOUGH
+        'HAaveProtocolV2_borrow: 13' // AAVEV2 Error Code: VL_COLLATERAL_SAME_AS_BORROWING_CURRENCY
       );
     });
   });
@@ -387,7 +408,7 @@ contract('Aave V2', function([_, user, someone]) {
       debtWETHUserBefore = await this.debtWETH.balanceOf.call(user);
     });
 
-    it('borrow token ', async function() {
+    it('borrow token', async function() {
       const borrowAmount = ether('100');
       const to = this.hAaveV2.address;
       const data = abi.simpleEncode(
@@ -432,7 +453,7 @@ contract('Aave V2', function([_, user, someone]) {
       profileGas(receipt);
     });
 
-    it('borrow weth ', async function() {
+    it('borrow weth', async function() {
       const borrowAmount = ether('2');
       const to = this.hAaveV2.address;
       const data = abi.simpleEncode(
@@ -478,7 +499,7 @@ contract('Aave V2', function([_, user, someone]) {
       profileGas(receipt);
     });
 
-    it('borrow eth ', async function() {
+    it('borrow eth', async function() {
       const borrowAmount = ether('2');
       const to = this.hAaveV2.address;
       const data = abi.simpleEncode(
@@ -499,9 +520,6 @@ contract('Aave V2', function([_, user, someone]) {
       const debtWETHUserAfter = await this.debtWETH.balanceOf.call(user);
       // Verify proxy balance
       expect(await balanceProxy.get()).to.be.zero;
-      expect(
-        await this.borrowToken.balanceOf.call(this.proxy.address)
-      ).to.be.zero;
       expect(
         await this.debtToken.balanceOf.call(this.proxy.address)
       ).to.be.zero;
@@ -573,7 +591,7 @@ contract('Aave V2', function([_, user, someone]) {
       );
     });
 
-    it('should revert: borrow token that is not in pool', async function() {
+    it('should revert: borrow token with no collateral', async function() {
       const borrowAmount = ether('2');
       const to = this.hAaveV2.address;
       const data = abi.simpleEncode(
@@ -589,7 +607,7 @@ contract('Aave V2', function([_, user, someone]) {
       );
     });
 
-    it('should revert: borrow toke is the same with collateral', async function() {
+    it('should revert: borrow token is the same with collateral', async function() {
       const borrowAmount = ether('2');
       const to = this.hAaveV2.address;
       const data = abi.simpleEncode(
