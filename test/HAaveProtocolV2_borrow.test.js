@@ -317,7 +317,7 @@ contract('Aave V2', function([_, user, someone]) {
       );
     });
 
-    it('should revert: borrow token with is not in aaveV2 pool', async function() {
+    it('should revert: borrow token that is not in aaveV2 pool', async function() {
       const borrowAmount = ether('2');
       const to = this.hAaveV2.address;
       const data = abi.simpleEncode(
