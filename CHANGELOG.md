@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+### Added
+- Support Aave v2 borrowETH/borrow.
+
 ## [1.3.0] - 2021-02-04
 
 ### Added
@@ -22,7 +25,6 @@ All notable changes to this project will be documented in this file.
 
 - Update curve handler to support eth and aave pools.
 - Update curve handler to remove onesplit swap.
-
 ## [1.1.0] - 2021-01-25
 
 ### Added
