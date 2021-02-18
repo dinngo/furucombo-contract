@@ -303,7 +303,7 @@ contract('Aave V2', function([_, user, someone]) {
         rateMode
       );
 
-      await this.debtWETH.approveDelegation(
+      await this.debtToken.approveDelegation(
         this.proxy.address,
         borrowAmount.sub(ether('1')),
         {
