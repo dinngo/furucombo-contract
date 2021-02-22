@@ -3,6 +3,9 @@
 All notable changes to this project will be documented in this file.
 
 ## [unreleased]
+### Changed
+- Replace safeApprove with _tokenApprove in Curve and UniswapV2 handler
+- Refine send token/Ether function of `HFunds` handler
 
 ### Added
 - Support Aave v2 borrowETH/borrow.
