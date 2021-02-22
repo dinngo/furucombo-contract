@@ -1,7 +1,7 @@
 pragma solidity ^0.6.0;
 
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
-import "./IERC20Usdt.sol";
+import "../interface/IERC20Usdt.sol";
 
 import "../Config.sol";
 import "../Storage.sol";

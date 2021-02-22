@@ -1038,6 +1038,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
         await this.hbtc.transfer(someone, value, {
           from: HBTC_PROVIDER,
         });
+        token0User = await this.hbtc.balanceOf.call(user);
         const receipt = await this.proxy.execMock(to, data, { from: user });
         const handlerReturn = utils.toBN(
           getHandlerReturn(receipt, ['uint256'])[0]
@@ -1078,6 +1079,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
         await this.omg.transfer(someone, value, {
           from: OMG_PROVIDER,
         });
+        token0User = await this.omg.balanceOf.call(user);
         const receipt = await this.proxy.execMock(to, data, { from: user });
         const handlerReturn = utils.toBN(
           getHandlerReturn(receipt, ['uint256'])[0]
@@ -1118,6 +1120,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
         await this.usdt.transfer(someone, value, {
           from: USDT_PROVIDER,
         });
+        token0User = await this.usdt.balanceOf.call(user);
         const receipt = await this.proxy.execMock(to, data, { from: user });
         const handlerReturn = utils.toBN(
           getHandlerReturn(receipt, ['uint256'])[0]
