@@ -377,56 +377,6 @@ contract('Curve', function([_, user]) {
         );
         profileGas(receipt);
       });
-
-      it('Exact input swap HBTC to WBTC by exchange', async function() {
-        const value = ether('1');
-        const answer = await this.hbtcSwap.get_dy.call(0, 1, value, {
-          from: user,
-        });
-
-        console.log('answer', answer.toString());
-        const data = abi.simpleEncode(
-          'exchange(address,address,address,int128,int128,uint256,uint256)',
-          this.hbtcSwap.address,
-          this.token.address,
-          WBTC_TOKEN,
-          0,
-          1,
-          value,
-          mulPercent(answer, new BN('100').sub(slippage))
-        );
-        await this.token.transfer(this.proxy.address, value, {
-          from: providerAddress,
-        });
-        await this.proxy.updateTokenMock(this.token.address);
-        const receipt = await this.proxy.execMock(this.hCurve.address, data, {
-          from: user,
-          value: ether('1'), // Ensure handler can correctly deal with ether
-        });
-
-        // Check handler return
-        const handlerReturn = utils.toBN(
-          getHandlerReturn(receipt, ['uint256'])[0]
-        );
-        const userBalanceDelta = await balanceUser.delta();
-        expect(userBalanceDelta).to.be.bignumber.eq(
-          ether('0').sub(new BN(receipt.receipt.gasUsed))
-        );
-
-        // Check proxy
-        expect(await balanceProxy.get()).to.be.zero;
-        expect(await this.token.balanceOf.call(this.proxy.address)).to.be.zero;
-
-        // Check user
-        expect(handlerReturn).to.be.bignumber.lte(answer);
-        expect(handlerReturn).to.be.bignumber.gt(
-          mulPercent(answer, new BN('100').sub(slippage))
-        );
-        expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
-          tokenUser
-        );
-        profileGas(receipt);
-      });
     });
 
     describe('seth pool', function() {
