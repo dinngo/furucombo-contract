@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 - Support Aave v2 borrowETH/borrow.
+- Add send tokens function of `HFunds` handler
 
 ## [1.3.0] - 2021-02-04
 

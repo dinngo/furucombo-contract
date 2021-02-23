@@ -30,6 +30,35 @@ contract HFunds is HandlerBase {
         }
     }
 
+    function sendTokens(
+        address[] calldata tokens,
+        uint256[] calldata amounts,
+        address payable receiver
+    ) external payable {
+        for (uint256 i = 0; i < tokens.length; i++) {
+            uint256 amount = _getBalance(tokens[i], amounts[i]);
+            if (amount > 0) {
+                // ETH case
+                if (
+                    tokens[i] == address(0) ||
+                    tokens[i] ==
+                    address(0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE)
+                ) {
+                    receiver.transfer(amount);
+                } else {
+                    IERC20(tokens[i]).safeTransfer(receiver, amount);
+                }
+            }
+        }
+    }
+
+    function send(uint256 amount, address payable receiver) external payable {
+        amount = _getBalance(address(0), amount);
+        if (amount > 0) {
+            receiver.transfer(amount);
+        }
+    }
+
     function sendToken(
         address token,
         uint256 amount,
@@ -38,13 +67,6 @@ contract HFunds is HandlerBase {
         amount = _getBalance(token, amount);
         if (amount > 0) {
             IERC20(token).safeTransfer(receiver, amount);
-        }
-    }
-
-    function send(uint256 amount, address payable receiver) external payable {
-        amount = _getBalance(address(0), amount);
-        if (amount > 0) {
-            receiver.transfer(amount);
         }
     }
 
