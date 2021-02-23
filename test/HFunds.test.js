@@ -130,6 +130,59 @@ contract('Funds', function([_, user, someone]) {
     });
   });
 
+  describe('multiple tokens', function() {
+    before(async function() {
+      this.token0 = await IToken.at(tokenAddresses[0]);
+      this.token1 = await IToken.at(tokenAddresses[1]);
+    });
+    it('normal', async function() {
+      const token = [this.token0.address, this.token1.address];
+      const value = [ether('100'), ether('100')];
+      const to = this.hFunds.address;
+      const data = abi.simpleEncode(
+        'inject(address[],uint256[])',
+        token,
+        value
+      );
+      await this.token0.transfer(user, value[0], {
+        from: providerAddresses[0],
+      });
+      await this.token0.approve(this.proxy.address, value[0], { from: user });
+      await this.token1.transfer(user, value[1], {
+        from: providerAddresses[1],
+      });
+      await this.token1.approve(this.proxy.address, value[1], { from: user });
+
+      const receipt = await this.proxy.execMock(to, data, {
+        from: user,
+        value: ether('1'),
+      });
+
+      await expectEvent.inTransaction(receipt.tx, this.token0, 'Transfer', {
+        from: user,
+        to: this.proxy.address,
+        value: value[0],
+      });
+      await expectEvent.inTransaction(receipt.tx, this.token0, 'Transfer', {
+        from: this.proxy.address,
+        to: user,
+        value: value[0],
+      });
+
+      await expectEvent.inTransaction(receipt.tx, this.token1, 'Transfer', {
+        from: user,
+        to: this.proxy.address,
+        value: value[1],
+      });
+      await expectEvent.inTransaction(receipt.tx, this.token1, 'Transfer', {
+        from: this.proxy.address,
+        to: user,
+        value: value[1],
+      });
+      profileGas(receipt);
+    });
+  });
+
   describe('send', function() {
     before(async function() {
       this.token = await IToken.at(tokenAddresses[0]);
