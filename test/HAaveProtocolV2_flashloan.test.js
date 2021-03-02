@@ -100,6 +100,41 @@ contract('AaveV2 flashloan', function([_, user, someone]) {
     await evmRevert(id);
   });
 
+  describe('Lending pool as handler', function() {
+    it('Will success if pool is registered as handler', async function() {
+      await this.registry.register(
+        this.lendingPool.address,
+        this.hAaveV2.address
+      );
+      const to = this.lendingPool.address;
+      const data = abi.simpleEncode(
+        'initialize(address,bytes)',
+        this.registry.address,
+        ''
+      );
+      await this.proxy.execMock(to, data, {
+        from: user,
+        value: ether('0.1'),
+      });
+    });
+
+    it('Will revert if pool is registered as caller only', async function() {
+      const to = this.lendingPool.address;
+      const data = abi.simpleEncode(
+        'initialize(address,bytes)',
+        this.registry.address,
+        ''
+      );
+      await expectRevert(
+        this.proxy.execMock(to, data, {
+          from: user,
+          value: ether('0.1'),
+        }),
+        'Invalid handler'
+      );
+    });
+  });
+
   describe('Normal', function() {
     beforeEach(async function() {
       await this.tokenA.transfer(this.faucet.address, ether('100'), {
