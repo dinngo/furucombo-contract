@@ -54,7 +54,7 @@ contract('Aave flashloan', function([_, user]) {
     const lendingPoolAddress = await this.provider.getLendingPool.call();
     const lendingPoolCoreAddress = await this.provider.getLendingPoolCore.call();
     this.lendingPool = await ILendingPool.at(lendingPoolAddress);
-    await this.registry.register(lendingPoolAddress, this.hAave.address);
+    await this.registry.registerCaller(lendingPoolAddress, this.hAave.address);
   });
 
   beforeEach(async function() {
