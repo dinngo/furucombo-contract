@@ -304,7 +304,7 @@ contract Proxy is Storage, Config {
         return IRegistry(_getRegistry()).isValid(handler);
     }
 
-    /// @notice Check if the handler is valid in registry.
+    /// @notice Check if the caller is valid in registry.
     function _isValidCaller(address caller)
         internal
         view
