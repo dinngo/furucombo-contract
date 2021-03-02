@@ -198,4 +198,51 @@ contract('Registry', function([_, contract1, contract2, someone]) {
       });
     });
   });
+
+  describe('is valid', function() {
+    beforeEach(async function() {
+      await this.registry.register(contract1, info);
+      await this.registry.registerCaller(contract2, info);
+    });
+
+    describe('handler', function() {
+      it('normal', async function() {
+        expect(await this.registry.isValid(contract1)).to.be.true;
+      });
+
+      it('wrong type', async function() {
+        expect(await this.registry.isValidCaller(contract1)).to.be.false;
+      });
+
+      it('removed', async function() {
+        await this.registry.unregister(contract1);
+        expect(await this.registry.isValid(contract1)).to.be.false;
+      });
+
+      it('halted', async function() {
+        await this.registry.halt();
+        await expectRevert(this.registry.isValid(contract1), 'Halted');
+      });
+    });
+
+    describe('caller', function() {
+      it('normal', async function() {
+        expect(await this.registry.isValidCaller(contract2)).to.be.true;
+      });
+
+      it('wrong type', async function() {
+        expect(await this.registry.isValid(contract2)).to.be.false;
+      });
+
+      it('removed', async function() {
+        await this.registry.unregisterCaller(contract2);
+        expect(await this.registry.isValidCaller(contract2)).to.false;
+      });
+
+      it('halted', async function() {
+        await this.registry.halt();
+        await expectRevert(this.registry.isValidCaller(contract2), 'Halted');
+      });
+    });
+  });
 });
