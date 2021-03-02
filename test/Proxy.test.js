@@ -77,6 +77,25 @@ contract('Proxy', function([_, deployer, user]) {
       expect(result).to.be.bignumber.eq(num);
     });
 
+    it('should revert: caller as handler', async function() {
+      this.fooHandler2 = await FooHandler.new();
+      await this.registry.registerCaller(
+        this.fooHandler2.address,
+        utils.asciiToHex('foo')
+      );
+      const index = 0;
+      const num = new BN('25');
+      const to = [this.fooHandler2.address];
+      const config = [ZERO_BYTES32];
+      const data = [
+        abi.simpleEncode('bar(uint256,uint256):(uint256)', index, num),
+      ];
+      await expectRevert(
+        this.proxy.batchExec(to, config, data),
+        'Invalid handler'
+      );
+    });
+
     it('multiple', async function() {
       const index = [0, 1, 2];
       const num = [new BN('25'), new BN('26'), new BN('27')];
