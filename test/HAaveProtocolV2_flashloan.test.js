@@ -72,7 +72,10 @@ contract('AaveV2 flashloan', function([_, user, someone]) {
     this.provider = await IProviderV2.at(AAVEPROTOCOL_V2_PROVIDER);
     const lendingPoolAddress = await this.provider.getLendingPool.call();
     this.lendingPool = await ILendingPoolV2.at(lendingPoolAddress);
-    await this.registry.register(lendingPoolAddress, this.hAaveV2.address);
+    await this.registry.registerCaller(
+      lendingPoolAddress,
+      this.hAaveV2.address
+    );
 
     this.tokenAProvider = WETH_PROVIDER;
     this.tokenBProvider = DAI_PROVIDER;

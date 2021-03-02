@@ -39,10 +39,10 @@ contract Proxy is Storage, Config {
         // The function call will then be forwarded to the location registered in
         // registry.
         if (msg.data.length != 0) {
-            require(_isValid(msg.sender), "Invalid caller");
+            require(_isValidCaller(msg.sender), "Invalid caller");
 
             address target =
-                address(bytes20(IRegistry(_getRegistry()).infos(msg.sender)));
+                address(bytes20(IRegistry(_getRegistry()).callers(msg.sender)));
             bytes memory result = _exec(target, msg.data);
 
             // return result for aave v2 flashloan()
@@ -302,5 +302,14 @@ contract Proxy is Storage, Config {
     /// @notice Check if the handler is valid in registry.
     function _isValid(address handler) internal view returns (bool result) {
         return IRegistry(_getRegistry()).isValid(handler);
+    }
+
+    /// @notice Check if the handler is valid in registry.
+    function _isValidCaller(address caller)
+        internal
+        view
+        returns (bool result)
+    {
+        return IRegistry(_getRegistry()).isValidCaller(caller);
     }
 }

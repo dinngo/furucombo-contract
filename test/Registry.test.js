@@ -20,10 +20,12 @@ const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
 
 const Registry = artifacts.require('Registry');
 
-contract('Registry', function([_, handler1, handler2, someone]) {
+contract('Registry', function([_, contract1, contract2, someone]) {
   let id;
+  const info = utils.fromAscii('test');
+  const info2 = utils.fromAscii('test2');
 
-  beforeEach(async function() {
+  before(async function() {
     this.registry = await Registry.new();
   });
 
@@ -36,16 +38,14 @@ contract('Registry', function([_, handler1, handler2, someone]) {
   });
 
   describe('register', function() {
-    const info = utils.fromAscii('test');
-
     it('normal', async function() {
-      await this.registry.register(handler1, info);
-      expect(await this.registry.isValid.call(handler1)).to.be.true;
+      await this.registry.register(contract1, info);
+      expect(await this.registry.isValid.call(contract1)).to.be.true;
     });
 
     it('non owner', async function() {
       await expectRevert.unspecified(
-        this.registry.register(handler1, info, { from: someone })
+        this.registry.register(contract1, info, { from: someone })
       );
     });
 
@@ -56,61 +56,146 @@ contract('Registry', function([_, handler1, handler2, someone]) {
     });
 
     it('set info', async function() {
-      await this.registry.register(handler1, info);
-      const info2 = utils.fromAscii('test2');
-      await this.registry.register(handler1, info2);
-      expect(await this.registry.isValid.call(handler1)).to.be.true;
+      await this.registry.register(contract1, info);
+      await this.registry.register(contract1, info2);
+      expect(await this.registry.isValid.call(contract1)).to.be.true;
     });
 
     it('unregistered', async function() {
-      await this.registry.register(handler1, info);
-      await this.registry.unregister(handler1);
-      await expectRevert(this.registry.register(handler1, info), 'registered');
+      await this.registry.register(contract1, info);
+      await this.registry.unregister(contract1);
+      await expectRevert(this.registry.register(contract1, info), 'registered');
     });
   });
 
   describe('unregister', function() {
     beforeEach(async function() {
-      const info = utils.fromAscii('test');
-      await this.registry.register(handler1, info);
+      await this.registry.register(contract1, info);
     });
 
     it('normal', async function() {
-      await this.registry.unregister(handler1);
-      expect(await this.registry.isValid.call(handler1)).to.be.false;
+      await this.registry.unregister(contract1);
+      expect(await this.registry.isValid.call(contract1)).to.be.false;
     });
 
     it('non owner', async function() {
       await expectRevert.unspecified(
-        this.registry.unregister(handler1, { from: someone })
+        this.registry.unregister(contract1, { from: someone })
       );
     });
 
     it('no registration', async function() {
-      await expectRevert(this.registry.unregister(handler2), 'no registration');
+      await expectRevert(
+        this.registry.unregister(contract2),
+        'no registration'
+      );
     });
 
     it('unregistered', async function() {
-      await this.registry.unregister(handler1);
-      await expectRevert(this.registry.unregister(handler1), 'unregistered');
+      await this.registry.unregister(contract1);
+      await expectRevert(this.registry.unregister(contract1), 'unregistered');
+    });
+  });
+
+  describe('register caller', function() {
+    it('normal', async function() {
+      await this.registry.registerCaller(contract1, info);
+      expect(await this.registry.isValidCaller.call(contract1)).to.be.true;
+    });
+
+    it('non owner', async function() {
+      await expectRevert.unspecified(
+        this.registry.registerCaller(contract1, info, { from: someone })
+      );
+    });
+
+    it('zero address', async function() {
+      await expectRevert.unspecified(
+        this.registry.registerCaller(ZERO_ADDRESS, info)
+      );
+    });
+
+    it('set info', async function() {
+      await this.registry.registerCaller(contract1, info);
+      await this.registry.registerCaller(contract1, info2);
+      expect(await this.registry.isValidCaller.call(contract1)).to.be.true;
+    });
+
+    it('unregistered', async function() {
+      await this.registry.registerCaller(contract1, info);
+      await this.registry.unregisterCaller(contract1);
+      await expectRevert(
+        this.registry.registerCaller(contract1, info),
+        'registered'
+      );
+    });
+  });
+
+  describe('unregister caller', function() {
+    beforeEach(async function() {
+      await this.registry.registerCaller(contract1, info);
+    });
+
+    it('normal', async function() {
+      await this.registry.unregisterCaller(contract1);
+      expect(await this.registry.isValidCaller.call(contract1)).to.be.false;
+    });
+
+    it('non owner', async function() {
+      await expectRevert.unspecified(
+        this.registry.unregisterCaller(contract1, { from: someone })
+      );
+    });
+
+    it('no registration', async function() {
+      await expectRevert(
+        this.registry.unregisterCaller(contract2),
+        'no registration'
+      );
+    });
+
+    it('unregistered', async function() {
+      await this.registry.unregisterCaller(contract1);
+      await expectRevert(
+        this.registry.unregisterCaller(contract1),
+        'unregistered'
+      );
     });
   });
 
   describe('get info', function() {
-    beforeEach(async function() {
-      const info = utils.fromAscii('test');
-      await this.registry.register(handler1, info);
+    describe('handler', function() {
+      beforeEach(async function() {
+        await this.registry.register(contract1, info);
+      });
+
+      it('normal', async function() {
+        const result = await this.registry.handlers.call(contract1);
+        expect(result).eq(utils.padRight(utils.asciiToHex('test'), 64));
+      });
+
+      it('unregistered', async function() {
+        await this.registry.unregister(contract1);
+        const result = await this.registry.handlers.call(contract1);
+        expect(result).eq(utils.padRight(utils.asciiToHex('deprecated'), 64));
+      });
     });
 
-    it('normal', async function() {
-      const result = await this.registry.infos.call(handler1);
-      expect(result).eq(utils.padRight(utils.asciiToHex('test'), 64));
-    });
+    describe('caller', function() {
+      beforeEach(async function() {
+        await this.registry.registerCaller(contract1, info);
+      });
 
-    it('unregistered', async function() {
-      await this.registry.unregister(handler1);
-      const result = await this.registry.infos.call(handler1);
-      expect(result).eq(utils.padRight(utils.asciiToHex('deprecated'), 64));
+      it('normal', async function() {
+        const result = await this.registry.callers.call(contract1);
+        expect(result).eq(utils.padRight(utils.asciiToHex('test'), 64));
+      });
+
+      it('unregistered', async function() {
+        await this.registry.unregisterCaller(contract1);
+        const result = await this.registry.callers.call(contract1);
+        expect(result).eq(utils.padRight(utils.asciiToHex('deprecated'), 64));
+      });
     });
   });
 });
