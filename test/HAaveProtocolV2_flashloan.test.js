@@ -768,7 +768,7 @@ contract('AaveV2 flashloan', function([_, user, someone]) {
           0,
           { from: someone }
         ),
-        'Sender should be initialized'
+        'Sender is not initialized'
       );
     });
   });
