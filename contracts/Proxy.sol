@@ -32,27 +32,30 @@ contract Proxy is Storage, Config {
      * @notice Direct transfer from EOA should be reverted.
      * @dev Callback function will be handled here.
      */
-    fallback() external payable {
-        require(Address.isContract(msg.sender), "Not allowed from EOA");
-        require(_getSender() != address(0), "Sender should be initialized");
-
-        // If triggered by a function call, caller should be registered in registry.
-        // The function call will then be forwarded to the location registered in
+    fallback() external payable isInitialized {
+        // If triggered by a function call, caller should be registered in
         // registry.
-        if (msg.data.length != 0) {
-            require(_isValidCaller(msg.sender), "Invalid caller");
+        // The function call will then be forwarded to the location registered
+        // in registry.
+        require(_isValidCaller(msg.sender), "Invalid caller");
 
-            address target =
-                address(bytes20(IRegistry(_getRegistry()).callers(msg.sender)));
-            bytes memory result = _exec(target, msg.data);
+        address target =
+            address(bytes20(IRegistry(_getRegistry()).callers(msg.sender)));
+        bytes memory result = _exec(target, msg.data);
 
-            // return result for aave v2 flashloan()
-            uint256 size = result.length;
-            assembly {
-                let loc := add(result, 0x20)
-                return(loc, size)
-            }
+        // return result for aave v2 flashloan()
+        uint256 size = result.length;
+        assembly {
+            let loc := add(result, 0x20)
+            return(loc, size)
         }
+    }
+
+    /**
+     * @notice Direct transfer from EOA should be reverted.
+     */
+    receive() external payable {
+        require(Address.isContract(msg.sender), "Not allowed from EOA");
     }
 
     /**
@@ -81,9 +84,8 @@ contract Proxy is Storage, Config {
         address[] memory tos,
         bytes32[] memory configs,
         bytes[] memory datas
-    ) public payable {
+    ) public payable isInitialized {
         require(msg.sender == address(this), "Does not allow external calls");
-        require(_getSender() != address(0), "Sender should be initialized");
         _execs(tos, configs, datas);
     }
 

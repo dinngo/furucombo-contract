@@ -216,7 +216,7 @@ contract('Registry', function([_, contract1, contract2, someone]) {
 
       it('removed', async function() {
         await this.registry.unregister(contract1);
-        expect(await this.registry.isValidHanlder.call(contract1)).to.be.false;
+        expect(await this.registry.isValidHandler.call(contract1)).to.be.false;
       });
 
       it('halted', async function() {
@@ -234,7 +234,7 @@ contract('Registry', function([_, contract1, contract2, someone]) {
       });
 
       it('wrong type', async function() {
-        expect(await this.registry.isValid.call(contract2)).to.be.false;
+        expect(await this.registry.isValidHandler.call(contract2)).to.be.false;
       });
 
       it('removed', async function() {

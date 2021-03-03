@@ -14,7 +14,7 @@ module.exports = function(deployer) {
     })
     .then(function(instance) {
       registry = instance;
-      registry.register(AAVE_LENDING_POOL_CORE, Handler.address);
+      registry.registerCaller(AAVE_LENDING_POOL_CORE, Handler.address);
       return registry.register(
         Handler.address,
         utils.asciiToHex('Aave Protocol')
