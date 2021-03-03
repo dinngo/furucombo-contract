@@ -11,6 +11,15 @@ contract Registry is Ownable {
 
     bytes32 public constant DEPRECATED = bytes10(0x64657072656361746564);
 
+    event Registered(address indexed registration, bytes32 info);
+    event Unregistered(address indexed registration);
+    event CallerRegistered(address indexed registration, bytes32 info);
+    event CallerUnregistered(address indexed registration);
+    event Banned(address indexed agent);
+    event Unbanned(address indexed agent);
+    event Halted();
+    event Unhalted();
+
     modifier isNotHalted() {
         require(fHalt == false, "Halted");
         _;
@@ -40,6 +49,7 @@ contract Registry is Ownable {
         require(registration != address(0), "zero address");
         require(handlers[registration] != DEPRECATED, "unregistered");
         handlers[registration] = info;
+        emit Registered(registration, info);
     }
 
     /**
@@ -51,6 +61,7 @@ contract Registry is Ownable {
         require(handlers[registration] != bytes32(0), "no registration");
         require(handlers[registration] != DEPRECATED, "unregistered");
         handlers[registration] = DEPRECATED;
+        emit Unregistered(registration);
     }
 
     /**
@@ -68,6 +79,7 @@ contract Registry is Ownable {
         require(registration != address(0), "zero address");
         require(callers[registration] != DEPRECATED, "unregistered");
         callers[registration] = info;
+        emit CallerRegistered(registration, info);
     }
 
     /**
@@ -79,6 +91,7 @@ contract Registry is Ownable {
         require(callers[registration] != bytes32(0), "no registration");
         require(callers[registration] != DEPRECATED, "unregistered");
         callers[registration] = DEPRECATED;
+        emit CallerUnregistered(registration);
     }
 
     /**
@@ -87,6 +100,7 @@ contract Registry is Ownable {
      */
     function ban(address agent) external isNotBanned(agent) onlyOwner {
         bannedAgents[agent] = 1;
+        emit Banned(agent);
     }
 
     /**
@@ -94,6 +108,7 @@ contract Registry is Ownable {
      */
     function unban(address agent) external isBanned(agent) onlyOwner {
         bannedAgents[agent] = 0;
+        emit Unbanned(agent);
     }
 
     /**
@@ -129,9 +144,11 @@ contract Registry is Ownable {
 
     function halt() external isNotHalted onlyOwner {
         fHalt = true;
+        emit Halted();
     }
 
     function unhalt() external isHalted onlyOwner {
         fHalt = false;
+        emit Unhalted();
     }
 }
