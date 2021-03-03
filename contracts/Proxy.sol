@@ -34,6 +34,7 @@ contract Proxy is Storage, Config {
      */
     fallback() external payable {
         require(Address.isContract(msg.sender), "Not allowed from EOA");
+        require(_getSender() != address(0), "Sender should be initialized");
 
         // If triggered by a function call, caller should be registered in registry.
         // The function call will then be forwarded to the location registered in
@@ -65,7 +66,7 @@ contract Proxy is Storage, Config {
         address[] memory tos,
         bytes32[] memory configs,
         bytes[] memory datas
-    ) public payable {
+    ) external payable {
         _preProcess();
         _execs(tos, configs, datas);
         _postProcess();
@@ -211,7 +212,7 @@ contract Proxy is Storage, Config {
         internal
         returns (bytes memory result)
     {
-        require(_isValid(_to), "Invalid handler");
+        require(_isValidHandler(_to), "Invalid handler");
         _addCubeCounter();
         assembly {
             let succeeded := delegatecall(
@@ -300,8 +301,12 @@ contract Proxy is Storage, Config {
     }
 
     /// @notice Check if the handler is valid in registry.
-    function _isValid(address handler) internal view returns (bool result) {
-        return IRegistry(_getRegistry()).isValid(handler);
+    function _isValidHandler(address handler)
+        internal
+        view
+        returns (bool result)
+    {
+        return IRegistry(_getRegistry()).isValidHandler(handler);
     }
 
     /// @notice Check if the caller is valid in registry.

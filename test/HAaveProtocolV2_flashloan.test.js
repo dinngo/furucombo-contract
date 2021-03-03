@@ -768,7 +768,7 @@ contract('AaveV2 flashloan', function([_, user, someone]) {
           0,
           { from: someone }
         ),
-        'HAaveProtocolV2_executeOperation: not initiated by the proxy'
+        'Sender should be initialized'
       );
     });
   });

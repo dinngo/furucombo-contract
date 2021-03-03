@@ -6,6 +6,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 contract Registry is Ownable {
     mapping(address => bytes32) public handlers;
     mapping(address => bytes32) public callers;
+    mapping(address => uint256) public bAgents;
     bool public fHalt;
 
     bytes32 public constant DEPRECATED = bytes10(0x64657072656361746564);
@@ -17,6 +18,16 @@ contract Registry is Ownable {
 
     modifier isHalted() {
         require(fHalt, "Not halted");
+        _;
+    }
+
+    modifier isNotBanned(address agent) {
+        require(bAgents[agent] == 0, "Banned");
+        _;
+    }
+
+    modifier isBanned(address agent) {
+        require(bAgents[agent] != 0, "Not banned");
         _;
     }
 
@@ -71,12 +82,28 @@ contract Registry is Ownable {
     }
 
     /**
+     * @notice Ban agent from query
+     *
+     */
+    function ban(address agent) external isNotBanned(agent) onlyOwner {
+        bAgents[agent] = 1;
+    }
+
+    /**
+     * @notice Unban agent from query
+     */
+    function unban(address agent) external isBanned(agent) onlyOwner {
+        bAgents[agent] = 0;
+    }
+
+    /**
      * @notice Check if the handler is valid.
      * @param handler The handler to be verified.
      */
-    function isValid(address handler)
+    function isValidHandler(address handler)
         external
         view
+        isNotBanned(msg.sender)
         isNotHalted
         returns (bool result)
     {
@@ -92,6 +119,7 @@ contract Registry is Ownable {
     function isValidCaller(address caller)
         external
         view
+        isNotBanned(msg.sender)
         isNotHalted
         returns (bool result)
     {
