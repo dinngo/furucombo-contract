@@ -25,6 +25,7 @@ const Foo3 = artifacts.require('Foo3');
 const Foo3Handler = artifacts.require('Foo3Handler');
 const Foo4 = artifacts.require('Foo4');
 const Foo4Handler = artifacts.require('Foo4Handler');
+const Foo5Handler = artifacts.require('Foo5Handler');
 const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('ProxyMock');
 
@@ -94,6 +95,23 @@ contract('Proxy', function([_, deployer, user]) {
         this.proxy.batchExec(to, config, data),
         'Invalid handler'
       );
+    });
+
+    it('should revert: handler as caller', async function() {
+      this.foo5Handler = await Foo5Handler.new();
+      await this.registry.register(
+        this.foo5Handler.address,
+        this.foo5Handler.address
+      );
+      const to = this.foo5Handler.address;
+      const data0 = abi.simpleEncode('bar()');
+      const data1 = abi.simpleEncode(
+        'exec(address,bytes)',
+        this.proxy.address,
+        data0
+      );
+      const data2 = abi.simpleEncode('exec(address,bytes)', to, data1);
+      await expectRevert(this.proxy.execMock(to, data2), 'Invalid caller');
     });
 
     it('multiple', async function() {
