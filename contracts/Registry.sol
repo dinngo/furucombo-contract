@@ -2,7 +2,7 @@ pragma solidity ^0.6.0;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-/// @notice The handler registry database for Furucombo
+/// @notice The registry database for Furucombo
 contract Registry is Ownable {
     mapping(address => bytes32) public handlers;
     mapping(address => bytes32) public callers;
