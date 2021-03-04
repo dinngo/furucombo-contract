@@ -198,7 +198,7 @@ test_12:
     - docker
   script:
     - apt-get update && apt-get install -y netcat
-    - npm run test ${UNITTEST_FILES[11]}
+    - npm run test ${UNITTEST_FILES[12]}
   cache:
     <<: *global_cache
 
@@ -208,7 +208,7 @@ test_13:
     - docker
   script:
     - apt-get update && apt-get install -y netcat
-    - npm run test ${UNITTEST_FILES[11]}
+    - npm run test ${UNITTEST_FILES[13]}
   cache:
     <<: *global_cache
 
@@ -218,7 +218,7 @@ test_14:
     - docker
   script:
     - apt-get update && apt-get install -y netcat
-    - npm run test ${UNITTEST_FILES[11]}
+    - npm run test ${UNITTEST_FILES[14]}
   cache:
     <<: *global_cache
 
@@ -228,7 +228,7 @@ test_15:
     - docker
   script:
     - apt-get update && apt-get install -y netcat
-    - npm run test ${UNITTEST_FILES[11]}
+    - npm run test ${UNITTEST_FILES[15]}
   cache:
     <<: *global_cache
 
