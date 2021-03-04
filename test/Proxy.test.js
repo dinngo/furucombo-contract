@@ -97,7 +97,20 @@ contract('Proxy', function([_, deployer, user]) {
       );
     });
 
-    it('should revert: handler as caller', async function() {
+    it('should revert: handler as caller - directly', async function() {
+      this.foo5Handler = await Foo5Handler.new();
+      await this.registry.register(
+        this.foo5Handler.address,
+        utils.asciiToHex('foo5')
+      );
+      const data = abi.simpleEncode('bar()');
+      await expectRevert(
+        this.foo5Handler.exec(this.proxy.address, data),
+        'Sender is not initialized'
+      );
+    });
+
+    it('should revert: handler as caller - after initialize', async function() {
       this.foo5Handler = await Foo5Handler.new();
       await this.registry.register(
         this.foo5Handler.address,
