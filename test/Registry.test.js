@@ -299,13 +299,10 @@ contract('Registry', function([_, contract1, contract2, someone]) {
     });
 
     it('normal', async function() {
+      expect(await this.registry.fHalt.call()).to.be.false;
       const receipt = await this.registry.halt();
       expectEvent(receipt, 'Halted');
-      await expectRevert(
-        this.registry.isValidHandler.call(contract1),
-        'Halted'
-      );
-      await expectRevert(this.registry.isValidCaller.call(contract2), 'Halted');
+      expect(await this.registry.fHalt.call()).to.be.true;
     });
 
     it('non owner', async function() {
@@ -329,10 +326,10 @@ contract('Registry', function([_, contract1, contract2, someone]) {
     });
 
     it('normal', async function() {
+      expect(await this.registry.fHalt.call()).to.be.true;
       const receipt = await this.registry.unhalt();
       expectEvent(receipt, 'Unhalted');
-      expect(await this.registry.isValidHandler.call(contract1)).to.be.true;
-      expect(await this.registry.isValidCaller.call(contract2)).to.be.true;
+      expect(await this.registry.fHalt.call()).to.be.false;
     });
 
     it('non owner', async function() {
@@ -355,22 +352,10 @@ contract('Registry', function([_, contract1, contract2, someone]) {
     });
 
     it('normal', async function() {
-      expect(
-        await this.registry.isValidHandler.call(contract1, { from: someone })
-      ).to.be.true;
-      expect(
-        await this.registry.isValidCaller.call(contract2, { from: someone })
-      ).to.be.true;
+      expect(await this.registry.bannedAgents.call(someone)).to.be.zero;
       const receipt = await this.registry.ban(someone);
       expectEvent(receipt, 'Banned', { agent: someone });
-      await expectRevert(
-        this.registry.isValidHandler.call(contract1, { from: someone }),
-        'Banned'
-      );
-      await expectRevert(
-        this.registry.isValidCaller.call(contract2, { from: someone }),
-        'Banned'
-      );
+      expect(await this.registry.bannedAgents.call(someone)).to.be.not.zero;
     });
 
     it('non owner', async function() {
@@ -394,22 +379,10 @@ contract('Registry', function([_, contract1, contract2, someone]) {
     });
 
     it('normal', async function() {
-      await expectRevert(
-        this.registry.isValidHandler.call(contract1, { from: someone }),
-        'Banned'
-      );
-      await expectRevert(
-        this.registry.isValidCaller.call(contract2, { from: someone }),
-        'Banned'
-      );
+      expect(await this.registry.bannedAgents.call(someone)).to.be.not.zero;
       const receipt = await this.registry.unban(someone);
       expectEvent(receipt, 'Unbanned', { agent: someone });
-      expect(
-        await this.registry.isValidHandler.call(contract1, { from: someone })
-      ).to.be.true;
-      expect(
-        await this.registry.isValidCaller.call(contract2, { from: someone })
-      ).to.be.true;
+      expect(await this.registry.bannedAgents.call(someone)).to.be.zero;
     });
 
     it('non owner', async function() {
