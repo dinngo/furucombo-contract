@@ -32,26 +32,30 @@ contract Proxy is Storage, Config {
      * @notice Direct transfer from EOA should be reverted.
      * @dev Callback function will be handled here.
      */
-    fallback() external payable {
-        require(Address.isContract(msg.sender), "Not allowed from EOA");
-
-        // If triggered by a function call, caller should be registered in registry.
-        // The function call will then be forwarded to the location registered in
+    fallback() external payable isInitialized {
+        // If triggered by a function call, caller should be registered in
         // registry.
-        if (msg.data.length != 0) {
-            require(_isValid(msg.sender), "Invalid caller");
+        // The function call will then be forwarded to the location registered
+        // in registry.
+        require(_isValidCaller(msg.sender), "Invalid caller");
 
-            address target =
-                address(bytes20(IRegistry(_getRegistry()).infos(msg.sender)));
-            bytes memory result = _exec(target, msg.data);
+        address target =
+            address(bytes20(IRegistry(_getRegistry()).callers(msg.sender)));
+        bytes memory result = _exec(target, msg.data);
 
-            // return result for aave v2 flashloan()
-            uint256 size = result.length;
-            assembly {
-                let loc := add(result, 0x20)
-                return(loc, size)
-            }
+        // return result for aave v2 flashloan()
+        uint256 size = result.length;
+        assembly {
+            let loc := add(result, 0x20)
+            return(loc, size)
         }
+    }
+
+    /**
+     * @notice Direct transfer from EOA should be reverted.
+     */
+    receive() external payable {
+        require(Address.isContract(msg.sender), "Not allowed from EOA");
     }
 
     /**
@@ -65,7 +69,7 @@ contract Proxy is Storage, Config {
         address[] memory tos,
         bytes32[] memory configs,
         bytes[] memory datas
-    ) public payable {
+    ) external payable {
         _preProcess();
         _execs(tos, configs, datas);
         _postProcess();
@@ -80,9 +84,8 @@ contract Proxy is Storage, Config {
         address[] memory tos,
         bytes32[] memory configs,
         bytes[] memory datas
-    ) public payable {
+    ) public payable isInitialized {
         require(msg.sender == address(this), "Does not allow external calls");
-        require(_getSender() != address(0), "Sender should be initialized");
         _execs(tos, configs, datas);
     }
 
@@ -211,7 +214,7 @@ contract Proxy is Storage, Config {
         internal
         returns (bytes memory result)
     {
-        require(_isValid(_to), "Invalid handler");
+        require(_isValidHandler(_to), "Invalid handler");
         _addCubeCounter();
         assembly {
             let succeeded := delegatecall(
@@ -300,7 +303,20 @@ contract Proxy is Storage, Config {
     }
 
     /// @notice Check if the handler is valid in registry.
-    function _isValid(address handler) internal view returns (bool result) {
-        return IRegistry(_getRegistry()).isValid(handler);
+    function _isValidHandler(address handler)
+        internal
+        view
+        returns (bool result)
+    {
+        return IRegistry(_getRegistry()).isValidHandler(handler);
+    }
+
+    /// @notice Check if the caller is valid in registry.
+    function _isValidCaller(address caller)
+        internal
+        view
+        returns (bool result)
+    {
+        return IRegistry(_getRegistry()).isValidCaller(caller);
     }
 }

@@ -161,9 +161,6 @@ contract('Furucombo', function([_, user, someone]) {
         stakeAmount
       );
 
-      console.log(
-        (await this.token.balanceOf.call(providerAddress)).toString()
-      );
       // Send token to proxy
       await this.token.transfer(this.proxy.address, ether('1'), {
         from: providerAddress,

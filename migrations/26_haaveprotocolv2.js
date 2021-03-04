@@ -10,5 +10,5 @@ module.exports = async function(deployer) {
   await deployer.deploy(Handler);
   const registry = await Registry.deployed();
   await registry.register(Handler.address, utils.asciiToHex('HAaveProtocolV2'));
-  await registry.register(AAVE_LENDINGPOOL_V2, Handler.address); // For flashloan callback use
+  await registry.registerCaller(AAVE_LENDINGPOOL_V2, Handler.address); // For flashloan callback use
 };

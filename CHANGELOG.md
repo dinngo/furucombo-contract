@@ -3,13 +3,21 @@
 All notable changes to this project will be documented in this file.
 
 ## [unreleased]
+
 ### Changed
-- Replace safeApprove with _tokenApprove in Curve and UniswapV2 handler
-- Refine send token/Ether function of `HFunds` handler
+
+- Replace safeApprove with \_tokenApprove in Curve and UniswapV2 handler.
+- Refine send token/Ether function of `HFunds` handler.
+- Separate `infos` into `handlers` and `callers`.
+- Separate `fallback()` and `receive()` in `Proxy`.
 
 ### Added
+
 - Support Aave v2 borrowETH/borrow.
-- Add send tokens function of `HFunds` handler
+- Add send tokens function of `HFunds` handler.
+- Add `Halt` functions in `Registry`.
+- Add `bannedAgents` and related functions in `Registry`.
+- Add addition checks for external function call in `Proxy`.
 
 ## [1.3.0] - 2021-02-04
 
@@ -29,6 +37,7 @@ All notable changes to this project will be documented in this file.
 
 - Update curve handler to support eth and aave pools.
 - Update curve handler to remove onesplit swap.
+
 ## [1.1.0] - 2021-01-25
 
 ### Added
