@@ -4,8 +4,8 @@ import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 
 import "../HandlerBase.sol";
-import "./libraries/UniswapV2Library.sol";
-import "./IUniswapV2Router02.sol";
+import "./libraries/SushiSwapLibrary.sol";
+import "../uniswapv2/IUniswapV2Router02.sol";
 
 contract HSushiSwap is HandlerBase {
     using SafeERC20 for IERC20;
@@ -15,7 +15,7 @@ contract HSushiSwap is HandlerBase {
     address public constant SUSHISWAP_ROUTER = 0xd9e1cE17f2641f24aE83637ab66a2cca9C378B9F;
 
     function getContractName() public pure override returns (string memory) {
-        return "HUniswapV2";
+        return "HSushiSwap";
     }
 
     function addLiquidityETH(
@@ -66,7 +66,7 @@ contract HSushiSwap is HandlerBase {
 
         // Update involved token
         address pair =
-            UniswapV2Library.pairFor(router.factory(), token, router.WETH());
+            SushiSwapLibrary.pairFor(router.factory(), token, router.WETH());
         _updateToken(pair);
     }
 
@@ -123,7 +123,7 @@ contract HSushiSwap is HandlerBase {
 
         // Update involved token
         address pair =
-            UniswapV2Library.pairFor(router.factory(), tokenA, tokenB);
+            SushiSwapLibrary.pairFor(router.factory(), tokenA, tokenB);
         _updateToken(pair);
     }
 
@@ -136,7 +136,7 @@ contract HSushiSwap is HandlerBase {
         // Get uniswapV2 router
         IUniswapV2Router02 router = IUniswapV2Router02(SUSHISWAP_ROUTER);
         address pair =
-            UniswapV2Library.pairFor(router.factory(), token, router.WETH());
+            SushiSwapLibrary.pairFor(router.factory(), token, router.WETH());
 
         // Approve token
         liquidity = _getBalance(pair, liquidity);
@@ -178,7 +178,7 @@ contract HSushiSwap is HandlerBase {
         // Get uniswapV2 router
         IUniswapV2Router02 router = IUniswapV2Router02(SUSHISWAP_ROUTER);
         address pair =
-            UniswapV2Library.pairFor(router.factory(), tokenA, tokenB);
+            SushiSwapLibrary.pairFor(router.factory(), tokenA, tokenB);
 
         // Approve token
         liquidity = _getBalance(pair, liquidity);

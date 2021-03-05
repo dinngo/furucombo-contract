@@ -173,7 +173,7 @@ contract('SushiSwap Swap', function([_, user, someone]) {
 
         await expectRevert(
           this.proxy.execMock(to, data, { from: user, value: value }),
-          'HUniswapV2_swapExactETHForTokens: UniswapV2Router: INSUFFICIENT_OUTPUT_AMOUNT'
+          'HSushiSwap_swapExactETHForTokens: UniswapV2Router: INSUFFICIENT_OUTPUT_AMOUNT'
         );
         expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
           tokenUser
@@ -196,7 +196,7 @@ contract('SushiSwap Swap', function([_, user, someone]) {
         );
         await expectRevert(
           this.proxy.execMock(to, data, { from: user, value: value }),
-          'HUniswapV2_swapExactETHForTokens: UniswapV2Router: INVALID_PATH'
+          'HSushiSwap_swapExactETHForTokens: UniswapV2Router: INVALID_PATH'
         );
       });
     });
@@ -312,7 +312,7 @@ contract('SushiSwap Swap', function([_, user, someone]) {
             from: user,
             value: value,
           }),
-          'HUniswapV2_swapETHForExactTokens: UniswapV2Router: EXCESSIVE_INPUT_AMOUNT'
+          'HSushiSwap_swapETHForExactTokens: UniswapV2Router: EXCESSIVE_INPUT_AMOUNT'
         );
       });
 
@@ -332,7 +332,7 @@ contract('SushiSwap Swap', function([_, user, someone]) {
             from: user,
             value: value,
           }),
-          'HUniswapV2_swapETHForExactTokens: UniswapV2Router: INVALID_PATH'
+          'HSushiSwap_swapETHForExactTokens: UniswapV2Router: INVALID_PATH'
         );
       });
     });
@@ -469,7 +469,7 @@ contract('SushiSwap Swap', function([_, user, someone]) {
         );
         await expectRevert(
           this.proxy.execMock(to, data, { from: user }),
-          'HUniswapV2_swapExactTokensForETH: UniswapV2Router: INSUFFICIENT_OUTPUT_AMOUNT'
+          'HSushiSwap_swapExactTokensForETH: UniswapV2Router: INSUFFICIENT_OUTPUT_AMOUNT'
         );
       });
 
@@ -489,7 +489,7 @@ contract('SushiSwap Swap', function([_, user, someone]) {
         await this.proxy.updateTokenMock(this.token.address);
         await expectRevert(
           this.proxy.execMock(to, data, { from: user }),
-          'HUniswapV2_swapExactTokensForETH: UniswapV2Router: INVALID_PATH'
+          'HSushiSwap_swapExactTokensForETH: UniswapV2Router: INVALID_PATH'
         );
       });
     });
@@ -597,7 +597,7 @@ contract('SushiSwap Swap', function([_, user, someone]) {
 
         await expectRevert(
           this.proxy.execMock(to, data, { from: user }),
-          'HUniswapV2_swapTokensForExactETH: UniswapV2Router: EXCESSIVE_INPUT_AMOUNT.'
+          'HSushiSwap_swapTokensForExactETH: UniswapV2Router: EXCESSIVE_INPUT_AMOUNT.'
         );
       });
 
@@ -619,7 +619,7 @@ contract('SushiSwap Swap', function([_, user, someone]) {
 
         await expectRevert(
           this.proxy.execMock(to, data, { from: user }),
-          'HUniswapV2_swapTokensForExactETH: UniswapV2Router: INVALID_PATH'
+          'HSushiSwap_swapTokensForExactETH: UniswapV2Router: INVALID_PATH'
         );
       });
     });
@@ -755,7 +755,7 @@ contract('SushiSwap Swap', function([_, user, someone]) {
         );
         await expectRevert(
           this.proxy.execMock(to, data, { from: user }),
-          'HUniswapV2_swapExactTokensForTokens: UniswapV2Router: INSUFFICIENT_OUTPUT_AMOUNT'
+          'HSushiSwap_swapExactTokensForTokens: UniswapV2Router: INSUFFICIENT_OUTPUT_AMOUNT'
         );
       });
 
@@ -775,7 +775,7 @@ contract('SushiSwap Swap', function([_, user, someone]) {
         await this.proxy.updateTokenMock(this.token0.address);
         await expectRevert(
           this.proxy.execMock(to, data, { from: user }),
-          'HUniswapV2_swapExactTokensForTokens: UniswapV2Library: IDENTICAL_ADDRESSES'
+          'HSushiSwap_swapExactTokensForTokens: UniswapV2Library: IDENTICAL_ADDRESSES'
         );
       });
     });
@@ -888,7 +888,7 @@ contract('SushiSwap Swap', function([_, user, someone]) {
         await this.proxy.updateTokenMock(this.token0.address);
         await expectRevert(
           this.proxy.execMock(to, data, { from: user }),
-          'HUniswapV2_swapTokensForExactTokens: UniswapV2Router: EXCESSIVE_INPUT_AMOUNT'
+          'HSushiSwap_swapTokensForExactTokens: UniswapV2Router: EXCESSIVE_INPUT_AMOUNT'
         );
       });
 
@@ -909,7 +909,7 @@ contract('SushiSwap Swap', function([_, user, someone]) {
         await this.proxy.updateTokenMock(this.token0.address);
         await expectRevert(
           this.proxy.execMock(to, data, { from: user }),
-          'HUniswapV2_swapTokensForExactTokens: UniswapV2Library: IDENTICAL_ADDRESSES'
+          'HSushiSwap_swapTokensForExactTokens: UniswapV2Library: IDENTICAL_ADDRESSES'
         );
       });
     });

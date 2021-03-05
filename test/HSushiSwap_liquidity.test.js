@@ -14,13 +14,12 @@ const abi = require('ethereumjs-abi');
 const utils = web3.utils;
 const { expect } = require('chai');
 const {
-  WBTC_TOKEN,
-  BADGER_TOKEN,
-  WBTC_PROVIDER,
-  BADGER_PROVIDER,
-  ETH_PROVIDER,
-  SUSHISWAP_ETH_WBTC,
-  SUSHISWAP_WBTC_BADGER,
+  SUSHI_TOKEN,
+  xSUSHI_TOKEN,
+  SUSHI_PROVIDER,
+  xSUSHI_PROVIDER,
+  SUSHISWAP_SUSHI_ETH,
+  SUSHISWAP_SUSHI_xSUSHI,
   SUSHISWAP_ROUTER,
 } = require('./utils/constants');
 const {
@@ -38,12 +37,12 @@ const UniswapV2Router02 = artifacts.require('IUniswapV2Router02');
 
 contract('SushiSwap Liquidity', function([_, user]) {
   let id;
-  const tokenAAddress = WBTC_TOKEN;
-  const tokenBAddress = BADGER_TOKEN;
-  const tokenAProviderAddress = WBTC_PROVIDER;
-  const tokenBProviderAddress = BADGER_PROVIDER;
-  const sushiswapETHWBTCAddress = SUSHISWAP_ETH_WBTC;
-  const sushiswapWBTCBadgerAddress = SUSHISWAP_WBTC_BADGER;
+  const tokenAAddress = SUSHI_TOKEN;
+  const tokenBAddress = xSUSHI_TOKEN;
+  const tokenAProviderAddress = SUSHI_PROVIDER;
+  const tokenBProviderAddress = xSUSHI_PROVIDER;
+  const sushiswapPoolAAddress = SUSHISWAP_SUSHI_ETH;
+  const sushiswapPoolBAddress = SUSHISWAP_SUSHI_xSUSHI;
   const sushiswapRouterAddress = SUSHISWAP_ROUTER;
 
   let balanceUser;
@@ -60,8 +59,8 @@ contract('SushiSwap Liquidity', function([_, user]) {
     );
     this.tokenA = await IToken.at(tokenAAddress);
     this.tokenB = await IToken.at(tokenBAddress);
-    this.uniTokenEth = await IToken.at(sushiswapETHWBTCAddress);
-    this.uniTokenToken = await IToken.at(sushiswapWBTCBadgerAddress);
+    this.uniTokenEth = await IToken.at(sushiswapPoolAAddress);
+    this.uniTokenToken = await IToken.at(sushiswapPoolBAddress);
     this.router = await UniswapV2Router02.at(sushiswapRouterAddress);
 
     await this.tokenA.transfer(user, ether('1000'), {
@@ -101,9 +100,9 @@ contract('SushiSwap Liquidity', function([_, user]) {
 
     it('normal', async function() {
       // Prepare handler data
-      const tokenAmount = ether('0.002');
-      const minTokenAmount = ether('0.000001');
-      const minEthAmount = ether('0.000001');
+      const tokenAmount = ether('100');
+      const minTokenAmount = new BN('1');
+      const minEthAmount = new BN('1');
       const value = ether('1');
       const to = this.hSushiSwap.address;
       const data = abi.simpleEncode(
