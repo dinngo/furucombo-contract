@@ -16,7 +16,7 @@ const { expect } = require('chai');
 const {
   DAI_TOKEN,
   DAI_PROVIDER,
-  BAT_TOKEN,
+  SUSHI_TOKEN,
   WETH_TOKEN,
   SUSHISWAP_ROUTER,
 } = require('./utils/constants');
@@ -300,7 +300,7 @@ contract('SushiSwap Swap', function([_, user, someone]) {
           from: user,
         });
         console.log('result ');
-        const value = result[0].sub(ether('1'));
+        const value = result[0].sub(new BN('100'));
         const data = abi.simpleEncode(
           'swapETHForExactTokens(uint256,uint256,address[]):(uint256[])',
           value,
@@ -627,7 +627,7 @@ contract('SushiSwap Swap', function([_, user, someone]) {
 
   describe('Token to Token', function() {
     const token0Address = DAI_TOKEN;
-    const token1Address = BAT_TOKEN;
+    const token1Address = SUSHI_TOKEN;
     const providerAddress = DAI_PROVIDER;
 
     let token0User;
