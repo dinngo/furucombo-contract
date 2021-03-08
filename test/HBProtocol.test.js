@@ -89,12 +89,12 @@ async function approveCdp(cdp, owner, user) {
   await proxy.execute(B_PROXY_ACTIONS, data, { from: owner });
 }
 
-contract('BProtocol', function ([_, user1, user2, someone]) {
+contract('BProtocol', function([_, user1, user2, someone]) {
   let id;
   const tokenAddress = KNC_TOKEN;
   const providerAddress = KNC_PROVIDER;
 
-  before(async function () {
+  before(async function() {
     this.registry = await Registry.new();
     this.proxy = await Proxy.new(this.registry.address);
     this.token = await IToken.at(tokenAddress);
@@ -121,24 +121,24 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
     this.dai = await IToken.at(DAI_TOKEN);
   });
 
-  beforeEach(async function () {
+  beforeEach(async function() {
     id = await evmSnapshot();
   });
 
-  afterEach(async function () {
+  afterEach(async function() {
     await evmRevert(id);
   });
 
-  describe('Open new cdp', function () {
+  describe('Open new cdp', function() {
     let daiUser;
 
-    beforeEach(async function () {
+    beforeEach(async function() {
       daiUser = await this.dai.balanceOf.call(user1);
     });
 
-    describe('Lock Ether', function () {
-      describe('Draw Dai', function () {
-        it('User does not has proxy', async function () {
+    describe('Lock Ether', function() {
+      describe('Draw Dai', function() {
+        it('User does not has proxy', async function() {
           const daiUser = await this.dai.balanceOf.call(someone);
 
           expect(await this.dsRegistry.proxies.call(this.proxy.address)).not.eq(
@@ -189,7 +189,7 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
           profileGas(receipt);
         });
 
-        it('User does not has proxy with max amount', async function () {
+        it('User does not has proxy with max amount', async function() {
           const daiUser = await this.dai.balanceOf.call(someone);
 
           expect(await this.dsRegistry.proxies.call(this.proxy.address)).not.eq(
@@ -239,7 +239,7 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
           profileGas(receipt);
         });
 
-        it('User has proxy', async function () {
+        it('User has proxy', async function() {
           const to = this.hMaker.address;
           const value = ether('5');
           const ilkEth = utils.padRight(utils.asciiToHex('ETH-A'), 64);
@@ -281,7 +281,7 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
           profileGas(receipt);
         });
 
-        it('User has proxy with max amount', async function () {
+        it('User has proxy with max amount', async function() {
           const to = this.hMaker.address;
           const value = ether('5');
           const ilkEth = utils.padRight(utils.asciiToHex('ETH-A'), 64);
@@ -325,12 +325,12 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
       });
     });
 
-    describe('Lock Token', function () {
+    describe('Lock Token', function() {
       const tokenAddress = KNC_TOKEN;
       const providerAddress = KNC_PROVIDER;
 
-      describe('Draw Dai', function () {
-        it('User does not has proxy', async function () {
+      describe('Draw Dai', function() {
+        it('User does not has proxy', async function() {
           const daiUser = await this.dai.balanceOf.call(someone);
 
           expect(await this.dsRegistry.proxies.call(this.proxy.address)).not.eq(
@@ -384,7 +384,7 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
           profileGas(receipt);
         });
 
-        it('User has proxy', async function () {
+        it('User has proxy', async function() {
           const to = this.hMaker.address;
           const ilkKnc = utils.padRight(utils.asciiToHex('KNC-A'), 64);
           const [
@@ -433,13 +433,13 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
     });
   });
 
-  describe('Deposit', function () {
+  describe('Deposit', function() {
     let cdp;
     let ilk;
     let debt;
     let lock;
 
-    before(async function () {
+    before(async function() {
       const new1 = abi.simpleEncode(
         'open(address,bytes32,address)',
         B_CDP_MANAGER,
@@ -456,19 +456,19 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
       await this.user2Proxy.execute(B_PROXY_ACTIONS, new2, { from: user2 });
     });
 
-    describe('Lock Ether', function () {
+    describe('Lock Ether', function() {
       let balanceUser;
-      before(async function () {
+      before(async function() {
         cdp = await this.cdpManager.last.call(this.user1Proxy.address);
         expect(cdp).to.be.bignumber.not.eq(new BN('0'));
       });
 
-      beforeEach(async function () {
+      beforeEach(async function() {
         balanceUser = await tracker(user1);
         [ilk, debt, lock] = await getCdpInfo(cdp);
       });
 
-      it('normal', async function () {
+      it('normal', async function() {
         const to = this.hMaker.address;
         const value = ether('1');
         const data = abi.simpleEncode(
@@ -484,12 +484,14 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
 
         const [ilkEnd, debtEnd, lockEnd] = await getCdpInfo(cdp);
         expect(await balanceUser.delta()).to.be.bignumber.eq(
-          ether('0').sub(value).sub(new BN(receipt.receipt.gasUsed))
+          ether('0')
+            .sub(value)
+            .sub(new BN(receipt.receipt.gasUsed))
         );
         expect(lockEnd.sub(lock)).to.be.bignumber.eq(value);
         profileGas(receipt);
       });
-      it('max amount', async function () {
+      it('max amount', async function() {
         const to = this.hMaker.address;
         const value = ether('1');
         const data = abi.simpleEncode(
@@ -505,33 +507,41 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
 
         const [ilkEnd, debtEnd, lockEnd] = await getCdpInfo(cdp);
         expect(await balanceUser.delta()).to.be.bignumber.eq(
-          ether('0').sub(value).sub(new BN(receipt.receipt.gasUsed))
+          ether('0')
+            .sub(value)
+            .sub(new BN(receipt.receipt.gasUsed))
         );
         expect(lockEnd.sub(lock)).to.be.bignumber.eq(value);
         profileGas(receipt);
       });
     });
 
-    describe('Lock Token', function () {
+    describe('Lock Token', function() {
       let balanceUser;
       let tokenUser;
       const tokenAddress = KNC_TOKEN;
       const providerAddress = KNC_PROVIDER;
 
-      before(async function () {
+      before(async function() {
         cdp = await this.cdpManager.last.call(this.user2Proxy.address);
         expect(cdp).to.be.bignumber.not.eq(new BN('0'));
       });
 
-      beforeEach(async function () {
+      beforeEach(async function() {
         balanceUser = await tracker(user2);
         [ilk, debt, lock] = await getCdpInfo(cdp);
         tokenUser = await this.token.balanceOf.call(user2);
       });
 
-      it('normal', async function () {
+      it('normal', async function() {
         const to = this.hMaker.address;
-        const wad = ether('500');
+        const [
+          generateLimit,
+          minCollateral,
+        ] = await getGenerateLimitAndMinCollateral(
+          utils.padRight(utils.asciiToHex('KNC-A'), 64)
+        );
+        const wad = generateLimit;
         const data = abi.simpleEncode(
           'safeLockGem(address,uint256,uint256)',
           MAKER_MCD_JOIN_KNC_A,
@@ -552,9 +562,15 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
         profileGas(receipt);
       });
 
-      it('max amount', async function () {
+      it('max amount', async function() {
         const to = this.hMaker.address;
-        const wad = ether('500');
+        const [
+          generateLimit,
+          minCollateral,
+        ] = await getGenerateLimitAndMinCollateral(
+          utils.padRight(utils.asciiToHex('KNC-A'), 64)
+        );
+        const wad = generateLimit;
         const data = abi.simpleEncode(
           'safeLockGem(address,uint256,uint256)',
           MAKER_MCD_JOIN_KNC_A,
@@ -577,15 +593,15 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
     });
   });
 
-  describe('Withdraw', function () {
-    describe('free ETH', function () {
+  describe('Withdraw', function() {
+    describe('free ETH', function() {
       let cdp;
       let ilk;
       let debt;
       let lock;
       let balanceUser;
 
-      beforeEach(async function () {
+      beforeEach(async function() {
         const etherAmount = ether('1');
         const new1 = abi.simpleEncode(
           'openLockETHAndDraw(address,address,address,address,bytes32,uint256)',
@@ -605,7 +621,7 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
         [ilk, debt, lock] = await getCdpInfo(cdp);
       });
 
-      it('normal', async function () {
+      it('normal', async function() {
         await approveCdp(cdp, user1, this.dsProxy.address);
         balanceUser = await tracker(user1);
         const to = this.hMaker.address;
@@ -627,7 +643,7 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
         profileGas(receipt);
       });
 
-      it('without cdp approval', async function () {
+      it('without cdp approval', async function() {
         balanceUser = await tracker(user1);
         const to = this.hMaker.address;
         const wad = ether('1');
@@ -645,7 +661,7 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
         );
       });
 
-      it('approved but triggered by unauthorized user', async function () {
+      it('approved but triggered by unauthorized user', async function() {
         await approveCdp(cdp, user1, this.dsProxy.address);
         balanceUser = await tracker(user1);
         const to = this.hMaker.address;
@@ -663,14 +679,14 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
       });
     });
 
-    describe('free token', function () {
+    describe('free token', function() {
       let cdp;
       let ilk;
       let debt;
       let lock;
       let tokenUser;
 
-      beforeEach(async function () {
+      beforeEach(async function() {
         const tokenAmount = ether('100');
         const new2 = abi.simpleEncode(
           'openLockGemAndDraw(address,address,address,address,bytes32,uint256,uint256,bool)',
@@ -697,7 +713,7 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
         [ilk, debt, lock] = await getCdpInfo(cdp);
       });
 
-      it('normal', async function () {
+      it('normal', async function() {
         await approveCdp(cdp, user1, this.dsProxy.address);
         const to = this.hMaker.address;
         const wad = ether('100');
@@ -717,7 +733,7 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
         profileGas(receipt);
       });
 
-      it('without cdp approval', async function () {
+      it('without cdp approval', async function() {
         const to = this.hMaker.address;
         const wad = ether('100');
         const data = abi.simpleEncode(
@@ -734,7 +750,7 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
         );
       });
 
-      it('approved but triggered by unauthorized user', async function () {
+      it('approved but triggered by unauthorized user', async function() {
         await approveCdp(cdp, user1, this.dsProxy.address);
         const to = this.hMaker.address;
         const wad = ether('100');
@@ -752,15 +768,15 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
     });
   });
 
-  describe('Generate', function () {
-    describe('draw from ETH cdp', function () {
+  describe('Generate', function() {
+    describe('draw from ETH cdp', function() {
       let cdp;
       let ilk;
       let debt;
       let lock;
       let daiUser;
 
-      beforeEach(async function () {
+      beforeEach(async function() {
         const etherAmount = ether('10');
         const new1 = abi.simpleEncode(
           'openLockETHAndDraw(address,address,address,address,bytes32,uint256)',
@@ -780,7 +796,7 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
         [ilk, debt, lock] = await getCdpInfo(cdp);
       });
 
-      it('normal', async function () {
+      it('normal', async function() {
         await approveCdp(cdp, user1, this.dsProxy.address);
         const to = this.hMaker.address;
         const [
@@ -806,9 +822,15 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
         profileGas(receipt);
       });
 
-      it('without cdp approval', async function () {
+      it('without cdp approval', async function() {
         const to = this.hMaker.address;
-        const wad = ether('500');
+        const [
+          generateLimit,
+          minCollateral,
+        ] = await getGenerateLimitAndMinCollateral(
+          utils.padRight(utils.asciiToHex('KNC-A'), 64)
+        );
+        const wad = generateLimit;
         const data = abi.simpleEncode(
           'draw(address,uint256,uint256)',
           MAKER_MCD_JOIN_DAI,
@@ -823,10 +845,16 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
         );
       });
 
-      it('approved but triggered by unauthorized user', async function () {
+      it('approved but triggered by unauthorized user', async function() {
         await approveCdp(cdp, user1, this.dsProxy.address);
         const to = this.hMaker.address;
-        const wad = ether('500');
+        const [
+          generateLimit,
+          minCollateral,
+        ] = await getGenerateLimitAndMinCollateral(
+          utils.padRight(utils.asciiToHex('KNC-A'), 64)
+        );
+        const wad = generateLimit;
         const data = abi.simpleEncode(
           'draw(address,uint256,uint256)',
           MAKER_MCD_JOIN_DAI,
@@ -840,14 +868,14 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
       });
     });
 
-    describe('draw from gem cdp', function () {
+    describe('draw from gem cdp', function() {
       let cdp;
       let ilk;
       let debt;
       let lock;
       let daiUser;
 
-      beforeEach(async function () {
+      beforeEach(async function() {
         const [
           generateLimit,
           minCollateral,
@@ -880,7 +908,7 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
         [ilk, debt, lock] = await getCdpInfo(cdp);
       });
 
-      it('normal', async function () {
+      it('normal', async function() {
         await approveCdp(cdp, user1, this.dsProxy.address);
         const to = this.hMaker.address;
         const [
@@ -906,9 +934,15 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
         profileGas(receipt);
       });
 
-      it('without cdp approval', async function () {
+      it('without cdp approval', async function() {
         const to = this.hMaker.address;
-        const wad = ether('500');
+        const [
+          generateLimit,
+          minCollateral,
+        ] = await getGenerateLimitAndMinCollateral(
+          utils.padRight(utils.asciiToHex('KNC-A'), 64)
+        );
+        const wad = generateLimit;
         const data = abi.simpleEncode(
           'draw(address,uint256,uint256)',
           MAKER_MCD_JOIN_DAI,
@@ -923,10 +957,16 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
         );
       });
 
-      it('approved but triggered by unauthorized user', async function () {
+      it('approved but triggered by unauthorized user', async function() {
         await approveCdp(cdp, user1, this.dsProxy.address);
         const to = this.hMaker.address;
-        const wad = ether('500');
+        const [
+          generateLimit,
+          minCollateral,
+        ] = await getGenerateLimitAndMinCollateral(
+          utils.padRight(utils.asciiToHex('KNC-A'), 64)
+        );
+        const wad = generateLimit;
         const data = abi.simpleEncode(
           'draw(address,uint256,uint256)',
           MAKER_MCD_JOIN_DAI,
@@ -941,15 +981,17 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
     });
   });
 
-  describe('Pay back', function () {
-    describe('pay back to ETH cdp', function () {
+  describe('Pay back', function() {
+    describe('pay back to ETH cdp', function() {
       let cdp;
       let ilk;
       let debt;
       let lock;
       let daiUser;
+      let generateLimit;
+      let minCollateral;
 
-      beforeEach(async function () {
+      beforeEach(async function() {
         const etherAmount = ether('10');
         [generateLimit, minCollateral] = await getGenerateLimitAndMinCollateral(
           utils.padRight(utils.asciiToHex('ETH-A'), 64)
@@ -973,7 +1015,7 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
         [ilk, debt, lock] = await getCdpInfo(cdp);
       });
 
-      it('wipe', async function () {
+      it('wipe', async function() {
         const to = this.hMaker.address;
         const wad = ether('5');
         const data = abi.simpleEncode(
@@ -999,7 +1041,7 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
         profileGas(receipt);
       });
 
-      it('wipeAll', async function () {
+      it('wipeAll', async function() {
         const to = this.hMaker.address;
         const data = abi.simpleEncode(
           'wipeAll(address,uint256)',
@@ -1032,14 +1074,14 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
       });
     });
 
-    describe('pay back to gem cdp', function () {
+    describe('pay back to gem cdp', function() {
       let cdp;
       let ilk;
       let debt;
       let lock;
       let daiUser;
 
-      beforeEach(async function () {
+      beforeEach(async function() {
         const tokenAmount = ether('3000');
         const [
           generateLimit,
@@ -1075,7 +1117,7 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
         [ilk, debt, lock] = await getCdpInfo(cdp);
       });
 
-      it('wipe', async function () {
+      it('wipe', async function() {
         const to = this.hMaker.address;
         const wad = ether('5');
         const data = abi.simpleEncode(
@@ -1101,7 +1143,7 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
         profileGas(receipt);
       });
 
-      it('wipeAll', async function () {
+      it('wipeAll', async function() {
         const to = this.hMaker.address;
         const data = abi.simpleEncode(
           'wipeAll(address,uint256)',
@@ -1112,6 +1154,13 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
           from: DAI_PROVIDER,
         });
         daiUser = await this.dai.balanceOf.call(user1);
+        const [
+          generateLimit,
+          minCollateral,
+        ] = await getGenerateLimitAndMinCollateral(
+          utils.padRight(utils.asciiToHex('KNC-A'), 64)
+        );
+        const wad = generateLimit;
         await this.dai.transfer(
           this.proxy.address,
           generateLimit.add(ether('20')),
