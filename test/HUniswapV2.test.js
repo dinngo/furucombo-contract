@@ -41,11 +41,11 @@ const IToken = artifacts.require('IERC20');
 const IUniswapV2Router = artifacts.require('IUniswapV2Router02');
 const IUsdt = artifacts.require('IERC20Usdt');
 
-contract('UniswapV2 Swap', function([_, user, someone]) {
+contract('UniswapV2 Swap', function ([_, user, someone]) {
   let id;
   const slippage = new BN('3');
 
-  before(async function() {
+  before(async function () {
     this.registry = await Registry.new();
     this.hUniswapV2 = await HUniswapV2.new();
     await this.registry.register(
@@ -56,33 +56,33 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
     this.proxy = await Proxy.new(this.registry.address);
   });
 
-  beforeEach(async function() {
+  beforeEach(async function () {
     id = await evmSnapshot();
   });
 
-  afterEach(async function() {
+  afterEach(async function () {
     await evmRevert(id);
   });
 
-  describe('Ether to Token', function() {
+  describe('Ether to Token', function () {
     const tokenAddress = DAI_TOKEN;
 
     let balanceUser;
     let balanceProxy;
     let tokenUser;
 
-    before(async function() {
+    before(async function () {
       this.token = await IToken.at(tokenAddress);
     });
 
-    beforeEach(async function() {
+    beforeEach(async function () {
       balanceUser = await tracker(user);
       balanceProxy = await tracker(this.proxy.address);
       tokenUser = await this.token.balanceOf.call(user);
     });
 
-    describe('Exact input', function() {
-      it('normal', async function() {
+    describe('Exact input', function () {
+      it('normal', async function () {
         const value = ether('1');
         const to = this.hUniswapV2.address;
         const path = [WETH_TOKEN, tokenAddress];
@@ -116,14 +116,12 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
         ).to.be.bignumber.eq(ether('0'));
         expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
         expect(await balanceUser.delta()).to.be.bignumber.eq(
-          ether('0')
-            .sub(ether('1'))
-            .sub(new BN(receipt.receipt.gasUsed))
+          ether('0').sub(ether('1')).sub(new BN(receipt.receipt.gasUsed))
         );
         profileGas(receipt);
       });
 
-      it('max amount', async function() {
+      it('max amount', async function () {
         const value = ether('1');
         const to = this.hUniswapV2.address;
         const path = [WETH_TOKEN, tokenAddress];
@@ -157,14 +155,12 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
         ).to.be.bignumber.eq(ether('0'));
         expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
         expect(await balanceUser.delta()).to.be.bignumber.eq(
-          ether('0')
-            .sub(ether('1'))
-            .sub(new BN(receipt.receipt.gasUsed))
+          ether('0').sub(ether('1')).sub(new BN(receipt.receipt.gasUsed))
         );
         profileGas(receipt);
       });
 
-      it('min amount too high', async function() {
+      it('min amount too high', async function () {
         const value = ether('1');
         const to = this.hUniswapV2.address;
         const path = [WETH_TOKEN, tokenAddress];
@@ -191,7 +187,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
         expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
       });
 
-      it('invalid path', async function() {
+      it('invalid path', async function () {
         const value = ether('1');
         const to = this.hUniswapV2.address;
         const path = [tokenAddress, WETH_TOKEN];
@@ -208,8 +204,8 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
       });
     });
 
-    describe('Exact output', function() {
-      it('normal', async function() {
+    describe('Exact output', function () {
+      it('normal', async function () {
         const value = ether('1');
         const buyAmt = ether('100');
         const to = this.hUniswapV2.address;
@@ -234,9 +230,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
         const userBalanceDelta = await balanceUser.delta();
 
         expect(userBalanceDelta).to.be.bignumber.eq(
-          ether('0')
-            .sub(handlerReturn)
-            .sub(new BN(receipt.receipt.gasUsed))
+          ether('0').sub(handlerReturn).sub(new BN(receipt.receipt.gasUsed))
         );
 
         expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
@@ -247,14 +241,12 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
         ).to.be.bignumber.eq(ether('0'));
         expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
         expect(userBalanceDelta).to.be.bignumber.eq(
-          ether('0')
-            .sub(result[0])
-            .sub(new BN(receipt.receipt.gasUsed))
+          ether('0').sub(result[0]).sub(new BN(receipt.receipt.gasUsed))
         );
         profileGas(receipt);
       });
 
-      it('max amount', async function() {
+      it('max amount', async function () {
         const value = ether('1');
         const buyAmt = ether('100');
         const to = this.hUniswapV2.address;
@@ -279,9 +271,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
         const userBalanceDelta = await balanceUser.delta();
 
         expect(userBalanceDelta).to.be.bignumber.eq(
-          ether('0')
-            .sub(handlerReturn)
-            .sub(new BN(receipt.receipt.gasUsed))
+          ether('0').sub(handlerReturn).sub(new BN(receipt.receipt.gasUsed))
         );
 
         expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
@@ -292,14 +282,12 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
         ).to.be.bignumber.eq(ether('0'));
         expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
         expect(userBalanceDelta).to.be.bignumber.eq(
-          ether('0')
-            .sub(result[0])
-            .sub(new BN(receipt.receipt.gasUsed))
+          ether('0').sub(result[0]).sub(new BN(receipt.receipt.gasUsed))
         );
         profileGas(receipt);
       });
 
-      it('insufficient ether', async function() {
+      it('insufficient ether', async function () {
         const buyAmt = ether('100');
         const to = this.hUniswapV2.address;
         const path = [WETH_TOKEN, tokenAddress];
@@ -322,7 +310,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
         );
       });
 
-      it('invalid path', async function() {
+      it('invalid path', async function () {
         const value = ether('1');
         const buyAmt = ether('100');
         const to = this.hUniswapV2.address;
@@ -344,7 +332,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
     });
   });
 
-  describe('Token to Ether', function() {
+  describe('Token to Ether', function () {
     const tokenAddress = DAI_TOKEN;
     const providerAddress = DAI_PROVIDER;
 
@@ -352,21 +340,21 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
     let balanceProxy;
     let tokenUser;
 
-    before(async function() {
+    before(async function () {
       this.token = await IToken.at(tokenAddress);
       this.hbtc = await IToken.at(HBTC_TOKEN);
       this.omg = await IToken.at(OMG_TOKEN);
       this.usdt = await IUsdt.at(USDT_TOKEN);
     });
 
-    beforeEach(async function() {
+    beforeEach(async function () {
       balanceUser = await tracker(user);
       balanceProxy = await tracker(this.proxy.address);
       tokenUser = await this.token.balanceOf(user);
     });
 
-    describe('Exact input', function() {
-      it('normal', async function() {
+    describe('Exact input', function () {
+      it('normal', async function () {
         const value = ether('100');
         const to = this.hUniswapV2.address;
         const path = [tokenAddress, WETH_TOKEN];
@@ -383,7 +371,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
           from: providerAddress,
         });
         await this.proxy.updateTokenMock(this.token.address);
-        await this.token.transfer(someone, value, { from: providerAddress });
+        // await this.token.transfer(someone, value, { from: providerAddress });
         const receipt = await this.proxy.execMock(to, data, { from: user });
 
         const handlerReturn = utils.toBN(
@@ -392,9 +380,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
         const userBalanceDelta = await balanceUser.delta();
 
         expect(userBalanceDelta).to.be.bignumber.eq(
-          ether('0')
-            .add(handlerReturn)
-            .sub(new BN(receipt.receipt.gasUsed))
+          ether('0').add(handlerReturn).sub(new BN(receipt.receipt.gasUsed))
         );
 
         expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
@@ -412,7 +398,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
         profileGas(receipt);
       });
 
-      it('HBTC', async function() {
+      it('HBTC', async function () {
         const value = ether('10');
         const to = this.hUniswapV2.address;
         const path = [HBTC_TOKEN, WETH_TOKEN];
@@ -439,9 +425,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
         const userBalanceDelta = await balanceUser.delta();
 
         expect(userBalanceDelta).to.be.bignumber.eq(
-          ether('0')
-            .add(handlerReturn)
-            .sub(new BN(receipt.receipt.gasUsed))
+          ether('0').add(handlerReturn).sub(new BN(receipt.receipt.gasUsed))
         );
 
         expect(await this.hbtc.balanceOf.call(user)).to.be.bignumber.eq(
@@ -459,7 +443,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
         profileGas(receipt);
       });
 
-      it('OMG', async function() {
+      it('OMG', async function () {
         const value = ether('10');
         const to = this.hUniswapV2.address;
         const path = [OMG_TOKEN, WETH_TOKEN];
@@ -486,9 +470,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
         const userBalanceDelta = await balanceUser.delta();
 
         expect(userBalanceDelta).to.be.bignumber.eq(
-          ether('0')
-            .add(handlerReturn)
-            .sub(new BN(receipt.receipt.gasUsed))
+          ether('0').add(handlerReturn).sub(new BN(receipt.receipt.gasUsed))
         );
 
         expect(await this.omg.balanceOf.call(user)).to.be.bignumber.eq(
@@ -506,7 +488,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
         profileGas(receipt);
       });
 
-      it('USDT', async function() {
+      it('USDT', async function () {
         const value = new BN('1000000');
         const to = this.hUniswapV2.address;
         const path = [USDT_TOKEN, WETH_TOKEN];
@@ -534,9 +516,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
         const userBalanceDelta = await balanceUser.delta();
 
         expect(userBalanceDelta).to.be.bignumber.eq(
-          ether('0')
-            .add(handlerReturn)
-            .sub(new BN(receipt.receipt.gasUsed))
+          ether('0').add(handlerReturn).sub(new BN(receipt.receipt.gasUsed))
         );
 
         expect(await this.usdt.balanceOf.call(user)).to.be.bignumber.eq(
@@ -554,7 +534,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
         profileGas(receipt);
       });
 
-      it('max amount', async function() {
+      it('max amount', async function () {
         const value = ether('100');
         const to = this.hUniswapV2.address;
         const path = [tokenAddress, WETH_TOKEN];
@@ -571,7 +551,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
           from: providerAddress,
         });
         await this.proxy.updateTokenMock(this.token.address);
-        await this.token.transfer(someone, value, { from: providerAddress });
+        // await this.token.transfer(someone, value, { from: providerAddress });
         const receipt = await this.proxy.execMock(to, data, { from: user });
 
         const handlerReturn = utils.toBN(
@@ -580,9 +560,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
         const userBalanceDelta = await balanceUser.delta();
 
         expect(userBalanceDelta).to.be.bignumber.eq(
-          ether('0')
-            .add(handlerReturn)
-            .sub(new BN(receipt.receipt.gasUsed))
+          ether('0').add(handlerReturn).sub(new BN(receipt.receipt.gasUsed))
         );
 
         expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
@@ -600,7 +578,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
         profileGas(receipt);
       });
 
-      it('min output too high', async function() {
+      it('min output too high', async function () {
         const value = ether('100');
         const to = this.hUniswapV2.address;
         const path = [tokenAddress, WETH_TOKEN];
@@ -608,7 +586,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
           from: providerAddress,
         });
         await this.proxy.updateTokenMock(this.token.address);
-        await this.token.transfer(someone, value, { from: providerAddress });
+        // await this.token.transfer(someone, value, { from: providerAddress });
         const result = await this.router.getAmountsOut.call(value, path, {
           from: someone,
         });
@@ -624,7 +602,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
         );
       });
 
-      it('invalid path', async function() {
+      it('invalid path', async function () {
         const value = ether('100');
         const to = this.hUniswapV2.address;
         const path = [tokenAddress, WETH_TOKEN, tokenAddress];
@@ -645,8 +623,8 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
       });
     });
 
-    describe('Exact output', function() {
-      it('normal', async function() {
+    describe('Exact output', function () {
+      it('normal', async function () {
         const value = ether('1000');
         const buyAmt = ether('0.1');
         const to = this.hUniswapV2.address;
@@ -664,7 +642,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
           from: providerAddress,
         });
         await this.proxy.updateTokenMock(this.token.address);
-        await this.token.transfer(someone, value, { from: providerAddress });
+        // await this.token.transfer(someone, value, { from: providerAddress });
         const receipt = await this.proxy.execMock(to, data, {
           from: user,
         });
@@ -686,7 +664,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
         profileGas(receipt);
       });
 
-      it('HBTC', async function() {
+      it('HBTC', async function () {
         const value = ether('1000');
         const buyAmt = ether('0.1');
         const to = this.hUniswapV2.address;
@@ -728,7 +706,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
         profileGas(receipt);
       });
 
-      it('OMG', async function() {
+      it('OMG', async function () {
         const value = ether('1000');
         const buyAmt = ether('0.1');
         const to = this.hUniswapV2.address;
@@ -769,7 +747,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
         profileGas(receipt);
       });
 
-      it('USDT', async function() {
+      it('USDT', async function () {
         const value = new BN('10000000000');
         const buyAmt = ether('0.1');
         const to = this.hUniswapV2.address;
@@ -810,7 +788,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
         profileGas(receipt);
       });
 
-      it('allowance is not zero', async function() {
+      it('allowance is not zero', async function () {
         const value = ether('1000');
         const buyAmt = ether('0.1');
         const to = this.hUniswapV2.address;
@@ -874,7 +852,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
         profileGas(receipt);
       });
 
-      it('max amount', async function() {
+      it('max amount', async function () {
         const value = ether('1000');
         const buyAmt = ether('0.1');
         const to = this.hUniswapV2.address;
@@ -892,7 +870,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
           from: providerAddress,
         });
         await this.proxy.updateTokenMock(this.token.address);
-        await this.token.transfer(someone, value, { from: providerAddress });
+        // await this.token.transfer(someone, value, { from: providerAddress });
         const receipt = await this.proxy.execMock(to, data, {
           from: user,
         });
@@ -913,7 +891,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
         );
         profileGas(receipt);
       });
-      it('insufficient input token', async function() {
+      it('insufficient input token', async function () {
         const value = ether('1');
         const buyAmt = ether('100');
         const to = this.hUniswapV2.address;
@@ -933,7 +911,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
           'HUniswapV2_swapTokensForExactETH: UniswapV2Router: EXCESSIVE_INPUT_AMOUNT.'
         );
       });
-      it('invalid path', async function() {
+      it('invalid path', async function () {
         const value = ether('1000');
         const buyAmt = ether('0.1');
         const to = this.hUniswapV2.address;
@@ -956,7 +934,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
     });
   });
 
-  describe('Token to Token', function() {
+  describe('Token to Token', function () {
     const token0Address = DAI_TOKEN;
     const token1Address = BAT_TOKEN;
     const providerAddress = DAI_PROVIDER;
@@ -964,7 +942,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
     let token0User;
     let token1User;
 
-    before(async function() {
+    before(async function () {
       this.token0 = await IToken.at(token0Address);
       this.token1 = await IToken.at(token1Address);
 
@@ -973,13 +951,13 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
       this.usdt = await IUsdt.at(USDT_TOKEN);
     });
 
-    beforeEach(async function() {
+    beforeEach(async function () {
       token0User = await this.token0.balanceOf.call(user);
       token1User = await this.token1.balanceOf.call(user);
     });
 
-    describe('Exact input', function() {
-      it('normal', async function() {
+    describe('Exact input', function () {
+      it('normal', async function () {
         const value = ether('100');
         const to = this.hUniswapV2.address;
         const path = [token0Address, WETH_TOKEN, token1Address];
@@ -1018,7 +996,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
         );
         profileGas(receipt);
       });
-      it('HBTC', async function() {
+      it('HBTC', async function () {
         const value = ether('100');
         const to = this.hUniswapV2.address;
         const path = [HBTC_TOKEN, WETH_TOKEN, token1Address];
@@ -1059,7 +1037,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
         profileGas(receipt);
       });
 
-      it('OMG', async function() {
+      it('OMG', async function () {
         const value = ether('100');
         const to = this.hUniswapV2.address;
         const path = [OMG_TOKEN, WETH_TOKEN, token1Address];
@@ -1100,7 +1078,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
         profileGas(receipt);
       });
 
-      it('USDT', async function() {
+      it('USDT', async function () {
         const value = new BN('1000000');
         const to = this.hUniswapV2.address;
         const path = [USDT_TOKEN, WETH_TOKEN, token1Address];
@@ -1141,7 +1119,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
         profileGas(receipt);
       });
 
-      it('max amount', async function() {
+      it('max amount', async function () {
         const value = ether('100');
         const to = this.hUniswapV2.address;
         const path = [token0Address, WETH_TOKEN, token1Address];
@@ -1181,7 +1159,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
         profileGas(receipt);
       });
 
-      it('min output too high', async function() {
+      it('min output too high', async function () {
         const value = ether('100');
         const to = this.hUniswapV2.address;
         const path = [token0Address, WETH_TOKEN, token1Address];
@@ -1206,7 +1184,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
           'HUniswapV2_swapExactTokensForTokens: UniswapV2Router: INSUFFICIENT_OUTPUT_AMOUNT'
         );
       });
-      it('identical addresses', async function() {
+      it('identical addresses', async function () {
         const value = ether('100');
         const to = this.hUniswapV2.address;
         const path = [token0Address, token0Address, token1Address];
@@ -1227,8 +1205,8 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
       });
     });
 
-    describe('Exact output', function() {
-      it('normal', async function() {
+    describe('Exact output', function () {
+      it('normal', async function () {
         const value = ether('100');
         const buyAmt = ether('1');
         const to = this.hUniswapV2.address;
@@ -1273,7 +1251,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
         profileGas(receipt);
       });
 
-      it('HBTC', async function() {
+      it('HBTC', async function () {
         const value = ether('100');
         const buyAmt = ether('1');
         const to = this.hUniswapV2.address;
@@ -1319,7 +1297,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
         profileGas(receipt);
       });
 
-      it('OMG', async function() {
+      it('OMG', async function () {
         const value = ether('100');
         const buyAmt = ether('1');
         const to = this.hUniswapV2.address;
@@ -1365,7 +1343,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
         profileGas(receipt);
       });
 
-      it('USDT', async function() {
+      it('USDT', async function () {
         const value = new BN('100000000');
         const buyAmt = ether('1');
         const to = this.hUniswapV2.address;
@@ -1411,7 +1389,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
         profileGas(receipt);
       });
 
-      it('allowance is not zero', async function() {
+      it('allowance is not zero', async function () {
         const value = ether('100');
         const buyAmt = ether('1');
         const to = this.hUniswapV2.address;
@@ -1480,7 +1458,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
         profileGas(receipt);
       });
 
-      it('max amount', async function() {
+      it('max amount', async function () {
         const value = ether('100');
         const buyAmt = ether('1');
         const to = this.hUniswapV2.address;
@@ -1525,7 +1503,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
         profileGas(receipt);
       });
 
-      it('excessive input amount', async function() {
+      it('excessive input amount', async function () {
         const value = ether('1');
         const buyAmt = ether('1000');
         const to = this.hUniswapV2.address;
@@ -1546,7 +1524,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
         );
       });
 
-      it('identical addresses', async function() {
+      it('identical addresses', async function () {
         const value = ether('100');
         const buyAmt = ether('1');
         const to = this.hUniswapV2.address;
