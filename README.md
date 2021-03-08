@@ -35,7 +35,9 @@ Proxy is the gateway of every execution. Proxy does not hold any state and shoul
 
 #### Registry
 
-Registry handles the verification for the valid handlers called by proxy. Every handler should be registered in Registry and unregistered when deprecated. This is also the only part that requires ownership.
+Registry handles the verification for the valid handlers called by proxy, and valid callers calling proxy. Every handler and caller should be registered in Registry and unregistered when deprecated. This is also the only part that requires ownership.
+A `halt()` can be executed by owner to halt the validation of handlers and callers from proxy, which is able to halt the execution of proxy.
+A `bannedAgent` mapping is maintained to verify if the validation requesting agent is valid.
 
 #### Handler
 
