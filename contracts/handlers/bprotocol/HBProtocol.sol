@@ -3,7 +3,6 @@ pragma solidity ^0.6.0;
 import "../maker/HMaker.sol";
 
 contract HBProtocol is HMaker {
-
     using SafeERC20 for IERC20;
 
     function getContractName() public pure override returns (string memory) {

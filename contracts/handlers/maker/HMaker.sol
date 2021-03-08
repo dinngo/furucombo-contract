@@ -27,7 +27,13 @@ contract HMaker is HandlerBase {
         _;
     }
 
-    function getContractName() public pure virtual override returns (string memory) {
+    function getContractName()
+        public
+        pure
+        virtual
+        override
+        returns (string memory)
+    {
         return "HMaker";
     }
 
@@ -39,7 +45,7 @@ contract HMaker is HandlerBase {
         return 0x5ef30b9986345249bc32d8928B7ee64DE9435E39;
     }
 
-    function getMcdJug() public view returns(address) {
+    function getMcdJug() public view returns (address) {
         return IMakerChainLog(CHAIN_LOG).getAddress("MCD_JUG");
     }
 

@@ -35,7 +35,7 @@ const Proxy = artifacts.require('ProxyMock');
 const IToken = artifacts.require('IERC20');
 const UniswapV2Router02 = artifacts.require('IUniswapV2Router02');
 
-contract('SushiSwap Liquidity', function ([_, user]) {
+contract('SushiSwap Liquidity', function([_, user]) {
   let id;
   const tokenAAddress = SUSHI_TOKEN;
   const tokenBAddress = xSUSHI_TOKEN;
@@ -49,7 +49,7 @@ contract('SushiSwap Liquidity', function ([_, user]) {
   let tokenUser;
   let uniTokenUserAmount;
 
-  before(async function () {
+  before(async function() {
     this.registry = await Registry.new();
     this.proxy = await Proxy.new(this.registry.address);
     this.hSushiSwap = await HSushiSwap.new();
@@ -71,7 +71,7 @@ contract('SushiSwap Liquidity', function ([_, user]) {
     });
   });
 
-  beforeEach(async function () {
+  beforeEach(async function() {
     id = await evmSnapshot();
     balanceUser = await tracker(user);
     balanceProxy = await tracker(this.proxy.address);
@@ -81,16 +81,16 @@ contract('SushiSwap Liquidity', function ([_, user]) {
     uniTokenTokenUserAmount = await this.uniTokenToken.balanceOf.call(user);
   });
 
-  afterEach(async function () {
+  afterEach(async function() {
     await evmRevert(id);
   });
 
-  describe('Add ETH', function () {
-    beforeEach(async function () {
+  describe('Add ETH', function() {
+    beforeEach(async function() {
       uniTokenUserAmount = await this.uniTokenEth.balanceOf.call(user);
     });
 
-    it('normal', async function () {
+    it('normal', async function() {
       // Prepare handler data
       const tokenAmount = ether('100');
       const minTokenAmount = new BN('1');
@@ -147,7 +147,9 @@ contract('SushiSwap Liquidity', function ([_, user]) {
       // Result Verification
       // Verify spent ether
       expect(userBalanceDelta).to.be.bignumber.lte(
-        ether('0').sub(minEthAmount).sub(new BN(receipt.receipt.gasUsed))
+        ether('0')
+          .sub(minEthAmount)
+          .sub(new BN(receipt.receipt.gasUsed))
       );
 
       // Verify spent token
@@ -171,7 +173,7 @@ contract('SushiSwap Liquidity', function ([_, user]) {
       profileGas(receipt);
     });
 
-    it('max amount', async function () {
+    it('max amount', async function() {
       // Prepare handler data
       const tokenAmount = ether('0.002');
       const minTokenAmount = ether('0.000001');
@@ -228,7 +230,9 @@ contract('SushiSwap Liquidity', function ([_, user]) {
       // Result Verification
       // Verify spent ether
       expect(userBalanceDelta).to.be.bignumber.lte(
-        ether('0').sub(minEthAmount).sub(new BN(receipt.receipt.gasUsed))
+        ether('0')
+          .sub(minEthAmount)
+          .sub(new BN(receipt.receipt.gasUsed))
       );
 
       // Verify spent token
@@ -253,12 +257,12 @@ contract('SushiSwap Liquidity', function ([_, user]) {
     });
   });
 
-  describe('Add Token', function () {
-    beforeEach(async function () {
+  describe('Add Token', function() {
+    beforeEach(async function() {
       uniTokenUserAmount = await this.uniTokenToken.balanceOf.call(user);
     });
 
-    it('normal', async function () {
+    it('normal', async function() {
       // Prepare handler data
       const tokenAAmount = ether('0.002');
       const tokenBAmount = ether('0.002');
@@ -341,7 +345,7 @@ contract('SushiSwap Liquidity', function ([_, user]) {
       profileGas(receipt);
     });
 
-    it('max amount', async function () {
+    it('max amount', async function() {
       // Prepare handler data
       const tokenAAmount = ether('0.002');
       const tokenBAmount = ether('0.002');
@@ -425,10 +429,10 @@ contract('SushiSwap Liquidity', function ([_, user]) {
     });
   });
 
-  describe('Remove ETH', function () {
+  describe('Remove ETH', function() {
     let deadline;
 
-    beforeEach(async function () {
+    beforeEach(async function() {
       // Add liquidity for getting uniToken before remove liquidity
       await this.tokenA.approve(this.router.address, ether('1000'), {
         from: user,
@@ -452,7 +456,7 @@ contract('SushiSwap Liquidity', function ([_, user]) {
       uniTokenUserAmount = await this.uniTokenEth.balanceOf.call(user);
     });
 
-    it('normal', async function () {
+    it('normal', async function() {
       // Get simulation result
       await this.uniTokenEth.approve(this.router.address, uniTokenUserAmount, {
         from: user,
@@ -524,7 +528,7 @@ contract('SushiSwap Liquidity', function ([_, user]) {
       profileGas(receipt);
     });
 
-    it('max amount', async function () {
+    it('max amount', async function() {
       // Get simulation result
       await this.uniTokenEth.approve(this.router.address, uniTokenUserAmount, {
         from: user,
@@ -597,10 +601,10 @@ contract('SushiSwap Liquidity', function ([_, user]) {
     });
   });
 
-  describe('Remove Token', function () {
+  describe('Remove Token', function() {
     let deadline;
 
-    beforeEach(async function () {
+    beforeEach(async function() {
       await this.tokenA.transfer(user, ether('100'), {
         from: tokenAProviderAddress,
       });
@@ -635,7 +639,7 @@ contract('SushiSwap Liquidity', function ([_, user]) {
       uniTokenUserAmount = await this.uniTokenToken.balanceOf.call(user);
     });
 
-    it('normal', async function () {
+    it('normal', async function() {
       // Get simulation result
       await this.uniTokenToken.approve(
         this.router.address,
@@ -723,7 +727,7 @@ contract('SushiSwap Liquidity', function ([_, user]) {
       profileGas(receipt);
     });
 
-    it('max amount', async function () {
+    it('max amount', async function() {
       // Get simulation result
       await this.uniTokenToken.approve(
         this.router.address,
