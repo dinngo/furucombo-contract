@@ -39,7 +39,8 @@ contract HSushiSwap is HandlerBase {
         // Approve token
         value = _getBalance(address(0), value);
         amountTokenDesired = _getBalance(token, amountTokenDesired);
-        IERC20(token).safeApprove(SUSHISWAP_ROUTER, amountTokenDesired);
+        // IERC20(token).safeApprove(SUSHISWAP_ROUTER, amountTokenDesired);
+        _tokenApprove(token, SUSHISWAP_ROUTER, amountTokenDesired);
 
         // Add liquidity ETH
         try
@@ -62,7 +63,7 @@ contract HSushiSwap is HandlerBase {
         }
 
         // Approve token 0
-        IERC20(token).safeApprove(SUSHISWAP_ROUTER, 0);
+        // IERC20(token).safeApprove(SUSHISWAP_ROUTER, 0);
 
         // Update involved token
         address pair =
@@ -92,8 +93,10 @@ contract HSushiSwap is HandlerBase {
         // Approve token
         amountADesired = _getBalance(tokenA, amountADesired);
         amountBDesired = _getBalance(tokenB, amountBDesired);
-        IERC20(tokenA).safeApprove(SUSHISWAP_ROUTER, amountADesired);
-        IERC20(tokenB).safeApprove(SUSHISWAP_ROUTER, amountBDesired);
+        // IERC20(tokenA).safeApprove(SUSHISWAP_ROUTER, amountADesired);
+        // IERC20(tokenB).safeApprove(SUSHISWAP_ROUTER, amountBDesired);
+        _tokenApprove(tokenA, SUSHISWAP_ROUTER, amountADesired);
+        _tokenApprove(tokenB, SUSHISWAP_ROUTER, amountBDesired);
 
         // Add liquidity
         try
@@ -118,8 +121,8 @@ contract HSushiSwap is HandlerBase {
         }
 
         // Approve token 0
-        IERC20(tokenA).safeApprove(SUSHISWAP_ROUTER, 0);
-        IERC20(tokenB).safeApprove(SUSHISWAP_ROUTER, 0);
+        // IERC20(tokenA).safeApprove(SUSHISWAP_ROUTER, 0);
+        // IERC20(tokenB).safeApprove(SUSHISWAP_ROUTER, 0);
 
         // Update involved token
         address pair =
@@ -140,7 +143,8 @@ contract HSushiSwap is HandlerBase {
 
         // Approve token
         liquidity = _getBalance(pair, liquidity);
-        IERC20(pair).safeApprove(SUSHISWAP_ROUTER, liquidity);
+        // IERC20(pair).safeApprove(SUSHISWAP_ROUTER, liquidity);
+        _tokenApprove(pair, SUSHISWAP_ROUTER, liquidity);
 
         // remove liquidityETH
         try
@@ -162,7 +166,7 @@ contract HSushiSwap is HandlerBase {
         }
 
         // Approve token 0
-        IERC20(pair).safeApprove(SUSHISWAP_ROUTER, 0);
+        // IERC20(pair).safeApprove(SUSHISWAP_ROUTER, 0);
 
         // Update involved token
         _updateToken(token);
@@ -182,7 +186,8 @@ contract HSushiSwap is HandlerBase {
 
         // Approve token
         liquidity = _getBalance(pair, liquidity);
-        IERC20(pair).safeApprove(SUSHISWAP_ROUTER, liquidity);
+        // IERC20(pair).safeApprove(SUSHISWAP_ROUTER, liquidity);
+        _tokenApprove(pair, SUSHISWAP_ROUTER, liquidity);
 
         // remove liquidity
         try
@@ -205,7 +210,7 @@ contract HSushiSwap is HandlerBase {
         }
 
         // Approve token 0
-        IERC20(pair).safeApprove(SUSHISWAP_ROUTER, 0);
+        // IERC20(pair).safeApprove(SUSHISWAP_ROUTER, 0);
 
         // Update involved token
         _updateToken(tokenA);
@@ -289,7 +294,8 @@ contract HSushiSwap is HandlerBase {
 
         // Approve token
         amountIn = _getBalance(tokenIn, amountIn);
-        IERC20(tokenIn).safeApprove(SUSHISWAP_ROUTER, amountIn);
+        // IERC20(tokenIn).safeApprove(SUSHISWAP_ROUTER, amountIn);
+        _tokenApprove(tokenIn, SUSHISWAP_ROUTER, amountIn);
 
         try
             router.swapExactTokensForETH(
@@ -308,7 +314,7 @@ contract HSushiSwap is HandlerBase {
         }
 
         // Approve token 0
-        IERC20(tokenIn).safeApprove(SUSHISWAP_ROUTER, 0);
+        // IERC20(tokenIn).safeApprove(SUSHISWAP_ROUTER, 0);
     }
 
     function swapTokensForExactETH(
@@ -327,7 +333,8 @@ contract HSushiSwap is HandlerBase {
         amountInMax = _getBalance(tokenIn, amountInMax);
 
         // Approve token
-        IERC20(tokenIn).safeApprove(SUSHISWAP_ROUTER, amountInMax);
+        // IERC20(tokenIn).safeApprove(SUSHISWAP_ROUTER, amountInMax);
+        _tokenApprove(tokenIn, SUSHISWAP_ROUTER, amountInMax);
 
         try
             router.swapTokensForExactETH(
@@ -346,7 +353,7 @@ contract HSushiSwap is HandlerBase {
         }
 
         // Approve token 0
-        IERC20(tokenIn).safeApprove(SUSHISWAP_ROUTER, 0);
+        // IERC20(tokenIn).safeApprove(SUSHISWAP_ROUTER, 0);
     }
 
     function swapExactTokensForTokens(
@@ -364,7 +371,8 @@ contract HSushiSwap is HandlerBase {
 
         // Approve token
         amountIn = _getBalance(tokenIn, amountIn);
-        IERC20(tokenIn).safeApprove(SUSHISWAP_ROUTER, amountIn);
+        // IERC20(tokenIn).safeApprove(SUSHISWAP_ROUTER, amountIn);
+        _tokenApprove(tokenIn, SUSHISWAP_ROUTER, amountIn);
 
         try
             router.swapExactTokensForTokens(
@@ -383,7 +391,7 @@ contract HSushiSwap is HandlerBase {
         }
 
         // Approve token 0
-        IERC20(tokenIn).safeApprove(SUSHISWAP_ROUTER, 0);
+        // IERC20(tokenIn).safeApprove(SUSHISWAP_ROUTER, 0);
 
         _updateToken(tokenOut);
     }
@@ -405,7 +413,8 @@ contract HSushiSwap is HandlerBase {
         amountInMax = _getBalance(tokenIn, amountInMax);
 
         // Approve token
-        IERC20(tokenIn).safeApprove(SUSHISWAP_ROUTER, amountInMax);
+        // IERC20(tokenIn).safeApprove(SUSHISWAP_ROUTER, amountInMax);
+        _tokenApprove(tokenIn, SUSHISWAP_ROUTER, amountInMax);
 
         try
             router.swapTokensForExactTokens(
@@ -424,7 +433,7 @@ contract HSushiSwap is HandlerBase {
         }
 
         // Approve token 0
-        IERC20(tokenIn).safeApprove(SUSHISWAP_ROUTER, 0);
+        // IERC20(tokenIn).safeApprove(SUSHISWAP_ROUTER, 0);
 
         _updateToken(tokenOut);
     }
