@@ -371,7 +371,6 @@ contract('UniswapV2 Swap', function ([_, user, someone]) {
           from: providerAddress,
         });
         await this.proxy.updateTokenMock(this.token.address);
-        // await this.token.transfer(someone, value, { from: providerAddress });
         const receipt = await this.proxy.execMock(to, data, { from: user });
 
         const handlerReturn = utils.toBN(
@@ -551,7 +550,6 @@ contract('UniswapV2 Swap', function ([_, user, someone]) {
           from: providerAddress,
         });
         await this.proxy.updateTokenMock(this.token.address);
-        // await this.token.transfer(someone, value, { from: providerAddress });
         const receipt = await this.proxy.execMock(to, data, { from: user });
 
         const handlerReturn = utils.toBN(
@@ -586,7 +584,6 @@ contract('UniswapV2 Swap', function ([_, user, someone]) {
           from: providerAddress,
         });
         await this.proxy.updateTokenMock(this.token.address);
-        // await this.token.transfer(someone, value, { from: providerAddress });
         const result = await this.router.getAmountsOut.call(value, path, {
           from: someone,
         });
@@ -642,7 +639,6 @@ contract('UniswapV2 Swap', function ([_, user, someone]) {
           from: providerAddress,
         });
         await this.proxy.updateTokenMock(this.token.address);
-        // await this.token.transfer(someone, value, { from: providerAddress });
         const receipt = await this.proxy.execMock(to, data, {
           from: user,
         });
@@ -870,7 +866,6 @@ contract('UniswapV2 Swap', function ([_, user, someone]) {
           from: providerAddress,
         });
         await this.proxy.updateTokenMock(this.token.address);
-        // await this.token.transfer(someone, value, { from: providerAddress });
         const receipt = await this.proxy.execMock(to, data, {
           from: user,
         });
