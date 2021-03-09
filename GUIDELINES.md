@@ -8,7 +8,7 @@ Proxy contract does not hold user data. Any modification to proxy contract shoul
 
 ### Registry
 
-Registry contract provides storage for an address to bytes32 dictionary. Similar to the idea of designing proxy, avoid unnecessary modifications for specific service integration.
+Registry contract provides storage for several address to bytes32 dictionary, incluiding `handlers`, `callers`, and `bannedAgents`. Similar to the idea of designing proxy, avoid unnecessary modifications for specific service integration.
 
 ### Handler
 
@@ -26,7 +26,7 @@ Follow the official [solidity style guide](https://solidity.readthedocs.io/en/la
 
 #### Handler naming
 
-A new folder named after the service name should be created in `contracts/handlers`. The handler's file name and the contract name should be identical, begins with a uppercase H, such as `contracts/handlers/furucombo/HFurucombo.sol`. To interact with external service, you may import the interface in an independent file. The file name and the contract name should be identical and begins with an uppercase I, such as `contracts/handlers/furucombo/IFurucombo.sol`.
+A new folder named after the service name should be created in `contracts/handlers`. The handler's file name and the contract name should be identical, begins with an uppercase H, such as `contracts/handlers/furucombo/HFurucombo.sol`. To interact with external service, you may import the interface in an independent file. The file name and the contract name should be identical and begins with an uppercase I, such as `contracts/handlers/furucombo/IFurucombo.sol`.
 
 #### Handler implementation
 
@@ -47,7 +47,7 @@ Return value is important to provide information for the execution of other func
 
 #### Tests should always be implemented
 
-Tests should be short and capable to present the function of handlers, including revert cases to prove the robustness.
+Tests should be short and capable to present the function of handlers, including revert cases to prove the robustness. Test case should be explained through comments in test file if necessary.
 
 #### Tests must not be random
 
