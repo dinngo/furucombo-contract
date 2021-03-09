@@ -281,12 +281,14 @@ contract('SushiSwap Liquidity', function([_, user]) {
 
       tokenAUserAmount = await this.tokenA.balanceOf.call(user);
       tokenBUserAmount = await this.tokenB.balanceOf.call(user);
+      // Send tokens to proxy
       await this.tokenA.transfer(this.proxy.address, tokenAAmount, {
         from: user,
       });
       await this.tokenB.transfer(this.proxy.address, tokenBAmount, {
         from: user,
       });
+      // Add tokens to cache for return user after handler execution
       await this.proxy.updateTokenMock(this.tokenA.address);
       await this.proxy.updateTokenMock(this.tokenB.address);
 
@@ -364,12 +366,14 @@ contract('SushiSwap Liquidity', function([_, user]) {
 
       tokenAUserAmount = await this.tokenA.balanceOf.call(user);
       tokenBUserAmount = await this.tokenB.balanceOf.call(user);
+      // Send tokens to proxy
       await this.tokenA.transfer(this.proxy.address, tokenAAmount, {
         from: user,
       });
       await this.tokenB.transfer(this.proxy.address, tokenBAmount, {
         from: user,
       });
+      // Add tokens to cache for return user after handler execution
       await this.proxy.updateTokenMock(this.tokenA.address);
       await this.proxy.updateTokenMock(this.tokenB.address);
 

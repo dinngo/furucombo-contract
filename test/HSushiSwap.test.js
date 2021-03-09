@@ -299,7 +299,6 @@ contract('SushiSwap Swap', function([_, user, someone]) {
         const result = await this.router.getAmountsIn.call(buyAmt, path, {
           from: user,
         });
-        console.log('result ');
         const value = result[0].sub(new BN('100'));
         const data = abi.simpleEncode(
           'swapETHForExactTokens(uint256,uint256,address[]):(uint256[])',
