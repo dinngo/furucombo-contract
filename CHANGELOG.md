@@ -29,6 +29,10 @@ All notable changes to this project will be documented in this file.
 - Add `bannedAgents` and related functions in `Registry`.
 - Add addition checks for external function call in `Proxy`.
 
+### Removed
+- Remove Oasis related contracts and tests.
+- Remove 1inch related contracts and tests.
+
 ## [1.3.0] - 2021-02-04
 
 ### Added
