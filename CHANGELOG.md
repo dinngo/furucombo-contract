@@ -20,6 +20,7 @@ All notable changes to this project will be documented in this file.
 - Add addition checks for external function call in `Proxy`.
 - Support for B.Protocol.
 - Support for Sushiswap.
+- Support for Furucombo rCOMBO.
 
 ### Changed
 
