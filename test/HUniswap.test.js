@@ -647,6 +647,7 @@ contract('Uniswap Swap', function([_, user, someone]) {
     describe('Exact output', function() {
       it('normal', async function() {
         const value = ether('100');
+        const buyAmt = ether('1');
         const to = this.hUniswap.address;
         await this.token0.transfer(someone, value, {
           from: providerAddress,
@@ -656,7 +657,7 @@ contract('Uniswap Swap', function([_, user, someone]) {
         });
         const deadline = (await latest()).add(new BN('100'));
         const result = await this.swap.tokenToTokenSwapOutput.call(
-          value,
+          buyAmt,
           value,
           MAX_UINT256,
           deadline,
@@ -667,7 +668,7 @@ contract('Uniswap Swap', function([_, user, someone]) {
         const data = abi.simpleEncode(
           'tokenToTokenSwapOutput(address,uint256,uint256,address):(uint256)',
           token0Address,
-          value,
+          buyAmt,
           maxAmount,
           token1Address
         );
@@ -691,13 +692,14 @@ contract('Uniswap Swap', function([_, user, someone]) {
           await this.token0.balanceOf.call(this.proxy.address)
         ).to.be.bignumber.eq(ether('0'));
         expect(await this.token1.balanceOf.call(user)).to.be.bignumber.eq(
-          token1User.add(value)
+          token1User.add(buyAmt)
         );
         profileGas(receipt);
       });
 
       it('max amount', async function() {
         const value = ether('100');
+        const buyAmt = ether('1');
         const to = this.hUniswap.address;
         await this.token0.transfer(someone, value, {
           from: providerAddress,
@@ -707,7 +709,7 @@ contract('Uniswap Swap', function([_, user, someone]) {
         });
         const deadline = (await latest()).add(new BN('100'));
         const result = await this.swap.tokenToTokenSwapOutput.call(
-          value,
+          buyAmt,
           value,
           MAX_UINT256,
           deadline,
@@ -718,7 +720,7 @@ contract('Uniswap Swap', function([_, user, someone]) {
         const data = abi.simpleEncode(
           'tokenToTokenSwapOutput(address,uint256,uint256,address):(uint256)',
           token0Address,
-          value,
+          buyAmt,
           MAX_UINT256,
           token1Address
         );
@@ -742,7 +744,7 @@ contract('Uniswap Swap', function([_, user, someone]) {
           await this.token0.balanceOf.call(this.proxy.address)
         ).to.be.bignumber.eq(ether('0'));
         expect(await this.token1.balanceOf.call(user)).to.be.bignumber.eq(
-          token1User.add(value)
+          token1User.add(buyAmt)
         );
         profileGas(receipt);
       });
