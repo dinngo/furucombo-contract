@@ -24,28 +24,32 @@ rule changesHandler(method f, address handler) {
     bytes32 _regState;
     bytes32 regState_;
     handlerTransition(handler, _regState, regState_, f);
-    assert _regState == regState_, "method changes handler info";
+    assert (f.selector != register(address,bytes32).selector && f.selector != unregister(address).selector) 
+        => _regState == regState_, "method unexpectedly changes handler info";
 }
 
 rule deprecatesHandler(method f, address handler) {
     bytes32 _regState;
     bytes32 regState_;
     handlerTransition(handler, _regState, regState_, f);
-    assert _regState != deprecated() /* non deprecated */ => regState_ != deprecated();
+    assert (f.selector != unregister(address).selector) 
+        => _regState != deprecated() /* non deprecated */ => regState_ != deprecated(), "method unexpectedly deprecates handler";
 }
 
 rule changesCaller(method f, address caller) {
     bytes32 _regState;
     bytes32 regState_;
     callerTransition(caller, _regState, regState_, f);
-    assert _regState == regState_, "method changes caller info";
+    assert (f.selector != registerCaller(address,bytes32).selector && f.selector != unregisterCaller(address).selector) 
+        => _regState == regState_, "method unexpectedly changes caller info";
 }
 
 rule deprecatesCaller(method f, address caller) {
     bytes32 _regState;
     bytes32 regState_;
     callerTransition(caller, _regState, regState_, f);
-    assert _regState != deprecated() /* non deprecated */ => regState_ != deprecated();
+    assert (f.selector != unregisterCaller(address).selector) 
+        => _regState != deprecated() /* non deprecated */ => regState_ != deprecated(), "method unexpectedly deprecates caller";
 }
 
 rule unregisterHandlerIsPermanent(method f, address handler) {
@@ -83,6 +87,7 @@ rule unregisterCallerIsPermanent2(method f, address caller) {
 }
 
 rule banningIsReversible(address agent, method f) {
+    require owner() != 0; // a reasonable require for the success of the first assert below
     env e;
     ban(e, agent);
 
@@ -98,6 +103,7 @@ rule banningIsReversible(address agent, method f) {
 }
 
 rule haltingIsReversible(method f) {
+    require owner() != 0; // a reasonable require for the success of the first assert below
     env e;
     halt(e);
 
@@ -107,7 +113,7 @@ rule haltingIsReversible(method f) {
 
     env e2;
     require e2.msg.value == 0;
-    require e2.msg.sender == owner();
+    require e2.msg.sender == e.msg.sender;
     assert e.msg.sender != 0, "Cannot send transactions from 0 address";
     unhalt@withrevert(e2);
     assert !lastReverted, "Unhalting should succeed";

@@ -1,5 +1,6 @@
 using Registry as registry
 using DummyERC20A as someToken
+using ProxyHarness as proxy // may also be the same as currentContract
 
 methods {
     // Shared-storage related
@@ -104,7 +105,7 @@ rule nonExecutableWithUninitializedSender(method f) {
     env e;
     calldataarg arg;
     f@withrevert(e, arg);
-    assert (f.selector != batchExec(address[],bytes32[],bytes[]).selector && f.selector != certorafallback_0().selector)
+    assert (f.selector != proxy.batchExec(address[],bytes32[],bytes[]).selector/* && f.selector != certorafallback_0().selector*/ /* TODO */)
         => lastReverted, "method invocation did not revert despite being called without a set sender";
 }
 
