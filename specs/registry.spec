@@ -1,13 +1,3 @@
-/**
-Registration of handlers can only be modified by the relevant functions
-Unregistration of handlers cannot be undone
-Registration of callers can only be modified by the relevant functions
-Unregistration of handlers cannot be undone
-Banning is reversible
-Halting is reversible
-
-*/
-
 methods {
     handlers(address) returns (bytes32) envfree
     callers(address) returns (bytes32) envfree

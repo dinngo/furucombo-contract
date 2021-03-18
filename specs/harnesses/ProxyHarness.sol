@@ -13,14 +13,19 @@ contract ProxyHarness is Proxy {
         }
     }
 
+    function getStackLength() external view returns (uint) {
+        return stack.length;
+    }
+
+    // simplifying summaries of certain functions in proxy
     function _parse(
-        bytes32[256] memory localStack,
+        bytes32[2] memory localStack,
         bytes memory ret,
         uint256 index
     ) internal pure override returns (uint256) {
         uint sz = ret.length/32;
         uint newIndex = index+sz;
-        require(newIndex <= 256);
+        require(newIndex <= 2);
 
         for (uint256 i = 0 ; i < sz ; i++) {
             localStack[index+i*32] = ret[i*32]; 
@@ -32,7 +37,7 @@ contract ProxyHarness is Proxy {
     function _trim(
         bytes memory data,
         bytes32 config,
-        bytes32[256] memory localStack,
+        bytes32[2] memory localStack,
         uint256 index
     ) internal pure override {
         // no-op
@@ -55,7 +60,7 @@ contract ProxyHarness is Proxy {
         bytes32[] memory configs,
         bytes[] memory datas
     ) internal override {
-        bytes32[256] memory localStack;
+        bytes32[2] memory localStack;
         uint256 index = 0;
         require (tos.length == 1);
         require (configs.length == 1);
