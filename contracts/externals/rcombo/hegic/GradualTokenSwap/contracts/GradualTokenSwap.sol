@@ -17,48 +17,48 @@ contract GradualTokenSwap is ERC20Recovery {
     // Durations and timestamps in UNIX time, also in block.timestamp.
     uint256 public immutable start;
     uint256 public immutable duration;
-    IERC20 public immutable rHEGIC;
-    IERC20 public immutable HEGIC;
+    IERC20 public immutable rCOMBO;
+    IERC20 public immutable COMBO;
 
     mapping(address => uint256) public released;
     mapping(address => uint256) public provided;
 
     /**
-     * @dev Creates a contract that can be used for swapping rHEGIC into HEGIC
+     * @dev Creates a contract that can be used for swapping rCOMBO into COMBO
      * @param _start UNIX time at which the unlock period starts
      * @param _duration Duration in seconds for unlocking tokens
      */
     constructor(
         uint256 _start,
         uint256 _duration,
-        IERC20 _rHEGIC,
-        IERC20 _HEGIC
+        IERC20 _rCOMBO,
+        IERC20 _COMBO
     ) public {
         if (_start == 0) _start = block.timestamp;
         require(_duration > 0, "GTS: duration is 0");
 
         duration = _duration;
         start = _start;
-        rHEGIC = _rHEGIC;
-        HEGIC = _HEGIC;
+        rCOMBO = _rCOMBO;
+        COMBO = _COMBO;
     }
 
     /**
-     * @dev Provide rHEGIC tokens to the contract for later exchange
+     * @dev Provide rCOMBO tokens to the contract for later exchange
      */
     function provide(uint256 amount) external {
-        rHEGIC.safeTransferFrom(msg.sender, address(this), amount);
+        rCOMBO.safeTransferFrom(msg.sender, address(this), amount);
         provided[msg.sender] = provided[msg.sender].add(amount);
     }
 
     /**
-     * @dev Withdraw unlocked user's HEGIC tokens
+     * @dev Withdraw unlocked user's COMBO tokens
      */
     function withdraw() external {
         uint256 amount = available(msg.sender);
         require(amount > 0, "GTS: You are have not unlocked tokens yet");
         released[msg.sender] = released[msg.sender].add(amount);
-        HEGIC.safeTransfer(msg.sender, amount);
+        COMBO.safeTransfer(msg.sender, amount);
         emit Withdrawn(msg.sender, amount);
     }
 
