@@ -130,12 +130,6 @@ contract('Furucombo rCOMBO', function([_, deployer, user]) {
         amount
       );
 
-      // Send rCOMBO to proxy
-      await this.rCOMBO.transfer(this.proxy.address, amount, {
-        from: deployer,
-      });
-      await this.proxy.updateTokenMock(this.rCOMBO.address);
-
       await expectRevert(
         this.proxy.execMock(to, data, {
           from: user,
@@ -187,6 +181,7 @@ contract('Furucombo rCOMBO', function([_, deployer, user]) {
       expect(await this.combo.balanceOf(user)).to.be.bignumber.eq(
         await this.rCOMBO.released(user)
       );
+      expect(await this.rCOMBO.released(user)).to.be.not.zero;
 
       profileGas(receipt);
     });
