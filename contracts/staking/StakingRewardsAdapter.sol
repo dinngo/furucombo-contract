@@ -168,7 +168,6 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "./IStakingRewards.sol";
 import "./IStakingRewardsAdapter.sol";
 
-
 contract StakingRewardsAdapter is
     IStakingRewardsAdapter,
     ReentrancyGuard,

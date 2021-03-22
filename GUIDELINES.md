@@ -8,7 +8,7 @@ Proxy contract does not hold user data. Any modification to proxy contract shoul
 
 ### Registry
 
-Registry contract provides storage for an address to bytes32 dictionary. Similar to the idea of designing proxy, avoid unnecessary modifications for specific service integration.
+Registry contract provides storage for several address to bytes32 dictionary, incluiding `handlers`, `callers`, and `bannedAgents`. Similar to the idea of designing proxy, avoid unnecessary modifications for specific service integration.
 
 ### Handler
 
@@ -26,7 +26,7 @@ Follow the official [solidity style guide](https://solidity.readthedocs.io/en/la
 
 #### Handler naming
 
-A new folder named after the service name should be created in `contracts/handlers`. The handler's file name and the contract name should be identical, begins with a uppercase H, such as `contracts/handlers/furucombo/HFurucombo.sol`. To interact with external service, you may import the interface in an independent file. The file name and the contract name should be identical and begins with an uppercase I, such as `contracts/handlers/furucombo/IFurucombo.sol`.
+A new folder named after the service name should be created in `contracts/handlers`. The handler's file name and the contract name should be identical, begins with an uppercase H, such as `contracts/handlers/furucombo/HFurucombo.sol`. To interact with external service, you may import the interface in an independent file. The file name and the contract name should be identical and begins with an uppercase I, such as `contracts/handlers/furucombo/IFurucombo.sol`.
 
 #### Handler implementation
 
@@ -41,13 +41,13 @@ Failed external service calls should always be reverted.
 External calls should be handled by `try/catch`. You may use `_revertMsg()` to note the executing function name and reason.
 You may wrap the balance parameter by using `_getBalance()`, which will fetch the current balance in proxy to do the following work by passing `uint256(-1)` in the parameter.
 
-Return value is important to provide information for the execution of other functions. You should return the values received from the external call. If the external call does not provide return values, you may calculate it in the handler. Static types of return value would be the best. If reference types are used, the size MUST be defined by the function parameters. Run-time defined size might cause unexpected problems.
+Return value is important to provide information for the execution of other functions. You should return the values received from the external call. If the external call does not provide return values, you may calculate it in the handler. Static types of return value would be the best. If reference types are used, the size MUST be defined by the function parameters. Run-time defined size might cause unexpected problems. For more information, please refer to the [Chained Input guideline](CHAINEDINPUT.md).
 
 ### Tests
 
 #### Tests should always be implemented
 
-Tests should be short and capable to present the function of handlers, including revert cases to prove the robustness.
+Tests should be short and capable to present the function of handlers, including revert cases to prove the robustness. Test case should be explained through comments in test file if necessary.
 
 #### Tests must not be random
 

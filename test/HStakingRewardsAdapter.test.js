@@ -6,6 +6,7 @@ const {
   expectEvent,
   expectRevert,
   time,
+  send,
 } = require('@openzeppelin/test-helpers');
 const { tracker } = balance;
 const { duration, increase, latest } = time;
@@ -88,10 +89,13 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
     this.adapterRegistry = await StakingRewardsAdapterRegistry.at(
       STAKING_REWARDS_ADAPTER_REGISTRY
     );
+    // Send some eth to owner for gas cost
+    await send.ether(_, STAKING_REWARDS_ADAPTER_REGISTRY_OWNER, ether('1'));
     // Register adapter to AdapterRegistry
     await this.adapterRegistry.register(
       this.adapter.address,
-      utils.asciiToHex('DAI-KNC')
+      utils.asciiToHex('DAI-KNC'),
+      { from: STAKING_REWARDS_ADAPTER_REGISTRY_OWNER }
     );
     // Deploy another adapter which will not be registered in AdapterRegistry
     await this.factory.newAdapter(

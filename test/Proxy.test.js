@@ -25,6 +25,7 @@ const Foo3 = artifacts.require('Foo3');
 const Foo3Handler = artifacts.require('Foo3Handler');
 const Foo4 = artifacts.require('Foo4');
 const Foo4Handler = artifacts.require('Foo4Handler');
+const Foo5Handler = artifacts.require('Foo5Handler');
 const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('ProxyMock');
 
@@ -75,6 +76,55 @@ contract('Proxy', function([_, deployer, user]) {
       await this.proxy.execMock(this.fooHandler.address, data);
       const result = await this.foo0.accounts.call(this.proxy.address);
       expect(result).to.be.bignumber.eq(num);
+    });
+
+    it('should revert: caller as handler', async function() {
+      this.fooHandler2 = await FooHandler.new();
+      await this.registry.registerCaller(
+        this.fooHandler2.address,
+        utils.asciiToHex('foo')
+      );
+      const index = 0;
+      const num = new BN('25');
+      const to = [this.fooHandler2.address];
+      const config = [ZERO_BYTES32];
+      const data = [
+        abi.simpleEncode('bar(uint256,uint256):(uint256)', index, num),
+      ];
+      await expectRevert(
+        this.proxy.batchExec(to, config, data),
+        'Invalid handler'
+      );
+    });
+
+    it('should revert: handler as caller - directly', async function() {
+      this.foo5Handler = await Foo5Handler.new();
+      await this.registry.register(
+        this.foo5Handler.address,
+        utils.asciiToHex('foo5')
+      );
+      const data = abi.simpleEncode('bar()');
+      await expectRevert(
+        this.foo5Handler.exec(this.proxy.address, data),
+        'Sender is not initialized'
+      );
+    });
+
+    it('should revert: handler as caller - after initialize', async function() {
+      this.foo5Handler = await Foo5Handler.new();
+      await this.registry.register(
+        this.foo5Handler.address,
+        this.foo5Handler.address
+      );
+      const to = this.foo5Handler.address;
+      const data0 = abi.simpleEncode('bar()');
+      const data1 = abi.simpleEncode(
+        'exec(address,bytes)',
+        this.proxy.address,
+        data0
+      );
+      const data2 = abi.simpleEncode('exec(address,bytes)', to, data1);
+      await expectRevert(this.proxy.execMock(to, data2), 'Invalid caller');
     });
 
     it('multiple', async function() {

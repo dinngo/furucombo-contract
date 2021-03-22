@@ -72,7 +72,10 @@ contract('AaveV2 flashloan', function([_, user, someone]) {
     this.provider = await IProviderV2.at(AAVEPROTOCOL_V2_PROVIDER);
     const lendingPoolAddress = await this.provider.getLendingPool.call();
     this.lendingPool = await ILendingPoolV2.at(lendingPoolAddress);
-    await this.registry.register(lendingPoolAddress, this.hAaveV2.address);
+    await this.registry.registerCaller(
+      lendingPoolAddress,
+      this.hAaveV2.address
+    );
 
     this.tokenAProvider = WETH_PROVIDER;
     this.tokenBProvider = DAI_PROVIDER;
@@ -95,6 +98,41 @@ contract('AaveV2 flashloan', function([_, user, someone]) {
 
   afterEach(async function() {
     await evmRevert(id);
+  });
+
+  describe('Lending pool as handler', function() {
+    it('Will success if pool is registered as handler', async function() {
+      await this.registry.register(
+        this.lendingPool.address,
+        this.hAaveV2.address
+      );
+      const to = this.lendingPool.address;
+      const data = abi.simpleEncode(
+        'initialize(address,bytes)',
+        this.registry.address,
+        ''
+      );
+      await this.proxy.execMock(to, data, {
+        from: user,
+        value: ether('0.1'),
+      });
+    });
+
+    it('Will revert if pool is registered as caller only', async function() {
+      const to = this.lendingPool.address;
+      const data = abi.simpleEncode(
+        'initialize(address,bytes)',
+        this.registry.address,
+        ''
+      );
+      await expectRevert(
+        this.proxy.execMock(to, data, {
+          from: user,
+          value: ether('0.1'),
+        }),
+        'Invalid handler'
+      );
+    });
   });
 
   describe('Normal', function() {
@@ -730,7 +768,7 @@ contract('AaveV2 flashloan', function([_, user, someone]) {
           0,
           { from: someone }
         ),
-        'HAaveProtocolV2_executeOperation: not initiated by the proxy'
+        'Sender is not initialized'
       );
     });
   });

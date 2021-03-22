@@ -2,24 +2,54 @@ pragma solidity ^0.6.0;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-/// @notice The handler registry database for Furucombo
+/// @notice The registry database for Furucombo
 contract Registry is Ownable {
-    mapping(address => bytes32) public infos;
+    mapping(address => bytes32) public handlers;
+    mapping(address => bytes32) public callers;
+    mapping(address => uint256) public bannedAgents;
+    bool public fHalt;
 
     bytes32 public constant DEPRECATED = bytes10(0x64657072656361746564);
+
+    event Registered(address indexed registration, bytes32 info);
+    event Unregistered(address indexed registration);
+    event CallerRegistered(address indexed registration, bytes32 info);
+    event CallerUnregistered(address indexed registration);
+    event Banned(address indexed agent);
+    event Unbanned(address indexed agent);
+    event Halted();
+    event Unhalted();
+
+    modifier isNotHalted() {
+        require(fHalt == false, "Halted");
+        _;
+    }
+
+    modifier isHalted() {
+        require(fHalt, "Not halted");
+        _;
+    }
+
+    modifier isNotBanned(address agent) {
+        require(bannedAgents[agent] == 0, "Banned");
+        _;
+    }
+
+    modifier isBanned(address agent) {
+        require(bannedAgents[agent] != 0, "Not banned");
+        _;
+    }
 
     /**
      * @notice Register a handler with a bytes32 information.
      * @param registration Handler address.
      * @param info Info string.
-     * @dev Dapps that triggers callback function should also be registered.
-     * In this case, registration is the Dapp address and the leading 20 bytes
-     * of info is the handler address.
      */
     function register(address registration, bytes32 info) external onlyOwner {
         require(registration != address(0), "zero address");
-        require(infos[registration] != DEPRECATED, "unregistered");
-        infos[registration] = info;
+        require(handlers[registration] != DEPRECATED, "unregistered");
+        handlers[registration] = info;
+        emit Registered(registration, info);
     }
 
     /**
@@ -28,17 +58,97 @@ contract Registry is Ownable {
      */
     function unregister(address registration) external onlyOwner {
         require(registration != address(0), "zero address");
-        require(infos[registration] != bytes32(0), "no registration");
-        require(infos[registration] != DEPRECATED, "unregistered");
-        infos[registration] = DEPRECATED;
+        require(handlers[registration] != bytes32(0), "no registration");
+        require(handlers[registration] != DEPRECATED, "unregistered");
+        handlers[registration] = DEPRECATED;
+        emit Unregistered(registration);
+    }
+
+    /**
+     * @notice Register a caller with a bytes32 information.
+     * @param registration Caller address.
+     * @param info Info string.
+     * @dev Dapps that triggers callback function should be registered.
+     * In this case, registration is the Dapp address and the leading 20 bytes
+     * of info is the handler address.
+     */
+    function registerCaller(address registration, bytes32 info)
+        external
+        onlyOwner
+    {
+        require(registration != address(0), "zero address");
+        require(callers[registration] != DEPRECATED, "unregistered");
+        callers[registration] = info;
+        emit CallerRegistered(registration, info);
+    }
+
+    /**
+     * @notice Unregister a caller. The caller will be deprecated.
+     * @param registration The caller to be unregistered.
+     */
+    function unregisterCaller(address registration) external onlyOwner {
+        require(registration != address(0), "zero address");
+        require(callers[registration] != bytes32(0), "no registration");
+        require(callers[registration] != DEPRECATED, "unregistered");
+        callers[registration] = DEPRECATED;
+        emit CallerUnregistered(registration);
+    }
+
+    /**
+     * @notice Ban agent from query
+     *
+     */
+    function ban(address agent) external isNotBanned(agent) onlyOwner {
+        bannedAgents[agent] = 1;
+        emit Banned(agent);
+    }
+
+    /**
+     * @notice Unban agent from query
+     */
+    function unban(address agent) external isBanned(agent) onlyOwner {
+        bannedAgents[agent] = 0;
+        emit Unbanned(agent);
     }
 
     /**
      * @notice Check if the handler is valid.
      * @param handler The handler to be verified.
      */
-    function isValid(address handler) external view returns (bool result) {
-        if (infos[handler] == 0 || infos[handler] == DEPRECATED) return false;
+    function isValidHandler(address handler)
+        external
+        view
+        isNotBanned(msg.sender)
+        isNotHalted
+        returns (bool result)
+    {
+        if (handlers[handler] == 0 || handlers[handler] == DEPRECATED)
+            return false;
         else return true;
+    }
+
+    /**
+     * @notice Check if the caller is valid.
+     * @param caller The caller to be verified.
+     */
+    function isValidCaller(address caller)
+        external
+        view
+        isNotBanned(msg.sender)
+        isNotHalted
+        returns (bool result)
+    {
+        if (callers[caller] == 0 || callers[caller] == DEPRECATED) return false;
+        else return true;
+    }
+
+    function halt() external isNotHalted onlyOwner {
+        fHalt = true;
+        emit Halted();
+    }
+
+    function unhalt() external isHalted onlyOwner {
+        fHalt = false;
+        emit Unhalted();
     }
 }

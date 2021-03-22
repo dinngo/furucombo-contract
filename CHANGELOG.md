@@ -4,6 +4,31 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+## [1.4.0] - 2021-03-09
+
+### Added
+
+- Support Aave v2 borrowETH/borrow.
+- Add send tokens function of `HFunds` handler.
+- Add `Halt` functions in `Registry`.
+- Add `bannedAgents` and related functions in `Registry`.
+- Add addition checks for external function call in `Proxy`.
+- Support for B.Protocol.
+- Support for Sushiswap.
+
+### Changed
+
+- Replace safeApprove with \_tokenApprove in Curve and UniswapV2 handler.
+- Refine send token/Ether function of `HFunds` handler.
+- Separate `infos` into `handlers` and `callers`.
+- Separate `fallback()` and `receive()` in `Proxy`.
+- Small refactor in HMaker.sol to allow overriding `CDP_MANAGER` and `PROXY_ACTIONS` addresses
+- Read `MCD_JUG` address from Maker ChainLog contract. This change would support JUG contract upgardes on Maker side.
+
+### Removed
+- Remove Oasis related contracts and tests.
+- Remove 1inch related contracts and tests.
+
 ## [1.3.0] - 2021-02-04
 
 ### Added

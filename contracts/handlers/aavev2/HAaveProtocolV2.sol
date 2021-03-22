@@ -80,6 +80,22 @@ contract HAaveProtocolV2 is HandlerBase, IFlashLoanReceiver {
         _updateToken(WETH);
     }
 
+    function borrow(
+        address asset,
+        uint256 amount,
+        uint256 rateMode
+    ) external payable {
+        address onBehalfOf = _getSender();
+        _borrow(asset, amount, rateMode, onBehalfOf);
+        _updateToken(asset);
+    }
+
+    function borrowETH(uint256 amount, uint256 rateMode) external payable {
+        address onBehalfOf = _getSender();
+        _borrow(WETH, amount, rateMode, onBehalfOf);
+        IWETH9(WETH).withdraw(amount);
+    }
+
     function flashLoan(
         address[] calldata assets,
         uint256[] calldata amounts,
@@ -144,6 +160,8 @@ contract HAaveProtocolV2 is HandlerBase, IFlashLoanReceiver {
         }
         return true;
     }
+
+    /* ========== INTERNAL FUNCTIONS ========== */
 
     function _deposit(address asset, uint256 amount) internal {
         (address pool, address aToken) = _getLendingPoolAndAToken(asset);
@@ -210,6 +228,30 @@ contract HAaveProtocolV2 is HandlerBase, IFlashLoanReceiver {
             DataTypes.InterestRateMode.STABLE
             ? IERC20(reserve.stableDebtTokenAddress).balanceOf(onBehalfOf)
             : IERC20(reserve.variableDebtTokenAddress).balanceOf(onBehalfOf);
+    }
+
+    function _borrow(
+        address asset,
+        uint256 amount,
+        uint256 rateMode,
+        address onBehalfOf
+    ) internal {
+        address pool =
+            ILendingPoolAddressesProviderV2(PROVIDER).getLendingPool();
+
+        try
+            ILendingPoolV2(pool).borrow(
+                asset,
+                amount,
+                rateMode,
+                REFERRAL_CODE,
+                onBehalfOf
+            )
+        {} catch Error(string memory reason) {
+            _revertMsg("borrow", reason);
+        } catch {
+            _revertMsg("borrow");
+        }
     }
 
     function _getLendingPoolAndAToken(address underlying)

@@ -39,3 +39,7 @@ interface IMakerGemJoin {
     function join(address, uint) external payable;
     function exit(address, uint) external;
 }
+
+interface IMakerChainLog {
+    function getAddress(bytes32) external view returns (address);
+}

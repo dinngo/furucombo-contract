@@ -1,8 +1,9 @@
-const Registry = artifacts.require('Registry');
-const Handler = artifacts.require('HOasis');
-const utils = web3.utils;
+// const Registry = artifacts.require('Registry');
+// const Handler = artifacts.require('HOasis');
+// const utils = web3.utils;
 
 module.exports = function(deployer) {
+  /** Deprecated
   if (deployer.network === 'development') {
     return;
   }
@@ -15,4 +16,5 @@ module.exports = function(deployer) {
       registry = instance;
       return registry.register(Handler.address, utils.asciiToHex('HOasis'));
     });
+  */
 };

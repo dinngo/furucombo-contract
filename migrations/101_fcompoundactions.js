@@ -1,3 +1,4 @@
+const { constants } = require('@openzeppelin/test-helpers');
 const {
   CREATE2_FACTORY,
   FCOMPOUND_ACTIONS_SALT,
@@ -18,6 +19,13 @@ module.exports = async function(deployer) {
     getFCompoundActionsBytecodeBySolc(),
     FCOMPOUND_ACTIONS_SALT
   );
+
+  // Exit if we get zero address
+  if (deployAddr == constants.ZERO_ADDRESS) {
+    console.log(`Got zero address when attempting to deploy FCompoundActions`);
+    return false;
+  }
+
   if (deployAddr != FCOMPOUND_ACTIONS) {
     console.error(
       `!!!!! Got different FCompoundActions address with predicted one !!!!!`
