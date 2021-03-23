@@ -1,10 +1,10 @@
 pragma solidity ^0.6.0;
 
-
 interface IRegistry {
     function handlers(address) external view returns (bytes32);
     function callers(address) external view returns (bytes32);
-
-    function isValidHandler(address handler) external view returns (bool result);
-    function isValidCaller(address handler) external view returns (bool result);
+    function bannedAgents(address) external view returns (uint256);
+    function fHalt() external view returns (bool);
+    function isValidHandler(address handler) external view returns (bool);
+    function isValidCaller(address handler) external view returns (bool);
 }

@@ -3,6 +3,7 @@ pragma experimental ABIEncoderV2;
 
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
+import "./interface/IProxy.sol";
 import "./interface/IRegistry.sol";
 import "./Config.sol";
 import "./Storage.sol";
@@ -12,7 +13,7 @@ import "./lib/LibParam.sol";
  * @title The entrance of Furucombo
  * @author Ben Huang
  */
-contract Proxy is Storage, Config {
+contract Proxy is IProxy, Storage, Config {
     using Address for address;
     using SafeERC20 for IERC20;
     using LibParam for bytes32;
@@ -60,10 +61,10 @@ contract Proxy is Storage, Config {
      * @param datas The combo datas.
      */
     function batchExec(
-        address[] memory tos,
-        bytes32[] memory configs,
+        address[] calldata tos,
+        bytes32[] calldata configs,
         bytes[] memory datas
-    ) external payable {
+    ) external payable override {
         _preProcess();
         _execs(tos, configs, datas);
         _postProcess();
@@ -75,10 +76,10 @@ contract Proxy is Storage, Config {
      * the caller become proxy itself.
      */
     function execs(
-        address[] memory tos,
-        bytes32[] memory configs,
+        address[] calldata tos,
+        bytes32[] calldata configs,
         bytes[] memory datas
-    ) public payable isInitialized {
+    ) external payable override isInitialized {
         require(msg.sender == address(this), "Does not allow external calls");
         _execs(tos, configs, datas);
     }

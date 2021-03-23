@@ -1,13 +1,14 @@
 pragma solidity ^0.6.0;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "./interface/IRegistry.sol";
 
 /// @notice The registry database for Furucombo
-contract Registry is Ownable {
-    mapping(address => bytes32) public handlers;
-    mapping(address => bytes32) public callers;
-    mapping(address => uint256) public bannedAgents;
-    bool public fHalt;
+contract Registry is IRegistry, Ownable {
+    mapping(address => bytes32) public override handlers;
+    mapping(address => bytes32) public override callers;
+    mapping(address => uint256) public override bannedAgents;
+    bool public override fHalt;
 
     bytes32 public constant DEPRECATED = bytes10(0x64657072656361746564);
 
@@ -118,6 +119,7 @@ contract Registry is Ownable {
     function isValidHandler(address handler)
         external
         view
+        override
         isNotBanned(msg.sender)
         isNotHalted
         returns (bool result)
@@ -134,6 +136,7 @@ contract Registry is Ownable {
     function isValidCaller(address caller)
         external
         view
+        override
         isNotBanned(msg.sender)
         isNotHalted
         returns (bool result)
