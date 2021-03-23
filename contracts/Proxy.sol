@@ -107,15 +107,16 @@ contract Proxy is IProxy, Storage, Config {
             "Tos and configs length inconsistent"
         );
         for (uint256 i = 0; i < tos.length; i++) {
+            bytes32 config = configs[i];
             // Check if the data contains dynamic parameter
-            if (!configs[i].isStatic()) {
+            if (!config.isStatic()) {
                 // If so, trim the exectution data base on the configuration and stack content
-                _trim(datas[i], configs[i], localStack, index);
+                _trim(datas[i], config, localStack, index);
             }
             // Check if the output will be referenced afterwards
-            if (configs[i].isReferenced()) {
+            if (config.isReferenced()) {
                 // If so, parse the output and place it into local stack
-                uint256 num = configs[i].getReturnNum();
+                uint256 num = config.getReturnNum();
                 uint256 newIndex =
                     _parse(localStack, _exec(tos[i], datas[i]), index);
                 require(
@@ -290,20 +291,12 @@ contract Proxy is IProxy, Storage, Config {
     }
 
     /// @notice Check if the handler is valid in registry.
-    function _isValidHandler(address handler)
-        internal
-        view
-        returns (bool result)
-    {
+    function _isValidHandler(address handler) internal view returns (bool) {
         return registry.isValidHandler(handler);
     }
 
     /// @notice Check if the caller is valid in registry.
-    function _isValidCaller(address caller)
-        internal
-        view
-        returns (bool result)
-    {
+    function _isValidCaller(address caller) internal view returns (bool) {
         return registry.isValidCaller(caller);
     }
 }

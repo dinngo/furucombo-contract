@@ -122,11 +122,9 @@ contract Registry is IRegistry, Ownable {
         override
         isNotBanned(msg.sender)
         isNotHalted
-        returns (bool result)
+        returns (bool)
     {
-        if (handlers[handler] == 0 || handlers[handler] == DEPRECATED)
-            return false;
-        else return true;
+        return handlers[handler] != 0 && handlers[handler] != DEPRECATED;
     }
 
     /**
@@ -139,10 +137,9 @@ contract Registry is IRegistry, Ownable {
         override
         isNotBanned(msg.sender)
         isNotHalted
-        returns (bool result)
+        returns (bool)
     {
-        if (callers[caller] == 0 || callers[caller] == DEPRECATED) return false;
-        else return true;
+        return callers[caller] != 0 && callers[caller] != DEPRECATED;
     }
 
     function halt() external isNotHalted onlyOwner {
