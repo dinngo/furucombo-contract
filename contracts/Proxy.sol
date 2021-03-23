@@ -17,15 +17,10 @@ contract Proxy is Storage, Config {
     using SafeERC20 for IERC20;
     using LibParam for bytes32;
 
-    // keccak256 hash of "furucombo.handler.registry"
-    // prettier-ignore
-    bytes32 private constant HANDLER_REGISTRY = 0x6874162fd62902201ea0f4bf541086067b3b88bd802fac9e150fd2d1db584e19;
+    IRegistry public immutable registry;
 
-    constructor(address registry) public {
-        bytes32 slot = HANDLER_REGISTRY;
-        assembly {
-            sstore(slot, registry)
-        }
+    constructor(address _registry) public {
+        registry = IRegistry(_registry);
     }
 
     /**
@@ -39,8 +34,7 @@ contract Proxy is Storage, Config {
         // in registry.
         require(_isValidCaller(msg.sender), "Invalid caller");
 
-        address target =
-            address(bytes20(IRegistry(_getRegistry()).callers(msg.sender)));
+        address target = address(bytes20(registry.callers(msg.sender)));
         bytes memory result = _exec(target, msg.data);
 
         // return result for aave v2 flashloan()
@@ -294,21 +288,13 @@ contract Proxy is Storage, Config {
         _resetCubeCounter();
     }
 
-    /// @notice Get the registry contract address.
-    function _getRegistry() internal view returns (address registry) {
-        bytes32 slot = HANDLER_REGISTRY;
-        assembly {
-            registry := sload(slot)
-        }
-    }
-
     /// @notice Check if the handler is valid in registry.
     function _isValidHandler(address handler)
         internal
         view
         returns (bool result)
     {
-        return IRegistry(_getRegistry()).isValidHandler(handler);
+        return registry.isValidHandler(handler);
     }
 
     /// @notice Check if the caller is valid in registry.
@@ -317,6 +303,6 @@ contract Proxy is Storage, Config {
         view
         returns (bool result)
     {
-        return IRegistry(_getRegistry()).isValidCaller(caller);
+        return registry.isValidCaller(caller);
     }
 }
