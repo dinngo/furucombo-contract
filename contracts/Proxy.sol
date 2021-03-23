@@ -253,7 +253,7 @@ contract Proxy is IProxy, Storage, Config {
             stack.pop();
             // Check if the handler is already set.
             if (bytes4(stack.peek()) != 0x00000000) stack.setAddress(_to);
-            stack.setHandlerType(uint256(HandlerType.Custom));
+            stack.setHandlerType(HandlerType.Custom);
         }
     }
 
