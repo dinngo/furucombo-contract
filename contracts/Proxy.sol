@@ -114,19 +114,18 @@ contract Proxy is IProxy, Storage, Config {
                 _trim(datas[i], config, localStack, index);
             }
             // Check if the output will be referenced afterwards
+            bytes memory result = _exec(tos[i], datas[i]);
             if (config.isReferenced()) {
                 // If so, parse the output and place it into local stack
                 uint256 num = config.getReturnNum();
-                uint256 newIndex =
-                    _parse(localStack, _exec(tos[i], datas[i]), index);
+                uint256 newIndex = _parse(localStack, result, index);
                 require(
                     newIndex == index + num,
                     "Return num and parsed return num not matched"
                 );
                 index = newIndex;
-            } else {
-                _exec(tos[i], datas[i]);
             }
+
             // Setup the process to be triggered in the post-process phase
             _setPostProcess(tos[i]);
         }
