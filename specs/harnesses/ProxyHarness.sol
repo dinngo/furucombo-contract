@@ -17,6 +17,10 @@ contract ProxyHarness is Proxy {
         return stack.length;
     }
 
+    // internal-to-public
+    function getSender() public returns (address) { return _getSender(); }
+
+
     // simplifying summaries of certain functions in proxy
     function _parse(
         bytes32[2] memory localStack,
@@ -89,8 +93,5 @@ contract ProxyHarness is Proxy {
         // Setup the process to be triggered in the post-process phase
         _setPostProcess(to);
     }
-
-    // internal-to-public
-    function getSender() public returns (address) { return _getSender(); }
 
 }

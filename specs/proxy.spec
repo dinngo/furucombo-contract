@@ -28,10 +28,16 @@ methods {
     allowance(address,address) returns (uint) envfree => DISPATCHER(true)
     balanceOf(address) returns (uint) envfree => DISPATCHER(true)
     totalSupply() returns (uint) envfree => DISPATCHER(true)
+
+    // HMaker
+    proxies(address) => NONDET
+    execute(address,bytes) => NONDET
 }
 
 definition MAX_UINT256() returns uint256 = 115792089237316195423570985008687907853269984665640564039457584007913129639935
     ;
+
+definition STACK_INCREASE_BOUND() returns uint256 = 1000000 ;    // 1 million
 
 // if we start in a clear start state (cache, sender) then we end in a clear start state
 rule startStateCleanup(method f, uint slot) {
@@ -48,7 +54,7 @@ rule startStateCleanup(method f, uint slot) {
 // if we start with a slot being non-zero then it should stay non-zero
 // Status: currently violated on stack length overflow in execs.
 rule noOverwrite(method f, uint slot) {
-    require getStackLength() < MAX_UINT256(); // see stackLengthIncreaseIsBounded
+    require getStackLength() < MAX_UINT256() - STACK_INCREASE_BOUND(); // see stackLengthIncreaseIsBounded
     uint oldValue = getSlot(slot);
 
     arbitrary(f);
@@ -65,7 +71,7 @@ rule stackLengthIncreaseIsBounded(method f) {
     arbitrary(f);
 
     uint256 stackLengthAfter = getStackLength();
-    assert stackLengthAfter <= stackLengthBefore + 1000000, "Found a way to increase stack length by more than 1 million"; // 1 million
+    assert stackLengthAfter <= stackLengthBefore + STACK_INCREASE_BOUND(), "Found a way to increase stack length by more than 1 million";
 }
 
 rule cacheIsAlwaysCleanedUp(bytes32 key, method f) {
