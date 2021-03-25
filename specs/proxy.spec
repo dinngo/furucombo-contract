@@ -1,6 +1,7 @@
 using Registry as registry
 using DummyERC20A as someToken
 using ProxyHarness as proxy // may also be the same as currentContract
+using Summary as summaryInstance // general summary for DeFi protocols
 
 methods {
     // Shared-storage related
@@ -8,6 +9,7 @@ methods {
     cache(bytes32) returns (bytes32) envfree
     getSender() returns (address) envfree
     getStackLength() returns (uint256) envfree
+    isHandler() returns (bool) envfree
 
     // registry dispatches
     handlers(address) returns (bytes32) envfree => DISPATCHER(true)
@@ -29,7 +31,7 @@ methods {
     balanceOf(address) returns (uint) envfree => DISPATCHER(true)
     totalSupply() returns (uint) envfree => DISPATCHER(true)
 
-    //havocMe() => HAVOC_ECF
+    havocMe() => DISPATCHER(true)
 
     // HMaker
     proxies(address) => NONDET
@@ -42,6 +44,7 @@ definition MAX_UINT256() returns uint256 = 1157920892373161954235709850086879078
 
 definition STACK_INCREASE_BOUND() returns uint256 = 1000000 ;    // 1 million
 
+// should fail on all functions except maybe fallback.
 rule sanity(method f) {
     arbitrary(f);
     assert false;
@@ -55,9 +58,8 @@ rule startStateCleanup(method f, uint slot) {
 
     uint newValue = getSlot(slot);
 
-    // TODO: need to check this on all potential handlers too
-    assert oldValue == 0 => newValue == 0, "Start state of $slot not cleaned up";
-    assert false;
+    // slot 0 is stack length, which we ignore because some handlers are pushing entries into the stack
+    assert oldValue == 0 => (newValue == 0 || slot == 0), "Start state of $slot which is not stack length was not cleaned up";
 }
 
 // if we start with a slot being non-zero then it should stay non-zero
@@ -69,8 +71,10 @@ rule noOverwrite(method f, uint slot) {
     arbitrary(f);
 
     uint newValue = getSlot(slot);
-    // TODO: need to check this on all potential handlers too
-    assert oldValue != 0 => newValue != 0, "Slot $slot became 0 during this execution";
+    
+    // slot 0 is stack length, postProcess() may nullify it and it's fine
+    assert oldValue != 0 => (newValue != 0 
+            || (slot == 0 && f.selector == postProcess().selector)), "Slot $slot became 0 during this execution";
 }
 
 // shows that the stack length increase is bounded. Selecting a reasonable bound gas-wise
@@ -94,6 +98,7 @@ rule cacheIsAlwaysCleanedUp(bytes32 key, method f) {
 }
 
 rule nonExecutableByBannedAgents(method f) {
+    require !isHandler();
     require !f.isView; // only non-view functions, that may modify the state, are interesting.
     env e;
     require registry.bannedAgents(e.msg.sender) == 1; // sender is banned
@@ -104,6 +109,7 @@ rule nonExecutableByBannedAgents(method f) {
 }
 
 rule nonExecutableWhenHalted(method f) {
+    require !isHandler();
     require !f.isView; // only non-view functions, that may modify the state, are interesting.
     require registry.fHalt(); // system is halted
 
@@ -114,6 +120,7 @@ rule nonExecutableWhenHalted(method f) {
 }
 
 rule nonExecutableWithUninitializedSender(method f) {
+    require !isHandler();
     require !f.isView; // only non-view functions, that may modify the state, are interesting.
     require getSender() == 0; // no sender initialized;
 
@@ -126,6 +133,7 @@ rule nonExecutableWithUninitializedSender(method f) {
 
 // if sender was initialized, and we have a callback, which functions fail? If they fail, it means they can't be callbacks
 nonExecutableWithInitializedSender(method f) {
+    require !isHandler();
     require !f.isView; // only non-view functions, that may modify the state, are interesting.
     require getSender() != 0; // sender is initialized
 
@@ -137,16 +145,29 @@ nonExecutableWithInitializedSender(method f) {
 
 // small havoc issue in batchExec, but getting coverage from execs() too.
 rule transferredTokensMeanThatStackIsUpdated(method f) {
+    require someToken.allowance(currentContract, summaryInstance) == 0; // to make sure we're starting clean as implied by approvedTokensAreTemporary
     uint256 balanceBefore = someToken.balanceOf(currentContract);
     uint256 stackLengthBefore = getStackLength();
-
+    require stackLengthBefore < MAX_UINT256() - STACK_INCREASE_BOUND(); // see stackLengthIncreaseIsBounded
+    
     arbitrary(f);
 
     uint256 balanceAfter = someToken.balanceOf(currentContract);
     uint256 stackLengthAfter = getStackLength();
 
-    assert balanceAfter > balanceBefore => stackLengthAfter == stackLengthBefore + 1, 
+    assert balanceAfter > balanceBefore => stackLengthAfter > stackLengthBefore, 
         "must push an entry to postprocess stack if transferring funds into proxy";
+}
+
+rule approvedTokensAreTemporary(method f, address someAllowed) {
+    require someToken.allowance(currentContract, summaryInstance) == 0; // to make sure we're starting clean as implied by approvedTokensAreTemporary
+    uint256 allowanceBefore = someToken.allowance(currentContract, someAllowed);
+
+    arbitrary(f);
+    
+    uint256 allowanceAfter = someToken.allowance(currentContract, someAllowed);
+
+    assert allowanceBefore == 0 => allowanceAfter == 0, "Allowances must be nullified";
 }
 
 function arbitrary(method f) {

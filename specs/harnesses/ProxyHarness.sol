@@ -20,6 +20,8 @@ contract ProxyHarness is Proxy {
     // internal-to-public
     function getSender() public returns (address) { return _getSender(); }
 
+    // to distinguish handlers from proxy
+    function isHandler() public returns (bool) { return false; }
 
     // simplifying summaries of certain functions in proxy
     function _parse(

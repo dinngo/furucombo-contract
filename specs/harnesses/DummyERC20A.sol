@@ -6,6 +6,6 @@ import "./DummyERC20Impl.sol";
 contract DummyERC20A is DummyERC20Impl {
 
     function havocMe() external {
-        msg.sender.call("");
+        msg.sender.delegatecall("");
     }
 }
