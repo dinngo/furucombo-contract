@@ -30,7 +30,7 @@ B=2
 handler_file=contracts/handlers/${dir}/${handler}.sol
 
 perl -0777 -i -pe 's/function _revertMsg\(string memory functionName, string memory reason\)\s*internal/function _revertMsg\(string memory functionName, string memory reason\) virtual internal/g' contracts/handlers/HandlerBase.sol
-perl -0777 -i -pe 's/is HandlerBase {/is HandlerBase {
+perl -0777 -i -pe 's/is HandlerBase {\s*using/is HandlerBase {
     function getSlot\(uint s\) external view returns \(uint x\) {
         assembly { x := sload\(s\) }
     }
@@ -44,13 +44,17 @@ perl -0777 -i -pe 's/is HandlerBase {/is HandlerBase {
         view {
             revert();
         }
+
+    using    
 /g' ${handler_file}
 perl -0777 -i -pe 's/SafeERC20.sol/ERC20.sol/g' ${handler_file}
 perl -0777 -i -pe 's/safeA/a/g' ${handler_file}
 perl -0777 -i -pe 's/safeT/t/g' ${handler_file}
+perl -0777 -i -pe 's/address public constant /address public /g' ${handler_file}
 
-certoraRun ${handler_file} contracts/Registry.sol specs/harnesses/DummyERC20A.sol specs/harnesses/ProxyHarness.sol \
+certoraRun ${handler_file} contracts/Registry.sol specs/harnesses/DummyERC20A.sol specs/harnesses/ProxyHarness.sol specs/harnesses/Summary.sol \
     --verify ${handler}:${spec} \
     --settings -assumeUnwindCond,-b=${B} \
     --cache "handler${handler}" \
+    --staging shelly/selectorsInOtherContracts
     --msg "Handler ${handler}"

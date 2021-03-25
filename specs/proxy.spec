@@ -29,15 +29,23 @@ methods {
     balanceOf(address) returns (uint) envfree => DISPATCHER(true)
     totalSupply() returns (uint) envfree => DISPATCHER(true)
 
+    //havocMe() => HAVOC_ECF
+
     // HMaker
     proxies(address) => NONDET
-    execute(address,bytes) => NONDET
+    execute(address,bytes) returns (bytes32) => DISPATCHER(true) // should modify/havoc erc20 balances. The returns part is super important for soundness!
+    gem() => NONDET
 }
 
 definition MAX_UINT256() returns uint256 = 115792089237316195423570985008687907853269984665640564039457584007913129639935
     ;
 
 definition STACK_INCREASE_BOUND() returns uint256 = 1000000 ;    // 1 million
+
+rule sanity(method f) {
+    arbitrary(f);
+    assert false;
+}
 
 // if we start in a clear start state (cache, sender) then we end in a clear start state
 rule startStateCleanup(method f, uint slot) {
@@ -49,6 +57,7 @@ rule startStateCleanup(method f, uint slot) {
 
     // TODO: need to check this on all potential handlers too
     assert oldValue == 0 => newValue == 0, "Start state of $slot not cleaned up";
+    assert false;
 }
 
 // if we start with a slot being non-zero then it should stay non-zero

@@ -3,4 +3,9 @@
 pragma solidity ^0.6.0;
 import "./DummyERC20Impl.sol";
 
-contract DummyERC20A is DummyERC20Impl {}
+contract DummyERC20A is DummyERC20Impl {
+
+    function havocMe() external {
+        msg.sender.call("");
+    }
+}
