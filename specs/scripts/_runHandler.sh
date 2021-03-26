@@ -44,6 +44,10 @@ perl -0777 -i -pe 's/is HandlerBase(, [a-zA-Z0-9]+)* \{\s*using/is HandlerBase\1
     function getSender\(\) public returns \(address\) { return \_getSender\(\); }
     function getCubeCounter\(\) public returns \(uint256\) { return \_getCubeCounter\(\); }
 
+    function ethBalance\(address who\) external view returns \(uint\) {
+        return who.balance;
+    }
+
     \/\/ to distinguish handlers from proxy
     function isHandler\(\) public returns \(bool\) { return true; }
 

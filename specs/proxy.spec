@@ -14,6 +14,7 @@ methods {
     MSG_SENDER_KEY() returns (bytes32) envfree
     CUBE_COUNTER_KEY() returns (bytes32) envfree
     getStackLengthSlot() returns (uint256) envfree
+    ethBalance(address) returns (uint256) envfree
 
     // registry dispatches
     handlers(address) returns (bytes32) envfree => DISPATCHER(true)
@@ -208,6 +209,14 @@ rule approvedTokensAreTemporary(method f, address someAllowed) {
     uint256 allowanceAfter = someToken.allowance(currentContract, someAllowed);
 
     assert allowanceBefore == 0 => allowanceAfter == 0, "Allowances must be nullified";
+}
+
+rule holdNoEth(method f) {
+    require ethBalance(currentContract) == 0;
+
+    arbitrary(f);
+
+    assert ethBalance(currentContract) == 0;
 }
 
 function arbitrary(method f) {

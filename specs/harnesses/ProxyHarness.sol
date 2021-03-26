@@ -23,6 +23,10 @@ contract ProxyHarness is Proxy {
         return stack.length;
     }
 
+    function ethBalance(address who) external view returns (uint) {
+        return who.balance;
+    }
+
     // internal-to-public
     function getSender() public returns (address) { return _getSender(); }
     function getCubeCounter() public returns (uint256) { return _getCubeCounter(); }
