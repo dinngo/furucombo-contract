@@ -160,7 +160,7 @@ rule transferredTokensMeanThatStackIsUpdated(method f) {
 }
 
 rule approvedTokensAreTemporary(method f, address someAllowed) {
-    require someToken.allowance(currentContract, summaryInstance) == 0; // to make sure we're starting clean as implied by approvedTokensAreTemporary
+    require someAllowed == summaryInstance; // narrowing down
     uint256 allowanceBefore = someToken.allowance(currentContract, someAllowed);
 
     arbitrary(f);
