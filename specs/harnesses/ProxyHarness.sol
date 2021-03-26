@@ -13,15 +13,25 @@ contract ProxyHarness is Proxy {
         }
     }
 
+    function getStackLengthSlot() external view returns (uint x) {
+        assembly {
+            x := stack_slot
+        }
+    }
+
     function getStackLength() external view returns (uint) {
         return stack.length;
     }
 
     // internal-to-public
     function getSender() public returns (address) { return _getSender(); }
+    function getCubeCounter() public returns (uint256) { return _getCubeCounter(); }
 
     // to distinguish handlers from proxy
     function isHandler() public returns (bool) { return false; }
+
+    // to align with handlers, but not existing here
+    function postProcess() external { revert(); }
 
     // simplifying summaries of certain functions in proxy
     function _parse(

@@ -8,8 +8,12 @@ methods {
     getSlot(uint slot) returns (uint) envfree
     cache(bytes32) returns (bytes32) envfree
     getSender() returns (address) envfree
+    getCubeCounter() returns (uint256) envfree
     getStackLength() returns (uint256) envfree
     isHandler() returns (bool) envfree
+    MSG_SENDER_KEY() returns (bytes32) envfree
+    CUBE_COUNTER_KEY() returns (bytes32) envfree
+    getStackLengthSlot() returns (uint256) envfree
 
     // registry dispatches
     handlers(address) returns (bytes32) envfree => DISPATCHER(true)
@@ -44,13 +48,27 @@ definition MAX_UINT256() returns uint256 = 1157920892373161954235709850086879078
 
 definition STACK_INCREASE_BOUND() returns uint256 = 1000000 ;    // 1 million
 
+// ghost for checking if we touched the cache
+ghost cacheTouched() returns bool;
+
+hook Sstore cache[KEY bytes32 k] bytes32 value (bytes32 old_value) STORAGE {
+    havoc cacheTouched assuming cacheTouched@new() == cacheTouched@old() || (value != old_value);
+}
+
+rule notTouchingCache(method f) {
+    require !cacheTouched();
+    arbitrary(f);
+    assert !cacheTouched(), "Cache was touched maybe temporarily";
+}
+
+
 // should fail on all functions except maybe fallback.
 rule sanity(method f) {
     arbitrary(f);
     assert false;
 }
 
-// if we start in a clear start state (cache, sender) then we end in a clear start state
+// if we start in a clear start state (flat slots) then we end in a clear start state
 rule startStateCleanup(method f, uint slot) {
     uint oldValue = getSlot(slot);
 
@@ -59,7 +77,7 @@ rule startStateCleanup(method f, uint slot) {
     uint newValue = getSlot(slot);
 
     // slot 0 is stack length, which we ignore because some handlers are pushing entries into the stack
-    assert oldValue == 0 => (newValue == 0 || slot == 0), "Start state of $slot which is not stack length was not cleaned up";
+    assert oldValue == 0 => (newValue == 0 || slot == getStackLengthSlot()), "Start state of $slot which is not stack length was not cleaned up";
 }
 
 // if we start with a slot being non-zero then it should stay non-zero
@@ -72,12 +90,12 @@ rule noOverwrite(method f, uint slot) {
 
     uint newValue = getSlot(slot);
     
-    // slot 0 is stack length, postProcess() may nullify it and it's fine
-    assert oldValue != 0 => (newValue != 0 
-            || (slot == 0 && f.selector == postProcess().selector)), "Slot $slot became 0 during this execution";
+    // slot 0 is stack length, postProcess() may nullify it and it's fine, and execs() can increase it
+    assert oldValue != 0 => (newValue == oldValue 
+            || slot == getStackLengthSlot()), "Slot $slot changd during this execution";
 }
 
-// shows that the stack length increase is bounded. Selecting a reasonable bound gas-wise
+// shows that the stack length increase is bounded. Selecting a reasonable bound gas-wise (and in any case bounded by the number of iterations of the loops)
 rule stackLengthIncreaseIsBounded(method f) {
     uint256 stackLengthBefore = getStackLength();
 
@@ -87,7 +105,29 @@ rule stackLengthIncreaseIsBounded(method f) {
     assert stackLengthAfter <= stackLengthBefore + STACK_INCREASE_BOUND(), "Found a way to increase stack length by more than 1 million";
 }
 
+rule senderIsAlwaysCleanedUp(method f) {
+    address before = getSender();
+
+    arbitrary(f);
+
+    address after = getSender();
+
+    assert before == 0 => after == 0;
+}
+
+rule cubeCounterIsAlwaysCleanedUp(method f) {
+    address before = getCubeCounter();
+
+    arbitrary(f);
+
+    address after = getCubeCounter();
+
+    assert before == 0 => after == 0;
+}
+
 rule cacheIsAlwaysCleanedUp(bytes32 key, method f) {
+    // not cube counter or sender which take part in initialization
+    require key != MSG_SENDER_KEY() && key != CUBE_COUNTER_KEY();
     bytes32 before = cache(key);
 
     arbitrary(f);

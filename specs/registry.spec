@@ -2,7 +2,6 @@ methods {
     handlers(address) returns (bytes32) envfree
     callers(address) returns (bytes32) envfree
     bannedAgents(address) returns (uint256) envfree
-    fHalt() returns (bool) envfree
     owner() returns (address) envfree
 }
 
@@ -87,7 +86,7 @@ rule unregisterCallerIsPermanent2(method f, address caller) {
 }
 
 rule banningIsReversible(address agent, method f) {
-    require owner() != 0; // a reasonable require for the success of the first assert below
+    require owner() != 0;
     env e;
     ban(e, agent);
 
@@ -103,7 +102,7 @@ rule banningIsReversible(address agent, method f) {
 }
 
 rule haltingIsReversible(method f) {
-    require owner() != 0; // a reasonable require for the success of the first assert below
+    require owner() != 0;
     env e;
     halt(e);
 
