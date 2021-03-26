@@ -5,7 +5,14 @@ import "./DummyERC20Impl.sol";
 
 contract DummyERC20A is DummyERC20Impl {
 
-    function havocMe() external {
+    // preserve proxy's balance
+    function havocMe(address proxy) external {
+        uint bal = proxy.balance;
+        msg.sender.delegatecall("");
+        require (bal == proxy.balance);
+    }
+
+    function havocMeEth() external {
         msg.sender.delegatecall("");
     }
 }

@@ -22,7 +22,7 @@ methods {
     bannedAgents(address) returns (uint256) envfree => DISPATCHER(true)
     fHalt() returns (bool) envfree => DISPATCHER(true)
     owner() returns (address) envfree => DISPATCHER(true)
-    isValidCaller(address) returns (bool) => DISPATCHER(true)
+    isValidCaller(address) returns (bool) envfree => DISPATCHER(true)
     isValidHandler(address) returns (bool) => DISPATCHER(true)
 
     // for abstracting exec of handler
@@ -36,12 +36,24 @@ methods {
     balanceOf(address) returns (uint) envfree => DISPATCHER(true)
     totalSupply() returns (uint) envfree => DISPATCHER(true)
 
-    havocMe() => DISPATCHER(true)
+    havocMe(address) => DISPATCHER(true)
+    havocMeEth() => DISPATCHER(true)
 
     // HMaker
     proxies(address) => NONDET
     execute(address,bytes) returns (bytes32) => DISPATCHER(true) // should modify/havoc erc20 balances. The returns part is super important for soundness!
     gem() => NONDET
+
+    // HAaveProtocol
+    getLendingPool() => NONDET
+    getLendingPoolCore() => NONDET
+    getReserveATokenAddress(address) => NONDET
+    deposit(address,uint256,uint16) => DISPATCHER(true)
+    redeem(uint256) => DISPATCHER(true)
+    flashloan(address,address,uint256,bytes) => DISPATCHER(true)
+    
+    // Dispatch if should link our proxy (e.g. flashloan)
+    execs(address[],bytes32[],bytes[]) => DISPATCHER(true)
 }
 
 definition MAX_UINT256() returns uint256 = 115792089237316195423570985008687907853269984665640564039457584007913129639935
@@ -211,12 +223,24 @@ rule approvedTokensAreTemporary(method f, address someAllowed) {
     assert allowanceBefore == 0 => allowanceAfter == 0, "Allowances must be nullified";
 }
 
+// the rule is usually expected to fail, because handler functions are payable.
 rule holdNoEth(method f) {
     require ethBalance(currentContract) == 0;
 
     arbitrary(f);
 
     assert ethBalance(currentContract) == 0;
+}
+
+// the rule is usually expected to fail, because handler functions do not check who calls them (it's usually the sender via the proxy delegatecall).
+rule onlyValidCaller(method f) {
+    env e;
+    bool isGoodCaller = registry.isValidCaller(e.msg.sender);
+    calldataarg arg;
+    f@withrevert(e, arg);
+    bool succeeded = !lastReverted;
+
+    assert !isGoodCaller => !succeeded, "function can be called even if the sender is not an allowed caller";
 }
 
 function arbitrary(method f) {

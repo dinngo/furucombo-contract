@@ -11,7 +11,12 @@ contract Summary {
 
     function havocDummyToken() private {
         if (erc20A.allowance(msg.sender, address(this)) > 0) {
-            erc20A.havocMe();
+            // preserves proxy eth balance if no eth passed
+            if (msg.value == 0) {
+                erc20A.havocMe(msg.sender);
+            } else {
+                erc20A.havocMeEth();
+            }
         } else {
             // simulate receiving tokens
             erc20A.transferFrom(faucet, msg.sender, someAmount);
@@ -27,4 +32,13 @@ contract Summary {
     function deposit(address r, uint a, uint16 c) external payable {
         havocDummyToken();
     }
+
+    function redeem(uint amount) external {
+        havocDummyToken();
+    }
+
+    function flashloan(address receiver, address reserve, uint256 amount, bytes params) external {
+        havocDummyToken();
+    }
+
 }
