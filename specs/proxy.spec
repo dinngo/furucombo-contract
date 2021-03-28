@@ -50,10 +50,24 @@ methods {
     getReserveATokenAddress(address) => NONDET
     deposit(address,uint256,uint16) => DISPATCHER(true)
     redeem(uint256) => DISPATCHER(true)
-    flashloan(address,address,uint256,bytes) => DISPATCHER(true)
-    
+    flashLoan(address,address,uint256,bytes) => DISPATCHER(true)
+    underlyingAssetAddress() => NONDET
+
     // Dispatch if should link our proxy (e.g. flashloan)
     execs(address[],bytes32[],bytes[]) => DISPATCHER(true)
+
+    // HAaveProtocol2
+    borrow(address,uint256,uint256,uint16,address) => DISPATCHER(true)
+    deposit(address,uint256,address,uint16) => DISPATCHER(true)
+    flashLoan(address,address[],uint256[],uint256[],address,bytes,uint16) => DISPATCHER(true)
+    repay(address,uint256,uint256,address) => DISPATCHER(true)
+    withdraw(address,uint256,address) => DISPATCHER(true)
+
+    // WETH
+    withdraw(uint256) => DISPATCHER(true)
+    
+    // No-op for receiving funds without havocs
+    nop() => NONDET
 }
 
 definition MAX_UINT256() returns uint256 = 115792089237316195423570985008687907853269984665640564039457584007913129639935
