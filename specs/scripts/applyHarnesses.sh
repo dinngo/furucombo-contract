@@ -13,3 +13,6 @@ perl -0777 -i -pe 's/require\(newIndex <= 256\);/require\(newIndex <= 2\);/g' sp
 # Temporary internal to public
 #perl -0777 -i -pe 's/internal/public/g' contracts/Proxy.sol
 #perl -0777 -i -pe 's/internal/public/g' specs/harnesses/ProxyHarness.sol
+
+# Append Nothing interface for controlling havocs by transfers
+echo "interface Nothing { function nop() external payable; }" >> contracts/handlers/HandlerBase.sol

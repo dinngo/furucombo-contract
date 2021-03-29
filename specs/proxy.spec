@@ -44,6 +44,9 @@ methods {
     execute(address,bytes) returns (bytes32) => DISPATCHER(true) // should modify/havoc erc20 balances. The returns part is super important for soundness!
     gem() => NONDET
 
+    // HSCompound
+    claimComp(address) => DISPATCHER(true) 
+
     // HAaveProtocol
     getLendingPool() => NONDET
     getLendingPoolCore() => NONDET

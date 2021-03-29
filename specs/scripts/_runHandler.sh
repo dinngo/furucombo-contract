@@ -35,7 +35,6 @@ spec=$3
 
 handler_file=contracts/handlers/${dir}/${handler}.sol
 
-echo "interface Nothing { function nop() external payable; }" >> contracts/handlers/HandlerBase.sol
 perl -0777 -i -pe 's/function _revertMsg\(string memory functionName, string memory reason\)\s*internal/function _revertMsg\(string memory functionName, string memory reason\) virtual internal/g' contracts/handlers/HandlerBase.sol
 perl -0777 -i -pe 's/is HandlerBase(, [a-zA-Z0-9]+)* \{\s*using/is HandlerBase\1 {
     function getSlot\(uint s\) external view returns \(uint x\) {
