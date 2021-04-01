@@ -42,6 +42,8 @@ methods {
     summaryInstance.lenDelegated() returns (uint256) envfree
     summaryInstance.checkDelegated(address) returns (bool) envfree
 
+    execute(address,bytes) returns (bytes32) => DISPATCHER(true) // should modify/havoc erc20 balances. The returns part is super important for soundness!
+
     // HSCompound
     claimComp(address) => DISPATCHER(true) 
     FCOMPOUND_ACTIONS() returns (address) envfree

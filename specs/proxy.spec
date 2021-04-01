@@ -41,8 +41,9 @@ methods {
 
     // HMaker
     proxies(address) => NONDET
-    execute(address,bytes) returns (bytes32) => DISPATCHER(true) // should modify/havoc erc20 balances. The returns part is super important for soundness!
     gem() => NONDET
+    // also HSCompound
+    execute(address,bytes) returns (bytes32) => DISPATCHER(true) // should modify/havoc erc20 balances. The returns part is super important for soundness!
 
     // HSCompound
     claimComp(address) => DISPATCHER(true) 
@@ -68,6 +69,9 @@ methods {
 
     // WETH
     withdraw(uint256) => DISPATCHER(true)
+
+    // HOneInchExchange
+    swap(address,(address,address,address,address,uint256,uint256,uint256,uint256,address,bytes),(uint256,uint256,uint256,bytes)[]) => DISPATCHER(true)
     
     // No-op for receiving funds without havocs
     nop() => NONDET

@@ -1,4 +1,7 @@
+pragma experimental ABIEncoderV2;
+
 import "./DummyERC20A.sol";
+
 
 interface Nothing {
     function nop() external payable;
@@ -40,6 +43,7 @@ contract Summary {
 
         return true;
     }
+
     function execute(address a, bytes calldata b) external payable returns (bytes32) {
         delegated.push(a);
         havocDummyToken();
@@ -122,5 +126,30 @@ contract Summary {
     // IWETH9
     function withdraw(uint256 amt) external {
         Nothing(msg.sender).nop{value:amt}();
+    }
+
+    // HOneInchExchange
+    struct SwapDescription {
+        address srcToken;
+        address dstToken;
+        address srcReceiver;
+        address dstReceiver;
+        uint256 amount;
+        uint256 minReturnAmount;
+        uint256 guaranteedAmount;
+        uint256 flags;
+        address referrer;
+        bytes permit;
+    }
+    struct CallDescription {
+        uint256 targetWithMandatory;
+        uint256 gasLimit;
+        uint256 value;
+        bytes data;
+    }
+
+    function swap(address a, SwapDescription memory sd, CallDescription[] calldata cd) external returns (uint256) {
+        havocDummyToken();
+        return executeRetUint256;
     }
 }

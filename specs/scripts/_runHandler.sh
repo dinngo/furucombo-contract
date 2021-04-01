@@ -71,8 +71,14 @@ perl -0777 -i -pe 's/safeT/t/g' ${handler_file}
 perl -0777 -i -pe 's/address public constant /address public /g' ${handler_file}
 perl -0777 -i -pe 's/address payable public constant / address payable public /g' ${handler_file}
 perl -0777 -i -pe 's/dsProxyPayable.transfer\(amount\)/Nothing\(dsProxyPayable\).nop{value:amount}\(\)/g' ${handler_file}
+
+# handler specific
+perl -0777 -i -pe 's/function repay\(/function unique_repay\(/g' contracts/handlers/aavev2/HAaveProtocolV2.sol
+perl -0777 -i -pe 's/function claimComp\(/function unique_claimComp\(/g' contracts/handlers/compound/HSCompound.sol
+perl -0777 -i -pe 's/receiver.transfer\(amount\)/Nothing\(receiver\).nop{value:amount}\(\)/g' contracts/handlers/funds/HFunds.sol
+
 certoraRun ${handler_file} contracts/Registry.sol specs/harnesses/DummyERC20A.sol specs/harnesses/ProxyHarness.sol specs/harnesses/Summary.sol \
     --verify ${handler}:${spec} \
-    --settings -assumeUnwindCond,-b=${B},-ciMode=true \
+    --settings -assumeUnwindCond,-b=${B} \
     --cache "handler${handler}" \
-    --msg "Handler ${handler}" --staging
+    --staging shelly/furucomboTypeRewriterIssue --msg "Handler ${handler}" --javaArgs '"-Dtopic.tac.type.checker -Dtopic.function.builder -Dtopic.decompiler"'
