@@ -268,6 +268,7 @@ rule tokenMovementCorrectness(method f) {
     
     env e;
     require e.msg.sender != 0; // 0 is reserved for minting/burning so we exclude it.
+    require e.msg.sender != summaryInstance; // presumably, the DeFi protocol cannot invoke itself (Flashloan risk!)
     calldataarg arg;
     f(e, arg);
 
@@ -287,12 +288,14 @@ rule tokenMovementCorrectness(method f) {
 rule noOtherPartyModified(method f, address somebody) {
     require somebody != currentContract;
     require somebody != summaryInstance;
+    require somebody != 0; // 0 is reserved for minting/burning so we exclude it.
 
     uint origTokenABalance = someToken.balanceOf(somebody);
     uint origTokenBBalance = someToken2.balanceOf(somebody);
 
     env e;
     require e.msg.sender != 0; // 0 is reserved for minting/burning so we exclude it.
+    require e.msg.sender != summaryInstance; // presumably, the DeFi protocol cannot invoke itself (Flashloan risk!)
     calldataarg arg;
     f(e, arg);
 
