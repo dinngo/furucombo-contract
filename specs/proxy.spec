@@ -40,11 +40,16 @@ methods {
     havocMe(address) => DISPATCHER(true)
     havocMeEth() => DISPATCHER(true)
 
+    ETH_ADDRESS() returns (address) => DISPATCHER(true)
+
     // Summary correctness
     summaryInstance.consumedToken() returns (address) envfree
     summaryInstance.generatedToken() returns (address) envfree
     summaryInstance.shouldBeConsumedAmount() returns (uint) envfree
     summaryInstance.getBalance(address,address) returns (uint) envfree
+    summaryInstance.erc20A() returns (address) envfree
+    summaryInstance.erc20B() returns (address) envfree
+    summaryInstance.getEthAddress(address) returns (address) envfree
 
     // HMaker
     proxies(address) => NONDET
@@ -226,6 +231,7 @@ nonExecutableWithInitializedSender(method f) {
 
 // small havoc issue in batchExec, but getting coverage from execs() too.
 rule transferredTokensMeanThatStackIsUpdated(method f) {
+    require summaryInstance.getEthAddress(currentContract) != someToken; // not an eth transfer
     require someToken.allowance(currentContract, summaryInstance) == 0; // to make sure we're starting clean as implied by approvedTokensAreTemporary
     uint256 balanceBefore = someToken.balanceOf(currentContract);
     uint256 stackLengthBefore = getStackLength();
@@ -236,8 +242,8 @@ rule transferredTokensMeanThatStackIsUpdated(method f) {
     uint256 balanceAfter = someToken.balanceOf(currentContract);
     uint256 stackLengthAfter = getStackLength();
 
-    assert balanceAfter > balanceBefore => stackLengthAfter > stackLengthBefore, 
-        "must push an entry to postprocess stack if transferring funds into proxy";
+    assert (balanceAfter > balanceBefore) => stackLengthAfter > stackLengthBefore, 
+        "must push an entry to postprocess stack if transferring funds into proxy which are not eth";
 }
 
 rule approvedTokensAreTemporary(method f, address someAllowed) {
@@ -256,19 +262,42 @@ rule approvedTokensAreTemporary(method f, address someAllowed) {
  */
 rule tokenMovementCorrectness(method f) {
     storage initialStorage = lastStorage;
+    require summaryInstance.consumedToken() == 0;
+    require summaryInstance.generatedToken() == 0;
+    require summaryInstance.erc20A() != summaryInstance.erc20B();
     
-    arbitrary(f);
+    env e;
+    require e.msg.sender != 0; // 0 is reserved for minting/burning so we exclude it.
+    calldataarg arg;
+    f(e, arg);
 
-    address consumed = consumedToken();
-    address generated = generatedToken();
-    uint updatedConsumedTokenBalance = getBalance(consumed, currentContract);
-    uint updatedGeneratedTokenBalance = getBalance(generated, currentContract);
-    uint expectedConsumedAmount = shouldBeConsumedAmount();
-    uint origConsumedTokenBalance = getBalance(consumed, currentContract) at initialStorage;
-    uint origGeneratedTokenBalance = getBalance(generated, currentContract);
+    address consumed = summaryInstance.consumedToken();
+    address generated = summaryInstance.generatedToken();
+    uint updatedConsumedTokenBalance = summaryInstance.getBalance(consumed, currentContract);
+    uint updatedGeneratedTokenBalance = summaryInstance.getBalance(generated, currentContract);
+    uint expectedConsumedAmount = summaryInstance.shouldBeConsumedAmount();
+    uint origConsumedTokenBalance = summaryInstance.getBalance(consumed, currentContract) at initialStorage;
+    uint origGeneratedTokenBalance = summaryInstance.getBalance(generated, currentContract);
+
     assert consumed != 0 => updatedConsumedTokenBalance == origConsumedTokenBalance - expectedConsumedAmount, "If there is a consumed token, should have consumed exactly the amount";
     assert (expectedConsumedAmount > 0 && generated != 0) => updatedGeneratedTokenBalance > origGeneratedTokenBalance, 
         "If consumed positive amount and expected to generate an amount, then should have generated a positive amount";
+}
+
+rule noOtherPartyModified(method f, address somebody) {
+    require somebody != currentContract;
+    require somebody != summaryInstance;
+
+    uint origTokenABalance = someToken.balanceOf(somebody);
+    uint origTokenBBalance = someToken2.balanceOf(somebody);
+
+    env e;
+    require e.msg.sender != 0; // 0 is reserved for minting/burning so we exclude it.
+    calldataarg arg;
+    f(e, arg);
+
+    assert someToken.balanceOf(somebody) == origTokenABalance 
+        && someToken2.balanceOf(somebody) == origTokenBBalance;
 }
 
 /*

@@ -72,13 +72,20 @@ perl -0777 -i -pe 's/address public constant /address public /g' ${handler_file}
 perl -0777 -i -pe 's/address payable public constant / address payable public /g' ${handler_file}
 perl -0777 -i -pe 's/dsProxyPayable.transfer\(amount\)/Nothing\(dsProxyPayable\).nop{value:amount}\(\)/g' ${handler_file}
 
+# It is so nice when ETH_ADDRESS is uniformly defined
+perl -0777 -i -pe 's/address constant ETHADDRESS/address public constant ETHADDRESS/g' contracts/handlers/aave/FlashLoanReceiverBase.sol
+perl -0777 -i -pe 's/ETHADDRESS/ETH_ADDRESS/g' contracts/handlers/aave/FlashLoanReceiverBase.sol
+perl -0777 -i -pe 's/ETHADDRESS/ETH_ADDRESS/g' contracts/handlers/aave/HAaveProtocol.sol
+perl -0777 -i -pe 's/ETHADDRESS/ETH_ADDRESS/g' contracts/handlers/aavev2/HAaveProtocolV2.sol
+
 # handler specific
 perl -0777 -i -pe 's/function repay\(/function unique_repay\(/g' contracts/handlers/aavev2/HAaveProtocolV2.sol
 perl -0777 -i -pe 's/function claimComp\(/function unique_claimComp\(/g' contracts/handlers/compound/HSCompound.sol
+perl -0777 -i -pe 's/function swap\(/function unique_swap\(/g' contracts/handlers/oneinchV2/HOneInchExchange.sol
 perl -0777 -i -pe 's/receiver.transfer\(amount\)/Nothing\(receiver\).nop{value:amount}\(\)/g' contracts/handlers/funds/HFunds.sol
 
 certoraRun ${handler_file} contracts/Registry.sol specs/harnesses/DummyERC20A.sol specs/harnesses/DummyERC20B.sol specs/harnesses/ProxyHarness.sol specs/harnesses/Summary.sol \
     --verify ${handler}:${spec} \
-    --settings -assumeUnwindCond,-b=${B} \
+    --settings -assumeUnwindCond,-b=${B},-ciMode=true \
     --cache "handler${handler}" \
-    --staging shelly/furucomboTypeRewriterIssue --msg "Handler ${handler}" --javaArgs '"-Dtopic.tac.type.checker -Dtopic.function.builder -Dtopic.decompiler"'
+    --staging shelly/furucomboTypeRewriterIssue --msg "Handler ${handler}" #--javaArgs '"-Dtopic.tac.type.checker -Dtopic.function.builder -Dtopic.decompiler"'
