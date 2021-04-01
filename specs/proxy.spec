@@ -1,5 +1,6 @@
 using Registry as registry
 using DummyERC20A as someToken
+using DummyERC20B as someToken2
 using ProxyHarness as proxy // may also be the same as currentContract
 using Summary as summaryInstance // general summary for DeFi protocols
 
@@ -38,6 +39,12 @@ methods {
 
     havocMe(address) => DISPATCHER(true)
     havocMeEth() => DISPATCHER(true)
+
+    // Summary correctness
+    summaryInstance.consumedToken() returns (address) envfree
+    summaryInstance.generatedToken() returns (address) envfree
+    summaryInstance.shouldBeConsumedAmount() returns (uint) envfree
+    summaryInstance.getBalance(address,address) returns (uint) envfree
 
     // HMaker
     proxies(address) => NONDET
@@ -244,6 +251,27 @@ rule approvedTokensAreTemporary(method f, address someAllowed) {
     assert allowanceBefore == 0 => allowanceAfter == 0, "Allowances must be nullified";
 }
 
+/*
+    Each summary function will set a field describing if the results are as expected.
+ */
+rule tokenMovementCorrectness(method f) {
+    storage initialStorage = lastStorage;
+    
+    arbitrary(f);
+
+    address consumed = consumedToken();
+    address generated = generatedToken();
+    uint updatedConsumedTokenBalance = getBalance(consumed, currentContract);
+    uint updatedGeneratedTokenBalance = getBalance(generated, currentContract);
+    uint expectedConsumedAmount = shouldBeConsumedAmount();
+    uint origConsumedTokenBalance = getBalance(consumed, currentContract) at initialStorage;
+    uint origGeneratedTokenBalance = getBalance(generated, currentContract);
+    assert consumed != 0 => updatedConsumedTokenBalance == origConsumedTokenBalance - expectedConsumedAmount, "If there is a consumed token, should have consumed exactly the amount";
+    assert (expectedConsumedAmount > 0 && generated != 0) => updatedGeneratedTokenBalance > origGeneratedTokenBalance, 
+        "If consumed positive amount and expected to generate an amount, then should have generated a positive amount";
+}
+
+/*
 // the rule is usually expected to fail, because handler functions are payable.
 rule holdNoEth(method f) {
     require ethBalance(currentContract) == 0;
@@ -263,6 +291,7 @@ rule onlyValidCaller(method f) {
 
     assert !isGoodCaller => !succeeded, "function can be called even if the sender is not an allowed caller";
 }
+*/
 
 function arbitrary(method f) {
     env e__;

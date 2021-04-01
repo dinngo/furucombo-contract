@@ -2,6 +2,12 @@ pragma experimental ABIEncoderV2;
 
 import "./DummyERC20A.sol";
 
+interface IERC20WithDummyFunctionality {
+    function transfer(address to, uint amt);
+    function transferFrom(address from, address to, uint amt);
+    function havocMe(address proxy);
+    function havocMeEth();
+}
 
 interface Nothing {
     function nop() external payable;
@@ -10,7 +16,8 @@ interface Nothing {
 // used to summarize different functions
 contract Summary {
 
-    DummyERC20A erc20A;
+    IERC20 erc20A;
+    IERC20 erc20B;
     bytes32 executeRet;
     uint256 executeRetUint256;
 
@@ -148,8 +155,17 @@ contract Summary {
         bytes data;
     }
 
-    function swap(address a, SwapDescription memory sd, CallDescription[] calldata cd) external returns (uint256) {
-        havocDummyToken();
+    function swap(address a, SwapDescription memory desc, CallDescription[] calldata cd) external returns (uint256) {
+        consumedToken = desc.srcToken;
+        generatedToken = desc.dstToken;
+        shouldBeConsumedAmount = desc.amount;
+        desc.srcToken.transferFrom(msg.sender, address(this), desc.amount);
+        desc.dstToken.transfer(msg.sender, someAmount);
         return executeRetUint256;
     }
+
+    address public consumedToken;
+    address public generatedToken;
+    uint public shouldBeConsumedAmount;
+    function getBalance(address token, address who) public returns (uint) { return token.balanceOf(who); }
 }
