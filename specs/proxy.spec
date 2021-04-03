@@ -40,7 +40,7 @@ methods {
     havocMe(address) => DISPATCHER(true)
     havocMeEth() => DISPATCHER(true)
 
-    ETH_ADDRESS() returns (address) => DISPATCHER(true)
+    ETH_ADDRESS() returns (address) => DISPATCHER(false)
 
     // Summary correctness
     summaryInstance.consumedToken() returns (address) envfree
@@ -56,7 +56,9 @@ methods {
     gem() => NONDET
     // also HSCompound
     execute(address,bytes) returns (bytes32) => DISPATCHER(true) // should modify/havoc erc20 balances. The returns part is super important for soundness!
-
+    freeETH(address cdpManager,address ethJoin,uint256 cdp,uint256 wad) => DISPATCHER(true)
+    freeGem(address cdpManager,address gemJoin,uint256 cdp,uint256 wad) => DISPATCHER(true)
+    
     // HSCompound
     claimComp(address) => DISPATCHER(true) 
 
@@ -81,6 +83,134 @@ methods {
 
     // WETH
     withdraw(uint256) => DISPATCHER(true)
+    deposit() => DISPATCHER(true);
+
+    // HUniswap
+    addLiquidity(uint256,uint256,uint256) => DISPATCHER(true)
+    removeLiquidity(uint256,uint256,uint256,uint256) => DISPATCHER(true)
+    ethToTokenSwapInput(uint256,uint256) => DISPATCHER(true)
+    ethToTokenSwapOutput(uint256,uint256) => DISPATCHER(true)
+    tokenToEthSwapInput(uint256,uint256,uint256) => DISPATCHER(true)
+    tokenToEthSwapOutput(uint256,uint256,uint256) => DISPATCHER(true)
+    tokenToTokenSwapInput(uint256,uint256,uint256,uint256,address) => DISPATCHER(true)
+    tokenToTokenSwapOutput(uint256,uint256,uint256,uint256,address) => DISPATCHER(true)
+
+    getExchange(address) => NONDET
+
+    // HUniswapV2
+    addLiquidity(
+        address tokenA,
+        address tokenB,
+        uint256 amountADesired,
+        uint256 amountBDesired,
+        uint256 amountAMin,
+        uint256 amountBMin,
+        address to,
+        uint256 deadline
+    ) => DISPATCHER(true)
+
+    addLiquidityETH(
+        address token,
+        uint256 amountTokenDesired,
+        uint256 amountTokenMin,
+        uint256 amountETHMin,
+        address to,
+        uint256 deadline
+    ) => DISPATCHER(true)
+
+    removeLiquidity(
+        address tokenA,
+        address tokenB,
+        uint256 liquidity,
+        uint256 amountAMin,
+        uint256 amountBMin,
+        address to,
+        uint256 deadline
+    ) => DISPATCHER(true)
+
+    removeLiquidityETH(
+        address token,
+        uint256 liquidity,
+        uint256 amountTokenMin,
+        uint256 amountETHMin,
+        address to,
+        uint256 deadline
+    ) => DISPATCHER(true)
+
+    swapExactTokensForTokens(
+        uint256 amountIn,
+        uint256 amountOutMin,
+        address[] path,
+        address to,
+        uint256 deadline
+    ) => DISPATCHER(true)
+
+    swapTokensForExactTokens(
+        uint256 amountOut,
+        uint256 amountInMax,
+        address[] path,
+        address to,
+        uint256 deadline
+    ) => DISPATCHER(true)
+
+    swapExactETHForTokens(
+        uint256 amountOutMin,
+        address[] path,
+        address to,
+        uint256 deadline
+    ) => DISPATCHER(true)
+
+    swapTokensForExactETH(
+        uint256 amountOut,
+        uint256 amountInMax,
+        address[] path,
+        address to,
+        uint256 deadline
+    ) => DISPATCHER(true)
+
+    swapExactTokensForETH(
+        uint256 amountIn,
+        uint256 amountOutMin,
+        address[] path,
+        address to,
+        uint256 deadline
+    ) => DISPATCHER(true)
+
+    swapETHForExactTokens(
+        uint256 amountOut,
+        address[] path,
+        address to,
+        uint256 deadline
+    ) => DISPATCHER(true)
+
+    factory() => NONDET
+    WETH() => NONDET
+
+    // HKyberNetwork
+    swapTokenToToken(address src, uint srcAmount, address dest, uint minConversionRate) 
+        => DISPATCHER(true)
+    swapEtherToToken(address token, uint minConversionRate)
+        => DISPATCHER(true)
+    swapTokenToEther(address token, uint srcAmount, uint minConversionRate)
+        => DISPATCHER(true)
+
+    // HBalancer
+    exitPool(uint256 poolAmountIn, uint256[] minAmountsOut)
+        => DISPATCHER(true)
+    exitswapPoolAmountIn(address tokenOut, uint256 poolAmountIn, uint256 minAmountOut)
+        => DISPATCHER(true)
+
+    // HGasTokens
+    freeFromUpTo(address,uint256) => DISPATCHER(true)
+
+    // HMooniswap
+    deposit(uint256[] amounts, uint256[] minAmounts) returns(uint256)
+        => DISPATCHER(true)
+    withdraw(uint256 amount, uint256[] minReturns)
+        => DISPATCHER(true)
+    getTokens() => DISPATCHER(true)
+    
+    pools(address, address) => NONDET
 
     // HOneInchExchange
     swap(address,(address,address,address,address,uint256,uint256,uint256,uint256,address,bytes),(uint256,uint256,uint256,bytes)[]) => DISPATCHER(true)
@@ -241,7 +371,7 @@ rule transferredTokensMeanThatStackIsUpdated(method f) {
 
     uint256 balanceAfter = someToken.balanceOf(currentContract);
     uint256 stackLengthAfter = getStackLength();
-
+    
     assert (balanceAfter > balanceBefore) => stackLengthAfter > stackLengthBefore, 
         "must push an entry to postprocess stack if transferring funds into proxy which are not eth";
 }

@@ -36,7 +36,7 @@ spec=$3
 handler_file=contracts/handlers/${dir}/${handler}.sol
 
 perl -0777 -i -pe 's/function _revertMsg\(string memory functionName, string memory reason\)\s*internal/function _revertMsg\(string memory functionName, string memory reason\) virtual internal/g' contracts/handlers/HandlerBase.sol
-perl -0777 -i -pe 's/is HandlerBase(, [a-zA-Z0-9]+)* \{\s*using/is HandlerBase\1 {
+perl -0777 -i -pe 's/is HandlerBase(, [a-zA-Z0-9]+)* \{/is   HandlerBase\1 {
     function getSlot\(uint s\) external view returns \(uint x\) {
         assembly { x := sload\(s\) }
     }
@@ -63,7 +63,6 @@ perl -0777 -i -pe 's/is HandlerBase(, [a-zA-Z0-9]+)* \{\s*using/is HandlerBase\1
             revert();
         }
 
-    using    
 /g' ${handler_file}
 perl -0777 -i -pe 's/SafeERC20.sol/ERC20.sol/g' ${handler_file}
 perl -0777 -i -pe 's/safeA/a/g' ${handler_file}
@@ -81,11 +80,19 @@ perl -0777 -i -pe 's/ETHADDRESS/ETH_ADDRESS/g' contracts/handlers/aavev2/HAavePr
 # handler specific
 perl -0777 -i -pe 's/function repay\(/function unique_repay\(/g' contracts/handlers/aavev2/HAaveProtocolV2.sol
 perl -0777 -i -pe 's/function claimComp\(/function unique_claimComp\(/g' contracts/handlers/compound/HSCompound.sol
+perl -0777 -i -pe 's/function claimComp\(/function unique_claimComp\(/g' contracts/handlers/compound/HComptroller.sol
 perl -0777 -i -pe 's/function swap\(/function unique_swap\(/g' contracts/handlers/oneinchV2/HOneInchExchange.sol
+perl -0777 -i -pe 's/function withdraw\(/function unique_withdraw\(/g' contracts/handlers/weth/HWeth.sol
+perl -0777 -i -pe 's/function deposit\(/function unique_deposit\(/g' contracts/handlers/weth/HWeth.sol
+perl -0777 -i -pe 's/function swap/function unique_swap/g' contracts/handlers/kybernetwork/HKyberNetwork.sol
 perl -0777 -i -pe 's/receiver.transfer\(amount\)/Nothing\(receiver\).nop{value:amount}\(\)/g' contracts/handlers/funds/HFunds.sol
+
+# add ABIEncoderV2 to HMooniswap
+perl -0777 -i -pe 's/pragma solidity/pragma experimental ABIEncoderV2; pragma  solidity/g' contracts/handlers/mooniswap/HMooniswap.sol
 
 certoraRun ${handler_file} contracts/Registry.sol specs/harnesses/DummyERC20A.sol specs/harnesses/DummyERC20B.sol specs/harnesses/ProxyHarness.sol specs/harnesses/Summary.sol \
     --verify ${handler}:${spec} \
     --settings -assumeUnwindCond,-b=${B},-ciMode=true \
     --cache "handler${handler}" \
-    --staging shelly/furucomboTypeRewriterIssue --msg "Handler ${handler}" #--javaArgs '"-Dtopic.tac.type.checker -Dtopic.function.builder -Dtopic.decompiler"'
+    --msg "Handler ${handler}" #--staging shelly/furucomboTypeRewriterIssue
+    #--javaArgs '"-Dtopic.tac.type.checker -Dtopic.function.builder -Dtopic.decompiler"'
