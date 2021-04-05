@@ -41,6 +41,7 @@ methods {
     havocMeEth() => DISPATCHER(true)
 
     ETH_ADDRESS() returns (address) => DISPATCHER(false)
+    WETH() returns (address) => DISPATCHER(false)
 
     // Summary correctness
     summaryInstance.consumedToken() returns (address) envfree
@@ -80,6 +81,7 @@ methods {
     flashLoan(address,address[],uint256[],uint256[],address,bytes,uint16) => DISPATCHER(true)
     repay(address,uint256,uint256,address) => DISPATCHER(true)
     withdraw(address,uint256,address) => DISPATCHER(true)
+    getReserveData(address) => NONDET
 
     // WETH
     withdraw(uint256) => DISPATCHER(true)
@@ -184,8 +186,7 @@ methods {
     ) => DISPATCHER(true)
 
     factory() => NONDET
-    WETH() => NONDET
-
+    
     // HKyberNetwork
     swapTokenToToken(address src, uint srcAmount, address dest, uint minConversionRate) 
         => DISPATCHER(true)
@@ -215,6 +216,27 @@ methods {
     // HOneInchExchange
     swap(address,(address,address,address,address,uint256,uint256,uint256,uint256,address,bytes),(uint256,uint256,uint256,bytes)[]) => DISPATCHER(true)
     
+    // HStakingRewardsToken
+    stakingToken() => DISPATCHER(true)
+    rewardsToken() => DISPATCHER(true)
+    stakeFor(address account, uint256 amount) => DISPATCHER(true)
+    withdrawFor(address account, uint256 amount) => DISPATCHER(true)
+    getRewardFor(address account) => DISPATCHER(true)
+    exitFor(address account) => DISPATCHER(true)
+    isValid(address) => NONDET
+
+    // HFurucomboStaking
+    unstakeFor(address account, uint256 amount) => DISPATCHER(true)
+    claimWeeks(address,(uint256,uint256,bytes32[])[]) => DISPATCHER(true)
+
+    // HCToken, HCEther
+    mint(uint256) => DISPATCHER(true)
+    compoundredeem(uint256) => DISPATCHER(true)
+    redeemUnderlying(uint256) => DISPATCHER(true)
+    repayBorrowBehalf(address,uint256) => DISPATCHER(true)
+    borrowBalanceCurrent(address) => DISPATCHER(true)
+    underlying() => NONDET
+
     // No-op for receiving funds without havocs
     nop() => NONDET
 }

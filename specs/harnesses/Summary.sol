@@ -17,6 +17,7 @@ interface Nothing {
 
 interface WithEthAddress {
     function ETH_ADDRESS() external returns (address);
+    function WETH() external returns (address);
 }
 
 interface IMakerGemJoin {
@@ -36,6 +37,19 @@ contract Summary {
         }
         return eth;
     }
+
+    address nondetWeth;
+    function getWethAddress(address handler) public returns (address) {
+        // either the handler defines a ETH_ADDRESS function or it does not. If it does not then just return address(0)
+        address eth = nondetWeth;
+        try WithEthAddress(handler).WETH() returns (address x) {
+            eth = x;
+        } catch {
+            eth = nondetWeth;
+        }
+        return eth;
+    }
+
 
     IERC20WithDummyFunctionality public erc20A;
     IERC20WithDummyFunctionality public erc20B;
@@ -141,7 +155,7 @@ contract Summary {
         address onBehalfOf
     ) external {
         generatedToken = asset;
-        IERC20WithDummyFunctionality(asset).transfer(msg.sender, amount);
+        IERC20WithDummyFunctionality(asset).transfer(onBehalfOf, amount);
     }
 
     function deposit(
@@ -150,10 +164,14 @@ contract Summary {
         address onBehalfOf,
         uint16 referralCode
     ) external {
-        consumedToken = asset;
+        // if asset is WETH then don't track consumed tokens (will be incremented by WETH deposit and decremented here)
+        if (getWethAddress(msg.sender) != asset) {
+            consumedToken = asset;
+            shouldBeConsumedAmount = amount;
+        }
         require (asset == address(erc20A));
         generatedToken = address(erc20B);
-        IERC20WithDummyFunctionality(asset).transferFrom(msg.sender, address(this), amount);
+        IERC20WithDummyFunctionality(asset).transferFrom(onBehalfOf, address(this), amount);
         erc20B.transferFrom(address(0), msg.sender, amount); // "minting"
     }
 
@@ -175,7 +193,10 @@ contract Summary {
         uint256 rateMode,
         address onBehalfOf
     ) external returns (uint256) {
-        erc20A.transferFrom(onBehalfOf,address(this),amount);
+        consumedToken = address(erc20A);
+        shouldBeConsumedAmount = executeRetUint256; // could be less
+        require (executeRetUint256 <= amount);
+        erc20A.transferFrom(onBehalfOf,address(this),executeRetUint256);
         return executeRetUint256;
     }
 
@@ -184,7 +205,12 @@ contract Summary {
         uint256 amount,
         address to
     ) external returns (uint256) {
-        havocDummyToken();
+        require (asset == address(erc20A));
+        consumedToken = address(erc20B);
+        shouldBeConsumedAmount = amount;
+        generatedToken = address(erc20A);
+        erc20B.transferFrom(msg.sender, address(0), amount);
+        erc20A.transfer(msg.sender, amount);
         return executeRetUint256;
     }
 
@@ -601,6 +627,110 @@ contract Summary {
         ret[1] = address(erc20B);
         return ret;
     }
+
+    // HStakingRewardsAdapter, partially HFurucomboStaking
+    function stakingToken() external view returns (address) {
+        return address(erc20A);
+    }
+    function rewardsToken() external view returns (address) {
+        return address(erc20B);   
+    }
+    function stakeFor(address account, uint256 amount) external {
+        consumedToken = address(erc20A);
+        shouldBeConsumedAmount = amount;
+        erc20A.transferFrom(account, address(this), amount);
+    }
+    function withdrawFor(address account, uint256 amount) external {
+        generatedToken = address(erc20A);
+        erc20A.transfer(account, amount);
+    }
+    function getRewardFor(address account) external {
+        generatedToken = address(erc20B);
+        erc20B.transfer(msg.sender, someAmount);
+    }
+    function exitFor(address account) external {
+        generatedToken = address(erc20A);
+        erc20A.transfer(msg.sender, someAmount);
+    }
+
+    // HFurucomboStaking
+    function unstakeFor(address account, uint256 amount) external {
+        generatedToken = address(erc20A);
+        erc20A.transfer(account, amount);
+    }
+    struct Claim {
+        uint256 week;
+        uint256 balance;
+        bytes32[] merkleProof;
+    }
+    function claimWeeks(address user, Claim[] calldata claim) external {
+        havocDummyToken();
+    }
+
+    // HCToken
+    // underlying is ERC20A
+    function mint(uint256 mintAmount) external returns (uint256) {
+        require (address(erc20A) != address(this)); // underlying != cToken by comptroller
+        consumedToken = address(erc20A);
+        shouldBeConsumedAmount = mintAmount;
+        generatedToken = address(this);
+        uint rc;
+        if ((mintAmount == 0 && someAmount == 0) || (mintAmount > 0 && someAmount > 0)) {
+            rc = 0;
+            erc20A.transferFrom(msg.sender, address(this), mintAmount);
+            transferFrom(address(0), msg.sender, someAmount);
+        } else {
+            rc = 1;
+        }
+        return rc;
+    }
+
+    function compoundredeem(uint256 redeemTokens) external returns (uint256) {
+        require (address(erc20A) != address(this)); // underlying != cToken by comptroller
+        consumedToken = address(this);
+        shouldBeConsumedAmount = redeemTokens;
+        generatedToken = address(erc20A);
+        uint rc;
+        if ((redeemTokens == 0 && someAmount == 0) || (redeemTokens > 0 && someAmount > 0)) {
+            rc = 0;
+            transferFrom(msg.sender, address(0), redeemTokens);
+            erc20A.transfer(msg.sender, someAmount);
+        } else {
+            rc = 1;
+        }
+        return rc;
+    }
+    function redeemUnderlying(uint256 redeemAmount) external returns (uint256) {
+        require (address(erc20A) != address(this)); // underlying != cToken by comptroller
+        consumedToken = address(this);
+        shouldBeConsumedAmount = someAmount;
+        generatedToken = address(erc20A);
+        uint rc;
+        if ((redeemAmount == 0 && someAmount == 0) || (redeemAmount > 0 && someAmount > 0)) {
+            rc = 0;
+            transferFrom(msg.sender, address(0), someAmount);
+            erc20A.transfer(msg.sender, redeemAmount);
+        } else {
+            rc = 1;
+        }
+        return rc;
+    }
+    function repayBorrowBehalf(address borrower, uint256 debt) external returns (uint256) {
+        require (address(erc20A) != address(this)); // underlying != cToken by comptroller
+        consumedToken = address(erc20A);
+        uint pay = debt;
+        shouldBeConsumedAmount = pay;
+        erc20A.transferFrom(msg.sender, address(this), pay);
+        compoundDebt[borrower] = sub(compoundDebt[borrower],pay);
+        return 0;
+    }
+    mapping (address => uint256) compoundDebt;
+    uint interest;
+    function borrowBalanceCurrent(address borrower) external returns (uint256) {
+        compoundDebt[borrower] = add(compoundDebt[borrower],interest);
+        return compoundDebt[borrower];
+    }
+
 
     address public consumedToken;
     address public generatedToken;

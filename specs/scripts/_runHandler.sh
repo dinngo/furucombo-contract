@@ -85,14 +85,21 @@ perl -0777 -i -pe 's/function swap\(/function unique_swap\(/g' contracts/handler
 perl -0777 -i -pe 's/function withdraw\(/function unique_withdraw\(/g' contracts/handlers/weth/HWeth.sol
 perl -0777 -i -pe 's/function deposit\(/function unique_deposit\(/g' contracts/handlers/weth/HWeth.sol
 perl -0777 -i -pe 's/function swap/function unique_swap/g' contracts/handlers/kybernetwork/HKyberNetwork.sol
+perl -0777 -i -pe 's/function redeemUnderlying/function unique_redeemUnderlying/g' contracts/handlers/compound/HCEther.sol
 perl -0777 -i -pe 's/receiver.transfer\(amount\)/Nothing\(receiver\).nop{value:amount}\(\)/g' contracts/handlers/funds/HFunds.sol
 
 # add ABIEncoderV2 to HMooniswap
 perl -0777 -i -pe 's/pragma solidity/pragma experimental ABIEncoderV2; pragma  solidity/g' contracts/handlers/mooniswap/HMooniswap.sol
 
+# Distinguish redeem of compound and of aave
+perl -0777 -i -pe 's/compound.redeem\(/compound.compoundredeem\(/g' contracts/handlers/compound/HCToken.sol
+perl -0777 -i -pe 's/compound.redeem\(/compound.compoundredeem\(/g' contracts/handlers/compound/HCEther.sol
+perl -0777 -i -pe 's/function redeem\(/function compoundredeem\(/g' contracts/handlers/compound/ICToken.sol
+perl -0777 -i -pe 's/function redeem\(/function compoundredeem\(/g' contracts/handlers/compound/ICEther.sol
+
 certoraRun ${handler_file} contracts/Registry.sol specs/harnesses/DummyERC20A.sol specs/harnesses/DummyERC20B.sol specs/harnesses/ProxyHarness.sol specs/harnesses/Summary.sol \
     --verify ${handler}:${spec} \
     --settings -assumeUnwindCond,-b=${B},-ciMode=true \
     --cache "handler${handler}" \
-    --msg "Handler ${handler}" #--staging shelly/furucomboTypeRewriterIssue
+    --msg "Handler ${handler}" --staging shelly/furucomboTypeRewriterIssue
     #--javaArgs '"-Dtopic.tac.type.checker -Dtopic.function.builder -Dtopic.decompiler"'
