@@ -48,6 +48,7 @@ contract Registry is IRegistry, Ownable {
      */
     function register(address registration, bytes32 info) external onlyOwner {
         require(registration != address(0), "zero address");
+        require(info != DEPRECATED, "unregistered info");
         require(handlers[registration] != DEPRECATED, "unregistered");
         handlers[registration] = info;
         emit Registered(registration, info);
@@ -78,6 +79,7 @@ contract Registry is IRegistry, Ownable {
         onlyOwner
     {
         require(registration != address(0), "zero address");
+        require(info != DEPRECATED, "unregistered info");
         require(callers[registration] != DEPRECATED, "unregistered");
         callers[registration] = info;
         emit CallerRegistered(registration, info);
