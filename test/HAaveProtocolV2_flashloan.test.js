@@ -772,6 +772,26 @@ contract('AaveV2 flashloan', function([_, user, someone]) {
       );
     });
   });
+
+  describe('executeOperation', function() {
+    it('should revert: non-lending pool call executeOperation() directly', async function() {
+      const data = abi.simpleEncode(
+        'executeOperation(address[],uint256[],uint256[],address,bytes)',
+        [],
+        [],
+        [],
+        this.proxy.address,
+        util.toBuffer(0)
+      );
+      const to = this.hAaveV2.address;
+      await expectRevert(
+        this.proxy.execMock(to, data, {
+          from: user,
+        }),
+        'HAaveProtocolV2_executeOperation: invalid caller'
+      );
+    });
+  });
 });
 
 function _getFlashloanParams(tos, configs, faucets, tokens, amounts) {
