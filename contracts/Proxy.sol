@@ -181,6 +181,8 @@ contract Proxy is IProxy, Storage, Config {
         uint256 index
     ) internal pure returns (uint256 newIndex) {
         uint256 len = ret.length;
+        // The return value should be multiple of 32-bytes to be parsed.
+        require(len % 32 == 0, "illegal length for _parse");
         // Estimate the tail after the process.
         newIndex = index + len / 32;
         require(newIndex <= 256, "stack overflow");
