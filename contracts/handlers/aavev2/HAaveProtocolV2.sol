@@ -144,6 +144,13 @@ contract HAaveProtocolV2 is HandlerBase, IFlashLoanReceiver {
         address initiator,
         bytes memory params
     ) external override returns (bool) {
+        if (
+            msg.sender !=
+            ILendingPoolAddressesProviderV2(PROVIDER).getLendingPool()
+        ) {
+            _revertMsg("executeOperation", "invalid caller");
+        }
+
         if (initiator != address(this)) {
             _revertMsg("executeOperation", "not initiated by the proxy");
         }
