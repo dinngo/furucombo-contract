@@ -231,12 +231,72 @@ methods {
 
     // HCToken, HCEther
     mint(uint256) => DISPATCHER(true)
+    mint() => DISPATCHER(true)
     compoundredeem(uint256) => DISPATCHER(true)
     redeemUnderlying(uint256) => DISPATCHER(true)
     repayBorrowBehalf(address,uint256) => DISPATCHER(true)
+    repayBorrowBehalf(address) => DISPATCHER(true)
     borrowBalanceCurrent(address) => DISPATCHER(true)
     underlying() => NONDET
 
+    // HComptroller
+    getCompAddress() => NONDET
+
+    // HCurve
+    exchange(
+        int128 i,
+        int128 j,
+        uint256 dx,
+        uint256 min_dy
+    ) => DISPATCHER(true)
+    exchange_underlying(
+        int128 i,
+        int128 j,
+        uint256 dx,
+        uint256 min_dy
+    ) => DISPATCHER(true)
+    add_liquidity(uint256[2] amounts, uint256 min_mint_amount)
+        => DISPATCHER(true)
+    add_liquidity(uint256[3] amounts, uint256 min_mint_amount)
+        => DISPATCHER(true)
+    add_liquidity(uint256[4] amounts, uint256 min_mint_amount)
+        => DISPATCHER(true)
+    add_liquidity(uint256[5] amounts, uint256 min_mint_amount)
+        => DISPATCHER(true)
+    add_liquidity(uint256[6] amounts, uint256 min_mint_amount)
+        => DISPATCHER(true)
+    add_liquidity(uint256[2] amounts, uint256 min_mint_amount, bool use_underlying)
+        => DISPATCHER(true)
+    add_liquidity(uint256[3] amounts, uint256 min_mint_amount, bool use_underlying)
+        => DISPATCHER(true)
+    add_liquidity(uint256[4] amounts, uint256 min_mint_amount, bool use_underlying)
+        => DISPATCHER(true)
+    add_liquidity(uint256[5] amounts, uint256 min_mint_amount, bool use_underlying)
+        => DISPATCHER(true)
+    add_liquidity(uint256[6] amounts, uint256 min_mint_amount, bool use_underlying)
+        => DISPATCHER(true)
+    remove_liquidity_one_coin(
+        uint256 _token_amount,
+        int128 i,
+        uint256 min_amount
+    ) => DISPATCHER(true)
+    remove_liquidity_one_coin(
+        uint256 _token_amount,
+        int128 i,
+        uint256 min_uamount,
+        bool boolean
+    ) => DISPATCHER(true)
+
+    // HCurveDao
+    mint_for(address,address) => DISPATCHER(true)
+    deposit(uint256,address) => DISPATCHER(true)
+    
+    // HYVault
+    deposit(uint256) => DISPATCHER(true)
+    depositETH(uint256) => DISPATCHER(true)
+    yvault_withdraw(uint256) => DISPATCHER(true)
+    withdrawETH(uint256) => DISPATCHER(true)
+    
     // No-op for receiving funds without havocs
     nop() => NONDET
 }

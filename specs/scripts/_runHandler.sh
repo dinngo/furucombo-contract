@@ -97,9 +97,13 @@ perl -0777 -i -pe 's/compound.redeem\(/compound.compoundredeem\(/g' contracts/ha
 perl -0777 -i -pe 's/function redeem\(/function compoundredeem\(/g' contracts/handlers/compound/ICToken.sol
 perl -0777 -i -pe 's/function redeem\(/function compoundredeem\(/g' contracts/handlers/compound/ICEther.sol
 
+# Distinguish between withdraw of WETH and of YVault
+perl -0777 -i -pe 's/yVault.withdraw\(/yVault.yvault_withdraw\(/g' contracts/handlers/yearn/HYVault.sol
+perl -0777 -i -pe 's/function withdraw\(/function yvault_withdraw\(/g' contracts/handlers/yearn/IYVault.sol
+
 certoraRun ${handler_file} contracts/Registry.sol specs/harnesses/DummyERC20A.sol specs/harnesses/DummyERC20B.sol specs/harnesses/ProxyHarness.sol specs/harnesses/Summary.sol \
     --verify ${handler}:${spec} \
     --settings -assumeUnwindCond,-b=${B},-ciMode=true \
     --cache "handler${handler}" \
-    --msg "Handler ${handler}" --staging shelly/furucomboTypeRewriterIssue
+    --msg "Handler ${handler}" --staging
     #--javaArgs '"-Dtopic.tac.type.checker -Dtopic.function.builder -Dtopic.decompiler"'

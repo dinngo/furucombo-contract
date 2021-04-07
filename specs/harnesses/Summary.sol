@@ -116,7 +116,9 @@ contract Summary {
     }
 
     function claimComp(address a) external {
-        havocDummyToken();
+        // ERC20B will be in the role of "COMP"
+        generatedToken = address(erc20B);
+        erc20B.transfer(a, someAmount);
     }
 
     // for HAaveProtocol
@@ -684,7 +686,18 @@ contract Summary {
         }
         return rc;
     }
-
+    /* HCEther */ function mint() external payable returns (uint256) {
+        uint mintAmount = msg.value;
+        generatedToken = address(this);
+        uint rc;
+        if ((mintAmount == 0 && someAmount == 0) || (mintAmount > 0 && someAmount > 0)) {
+            rc = 0;
+            transferFrom(address(0), msg.sender, someAmount);
+        } else {
+            rc = 1;
+        }
+        return rc;
+    }
     function compoundredeem(uint256 redeemTokens) external returns (uint256) {
         require (address(erc20A) != address(this)); // underlying != cToken by comptroller
         consumedToken = address(this);
@@ -724,6 +737,11 @@ contract Summary {
         compoundDebt[borrower] = sub(compoundDebt[borrower],pay);
         return 0;
     }
+    /* HCEther */function repayBorrowBehalf(address borrower) external payable returns (uint256) {
+        uint pay = msg.value;
+        compoundDebt[borrower] = sub(compoundDebt[borrower],pay);
+        return 0;
+    }
     mapping (address => uint256) compoundDebt;
     uint interest;
     function borrowBalanceCurrent(address borrower) external returns (uint256) {
@@ -731,6 +749,192 @@ contract Summary {
         return compoundDebt[borrower];
     }
 
+    // HCurve
+    mapping (int128 => address) indexToToken;
+    function correctIndexing(int128 i, int128 j) private {
+        require (indexToToken[i] != indexToToken[j]);
+    }
+    function exchange(
+        int128 i,
+        int128 j,
+        uint256 dx,
+        uint256 min_dy
+    ) external payable {
+        correctIndexing(i,j);
+        IERC20WithDummyFunctionality tokenI = IERC20WithDummyFunctionality(indexToToken[i]);
+        IERC20WithDummyFunctionality tokenJ = IERC20WithDummyFunctionality(indexToToken[j]);
+        consumedToken = address(tokenI);
+        generatedToken = address(tokenJ);
+        shouldBeConsumedAmount = dx;
+        tokenI.transferFrom(msg.sender, address(this), dx);
+        tokenJ.transfer(msg.sender, min_dy);
+    }
+
+    function exchange_underlying(
+        int128 i,
+        int128 j,
+        uint256 dx,
+        uint256 min_dy
+    ) external payable {
+        correctIndexing(i,j);
+        IERC20WithDummyFunctionality tokenI = IERC20WithDummyFunctionality(indexToToken[i]);
+        IERC20WithDummyFunctionality tokenJ = IERC20WithDummyFunctionality(indexToToken[j]);
+        consumedToken = address(tokenI);
+        generatedToken = address(tokenJ);
+        shouldBeConsumedAmount = dx;
+        tokenI.transferFrom(msg.sender, address(this), dx);
+        tokenJ.transfer(msg.sender, min_dy);
+    }
+
+    function add_liquidity(uint256[2] calldata amounts, uint256 min_mint_amount)
+        external
+        payable {
+            // we do not model in transfers
+            transfer(msg.sender, min_mint_amount);
+        }
+
+    function add_liquidity(uint256[3] calldata amounts, uint256 min_mint_amount)
+        external
+        payable {
+            // we do not model in transfers
+            transfer(msg.sender, min_mint_amount);
+        }
+
+    function add_liquidity(uint256[4] calldata amounts, uint256 min_mint_amount)
+        external
+        payable {
+            // we do not model in transfers
+            transfer(msg.sender, min_mint_amount);
+        }
+
+    function add_liquidity(uint256[5] calldata amounts, uint256 min_mint_amount)
+        external
+        payable {
+            // we do not model in transfers
+            transfer(msg.sender, min_mint_amount);
+        }
+
+    function add_liquidity(uint256[6] calldata amounts, uint256 min_mint_amount)
+        external
+        payable {
+            // we do not model in transfers
+            transfer(msg.sender, min_mint_amount);
+        }
+
+    function add_liquidity(
+        uint256[2] calldata amounts,
+        uint256 min_mint_amount,
+        bool use_underlying
+    ) external payable {
+        // we do not model in transfers
+        transfer(msg.sender, min_mint_amount);
+    }
+
+    function add_liquidity(
+        uint256[3] calldata amounts,
+        uint256 min_mint_amount,
+        bool use_underlying
+    ) external payable {
+        // we do not model in transfers
+        transfer(msg.sender, min_mint_amount);
+    }
+
+    function add_liquidity(
+        uint256[4] calldata amounts,
+        uint256 min_mint_amount,
+        bool use_underlying
+    ) external payable {
+        // we do not model in transfers
+        transfer(msg.sender, min_mint_amount);
+    }
+
+    function add_liquidity(
+        uint256[5] calldata amounts,
+        uint256 min_mint_amount,
+        bool use_underlying
+    ) external payable {
+        // we do not model in transfers
+        transfer(msg.sender, min_mint_amount);
+    }
+
+    function add_liquidity(
+        uint256[6] calldata amounts,
+        uint256 min_mint_amount,
+        bool use_underlying
+    ) external payable {
+        // we do not model in transfers
+        transfer(msg.sender, min_mint_amount);
+    }
+
+    function remove_liquidity_one_coin(
+        uint256 _token_amount,
+        int128 i,
+        uint256 min_amount
+    ) external {
+        IERC20WithDummyFunctionality tokenI = IERC20WithDummyFunctionality(indexToToken[i]);
+        consumedToken = address(this);
+        shouldBeConsumedAmount = _token_amount;
+        generatedToken = address(tokenI);
+        transferFrom(msg.sender, address(this), _token_amount);
+        tokenI.transfer(msg.sender, min_amount);
+    }
+
+    function remove_liquidity_one_coin(
+        uint256 _token_amount,
+        int128 i,
+        uint256 min_uamount,
+        bool boolean // donate_dust or use_underlying
+    ) external {
+        IERC20WithDummyFunctionality tokenI = IERC20WithDummyFunctionality(indexToToken[i]);
+        consumedToken = address(this);
+        shouldBeConsumedAmount = _token_amount;
+        generatedToken = address(tokenI);
+        transferFrom(msg.sender, address(this), _token_amount);
+        tokenI.transfer(msg.sender, min_uamount);
+    }
+
+    // HCurveDao
+    // erc20B will be CRV
+    function mint_for(address gaugeAddr,address user) external payable {
+        generatedToken = address(erc20B);
+        erc20B.transfer(user, someAmount);
+    }
+    function deposit(uint256 value, address user) external payable {
+        // gauge address will point to erc20A
+        consumedToken = address(erc20A);
+        shouldBeConsumedAmount = value;
+        erc20A.transferFrom(msg.sender, address(this), value);
+    }
+
+    // HYVault
+    // the underlying vault token is erc20A
+    function deposit(uint256 a) external payable {
+        consumedToken = address(erc20A);
+        shouldBeConsumedAmount = a;
+        generatedToken = address(this);
+        erc20A.transferFrom(msg.sender, address(this), a);
+        transfer(msg.sender, someAmount);
+    }
+
+    function depositETH(uint256 a) external payable {
+        generatedToken = address(this);
+        transfer(msg.sender, someAmount);
+    }
+
+    function yvault_withdraw(uint256 a) external payable {
+        consumedToken = address(this);
+        shouldBeConsumedAmount = a;
+        generatedToken = address(erc20A);
+        transferFrom(msg.sender, address(this), a);
+        erc20A.transfer(msg.sender, someAmount);
+    }
+
+    function withdrawETH(uint256 a) external payable {
+        consumedToken = address(this);
+        shouldBeConsumedAmount = a;
+        transferFrom(msg.sender, address(this), a);
+        Nothing(msg.sender).nop{value:someAmount}();
+    }
 
     address public consumedToken;
     address public generatedToken;
