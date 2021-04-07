@@ -94,8 +94,8 @@ contract('UniswapV2 Liquidity', function([_, user]) {
     it('normal', async function() {
       // Prepare handler data
       const tokenAmount = ether('0.002');
-      const minTokenAmount = ether('0.000001');
-      const minEthAmount = ether('0.000001');
+      const minTokenAmount = ether('0.0000001');
+      const minEthAmount = ether('0.0000001');
       const value = ether('1');
       const to = this.hUniswapV2.address;
       const data = abi.simpleEncode(
@@ -177,8 +177,8 @@ contract('UniswapV2 Liquidity', function([_, user]) {
     it('max amount', async function() {
       // Prepare handler data
       const tokenAmount = ether('0.002');
-      const minTokenAmount = ether('0.000001');
-      const minEthAmount = ether('0.000001');
+      const minTokenAmount = ether('0.0000001');
+      const minEthAmount = ether('0.0000001');
       const value = ether('1');
       const to = this.hUniswapV2.address;
       const data = abi.simpleEncode(
