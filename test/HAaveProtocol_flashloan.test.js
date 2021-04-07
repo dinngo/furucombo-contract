@@ -300,4 +300,24 @@ contract('Aave flashloan', function([_, user]) {
       );
     });
   });
+
+  describe('executeOperation', function() {
+    it('should revert: non-lending pool call executeOperation() directly', async function() {
+      const data = abi.simpleEncode(
+        'executeOperation(address,uint256,uint256,bytes)',
+        DAI_TOKEN,
+        new BN(100),
+        new BN(1),
+        util.toBuffer(0)
+      );
+
+      const to = this.hAave.address;
+      await expectRevert(
+        this.proxy.execMock(to, data, {
+          from: user,
+        }),
+        'HAaveProtocol_executeOperation: invalid caller'
+      );
+    });
+  });
 });
