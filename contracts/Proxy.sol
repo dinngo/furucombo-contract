@@ -230,7 +230,6 @@ contract Proxy is IProxy, Storage, Config {
      * @param _to The handler of cube.
      * @param _data The cube execution data.
      */
-
     function _exec(address _to, bytes memory _data)
         internal
         returns (bytes memory result)
