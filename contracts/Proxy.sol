@@ -18,6 +18,16 @@ contract Proxy is IProxy, Storage, Config {
     using SafeERC20 for IERC20;
     using LibParam for bytes32;
 
+    modifier isNotBanned(address agent) {
+        require(registry.bannedAgents(agent) == 0, "Banned");
+        _;
+    }
+
+    modifier isNotHalted() {
+        require(registry.fHalt() == false, "Halted");
+        _;
+    }
+
     IRegistry public immutable registry;
 
     constructor(address _registry) public {
@@ -28,7 +38,13 @@ contract Proxy is IProxy, Storage, Config {
      * @notice Direct transfer from EOA should be reverted.
      * @dev Callback function will be handled here.
      */
-    fallback() external payable isInitialized {
+    fallback()
+        external
+        payable
+        isNotHalted
+        isNotBanned(msg.sender)
+        isInitialized
+    {
         // If triggered by a function call, caller should be registered in
         // registry.
         // The function call will then be forwarded to the location registered
@@ -64,7 +80,7 @@ contract Proxy is IProxy, Storage, Config {
         address[] calldata tos,
         bytes32[] calldata configs,
         bytes[] memory datas
-    ) external payable override {
+    ) external payable override isNotHalted isNotBanned(msg.sender) {
         _preProcess();
         _execs(tos, configs, datas);
         _postProcess();
@@ -79,7 +95,14 @@ contract Proxy is IProxy, Storage, Config {
         address[] calldata tos,
         bytes32[] calldata configs,
         bytes[] memory datas
-    ) external payable override isInitialized {
+    )
+        external
+        payable
+        override
+        isNotHalted
+        isNotBanned(msg.sender)
+        isInitialized
+    {
         require(msg.sender == address(this), "Does not allow external calls");
         _execs(tos, configs, datas);
     }
@@ -207,6 +230,7 @@ contract Proxy is IProxy, Storage, Config {
      * @param _to The handler of cube.
      * @param _data The cube execution data.
      */
+
     function _exec(address _to, bytes memory _data)
         internal
         returns (bytes memory result)

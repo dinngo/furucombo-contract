@@ -127,6 +127,92 @@ contract('Proxy', function([_, deployer, user]) {
       await expectRevert(this.proxy.execMock(to, data2), 'Invalid caller');
     });
 
+    it('should revert: banned agent as caller call batchExec()', async function() {
+      await this.registry.ban(user);
+      const index = 0;
+      const num = new BN('25');
+      const to = [this.fooHandler.address];
+      const config = [ZERO_BYTES32];
+      const data = [
+        abi.simpleEncode('bar(uint256,uint256):(uint256)', index, num),
+      ];
+      await expectRevert(
+        this.proxy.batchExec(to, config, data, { from: user }),
+        'Banned'
+      );
+    });
+
+    it('should revert: banned agent as caller call fallback()', async function() {
+      await this.registry.ban(user);
+      await expectRevert(
+        web3.eth.sendTransaction({
+          from: user,
+          to: this.proxy.address,
+          value: ether('1'),
+          data: '0x123',
+        }),
+        'Banned'
+      );
+    });
+
+    it('should revert: banned agent as caller call execs()', async function() {
+      await this.registry.ban(user);
+      const index = 0;
+      const num = new BN('25');
+      const to = [this.fooHandler.address];
+      const config = [ZERO_BYTES32];
+      const data = [
+        abi.simpleEncode('bar(uint256,uint256):(uint256)', index, num),
+      ];
+      await expectRevert(
+        this.proxy.execs(to, config, data, { from: user }),
+        'Banned'
+      );
+    });
+
+    it('should revert: call batchExec() when registry halted', async function() {
+      await this.registry.halt();
+      const index = 0;
+      const num = new BN('25');
+      const to = [this.fooHandler.address];
+      const config = [ZERO_BYTES32];
+      const data = [
+        abi.simpleEncode('bar(uint256,uint256):(uint256)', index, num),
+      ];
+      await expectRevert(
+        this.proxy.batchExec(to, config, data, { from: user }),
+        'Halted'
+      );
+    });
+
+    it('should revert: call fallback() when registry halted', async function() {
+      await this.registry.halt();
+      await expectRevert(
+        web3.eth.sendTransaction({
+          from: user,
+          to: this.proxy.address,
+          value: ether('1'),
+          data: '0x123',
+        }),
+        'Halted'
+      );
+    });
+
+    it('should revert: call execs() registry halted', async function() {
+      await this.registry.halt();
+      const index = 0;
+      const num = new BN('25');
+      const to = [this.fooHandler.address];
+      const config = [ZERO_BYTES32];
+      const data = [
+        abi.simpleEncode('bar(uint256,uint256):(uint256)', index, num),
+      ];
+      await expectRevert(
+        this.proxy.execs(to, config, data, { from: user }),
+        'Halted'
+      );
+    });
+
     it('multiple', async function() {
       const index = [0, 1, 2];
       const num = [new BN('25'), new BN('26'), new BN('27')];
