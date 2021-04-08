@@ -122,8 +122,6 @@ contract Registry is IRegistry, Ownable {
         external
         view
         override
-        isNotBanned(msg.sender)
-        isNotHalted
         returns (bool)
     {
         return handlers[handler] != 0 && handlers[handler] != DEPRECATED;
@@ -137,8 +135,6 @@ contract Registry is IRegistry, Ownable {
         external
         view
         override
-        isNotBanned(msg.sender)
-        isNotHalted
         returns (bool)
     {
         return callers[caller] != 0 && callers[caller] != DEPRECATED;
