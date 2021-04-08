@@ -916,7 +916,7 @@ contract Summary {
         transfer(msg.sender, someAmount);
     }
 
-    function depositETH(uint256 a) external payable {
+    function depositETH() external payable {
         generatedToken = address(this);
         transfer(msg.sender, someAmount);
     }

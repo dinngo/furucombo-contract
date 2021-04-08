@@ -293,10 +293,10 @@ methods {
     
     // HYVault
     deposit(uint256) => DISPATCHER(true)
-    depositETH(uint256) => DISPATCHER(true)
+    depositETH() => DISPATCHER(true)
     yvault_withdraw(uint256) => DISPATCHER(true)
     withdrawETH(uint256) => DISPATCHER(true)
-    
+
     // No-op for receiving funds without havocs
     nop() => NONDET
 }
