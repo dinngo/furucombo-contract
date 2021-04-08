@@ -132,8 +132,8 @@ Replace the original parameter with **fraction** if using a dynamic parameter. T
 - fraction
   - `uint256` type
   - denominator is `ether(1)`
-  - `percentage = b/ether(1)`
-    - fraction = b
+  - `percentage = fraction/ether(1)`
+    - `fraction = b` in this case
   - `0` if replace parameter with the exact same return data.
 
 **Example**
