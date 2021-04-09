@@ -400,6 +400,9 @@ contract HCurve is HandlerBase {
         // don't need to call transferFrom().
         IERC20(pool).safeApprove(address(curveHandler), 0);
         uint256 afterTokenIBalance = _getBalance(tokenI, uint256(-1));
+        if (afterTokenIBalance <= beforeTokenIBalance) {
+            _revertMsg("removeLiquidityOneCoinInternal: after <= before");
+        }
 
         // Update post process
         if (tokenI != ETH_ADDRESS) _updateToken(tokenI);
@@ -432,6 +435,9 @@ contract HCurve is HandlerBase {
             _revertMsg("removeLiquidityOneCoinDust");
         }
         uint256 afterTokenIBalance = IERC20(tokenI).balanceOf(address(this));
+        if (afterTokenIBalance <= beforeTokenIBalance) {
+            _revertMsg("removeLiquidityOneCoinDust: after <= before");
+        }
 
         // Update post process
         _updateToken(tokenI);
