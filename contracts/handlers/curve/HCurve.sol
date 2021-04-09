@@ -91,6 +91,9 @@ contract HCurve is HandlerBase {
         }
 
         uint256 afterDy = _getBalance(tokenJ, uint256(-1));
+        if (afterDy <= beforeDy) {
+            _revertMsg("exchangeInternal: afterDy <= beforeDy");
+        }
 
         if (tokenJ != ETH_ADDRESS) _updateToken(tokenJ);
         return afterDy.sub(beforeDy);
@@ -392,6 +395,10 @@ contract HCurve is HandlerBase {
                 _revertMsg("removeLiquidityOneCoinInternal");
             }
         }
+        // Some curve non-underlying pools like 3pool won't consume pool token
+        // allowance since pool token was issued by curve swap contract that
+        // don't need to call transferFrom().
+        IERC20(pool).safeApprove(address(curveHandler), 0);
         uint256 afterTokenIBalance = _getBalance(tokenI, uint256(-1));
 
         // Update post process
