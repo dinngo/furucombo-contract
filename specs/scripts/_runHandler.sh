@@ -105,5 +105,4 @@ certoraRun ${handler_file} contracts/Registry.sol specs/harnesses/DummyERC20A.so
     --verify ${handler}:${spec} \
     --settings -assumeUnwindCond,-b=${B},-ciMode=true \
     --cache "handler${handler}" \
-    --msg "Handler ${handler}" --staging
-    #--javaArgs '"-Dtopic.tac.type.checker -Dtopic.function.builder -Dtopic.decompiler"'
+    --msg "Handler ${handler}"
