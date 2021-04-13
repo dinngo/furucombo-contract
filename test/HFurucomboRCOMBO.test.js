@@ -12,16 +12,21 @@ const utils = web3.utils;
 
 const { expect } = require('chai');
 
-const { COMBO_TOKEN, COMBO_PROVIDER } = require('./utils/constants');
+const {
+  COMBO_TOKEN,
+  COMBO_PROVIDER,
+  RCOMBO_TOKEN,
+  RCOMBO_PROVIDER,
+} = require('./utils/constants');
 const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
 
 const HFurucomboRCOMBO = artifacts.require('HFurucomboRCOMBO');
 const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('ProxyMock');
 const IToken = artifacts.require('IERC20');
-const RCOMBO = artifacts.require('RCOMBO');
+const IRCOMBO = artifacts.require('IRCOMBO');
 
-contract('Furucombo rCOMBO', function([_, deployer, user]) {
+contract('Furucombo rCOMBO', function([_, user]) {
   before(async function() {
     this.registry = await Registry.new();
     this.proxy = await Proxy.new(this.registry.address);
@@ -30,13 +35,9 @@ contract('Furucombo rCOMBO', function([_, deployer, user]) {
       this.hFurucomboRCOMBO.address,
       utils.asciiToHex('HFurucomboRCOMBO')
     );
-
-    const supply = ether('100');
-    this.rCOMBO = await RCOMBO.new(supply, 1614556800, {
-      from: deployer,
-    }); // Mar 01 2021 00:00:00 UTC
+    this.rCOMBO = await IRCOMBO.at(RCOMBO_TOKEN);
     this.combo = await IToken.at(COMBO_TOKEN);
-    await this.combo.transfer(this.rCOMBO.address, supply, {
+    await this.combo.transfer(this.rCOMBO.address, ether('100'), {
       from: COMBO_PROVIDER,
     });
   });
@@ -58,15 +59,11 @@ contract('Furucombo rCOMBO', function([_, deployer, user]) {
     it('normal', async function() {
       const amount = ether('10');
       const to = this.hFurucomboRCOMBO.address;
-      const data = abi.simpleEncode(
-        'provideFor(address,uint256)',
-        this.rCOMBO.address,
-        amount
-      );
+      const data = abi.simpleEncode('provideFor(uint256)', amount);
 
       // Send rCOMBO to proxy
       await this.rCOMBO.transfer(this.proxy.address, amount, {
-        from: deployer,
+        from: RCOMBO_PROVIDER,
       });
       await this.proxy.updateTokenMock(this.rCOMBO.address);
 
@@ -91,15 +88,11 @@ contract('Furucombo rCOMBO', function([_, deployer, user]) {
     it('max amount', async function() {
       const amount = ether('10');
       const to = this.hFurucomboRCOMBO.address;
-      const data = abi.simpleEncode(
-        'provideFor(address,uint256)',
-        this.rCOMBO.address,
-        MAX_UINT256
-      );
+      const data = abi.simpleEncode('provideFor(uint256)', MAX_UINT256);
 
       // Send rCOMBO to proxy
       await this.rCOMBO.transfer(this.proxy.address, amount, {
-        from: deployer,
+        from: RCOMBO_PROVIDER,
       });
       await this.proxy.updateTokenMock(this.rCOMBO.address);
 
@@ -124,18 +117,14 @@ contract('Furucombo rCOMBO', function([_, deployer, user]) {
     it('should revert: provide 0 amount', async function() {
       const amount = ether('0');
       const to = this.hFurucomboRCOMBO.address;
-      const data = abi.simpleEncode(
-        'provideFor(address,uint256)',
-        this.rCOMBO.address,
-        amount
-      );
+      const data = abi.simpleEncode('provideFor(uint256)', amount);
 
       await expectRevert(
         this.proxy.execMock(to, data, {
           from: user,
           value: ether('0.1'),
         }),
-        'provideFor: provide 0 amount'
+        'HFurucomboRCOMBO_provideFor: provide 0 amount'
       );
     });
   });
@@ -145,7 +134,7 @@ contract('Furucombo rCOMBO', function([_, deployer, user]) {
       // User provides rCOMBO
       var amount = ether('10');
       await this.rCOMBO.transfer(user, amount, {
-        from: deployer,
+        from: RCOMBO_PROVIDER,
       });
       await this.rCOMBO.approve(this.rCOMBO.address, amount, {
         from: user,
@@ -161,10 +150,7 @@ contract('Furucombo rCOMBO', function([_, deployer, user]) {
 
     it('normal', async function() {
       const to = this.hFurucomboRCOMBO.address;
-      const data = abi.simpleEncode(
-        'withdrawFor(address)',
-        this.rCOMBO.address
-      );
+      const data = abi.simpleEncode('withdrawFor()');
 
       // Execute proxy
       const receipt = await this.proxy.execMock(to, data, {
