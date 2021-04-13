@@ -11,16 +11,14 @@ contract HFurucomboRCOMBO is HandlerBase {
     }
 
     function provideFor(uint256 amount) external payable {
-        IRCOMBO rCOMBO = IRCOMBO(RCOMBO);
         amount = _getBalance(RCOMBO, amount);
         if (amount <= 0) {
             _revertMsg("provideFor", "provide 0 amount");
         }
-        rCOMBO.provideFor(_getSender(), amount);
+        IRCOMBO(RCOMBO).provideFor(_getSender(), amount);
     }
 
     function withdrawFor() external payable {
-        IRCOMBO rCOMBO = IRCOMBO(RCOMBO);
-        rCOMBO.withdrawFor(_getSender());
+        IRCOMBO(RCOMBO).withdrawFor(_getSender());
     }
 }
