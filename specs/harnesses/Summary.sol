@@ -872,6 +872,7 @@ contract Summary {
         uint256 min_amount
     ) external {
         IERC20WithDummyFunctionality tokenI = IERC20WithDummyFunctionality(indexToToken[i]);
+        require (address(tokenI) != address(this));
         consumedToken = address(this);
         shouldBeConsumedAmount = _token_amount;
         generatedToken = address(tokenI);
@@ -886,6 +887,7 @@ contract Summary {
         bool boolean // donate_dust or use_underlying
     ) external {
         IERC20WithDummyFunctionality tokenI = IERC20WithDummyFunctionality(indexToToken[i]);
+        require (address(tokenI) != address(this));
         consumedToken = address(this);
         shouldBeConsumedAmount = _token_amount;
         generatedToken = address(tokenI);
