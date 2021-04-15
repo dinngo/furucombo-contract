@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+### Added
+
+- Support for Furucombo rCOMBO.
+
 ## [1.4.1] - 2021-04-15
 
 ### Fixed
