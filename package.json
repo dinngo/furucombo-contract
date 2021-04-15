@@ -1,6 +1,6 @@
 {
   "name": "Furucombo",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "Furucombo contracts",
   "main": "truffle-config.js",
   "directories": {
