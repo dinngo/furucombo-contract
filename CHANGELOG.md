@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+### Added
+
+- Support for Furucombo rCOMBO.
+
 ## [1.4.1] - 2021-04-15
 
 ### Fixed
@@ -20,7 +24,6 @@ All notable changes to this project will be documented in this file.
 - Add addition checks for external function call in `Proxy`.
 - Support for B.Protocol.
 - Support for Sushiswap.
-- Support for Furucombo rCOMBO.
 
 ### Changed
 
