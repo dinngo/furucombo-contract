@@ -113,9 +113,6 @@ contract HFunds is HandlerBase {
     }
 
     function getBalance(address token) external payable returns (uint256) {
-        if (token != address(0)) {
-            return IERC20(token).balanceOf(address(this));
-        }
-        return address(this).balance;
+        return _getBalance(token, uint256(-1));
     }
 }

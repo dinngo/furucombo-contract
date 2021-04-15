@@ -236,25 +236,6 @@ contract('Registry', function([_, contract1, contract2, someone]) {
         await this.registry.unregister(contract1);
         expect(await this.registry.isValidHandler.call(contract1)).to.be.false;
       });
-
-      it('halted', async function() {
-        await this.registry.halt();
-        await expectRevert(
-          this.registry.isValidHandler.call(contract1),
-          'Halted'
-        );
-      });
-
-      it('banned agent', async function() {
-        expect(
-          await this.registry.isValidHandler.call(contract1, { from: someone })
-        ).to.be.true;
-        await this.registry.ban(someone);
-        await expectRevert(
-          this.registry.isValidHandler.call(contract1, { from: someone }),
-          'Banned'
-        );
-      });
     });
 
     describe('caller', function() {
@@ -269,25 +250,6 @@ contract('Registry', function([_, contract1, contract2, someone]) {
       it('removed', async function() {
         await this.registry.unregisterCaller(contract2);
         expect(await this.registry.isValidCaller.call(contract2)).to.false;
-      });
-
-      it('halted', async function() {
-        await this.registry.halt();
-        await expectRevert(
-          this.registry.isValidCaller.call(contract2),
-          'Halted'
-        );
-      });
-
-      it('banned agent', async function() {
-        expect(
-          await this.registry.isValidCaller.call(contract2, { from: someone })
-        ).to.be.true;
-        await this.registry.ban(someone);
-        await expectRevert(
-          this.registry.isValidCaller.call(contract2, { from: someone }),
-          'Banned'
-        );
       });
     });
   });

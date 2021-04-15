@@ -1,13 +1,14 @@
 pragma solidity ^0.6.0;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "./interface/IRegistry.sol";
 
 /// @notice The registry database for Furucombo
-contract Registry is Ownable {
-    mapping(address => bytes32) public handlers;
-    mapping(address => bytes32) public callers;
-    mapping(address => uint256) public bannedAgents;
-    bool public fHalt;
+contract Registry is IRegistry, Ownable {
+    mapping(address => bytes32) public override handlers;
+    mapping(address => bytes32) public override callers;
+    mapping(address => uint256) public override bannedAgents;
+    bool public override fHalt;
 
     bytes32 public constant DEPRECATED = bytes10(0x64657072656361746564);
 
@@ -47,6 +48,7 @@ contract Registry is Ownable {
      */
     function register(address registration, bytes32 info) external onlyOwner {
         require(registration != address(0), "zero address");
+        require(info != DEPRECATED, "unregistered info");
         require(handlers[registration] != DEPRECATED, "unregistered");
         handlers[registration] = info;
         emit Registered(registration, info);
@@ -77,6 +79,7 @@ contract Registry is Ownable {
         onlyOwner
     {
         require(registration != address(0), "zero address");
+        require(info != DEPRECATED, "unregistered info");
         require(callers[registration] != DEPRECATED, "unregistered");
         callers[registration] = info;
         emit CallerRegistered(registration, info);
@@ -118,13 +121,10 @@ contract Registry is Ownable {
     function isValidHandler(address handler)
         external
         view
-        isNotBanned(msg.sender)
-        isNotHalted
-        returns (bool result)
+        override
+        returns (bool)
     {
-        if (handlers[handler] == 0 || handlers[handler] == DEPRECATED)
-            return false;
-        else return true;
+        return handlers[handler] != 0 && handlers[handler] != DEPRECATED;
     }
 
     /**
@@ -134,12 +134,10 @@ contract Registry is Ownable {
     function isValidCaller(address caller)
         external
         view
-        isNotBanned(msg.sender)
-        isNotHalted
-        returns (bool result)
+        override
+        returns (bool)
     {
-        if (callers[caller] == 0 || callers[caller] == DEPRECATED) return false;
-        else return true;
+        return callers[caller] != 0 && callers[caller] != DEPRECATED;
     }
 
     function halt() external isNotHalted onlyOwner {

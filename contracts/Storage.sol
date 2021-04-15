@@ -34,9 +34,13 @@ contract Storage {
         _;
     }
 
-    function _setSender() internal {
-        if (_getSender() == address(0))
-            cache.setAddress(MSG_SENDER_KEY, msg.sender);
+    modifier isNotInitialized() {
+        require(_getSender() == address(0), "Sender is initialized");
+        _;
+    }
+
+    function _setSender() internal isNotInitialized {
+        cache.setAddress(MSG_SENDER_KEY, msg.sender);
     }
 
     function _resetSender() internal {

@@ -34,8 +34,8 @@ interface IMakerVat {
 }
 
 interface IMakerGemJoin {
-    function dec() external returns (uint);
-    function gem() external returns (address);
+    function dec() external view returns (uint);
+    function gem() external view returns (address);
     function join(address, uint) external payable;
     function exit(address, uint) external;
 }

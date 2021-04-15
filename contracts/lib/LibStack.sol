@@ -1,5 +1,7 @@
 pragma solidity ^0.6.0;
 
+import "../Config.sol";
+
 library LibStack {
     function setAddress(bytes32[] storage _stack, address _input) internal {
         _stack.push(bytes32(uint256(uint160(_input))));
@@ -9,8 +11,9 @@ library LibStack {
         _stack.push(_input);
     }
 
-    function setHandlerType(bytes32[] storage _stack, uint256 _input) internal {
-        require(_input < uint96(-1), "Invalid Handler Type");
+    function setHandlerType(bytes32[] storage _stack, Config.HandlerType _input)
+        internal
+    {
         _stack.push(bytes12(uint96(_input)));
     }
 

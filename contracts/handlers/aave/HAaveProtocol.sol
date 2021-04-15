@@ -48,6 +48,13 @@ contract HAaveProtocol is HandlerBase, FlashLoanReceiverBase {
         uint256 _fee,
         bytes calldata _params
     ) external payable {
+        if (
+            msg.sender !=
+            ILendingPoolAddressesProvider(PROVIDER).getLendingPool()
+        ) {
+            _revertMsg("executeOperation", "invalid caller");
+        }
+
         (address[] memory tos, bytes32[] memory configs, bytes[] memory datas) =
             abi.decode(_params, (address[], bytes32[], bytes[]));
         IProxy(address(this)).execs(tos, configs, datas);
