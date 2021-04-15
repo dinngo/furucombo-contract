@@ -33,7 +33,7 @@ abstract contract HandlerBase is Storage, Config {
             stack.set(params[i - 1]);
         }
         stack.set(msg.sig);
-        stack.setHandlerType(uint256(HandlerType.Custom));
+        stack.setHandlerType(HandlerType.Custom);
     }
 
     function getContractName() public pure virtual returns (string memory);

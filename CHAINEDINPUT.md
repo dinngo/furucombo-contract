@@ -123,7 +123,7 @@ returnData[6] = 4
 
 ## Percentage of dynamic parameter
 
-`dynamic parameter = return data * percentage, 0 < percentage <= 1`
+`dynamic parameter = return data * percentage`
 
 ![](images/percentage.png)
 
@@ -132,7 +132,8 @@ Replace the original parameter with **fraction** if using a dynamic parameter. T
 - fraction
   - `uint256` type
   - denominator is `ether(1)`
-  - `0 <= fraction <= ether(1)`
+  - `percentage = fraction/ether(1)`
+    - `fraction = b` in this case
   - `0` if replace parameter with the exact same return data.
 
 **Example**

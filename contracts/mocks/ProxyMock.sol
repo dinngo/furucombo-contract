@@ -10,7 +10,7 @@ contract ProxyMock is Proxy, GasProfiler {
     event RecordHandlerResult(bytes value);
 
     function execMock(address to, bytes memory data)
-        public
+        external
         payable
         returns (bytes memory result)
     {

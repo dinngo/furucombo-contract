@@ -303,9 +303,9 @@ contract('CEther', function([_, user]) {
       this.dai = await IToken.at(DAI_TOKEN);
     });
     beforeEach(async function() {
-      await this.dai.transfer(user, ether('300'), { from: DAI_PROVIDER });
-      await this.dai.approve(this.cDai.address, ether('300'), { from: user });
-      await this.cDai.mint(ether('300'), { from: user });
+      await this.dai.transfer(user, ether('1000'), { from: DAI_PROVIDER });
+      await this.dai.approve(this.cDai.address, ether('1000'), { from: user });
+      await this.cDai.mint(ether('1000'), { from: user });
       await this.cEther.borrow(ether('0.1'), { from: user });
     });
 

@@ -35,12 +35,11 @@ library LibParam {
         returns (uint256[] memory refs, uint256[] memory params)
     {
         require(!isStatic(conf), "Static params");
-        uint256 n = 0;
-        while (conf & REFS_MASK == REFS_MASK && n < REFS_LIMIT) {
-            n++;
+        uint256 n = REFS_LIMIT;
+        while (conf & REFS_MASK == REFS_MASK && n > 0) {
+            n--;
             conf = conf >> 8;
         }
-        n = REFS_LIMIT - n;
         require(n > 0, "No dynamic param");
         refs = new uint256[](n);
         params = new uint256[](n);

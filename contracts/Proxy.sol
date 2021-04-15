@@ -3,6 +3,7 @@ pragma experimental ABIEncoderV2;
 
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
+import "./interface/IProxy.sol";
 import "./interface/IRegistry.sol";
 import "./Config.sol";
 import "./Storage.sol";
@@ -12,35 +13,45 @@ import "./lib/LibParam.sol";
  * @title The entrance of Furucombo
  * @author Ben Huang
  */
-contract Proxy is Storage, Config {
+contract Proxy is IProxy, Storage, Config {
     using Address for address;
     using SafeERC20 for IERC20;
     using LibParam for bytes32;
 
-    // keccak256 hash of "furucombo.handler.registry"
-    // prettier-ignore
-    bytes32 private constant HANDLER_REGISTRY = 0x6874162fd62902201ea0f4bf541086067b3b88bd802fac9e150fd2d1db584e19;
+    modifier isNotBanned(address agent) {
+        require(registry.bannedAgents(agent) == 0, "Banned");
+        _;
+    }
 
-    constructor(address registry) public {
-        bytes32 slot = HANDLER_REGISTRY;
-        assembly {
-            sstore(slot, registry)
-        }
+    modifier isNotHalted() {
+        require(registry.fHalt() == false, "Halted");
+        _;
+    }
+
+    IRegistry public immutable registry;
+
+    constructor(address _registry) public {
+        registry = IRegistry(_registry);
     }
 
     /**
      * @notice Direct transfer from EOA should be reverted.
      * @dev Callback function will be handled here.
      */
-    fallback() external payable isInitialized {
+    fallback()
+        external
+        payable
+        isNotHalted
+        isNotBanned(msg.sender)
+        isInitialized
+    {
         // If triggered by a function call, caller should be registered in
         // registry.
         // The function call will then be forwarded to the location registered
         // in registry.
         require(_isValidCaller(msg.sender), "Invalid caller");
 
-        address target =
-            address(bytes20(IRegistry(_getRegistry()).callers(msg.sender)));
+        address target = address(bytes20(registry.callers(msg.sender)));
         bytes memory result = _exec(target, msg.data);
 
         // return result for aave v2 flashloan()
@@ -66,10 +77,10 @@ contract Proxy is Storage, Config {
      * @param datas The combo datas.
      */
     function batchExec(
-        address[] memory tos,
-        bytes32[] memory configs,
+        address[] calldata tos,
+        bytes32[] calldata configs,
         bytes[] memory datas
-    ) external payable {
+    ) external payable override isNotHalted isNotBanned(msg.sender) {
         _preProcess();
         _execs(tos, configs, datas);
         _postProcess();
@@ -81,10 +92,17 @@ contract Proxy is Storage, Config {
      * the caller become proxy itself.
      */
     function execs(
-        address[] memory tos,
-        bytes32[] memory configs,
+        address[] calldata tos,
+        bytes32[] calldata configs,
         bytes[] memory datas
-    ) public payable isInitialized {
+    )
+        external
+        payable
+        override
+        isNotHalted
+        isNotBanned(msg.sender)
+        isInitialized
+    {
         require(msg.sender == address(this), "Does not allow external calls");
         _execs(tos, configs, datas);
     }
@@ -112,25 +130,25 @@ contract Proxy is Storage, Config {
             "Tos and configs length inconsistent"
         );
         for (uint256 i = 0; i < tos.length; i++) {
+            bytes32 config = configs[i];
             // Check if the data contains dynamic parameter
-            if (!configs[i].isStatic()) {
+            if (!config.isStatic()) {
                 // If so, trim the exectution data base on the configuration and stack content
-                _trim(datas[i], configs[i], localStack, index);
+                _trim(datas[i], config, localStack, index);
             }
             // Check if the output will be referenced afterwards
-            if (configs[i].isReferenced()) {
+            bytes memory result = _exec(tos[i], datas[i]);
+            if (config.isReferenced()) {
                 // If so, parse the output and place it into local stack
-                uint256 num = configs[i].getReturnNum();
-                uint256 newIndex =
-                    _parse(localStack, _exec(tos[i], datas[i]), index);
+                uint256 num = config.getReturnNum();
+                uint256 newIndex = _parse(localStack, result, index);
                 require(
                     newIndex == index + num,
                     "Return num and parsed return num not matched"
                 );
                 index = newIndex;
-            } else {
-                _exec(tos[i], datas[i]);
             }
+
             // Setup the process to be triggered in the post-process phase
             _setPostProcess(tos[i]);
         }
@@ -186,6 +204,8 @@ contract Proxy is Storage, Config {
         uint256 index
     ) internal pure returns (uint256 newIndex) {
         uint256 len = ret.length;
+        // The return value should be multiple of 32-bytes to be parsed.
+        require(len % 32 == 0, "illegal length for _parse");
         // Estimate the tail after the process.
         newIndex = index + len / 32;
         require(newIndex <= 256, "stack overflow");
@@ -258,7 +278,7 @@ contract Proxy is Storage, Config {
             stack.pop();
             // Check if the handler is already set.
             if (bytes4(stack.peek()) != 0x00000000) stack.setAddress(_to);
-            stack.setHandlerType(uint256(HandlerType.Custom));
+            stack.setHandlerType(HandlerType.Custom);
         }
     }
 
@@ -294,29 +314,13 @@ contract Proxy is Storage, Config {
         _resetCubeCounter();
     }
 
-    /// @notice Get the registry contract address.
-    function _getRegistry() internal view returns (address registry) {
-        bytes32 slot = HANDLER_REGISTRY;
-        assembly {
-            registry := sload(slot)
-        }
-    }
-
     /// @notice Check if the handler is valid in registry.
-    function _isValidHandler(address handler)
-        internal
-        view
-        returns (bool result)
-    {
-        return IRegistry(_getRegistry()).isValidHandler(handler);
+    function _isValidHandler(address handler) internal view returns (bool) {
+        return registry.isValidHandler(handler);
     }
 
     /// @notice Check if the caller is valid in registry.
-    function _isValidCaller(address caller)
-        internal
-        view
-        returns (bool result)
-    {
-        return IRegistry(_getRegistry()).isValidCaller(caller);
+    function _isValidCaller(address caller) internal view returns (bool) {
+        return registry.isValidCaller(caller);
     }
 }
