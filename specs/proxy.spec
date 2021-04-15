@@ -374,6 +374,7 @@ rule senderIsAlwaysCleanedUp(method f) {
 }
 
 rule cubeCounterIsAlwaysCleanedUp(method f) {
+    requireInvariant cubeCounterGreaterThan0IffSenderInitialized();
     address before = getCubeCounter();
 
     arbitrary(f);
@@ -513,6 +514,12 @@ rule noOtherPartyModified(method f, address somebody) {
 
     assert someToken.balanceOf(somebody) == origTokenABalance 
         && someToken2.balanceOf(somebody) == origTokenBBalance;
+}
+
+invariant cubeCounterGreaterThan0IffSenderInitialized() getCubeCounter() > 0 <=> getSender() != 0 {
+    preserved {
+        require getCubeCounter() < MAX_UINT256();
+    }
 }
 
 /*

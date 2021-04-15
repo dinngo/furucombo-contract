@@ -72,7 +72,7 @@ perl -0777 -i -pe 's/address payable public constant / address payable public /g
 perl -0777 -i -pe 's/dsProxyPayable.transfer\(amount\)/Nothing\(dsProxyPayable\).nop{value:amount}\(\)/g' ${handler_file}
 
 # It is so nice when ETH_ADDRESS is uniformly defined
-perl -0777 -i -pe 's/address constant ETHADDRESS/address public constant ETHADDRESS/g' contracts/handlers/aave/FlashLoanReceiverBase.sol
+perl -0777 -i -pe 's/address constant ETHADDRESS/address public ETHADDRESS/g' contracts/handlers/aave/FlashLoanReceiverBase.sol
 perl -0777 -i -pe 's/ETHADDRESS/ETH_ADDRESS/g' contracts/handlers/aave/FlashLoanReceiverBase.sol
 perl -0777 -i -pe 's/ETHADDRESS/ETH_ADDRESS/g' contracts/handlers/aave/HAaveProtocol.sol
 perl -0777 -i -pe 's/ETHADDRESS/ETH_ADDRESS/g' contracts/handlers/aavev2/HAaveProtocolV2.sol
@@ -105,4 +105,4 @@ certoraRun ${handler_file} contracts/Registry.sol specs/harnesses/DummyERC20A.so
     --verify ${handler}:${spec} \
     --settings -assumeUnwindCond,-b=${B},-ciMode=true \
     --cache "handler${handler}" \
-    --msg "Handler ${handler}"
+    --msg "Handler ${handler}" 
