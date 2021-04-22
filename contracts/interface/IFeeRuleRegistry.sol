@@ -3,7 +3,6 @@ pragma solidity ^0.6.0;
 interface IFeeRuleRegistry {
     /* State Variables Getter */
     function rules(uint256) external view returns (address);
-    function rulesForTokens(address) external view returns (address);
     function counter() external view returns (uint256);
     function basisFeeRate() external view returns (uint256);
     function feeCollector() external view returns (address);
@@ -13,9 +12,7 @@ interface IFeeRuleRegistry {
     function setBasisFeeRate(uint256) external;
     function setFeeCollector(address) external;
     function registerRule(uint256 ruleIndex, address rule) external;
-    function registerRuleForToken(address token, address rule) external;
     function unregisterRule(uint256 ruleIndex) external;
-    function unregisterRuleForToken(address token) external;
     
     /* View Functions */
     function calFeeRateMulti(address usr, uint256[] calldata ruleIndexes) external view returns (uint256 scaledRate);

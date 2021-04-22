@@ -9,7 +9,6 @@ contract FeeRuleRegistry is IFeeRuleRegistry, Ownable {
     using SafeMath for uint256;
 
     mapping(uint256 => address) public override rules;
-    mapping(address => address) public override rulesForTokens;
 
     uint256 public override counter;
     uint256 public override basisFeeRate;
@@ -17,9 +16,7 @@ contract FeeRuleRegistry is IFeeRuleRegistry, Ownable {
     uint256 public constant override BASE = 1e18;
 
     event RegisteredRule(uint256 index, address rule);
-    event RegisteredRuleForToken(address token, address rule);
     event UnregisteredRule(uint256 index);
-    event UnregisteredRuleForToken(address token);
     event SetBasisFeeRate(uint256 basisFeeRate);
     event SetFeeCollector(address feeCollector);
 
@@ -60,31 +57,6 @@ contract FeeRuleRegistry is IFeeRuleRegistry, Ownable {
         );
         rules[_ruleIndex] = address(0);
         emit UnregisteredRule(_ruleIndex);
-    }
-
-    function registerRuleForToken(address _token, address _rule)
-        external
-        override
-        onlyOwner
-    {
-        require(_token != address(0), "token is zero address");
-        require(_rule != address(0), "not allow to register zero address");
-        require(_token != _rule, "token and rule should be different");
-        rulesForTokens[_token] = _rule;
-        emit RegisteredRuleForToken(_token, _rule);
-    }
-
-    function unregisterRuleForToken(address _token)
-        external
-        override
-        onlyOwner
-    {
-        require(
-            rulesForTokens[_token] != address(0),
-            "rule not set or unregistered"
-        );
-        rulesForTokens[_token] = address(0);
-        emit UnregisteredRuleForToken(_token);
     }
 
     function calFeeRateMulti(address _usr, uint256[] calldata _ruleIndexes)
