@@ -7,6 +7,7 @@ import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "./interface/IProxy.sol";
 import "./interface/IRegistry.sol";
+import "./interface/IFeeRuleRegistry.sol";
 import "./Config.sol";
 import "./Storage.sol";
 import "./lib/LibParam.sol";
@@ -44,9 +45,11 @@ contract Proxy is IProxy, Storage, Config {
     }
 
     IRegistry public immutable registry;
+    IFeeRuleRegistry public immutable feeRuleRegistry;
 
-    constructor(address _registry) {
+    constructor(address _registry, address _feeRuleRegistry) {
         registry = IRegistry(_registry);
+        feeRuleRegistry = IFeeRuleRegistry(_feeRuleRegistry);
     }
 
     /**
@@ -88,9 +91,10 @@ contract Proxy is IProxy, Storage, Config {
     function batchExec(
         address[] calldata tos,
         bytes32[] calldata configs,
-        bytes[] memory datas
+        bytes[] memory datas,
+        uint256[] calldata rules
     ) external payable override isNotHalted isNotBanned {
-        _preProcess();
+        _preProcess(rules);
         _execs(tos, configs, datas);
         _postProcess();
     }
@@ -315,9 +319,18 @@ contract Proxy is IProxy, Storage, Config {
     }
 
     /// @notice The pre-process phase.
-    function _preProcess() internal virtual isStackEmpty {
+
+    function _preProcess(uint256[] memory _rules)
+        internal
+        virtual
+        isStackEmpty
+        isFeeRateZero
+    {
         // Set the sender.
         _setSender();
+        // Calculate fee
+        uint256 feeRate = feeRuleRegistry.calFeeRateMulti(_getSender(), _rules);
+        _setFeeRate(feeRate);
     }
 
     /// @notice The post-process phase.
