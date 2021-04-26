@@ -328,8 +328,14 @@ contract Proxy is IProxy, Storage, Config {
     {
         // Set the sender.
         _setSender();
+        // Set the fee collector
+        _setFeeCollector(feeRuleRegistry.feeCollector());
         // Calculate fee
         uint256 feeRate = feeRuleRegistry.calFeeRateMulti(_getSender(), _rules);
+        // Process ether fee
+        uint256 feeEth = _calFee(msg.value, _getFeeRate());
+        payable(_getFeeCollector()).transfer(feeEth);
+
         _setFeeRate(feeRate);
     }
 
@@ -364,6 +370,8 @@ contract Proxy is IProxy, Storage, Config {
         if (amount > 0) payable(msg.sender).transfer(amount);
 
         // Reset the msg.sender
+        _resetFeeCollector();
+        _resetFeeRate();
         _resetSender();
     }
 
@@ -388,5 +396,14 @@ contract Proxy is IProxy, Storage, Config {
             (bytes4(payload[1]) >> 8) |
             (bytes4(payload[2]) >> 16) |
             (bytes4(payload[3]) >> 24);
+    }
+
+    function _calFee(uint256 _amount, uint256 _feeRate)
+        internal
+        view
+        returns (uint256)
+    {
+        // Temporary version, should work on the calculation check
+        return (_amount * _feeRate) / PERCENTAGE_BASE;
     }
 }

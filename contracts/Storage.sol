@@ -21,6 +21,10 @@ contract Storage {
     // prettier-ignore
     bytes32 public constant FEE_RATE_KEY = 0x515323fd14ae1d8e2508b9830a3e80e1a884361823ecf1c0f4d3f345ad226225;
 
+    // keccak256 hash of "fee.collector"
+    // prettier-ignore
+    bytes32 public constant FEE_COLLECTOR_KEY = 0x0efe2dc3698afe8504a41468034ba33d504aa66b651e1d37f230a3ca6ee9dc72;
+
     modifier isStackEmpty() {
         require(stack.length == 0, "Stack not empty");
         _;
@@ -63,5 +67,17 @@ contract Storage {
 
     function _getFeeRate() internal view returns (uint256) {
         return cache.getUint256(FEE_RATE_KEY);
+    }
+
+    function _setFeeCollector(address _collector) internal {
+        cache.setAddress(FEE_COLLECTOR_KEY, _collector);
+    }
+
+    function _resetFeeCollector() internal {
+        cache.setAddress(FEE_COLLECTOR_KEY, address(0));
+    }
+
+    function _getFeeCollector() internal view returns (address) {
+        return cache.getAddress(FEE_COLLECTOR_KEY);
     }
 }

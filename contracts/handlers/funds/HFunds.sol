@@ -47,6 +47,8 @@ contract HFunds is HandlerBase {
                 address(this),
                 amounts[i]
             );
+            uint256 feeToken = _calFee(amounts[i], _getFeeRate());
+            IERC20(tokens[i]).safeTransfer(_getFeeCollector(), feeToken);
 
             // Update involved token
             _updateToken(tokens[i]);
@@ -147,5 +149,14 @@ contract HFunds is HandlerBase {
 
     function getBalance(address token) external payable returns (uint256) {
         return _getBalance(token, type(uint256).max);
+    }
+
+    function _calFee(uint256 _amount, uint256 _feeRate)
+        internal
+        view
+        returns (uint256)
+    {
+        // Temporary version, should work on the calculation check
+        return (_amount * _feeRate) / PERCENTAGE_BASE;
     }
 }
