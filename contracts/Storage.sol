@@ -35,6 +35,14 @@ contract Storage {
         _;
     }
 
+    modifier isFeeCollectorNotInitialized() {
+        require(
+            _getFeeCollector() == address(0),
+            "Fee collector is initialized"
+        );
+        _;
+    }
+
     modifier isInitialized() {
         require(_getSender() != address(0), "Sender is not initialized");
         _;
@@ -57,7 +65,7 @@ contract Storage {
         return cache.getAddress(MSG_SENDER_KEY);
     }
 
-    function _setFeeRate(uint256 _feeRate) internal {
+    function _setFeeRate(uint256 _feeRate) internal isFeeRateZero {
         cache.setUint256(FEE_RATE_KEY, _feeRate);
     }
 
@@ -69,7 +77,10 @@ contract Storage {
         return cache.getUint256(FEE_RATE_KEY);
     }
 
-    function _setFeeCollector(address _collector) internal {
+    function _setFeeCollector(address _collector)
+        internal
+        isFeeCollectorNotInitialized
+    {
         cache.setAddress(FEE_COLLECTOR_KEY, _collector);
     }
 

@@ -19,6 +19,7 @@ import "./lib/LibParam.sol";
 contract Proxy is IProxy, Storage, Config {
     using Address for address;
     using SafeERC20 for IERC20;
+    using SafeMath for uint256;
     using LibParam for bytes32;
     using LibStack for bytes32[];
     using Strings for uint256;
@@ -336,8 +337,6 @@ contract Proxy is IProxy, Storage, Config {
         // Process ether fee
         uint256 feeEth = _calFee(msg.value, _getFeeRate());
         payable(_getFeeCollector()).transfer(feeEth);
-
-        _setFeeRate(feeRate);
     }
 
     /// @notice The post-process phase.
@@ -401,10 +400,10 @@ contract Proxy is IProxy, Storage, Config {
 
     function _calFee(uint256 _amount, uint256 _feeRate)
         internal
-        view
+        pure
         returns (uint256)
     {
-        // Temporary version, should work on the calculation check
-        return (_amount * _feeRate) / PERCENTAGE_BASE;
+        // ?) require(_feeRate <= PERCENTAGE_BASE, "fee rate out of range");
+        return _amount.mul(_feeRate).div(PERCENTAGE_BASE);
     }
 }

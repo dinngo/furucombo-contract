@@ -116,31 +116,27 @@ contract HFunds is HandlerBase {
         for (uint256 i = 0; i < tokens.length; i++) {
             if (tokens[i] == address(0)) {
                 if (address(this).balance < amounts[i]) {
-                    string memory errMsg =
-                        string(
-                            abi.encodePacked(
-                                "error: ",
-                                _uint2String(i),
-                                "_",
-                                _uint2String(address(this).balance)
-                            )
-                        );
+                    string memory errMsg = string(
+                        abi.encodePacked(
+                            "error: ",
+                            _uint2String(i),
+                            "_",
+                            _uint2String(address(this).balance)
+                        )
+                    );
                     _revertMsg("checkSlippage", errMsg);
                 }
             } else if (
                 IERC20(tokens[i]).balanceOf(address(this)) < amounts[i]
             ) {
-                string memory errMsg =
-                    string(
-                        abi.encodePacked(
-                            "error: ",
-                            _uint2String(i),
-                            "_",
-                            _uint2String(
-                                IERC20(tokens[i]).balanceOf(address(this))
-                            )
-                        )
-                    );
+                string memory errMsg = string(
+                    abi.encodePacked(
+                        "error: ",
+                        _uint2String(i),
+                        "_",
+                        _uint2String(IERC20(tokens[i]).balanceOf(address(this)))
+                    )
+                );
 
                 _revertMsg("checkSlippage", errMsg);
             }
@@ -153,10 +149,10 @@ contract HFunds is HandlerBase {
 
     function _calFee(uint256 _amount, uint256 _feeRate)
         internal
-        view
+        pure
         returns (uint256)
     {
-        // Temporary version, should work on the calculation check
+        // ?) require(_feeRate <= PERCENTAGE_BASE, "fee rate out of range");
         return (_amount * _feeRate) / PERCENTAGE_BASE;
     }
 }
