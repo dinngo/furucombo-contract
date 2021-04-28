@@ -152,7 +152,7 @@ contract HFunds is HandlerBase {
         pure
         returns (uint256)
     {
-        // ?) require(_feeRate <= PERCENTAGE_BASE, "fee rate out of range");
+        require(_feeRate <= PERCENTAGE_BASE, "fee rate out of range");
         return (_amount * _feeRate) / PERCENTAGE_BASE;
     }
 }

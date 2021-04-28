@@ -88,14 +88,15 @@ contract Proxy is IProxy, Storage, Config {
      * @param tos The handlers of combo.
      * @param configs The configurations of executing cubes.
      * @param datas The combo datas.
+     * @param ruleIndexes The indexes of rules.
      */
     function batchExec(
         address[] calldata tos,
         bytes32[] calldata configs,
         bytes[] memory datas,
-        uint256[] calldata rules
+        uint256[] calldata ruleIndexes
     ) external payable override isNotHalted isNotBanned {
-        _preProcess(rules);
+        _preProcess(ruleIndexes);
         _execs(tos, configs, datas);
         _postProcess();
     }
@@ -321,7 +322,7 @@ contract Proxy is IProxy, Storage, Config {
 
     /// @notice The pre-process phase.
 
-    function _preProcess(uint256[] memory _rules)
+    function _preProcess(uint256[] memory _ruleIndexes)
         internal
         virtual
         isStackEmpty
@@ -332,7 +333,10 @@ contract Proxy is IProxy, Storage, Config {
         // Set the fee collector
         _setFeeCollector(feeRuleRegistry.feeCollector());
         // Calculate fee
-        uint256 feeRate = feeRuleRegistry.calFeeRateMulti(_getSender(), _rules);
+        uint256 feeRate = feeRuleRegistry.calFeeRateMulti(
+            _getSender(),
+            _ruleIndexes
+        );
         _setFeeRate(feeRate);
         // Process ether fee
         uint256 feeEth = _calFee(msg.value, _getFeeRate());
@@ -368,8 +372,7 @@ contract Proxy is IProxy, Storage, Config {
         // Balance should also be returned to user
         uint256 amount = address(this).balance;
         if (amount > 0) payable(msg.sender).transfer(amount);
-
-        // Reset the msg.sender
+        // Reset cached datas
         _resetFeeCollector();
         _resetFeeRate();
         _resetSender();
@@ -403,7 +406,8 @@ contract Proxy is IProxy, Storage, Config {
         pure
         returns (uint256)
     {
-        // ?) require(_feeRate <= PERCENTAGE_BASE, "fee rate out of range");
+        // TODO: determine below requirement stay or not
+        // require(_feeRate <= PERCENTAGE_BASE, "fee rate out of range");
         return _amount.mul(_feeRate).div(PERCENTAGE_BASE);
     }
 }
