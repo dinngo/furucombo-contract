@@ -333,10 +333,12 @@ contract Proxy is IProxy, Storage, Config {
         // Set the fee collector
         _setFeeCollector(feeRuleRegistry.feeCollector());
         // Calculate fee
+
         uint256 feeRate = feeRuleRegistry.calFeeRateMulti(
             _getSender(),
             _ruleIndexes
         );
+
         _setFeeRate(feeRate);
         // Process ether fee
         uint256 feeEth = _calFee(msg.value, _getFeeRate());
