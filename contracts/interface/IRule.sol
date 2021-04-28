@@ -2,7 +2,8 @@ pragma solidity ^0.6.0;
 
 interface IRule {
     /* State Variables Getter */
-    function discount() external view returns (uint256);
+    function DISCOUNT() external view returns (uint256);
+    function BASE() external view returns (uint256);
 
     /* View Functions */
     function verify(address) external view returns (bool);

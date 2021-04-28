@@ -28,12 +28,14 @@ contract FeeRuleRegistry is IFeeRuleRegistry, Ownable {
 
     function setBasisFeeRate(uint256 _basisFeeRate) public override onlyOwner {
         require(_basisFeeRate <= BASE, "out of range");
+        require(_basisFeeRate != basisFeeRate, "same as current one");
         basisFeeRate = _basisFeeRate;
         emit SetBasisFeeRate(basisFeeRate);
     }
 
     function setFeeCollector(address _feeCollector) public override onlyOwner {
         require(_feeCollector != address(0), "zero address");
+        require(_feeCollector != feeCollector, "same as current one");
         feeCollector = _feeCollector;
         emit SetFeeCollector(feeCollector);
     }
