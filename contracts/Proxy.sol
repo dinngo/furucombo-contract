@@ -340,9 +340,11 @@ contract Proxy is IProxy, Storage, Config {
         );
 
         _setFeeRate(feeRate);
-        // Process ether fee
-        uint256 feeEth = _calFee(msg.value, _getFeeRate());
-        payable(_getFeeCollector()).transfer(feeEth);
+        if(feeRate > 0) {
+            // Process ether fee
+            uint256 feeEth = _calFee(msg.value, feeRate);
+            payable(_getFeeCollector()).transfer(feeEth);
+        }
     }
 
     /// @notice The post-process phase.

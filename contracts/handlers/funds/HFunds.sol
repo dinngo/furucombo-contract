@@ -41,15 +41,18 @@ contract HFunds is HandlerBase {
             "token and amount does not match"
         );
         address sender = _getSender();
+        uint256 feeRate = _getFeeRate();
         for (uint256 i = 0; i < tokens.length; i++) {
             IERC20(tokens[i]).safeTransferFrom(
                 sender,
                 address(this),
                 amounts[i]
             );
-            uint256 feeToken = _calFee(amounts[i], _getFeeRate());
-            IERC20(tokens[i]).safeTransfer(_getFeeCollector(), feeToken);
-
+            if(feeRate > 0) {
+                uint256 feeToken = _calFee(amounts[i], feeRate);
+                IERC20(tokens[i]).safeTransfer(_getFeeCollector(), feeToken);
+            }
+            
             // Update involved token
             _updateToken(tokens[i]);
         }
