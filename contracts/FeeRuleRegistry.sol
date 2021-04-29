@@ -22,8 +22,7 @@ contract FeeRuleRegistry is IFeeRuleRegistry, Ownable {
 
     constructor(uint256 _basisFeeRate, address _feeCollector) public {
         counter = 0;
-        if(_basisFeeRate != 0)
-            setBasisFeeRate(_basisFeeRate);
+        if (_basisFeeRate != 0) setBasisFeeRate(_basisFeeRate);
         setFeeCollector(_feeCollector);
     }
 

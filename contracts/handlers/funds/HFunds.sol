@@ -48,11 +48,11 @@ contract HFunds is HandlerBase {
                 address(this),
                 amounts[i]
             );
-            if(feeRate > 0) {
+            if (feeRate > 0) {
                 uint256 feeToken = _calFee(amounts[i], feeRate);
                 IERC20(tokens[i]).safeTransfer(_getFeeCollector(), feeToken);
             }
-            
+
             // Update involved token
             _updateToken(tokens[i]);
         }
