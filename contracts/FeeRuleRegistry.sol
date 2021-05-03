@@ -80,14 +80,13 @@ contract FeeRuleRegistry is IFeeRuleRegistry, Ownable {
         if (len == 0) {
             scaledRate = BASE;
         } else {
-            scaledRate = BASE;
-            for (uint256 i = 0; i < len; i++) {
-                if (i > 0) {
-                    require(
-                        _ruleIndexes[i] > _ruleIndexes[i - 1],
-                        "not ascending order"
-                    );
-                }
+            scaledRate = _calDiscount(_usr, rules[_ruleIndexes[0]]);
+            for (uint256 i = 1; i < len; i++) {
+                require(
+                    _ruleIndexes[i] > _ruleIndexes[i - 1],
+                    "not ascending order"
+                );
+
                 scaledRate = scaledRate
                     .mul(_calDiscount(_usr, rules[_ruleIndexes[i]]))
                     .div(BASE);
