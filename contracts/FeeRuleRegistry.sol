@@ -40,16 +40,11 @@ contract FeeRuleRegistry is IFeeRuleRegistry, Ownable {
         emit SetFeeCollector(feeCollector);
     }
 
-    function registerRule(uint256 _ruleIndex, address _rule)
-        external
-        override
-        onlyOwner
-    {
-        require(_ruleIndex == counter, "index should match with counter");
+    function registerRule(address _rule) external override onlyOwner {
         require(_rule != address(0), "not allow to register zero address");
-        rules[_ruleIndex] = _rule;
+        rules[counter] = _rule;
+        emit RegisteredRule(counter, _rule);
         counter = counter.add(1);
-        emit RegisteredRule(_ruleIndex, _rule);
     }
 
     function unregisterRule(uint256 _ruleIndex) external override onlyOwner {

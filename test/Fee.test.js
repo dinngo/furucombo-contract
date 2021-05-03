@@ -74,8 +74,8 @@ contract('Fee', function([_, feeCollector, user]) {
     );
     this.rule1 = await RuleMock1.new();
     this.rule2 = await RuleMock2.new();
-    await this.feeRuleRegistry.registerRule('0', this.rule1.address);
-    await this.feeRuleRegistry.registerRule('1', this.rule2.address);
+    await this.feeRuleRegistry.registerRule(this.rule1.address);
+    await this.feeRuleRegistry.registerRule(this.rule2.address);
     // Deploy proxy
     this.proxy = await Proxy.new(
       this.registry.address,

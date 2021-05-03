@@ -11,7 +11,7 @@ interface IFeeRuleRegistry {
     /* Restricted Functions */
     function setBasisFeeRate(uint256) external;
     function setFeeCollector(address) external;
-    function registerRule(uint256 ruleIndex, address rule) external;
+    function registerRule(address rule) external;
     function unregisterRule(uint256 ruleIndex) external;
     
     /* View Functions */

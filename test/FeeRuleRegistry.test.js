@@ -121,10 +121,7 @@ contract('FeeRuleRegistry', function([_, feeCollector, user, someone]) {
   describe('register', function() {
     it('normal', async function() {
       // register first rule
-      const receipt1 = await this.registry.registerRule(
-        '0',
-        this.rule1.address
-      );
+      const receipt1 = await this.registry.registerRule(this.rule1.address);
       expect(await this.registry.rules.call('0')).to.be.eq(this.rule1.address);
       expect(await this.registry.counter.call()).to.be.bignumber.eq(
         new BN('1')
@@ -134,10 +131,7 @@ contract('FeeRuleRegistry', function([_, feeCollector, user, someone]) {
         rule: this.rule1.address,
       });
       // register second rule
-      const receipt2 = await this.registry.registerRule(
-        '1',
-        this.rule2.address
-      );
+      const receipt2 = await this.registry.registerRule(this.rule2.address);
       expect(await this.registry.rules.call('1')).to.be.eq(this.rule2.address);
       expect(await this.registry.counter.call()).to.be.bignumber.eq(
         new BN('2')
@@ -148,33 +142,16 @@ contract('FeeRuleRegistry', function([_, feeCollector, user, someone]) {
       });
     });
 
-    it('should revert: index greater than counter', async function() {
-      await expectRevert(
-        this.registry.registerRule('10', this.rule1.address),
-        'index should match with counter'
-      );
-    });
-
-    it('should revert: register with exist index', async function() {
-      const receipt = await this.registry.registerRule('0', this.rule1.address);
-      expect(await this.registry.rules.call('0')).to.be.eq(this.rule1.address);
-      // try to override an registered index
-      await expectRevert(
-        this.registry.registerRule('0', this.rule2.address),
-        'index should match with counter'
-      );
-    });
-
     it('should revert: rule is zero address', async function() {
       await expectRevert(
-        this.registry.registerRule('0', ZERO_ADDRESS),
+        this.registry.registerRule(ZERO_ADDRESS),
         'not allow to register zero address'
       );
     });
 
     it('should revert: not owner', async function() {
       await expectRevert(
-        this.registry.registerRule('0', this.rule1.address, { from: someone }),
+        this.registry.registerRule(this.rule1.address, { from: someone }),
         'Ownable: caller is not the owner'
       );
     });
@@ -183,16 +160,10 @@ contract('FeeRuleRegistry', function([_, feeCollector, user, someone]) {
   describe('unregister', function() {
     beforeEach(async function() {
       // register first rule
-      const receipt1 = await this.registry.registerRule(
-        '0',
-        this.rule1.address
-      );
+      const receipt1 = await this.registry.registerRule(this.rule1.address);
       expect(await this.registry.rules.call('0')).to.be.eq(this.rule1.address);
       // register second rule
-      const receipt2 = await this.registry.registerRule(
-        '1',
-        this.rule2.address
-      );
+      const receipt2 = await this.registry.registerRule(this.rule2.address);
       expect(await this.registry.rules.call('1')).to.be.eq(this.rule2.address);
     });
 
@@ -236,7 +207,7 @@ contract('FeeRuleRegistry', function([_, feeCollector, user, someone]) {
 
   describe('calculate single', function() {
     beforeEach(async function() {
-      const receipt = await this.registry.registerRule('0', this.rule1.address);
+      const receipt = await this.registry.registerRule(this.rule1.address);
       expect(await this.registry.rules.call('0')).to.be.eq(this.rule1.address);
       // transfer some token to user to make him qualified for rule1
       await this.token.transfer(user, RULE1_REQUIREMENT, {
@@ -305,16 +276,10 @@ contract('FeeRuleRegistry', function([_, feeCollector, user, someone]) {
   describe('calculate multi', function() {
     beforeEach(async function() {
       // register first rule
-      const receipt1 = await this.registry.registerRule(
-        '0',
-        this.rule1.address
-      );
+      const receipt1 = await this.registry.registerRule(this.rule1.address);
       expect(await this.registry.rules.call('0')).to.be.eq(this.rule1.address);
       // register second rule
-      const receipt2 = await this.registry.registerRule(
-        '1',
-        this.rule2.address
-      );
+      const receipt2 = await this.registry.registerRule(this.rule2.address);
       expect(await this.registry.rules.call('1')).to.be.eq(this.rule2.address);
       // transfer some token to user to make him qualified for rule1
       await this.token.transfer(user, RULE1_REQUIREMENT, {
