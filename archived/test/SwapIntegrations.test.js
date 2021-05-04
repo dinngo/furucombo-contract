@@ -20,6 +20,7 @@ const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
 
 const HUniswap = artifacts.require('HUniswap');
 const HCToken = artifacts.require('HCToken');
+const FeeRuleRegistry = artifacts.require('FeeRuleRegistry');
 const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('Proxy');
 const IToken = artifacts.require('IERC20');
@@ -35,7 +36,8 @@ contract('SwapIntegration', function([_, user]) {
 
   before(async function() {
     this.registry = await Registry.new();
-    this.proxy = await Proxy.new(this.registry.address);
+    this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);
+    this.proxy = await Proxy.new(this.registry.address, this.feeRuleRegistry.address);
   });
 
   beforeEach(async function() {

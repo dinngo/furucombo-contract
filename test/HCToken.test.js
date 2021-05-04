@@ -28,6 +28,7 @@ const {
 } = require('./utils/utils');
 
 const HCToken = artifacts.require('HCToken');
+const FeeRuleRegistry = artifacts.require('FeeRuleRegistry');
 const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('ProxyMock');
 const IToken = artifacts.require('IERC20');

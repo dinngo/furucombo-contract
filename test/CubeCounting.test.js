@@ -13,6 +13,9 @@ const {
 } = require('./utils/constants');
 const { evmRevert, evmSnapshot, getCallData } = require('./utils/utils');
 
+const HUniswapV2 = artifacts.require('HUniswapV2');
+const HCToken = artifacts.require('HCToken');
+const FeeRuleRegistry = artifacts.require('FeeRuleRegistry');
 const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('Proxy');
 const HAaveV2 = artifacts.require('HAaveProtocolV2');
@@ -27,7 +30,12 @@ contract('CubeCounting', function([_, user]) {
 
   before(async function() {
     this.registry = await Registry.new();
-    this.proxy = await Proxy.new(this.registry.address);
+
+    this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);
+    this.proxy = await Proxy.new(
+      this.registry.address,
+      this.feeRuleRegistry.address
+    );
 
     // Register wrapper handler
     this.hWrapper = await HWrapper.new();

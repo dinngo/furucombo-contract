@@ -34,6 +34,7 @@ const {
 } = require('./utils/utils');
 
 const HMaker = artifacts.require('HMaker');
+const FeeRuleRegistry = artifacts.require('FeeRuleRegistry');
 const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('ProxyMock');
 const IToken = artifacts.require('IERC20');
@@ -100,7 +101,8 @@ contract('Maker', function([_, user1, user2, someone]) {
     daiProviderAddress = await tokenProviderUniV2(DAI_TOKEN);
 
     this.registry = await Registry.new();
-    this.proxy = await Proxy.new(this.registry.address);
+    this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);
+    this.proxy = await Proxy.new(this.registry.address, this.feeRuleRegistry.address);
     this.token = await IToken.at(tokenAddress);
     this.hMaker = await HMaker.new();
     await this.registry.register(

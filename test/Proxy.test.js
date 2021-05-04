@@ -30,6 +30,7 @@ const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('ProxyMock');
 const HMock = artifacts.require('HMock');
 const IToken = artifacts.require('IERC20');
+const FeeRuleRegistry = artifacts.require('FeeRuleRegistry');
 
 contract('Proxy', function([_, deployer, user]) {
   let id;
@@ -38,7 +39,11 @@ contract('Proxy', function([_, deployer, user]) {
 
   before(async function() {
     this.registry = await Registry.new();
-    this.proxy = await Proxy.new(this.registry.address);
+    this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);
+    this.proxy = await Proxy.new(
+      this.registry.address,
+      this.feeRuleRegistry.address
+    );
   });
 
   beforeEach(async function() {

@@ -20,7 +20,8 @@ const {
 const { evmRevert, evmSnapshot, tokenProviderUniV2 } = require('./utils/utils');
 
 const HMaker = artifacts.require('HMaker');
-const HUniswapV2 = artifacts.require('HUniswapV2');
+const HUniswap = artifacts.require('HUniswap');
+const FeeRuleRegistry = artifacts.require('FeeRuleRegistry');
 const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('ProxyMock');
 const IToken = artifacts.require('IERC20');
@@ -64,7 +65,8 @@ contract('Maker', function([_, user]) {
     providerAddress = await tokenProviderUniV2(tokenAddress);
 
     this.registry = await Registry.new();
-    this.proxy = await Proxy.new(this.registry.address);
+    this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);
+    this.proxy = await Proxy.new(this.registry.address, this.feeRuleRegistry.address);
     this.token = await IToken.at(tokenAddress);
     this.hMaker = await HMaker.new();
     await this.registry.register(
@@ -121,6 +123,7 @@ contract('Maker', function([_, user]) {
         it('normal', async function() {
           const daiUser = await this.dai.balanceOf.call(user);
           const config = [ZERO_BYTES32, ZERO_BYTES32];
+          const ruleIndex = [];
           const to1 = this.hMaker.address;
           const ilkEth = utils.padRight(utils.asciiToHex('ETH-A'), 64);
 
@@ -151,6 +154,7 @@ contract('Maker', function([_, user]) {
             [to1, to2],
             config,
             [data1, data2],
+            ruleIndex,
             {
               from: user,
               value: value1,

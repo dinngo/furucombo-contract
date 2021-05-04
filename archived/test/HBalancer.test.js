@@ -26,6 +26,7 @@ const {
 } = require('./utils/utils');
 
 const HBalancer = artifacts.require('HBalancer');
+const FeeRuleRegistry = artifacts.require('FeeRuleRegistry');
 const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('ProxyMock');
 const IToken = artifacts.require('IERC20');
@@ -55,7 +56,8 @@ contract('Balancer', function([_, user]) {
 
     // Deploy proxy and handler
     this.registry = await Registry.new();
-    this.proxy = await Proxy.new(this.registry.address);
+    this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);
+    this.proxy = await Proxy.new(this.registry.address, this.feeRuleRegistry.address);
     this.hBalancer = await HBalancer.new();
     await this.registry.register(
       this.hBalancer.address,

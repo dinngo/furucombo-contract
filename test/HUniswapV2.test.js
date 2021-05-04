@@ -31,6 +31,7 @@ const {
 } = require('./utils/utils');
 
 const HUniswapV2 = artifacts.require('HUniswapV2');
+const FeeRuleRegistry = artifacts.require('FeeRuleRegistry');
 const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('ProxyMock');
 const IToken = artifacts.require('IERC20');
@@ -57,8 +58,8 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
       utils.asciiToHex('UniswapV2')
     );
     this.router = await IUniswapV2Router.at(UNISWAPV2_ROUTER02);
-    this.proxy = await Proxy.new(this.registry.address);
-
+    this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);
+    this.proxy = await Proxy.new(this.registry.address, this.feeRuleRegistry.address);
     impersonateAndInjectEther(hbtcProviderAddress);
   });
 

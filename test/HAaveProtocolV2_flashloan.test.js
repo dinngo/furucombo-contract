@@ -31,6 +31,7 @@ const {
   tokenProviderUniV2,
 } = require('./utils/utils');
 
+const FeeRuleRegistry = artifacts.require('FeeRuleRegistry');
 const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('ProxyMock');
 // const HAave = artifacts.require('HAaveProtocol'); archived
@@ -51,7 +52,8 @@ contract('AaveV2 flashloan', function([_, user, someone]) {
 
   before(async function() {
     this.registry = await Registry.new();
-    this.proxy = await Proxy.new(this.registry.address);
+    this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);
+    this.proxy = await Proxy.new(this.registry.address, this.feeRuleRegistry.address);
     // Register aave v1 handler
     /* archived
     this.hAave = await HAave.new();
@@ -520,7 +522,8 @@ contract('AaveV2 flashloan', function([_, user, someone]) {
       const to = [to1, to2];
       const config = [ZERO_BYTES32, ZERO_BYTES32];
       const data = [data1, data2];
-      const receipt = await this.proxy.batchExec(to, config, data, {
+      const ruleIndex = [];
+      const receipt = await this.proxy.batchExec(to, config, data, ruleIndex, {
         from: user,
         value: ether('0.1'),
       });
@@ -583,9 +586,10 @@ contract('AaveV2 flashloan', function([_, user, someone]) {
 
       const to = [this.hAaveV2.address];
       const config = [ZERO_BYTES32];
+      const ruleIndex = [];
       const data = [data2];
 
-      const receipt = await this.proxy.batchExec(to, config, data, {
+      const receipt = await this.proxy.batchExec(to, config, data, ruleIndex, {
         from: user,
         value: ether('0.1'),
       });
@@ -665,8 +669,9 @@ contract('AaveV2 flashloan', function([_, user, someone]) {
 
       const to = [this.hAaveV2.address];
       const config = [ZERO_BYTES32];
+      const ruleIndex = [];
       const data = [data1];
-      const receipt = await this.proxy.batchExec(to, config, data, {
+      const receipt = await this.proxy.batchExec(to, config, data, ruleIndex, {
         from: user,
         value: ether('0.1'),
       });
@@ -728,8 +733,9 @@ contract('AaveV2 flashloan', function([_, user, someone]) {
 
       const to = [this.hAaveV2.address];
       const config = [ZERO_BYTES32];
+      const ruleIndex = [];
       const data = [data1];
-      const receipt = await this.proxy.batchExec(to, config, data, {
+      const receipt = await this.proxy.batchExec(to, config, data, ruleIndex, {
         from: user,
         value: ether('0.1'),
       });

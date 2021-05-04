@@ -28,6 +28,7 @@ const {
   tokenProviderCurveGauge,
 } = require('./utils/utils');
 
+const FeeRuleRegistry = artifacts.require('FeeRuleRegistry');
 const Proxy = artifacts.require('ProxyMock');
 const Registry = artifacts.require('Registry');
 const HCurveDao = artifacts.require('HCurveDao');
@@ -74,7 +75,11 @@ contract('Curve DAO', function([_, user]) {
     this.gauge0 = await ILiquidityGauge.at(gauge0Address);
     this.gauge1 = await ILiquidityGauge.at(gauge1Address);
     this.gauge2 = await ILiquidityGauge.at(gauge2Address);
-    this.proxy = await Proxy.new(this.registry.address);
+    this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);
+    this.proxy = await Proxy.new(
+      this.registry.address,
+      this.feeRuleRegistry.address
+    );
   });
 
   beforeEach(async function() {

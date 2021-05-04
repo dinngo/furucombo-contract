@@ -26,6 +26,7 @@ const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
 const HFunds = artifacts.require('HFunds');
 const HComptroller = artifacts.require('HComptroller');
 const HUniswapV2 = artifacts.require('HUniswapV2');
+const FeeRuleRegistry = artifacts.require('FeeRuleRegistry');
 const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('ProxyMock');
 const IToken = artifacts.require('IERC20');
@@ -47,7 +48,8 @@ contract('Claim Comp and add liquidity', function([
 
   before(async function() {
     this.registry = await Registry.new();
-    this.proxy = await Proxy.new(this.registry.address);
+    this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);
+    this.proxy = await Proxy.new(this.registry.address, this.feeRuleRegistry.address);
     this.hComptroller = await HComptroller.new();
     await this.registry.register(
       this.hComptroller.address,
@@ -103,6 +105,7 @@ contract('Claim Comp and add liquidity', function([
         this.hUniswapV2.address,
       ];
       const config = [ZERO_BYTES32, ZERO_BYTES32, ZERO_BYTES32];
+      const ruleIndex = [];
       const data = [
         abi.simpleEncode('claimComp()'),
         abi.simpleEncode('inject(address[],uint256[])', tokenAddresses, values),
@@ -115,8 +118,7 @@ contract('Claim Comp and add liquidity', function([
           new BN('1')
         ),
       ];
-
-      const receipt = await this.proxy.batchExec(to, config, data, {
+      const receipt = await this.proxy.batchExec(to, config, data, ruleIndex, {
         from: user,
         value: ether('1'),
       });
