@@ -53,7 +53,10 @@ contract('UniswapV2 Liquidity', function([_, user]) {
 
     this.registry = await Registry.new();
     this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);
-    this.proxy = await Proxy.new(this.registry.address, this.feeRuleRegistry.address);
+    this.proxy = await Proxy.new(
+      this.registry.address,
+      this.feeRuleRegistry.address
+    );
     this.hUniswapV2 = await HUniswapV2.new();
     await this.registry.register(
       this.hUniswapV2.address,

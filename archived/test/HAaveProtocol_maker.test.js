@@ -71,7 +71,10 @@ contract('Aave flashloan maker', function([_, user]) {
   before(async function() {
     this.registry = await Registry.new();
     this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);
-    this.proxy = await Proxy.new(this.registry.address, this.feeRuleRegistry.address);
+    this.proxy = await Proxy.new(
+      this.registry.address,
+      this.feeRuleRegistry.address
+    );
     this.hAave = await HAave.new();
     this.hMaker = await HMaker.new();
     await this.registry.register(

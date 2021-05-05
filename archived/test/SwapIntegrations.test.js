@@ -37,7 +37,10 @@ contract('SwapIntegration', function([_, user]) {
   before(async function() {
     this.registry = await Registry.new();
     this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);
-    this.proxy = await Proxy.new(this.registry.address, this.feeRuleRegistry.address);
+    this.proxy = await Proxy.new(
+      this.registry.address,
+      this.feeRuleRegistry.address
+    );
   });
 
   beforeEach(async function() {
@@ -89,10 +92,16 @@ contract('SwapIntegration', function([_, user]) {
             maxToken
           ),
         ];
-        const receipt = await this.proxy.batchExec(to, config, data, ruleIndex, {
-          from: user,
-          value: ether('1'),
-        });
+        const receipt = await this.proxy.batchExec(
+          to,
+          config,
+          data,
+          ruleIndex,
+          {
+            from: user,
+            value: ether('1'),
+          }
+        );
         expect(await balanceUser.delta()).to.be.bignumber.eq(
           ether('0')
             .sub(value[0])
@@ -139,10 +148,16 @@ contract('SwapIntegration', function([_, user]) {
         ];
         const rate = await this.cToken.exchangeRateStored.call();
         const result = value[1].mul(ether('1')).div(rate);
-        const receipt = await this.proxy.batchExec(to, config, data, ruleIndex, {
-          from: user,
-          value: ether('1'),
-        });
+        const receipt = await this.proxy.batchExec(
+          to,
+          config,
+          data,
+          ruleIndex,
+          {
+            from: user,
+            value: ether('1'),
+          }
+        );
         const cTokenUser = await this.cToken.balanceOf.call(user);
         expect(
           cTokenUser.mul(new BN('1000')).divRound(result)

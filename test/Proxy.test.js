@@ -482,10 +482,16 @@ contract('Proxy', function([_, deployer, user]) {
         abi.simpleEncode('barUint1(address,uint256)', this.foo.address, ratio),
       ];
 
-      const receipt = await this.proxy.batchExec(tos, configs, datas, ruleIndex, {
-        from: user,
-        value: ether('1'),
-      });
+      const receipt = await this.proxy.batchExec(
+        tos,
+        configs,
+        datas,
+        ruleIndex,
+        {
+          from: user,
+          value: ether('1'),
+        }
+      );
 
       expect(await this.foo.nValue.call()).to.be.bignumber.eq(
         secAmt.mul(ratio).div(ether('1'))

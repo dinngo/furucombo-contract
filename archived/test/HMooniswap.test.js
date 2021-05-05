@@ -59,7 +59,10 @@ contract('Mooniswap', function([_, user]) {
       utils.asciiToHex('Mooniswap')
     );
     this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);
-    this.proxy = await Proxy.new(this.registry.address, this.feeRuleRegistry.address);
+    this.proxy = await Proxy.new(
+      this.registry.address,
+      this.feeRuleRegistry.address
+    );
 
     // Setup and transfer token to user
     this.tokenA = await IToken.at(tokenAAddress);

@@ -59,7 +59,10 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
     );
     this.router = await IUniswapV2Router.at(UNISWAPV2_ROUTER02);
     this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);
-    this.proxy = await Proxy.new(this.registry.address, this.feeRuleRegistry.address);
+    this.proxy = await Proxy.new(
+      this.registry.address,
+      this.feeRuleRegistry.address
+    );
     impersonateAndInjectEther(hbtcProviderAddress);
   });
 

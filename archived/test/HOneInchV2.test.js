@@ -39,7 +39,10 @@ contract('OneInch Swap', function([_, user]) {
       utils.asciiToHex('OneInch V2')
     );
     this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);
-    this.proxy = await Proxy.new(this.registry.address, this.feeRuleRegistry.address);
+    this.proxy = await Proxy.new(
+      this.registry.address,
+      this.feeRuleRegistry.address
+    );
   });
 
   beforeEach(async function() {

@@ -27,7 +27,10 @@ contract('GasTokens', function([_, user]) {
   before(async function() {
     this.registry = await Registry.new();
     this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);
-    this.proxy = await Proxy.new(this.registry.address, this.feeRuleRegistry.address);
+    this.proxy = await Proxy.new(
+      this.registry.address,
+      this.feeRuleRegistry.address
+    );
     this.hGasTokens = await HGasTokens.new();
     await this.registry.register(
       this.hGasTokens.address,

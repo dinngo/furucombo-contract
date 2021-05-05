@@ -69,7 +69,10 @@ contract('BalancerExchange', function([_, user]) {
     // Deploy proxy and handler
     this.registry = await Registry.new();
     this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);
-    this.proxy = await Proxy.new(this.registry.address, this.feeRuleRegistry.address);
+    this.proxy = await Proxy.new(
+      this.registry.address,
+      this.feeRuleRegistry.address
+    );
     this.hBalancerExchange = await HBalancerExchange.new();
     await this.registry.register(
       this.hBalancerExchange.address,

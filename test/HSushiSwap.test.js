@@ -45,7 +45,10 @@ contract('SushiSwap Swap', function([_, user, someone]) {
     );
     this.router = await IUniswapV2Router.at(SUSHISWAP_ROUTER);
     this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);
-    this.proxy = await Proxy.new(this.registry.address, this.feeRuleRegistry.address);
+    this.proxy = await Proxy.new(
+      this.registry.address,
+      this.feeRuleRegistry.address
+    );
   });
 
   beforeEach(async function() {

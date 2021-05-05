@@ -57,7 +57,10 @@ contract('Curve', function([_, user]) {
       utils.asciiToHex('HCurve')
     );
     this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);
-    this.proxy = await Proxy.new(this.registry.address, this.feeRuleRegistry.address);
+    this.proxy = await Proxy.new(
+      this.registry.address,
+      this.feeRuleRegistry.address
+    );
     this.ySwap = await ICurveHandler.at(CURVE_Y_SWAP);
     this.yDeposit = await ICurveHandler.at(CURVE_Y_DEPOSIT);
     this.threeSwap = await ICurveHandler.at(CURVE_3POOL_SWAP);

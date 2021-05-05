@@ -46,7 +46,10 @@ contract('Uniswap Swap', function([_, user, someone]) {
       utils.asciiToHex('Uniswap')
     );
     this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);
-    this.proxy = await Proxy.new(this.registry.address, this.feeRuleRegistry.address);
+    this.proxy = await Proxy.new(
+      this.registry.address,
+      this.feeRuleRegistry.address
+    );
   });
 
   beforeEach(async function() {

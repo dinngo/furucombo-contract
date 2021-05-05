@@ -101,7 +101,10 @@ contract('BProtocol', function([_, user1, user2, someone]) {
 
     this.registry = await Registry.new();
     this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);
-    this.proxy = await Proxy.new(this.registry.address, this.feeRuleRegistry.address);
+    this.proxy = await Proxy.new(
+      this.registry.address,
+      this.feeRuleRegistry.address
+    );
     this.token = await IToken.at(tokenAddress);
     this.hMaker = await HMaker.new();
     await this.registry.register(

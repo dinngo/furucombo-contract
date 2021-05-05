@@ -59,7 +59,10 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
 
     this.registry = await Registry.new();
     this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);
-    this.proxy = await Proxy.new(this.registry.address, this.feeRuleRegistry.address);
+    this.proxy = await Proxy.new(
+      this.registry.address,
+      this.feeRuleRegistry.address
+    );
     this.hAdapter = await HStakingRewardsAdapter.new();
     await this.registry.register(
       this.hAdapter.address,

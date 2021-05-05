@@ -49,7 +49,10 @@ contract('Aave flashloan', function([_, user]) {
 
     this.registry = await Registry.new();
     this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);
-    this.proxy = await Proxy.new(this.registry.address, this.feeRuleRegistry.address);
+    this.proxy = await Proxy.new(
+      this.registry.address,
+      this.feeRuleRegistry.address
+    );
     this.hAave = await HAave.new();
     this.hMock = await HMock.new();
     await this.registry.register(

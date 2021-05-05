@@ -67,7 +67,10 @@ contract('Comptroller', function([_, user, someone]) {
   before(async function() {
     this.registry = await Registry.new();
     this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);
-    this.proxy = await Proxy.new(this.registry.address, this.feeRuleRegistry.address);
+    this.proxy = await Proxy.new(
+      this.registry.address,
+      this.feeRuleRegistry.address
+    );
     this.hComptroller = await HComptroller.new();
     await this.registry.register(
       this.hComptroller.address,

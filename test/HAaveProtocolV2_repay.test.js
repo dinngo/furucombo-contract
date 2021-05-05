@@ -51,7 +51,10 @@ contract('Aave V2', function([_, user]) {
 
     this.registry = await Registry.new();
     this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);
-    this.proxy = await Proxy.new(this.registry.address, this.feeRuleRegistry.address);
+    this.proxy = await Proxy.new(
+      this.registry.address,
+      this.feeRuleRegistry.address
+    );
     this.hAaveV2 = await HAaveV2.new();
     await this.registry.register(
       this.hAaveV2.address,

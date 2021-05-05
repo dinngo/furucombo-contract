@@ -452,8 +452,7 @@ contract('Fee', function([_, feeCollector, user]) {
       expect(await this.token2.balanceOf.call(this.proxy.address)).to.be.zero;
       // User
       expect(await balanceUser.delta()).to.be.bignumber.eq(
-        ether('0')
-          .sub(new BN(receipt.receipt.gasUsed))
+        ether('0').sub(new BN(receipt.receipt.gasUsed))
       );
       expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
         tokenAmount.sub(feeToken)

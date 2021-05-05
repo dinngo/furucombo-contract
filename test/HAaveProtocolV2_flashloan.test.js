@@ -53,7 +53,10 @@ contract('AaveV2 flashloan', function([_, user, someone]) {
   before(async function() {
     this.registry = await Registry.new();
     this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);
-    this.proxy = await Proxy.new(this.registry.address, this.feeRuleRegistry.address);
+    this.proxy = await Proxy.new(
+      this.registry.address,
+      this.feeRuleRegistry.address
+    );
     // Register aave v1 handler
     /* archived
     this.hAave = await HAave.new();
