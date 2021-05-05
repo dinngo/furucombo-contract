@@ -290,7 +290,7 @@ contract('FeeRuleRegistry', function([_, feeCollector, user, someone]) {
       );
     });
 
-    it('qualified for both without basis', async function() {
+    it('multiple indexes: qualified for both without basis', async function() {
       const queryAddr = user;
       const indexes = ['0', '1'];
       const rate = await this.registry.calFeeRateMultiWithoutBasis.call(
@@ -302,7 +302,7 @@ contract('FeeRuleRegistry', function([_, feeCollector, user, someone]) {
       );
     });
 
-    it('qualified for both with basis', async function() {
+    it('multiple indexes: qualified for both with basis', async function() {
       const queryAddr = user;
       const indexes = ['0', '1'];
       const rate = await this.registry.calFeeRateMulti.call(queryAddr, indexes);
@@ -314,7 +314,7 @@ contract('FeeRuleRegistry', function([_, feeCollector, user, someone]) {
       );
     });
 
-    it('qualified for single without basis', async function() {
+    it('multiple indexes: qualified for single without basis', async function() {
       const queryAddr = someone;
       const indexes = ['0', '1'];
       const rate = await this.registry.calFeeRateMultiWithoutBasis.call(
@@ -324,7 +324,7 @@ contract('FeeRuleRegistry', function([_, feeCollector, user, someone]) {
       expect(rate).to.be.bignumber.eq(RULE2_DISCOUNT);
     });
 
-    it('qualified for single with basis', async function() {
+    it('multiple indexes: qualified for single with basis', async function() {
       const queryAddr = someone;
       const indexes = ['0', '1'];
       const rate = await this.registry.calFeeRateMulti.call(queryAddr, indexes);
@@ -333,7 +333,7 @@ contract('FeeRuleRegistry', function([_, feeCollector, user, someone]) {
       );
     });
 
-    it('not qualified without basis', async function() {
+    it('multiple indexes: not qualified without basis', async function() {
       // empty 'someone' to make him not qualified for rule2
       await send.ether(someone, ZERO_ADDRESS, ether('99.9'));
       const queryAddr = someone;
@@ -345,11 +345,47 @@ contract('FeeRuleRegistry', function([_, feeCollector, user, someone]) {
       expect(rate).to.be.bignumber.eq(BASE);
     });
 
-    it('not qualified with basis', async function() {
+    it('multiple indexes: not qualified with basis', async function() {
       // empty 'someone' to make him not qualified for rule2
       await send.ether(someone, ZERO_ADDRESS, ether('99.9'));
       const queryAddr = someone;
       const indexes = ['0', '1'];
+      const rate = await this.registry.calFeeRateMulti.call(queryAddr, indexes);
+      expect(rate).to.be.bignumber.eq(BASIS_FEE_RATE);
+    });
+
+    it('single index: qualified without basis', async function() {
+      const queryAddr = user;
+      const indexes = ['0'];
+      const rate = await this.registry.calFeeRateMultiWithoutBasis.call(
+        queryAddr,
+        indexes
+      );
+      expect(rate).to.be.bignumber.eq(RULE1_DISCOUNT);
+    });
+
+    it('single index: qualified with basis', async function() {
+      const queryAddr = user;
+      const indexes = ['0'];
+      const rate = await this.registry.calFeeRateMulti.call(queryAddr, indexes);
+      expect(rate).to.be.bignumber.eq(
+        RULE1_DISCOUNT.mul(BASIS_FEE_RATE).div(BASE)
+      );
+    });
+
+    it('single index: not qualified without basis', async function() {
+      const queryAddr = someone;
+      const indexes = ['0'];
+      const rate = await this.registry.calFeeRateMultiWithoutBasis.call(
+        queryAddr,
+        indexes
+      );
+      expect(rate).to.be.bignumber.eq(BASE);
+    });
+
+    it('single index: not qualified with basis', async function() {
+      const queryAddr = someone;
+      const indexes = ['0'];
       const rate = await this.registry.calFeeRateMulti.call(queryAddr, indexes);
       expect(rate).to.be.bignumber.eq(BASIS_FEE_RATE);
     });
