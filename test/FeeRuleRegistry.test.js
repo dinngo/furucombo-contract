@@ -32,7 +32,7 @@ const RULE1_REQUIREMENT = ether('50'); // should match the verify requirement in
 const RULE2_REQUIREMENT = ether('10'); // should match the verify requirement in RuleMock2 (ETH)
 
 contract('FeeRuleRegistry', function([_, feeCollector, user, someone]) {
-  const tokenAddress = COMBO_TOKEN;
+  const tokenAddress = COMBO_TOKEN; // should match the verify requirement token in RuleMock1 (COMBO)
   const providerAddress = COMBO_PROVIDER;
 
   let id;
