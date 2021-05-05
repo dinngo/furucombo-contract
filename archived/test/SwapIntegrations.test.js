@@ -74,6 +74,7 @@ contract('SwapIntegration', function([_, user]) {
         );
         const to = [this.hUniswap.address, this.hUniswap.address];
         const config = [ZERO_BYTES32, ZERO_BYTES32];
+        const ruleIndex = [];
         const data = [
           abi.simpleEncode(
             'ethToTokenSwapInput(uint256,address,uint256):(uint256)',
@@ -88,7 +89,7 @@ contract('SwapIntegration', function([_, user]) {
             maxToken
           ),
         ];
-        const receipt = await this.proxy.batchExec(to, config, data, {
+        const receipt = await this.proxy.batchExec(to, config, data, ruleIndex, {
           from: user,
           value: ether('1'),
         });
@@ -126,6 +127,7 @@ contract('SwapIntegration', function([_, user]) {
         );
         const to = [this.hUniswap.address, this.hCToken.address];
         const config = [ZERO_BYTES32, ZERO_BYTES32];
+        const ruleIndex = [];
         const data = [
           abi.simpleEncode(
             'ethToTokenSwapInput(uint256,address,uint256):(uint256)',
@@ -137,7 +139,7 @@ contract('SwapIntegration', function([_, user]) {
         ];
         const rate = await this.cToken.exchangeRateStored.call();
         const result = value[1].mul(ether('1')).div(rate);
-        const receipt = await this.proxy.batchExec(to, config, data, {
+        const receipt = await this.proxy.batchExec(to, config, data, ruleIndex, {
           from: user,
           value: ether('1'),
         });
