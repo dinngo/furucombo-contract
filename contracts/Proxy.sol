@@ -333,14 +333,13 @@ contract Proxy is IProxy, Storage, Config {
         // Set the fee collector
         _setFeeCollector(feeRuleRegistry.feeCollector());
         // Calculate fee
-
         uint256 feeRate = feeRuleRegistry.calFeeRateMulti(
             _getSender(),
             _ruleIndexes
         );
-
+        require(feeRate <= PERCENTAGE_BASE, "fee rate out of range");
         _setFeeRate(feeRate);
-        if (feeRate > 0) {
+        if (msg.value > 0 && feeRate > 0) {
             // Process ether fee
             uint256 feeEth = _calFee(msg.value, feeRate);
             payable(_getFeeCollector()).transfer(feeEth);
@@ -410,8 +409,6 @@ contract Proxy is IProxy, Storage, Config {
         pure
         returns (uint256)
     {
-        // TODO: determine below requirement stay or not
-        // require(_feeRate <= PERCENTAGE_BASE, "fee rate out of range");
         return _amount.mul(_feeRate).div(PERCENTAGE_BASE);
     }
 }
