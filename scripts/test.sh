@@ -24,10 +24,10 @@ echo "$tests"
 start_hardhat() {
 
     echo "ETH_MAINNET_NODE:" $ETH_MAINNET_NODE
-    
+
     npx hardhat node --fork $ETH_MAINNET_NODE --no-deploy >/dev/null &
-    
-    echo "no deployment script will be executed"    
+
+    echo "no deployment script will be executed"
 
     hardhat_pid=$!
 }
@@ -35,7 +35,7 @@ start_hardhat() {
 wait_hardhat_ready() {
 
     while ! hardhat_running
-    do 
+    do
         sleep 3
     done
 }
@@ -53,4 +53,3 @@ npx hardhat --version
 
 # Execute rest test files with suffix `.test.js`
 npx hardhat --network localhost test $tests
-
