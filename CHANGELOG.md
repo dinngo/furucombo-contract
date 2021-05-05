@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+## [1.5.1] - 2021-05-05
+
 ### Added
 
 - Update audit reports.
