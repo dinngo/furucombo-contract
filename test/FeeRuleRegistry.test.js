@@ -28,8 +28,8 @@ const BASE = ether('1');
 const BASIS_FEE_RATE = ether('0.01'); // 1%
 const RULE1_DISCOUNT = ether('0.9'); // should match DISCOUNT of RuleMock1
 const RULE2_DISCOUNT = ether('0.8'); // should match DISCOUNT of RuleMock2
-const RULE1_REQUIREMENT = ether('50'); // should match the verify requirement in RuleMock1
-const RULE2_REQUIREMENT = ether('10'); // should match the verify requirement in RuleMock2
+const RULE1_REQUIREMENT = ether('50'); // should match the verify requirement in RuleMock1 (COMBO)
+const RULE2_REQUIREMENT = ether('10'); // should match the verify requirement in RuleMock2 (ETH)
 
 contract('FeeRuleRegistry', function([_, feeCollector, user, someone]) {
   const tokenAddress = COMBO_TOKEN;
@@ -189,7 +189,7 @@ contract('FeeRuleRegistry', function([_, feeCollector, user, someone]) {
       );
     });
 
-    it('should revert: already uregistered', async function() {
+    it('should revert: already unregistered', async function() {
       await this.registry.unregisterRule('0');
       await expectRevert(
         this.registry.unregisterRule('0'),
