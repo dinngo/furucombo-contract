@@ -11,6 +11,7 @@ import "./interface/IFeeRuleRegistry.sol";
 import "./Config.sol";
 import "./Storage.sol";
 import "./lib/LibParam.sol";
+import "./lib/LibFeeStorage.sol";
 
 /**
  * @title The entrance of Furucombo
@@ -23,6 +24,7 @@ contract Proxy is IProxy, Storage, Config {
     using LibParam for bytes32;
     using LibStack for bytes32[];
     using Strings for uint256;
+    using LibFeeStorage for mapping(bytes32 => bytes32);
 
     event LogBegin(
         address indexed handler,
@@ -331,18 +333,18 @@ contract Proxy is IProxy, Storage, Config {
         // Set the sender.
         _setSender();
         // Set the fee collector
-        _setFeeCollector(feeRuleRegistry.feeCollector());
+        cache._setFeeCollector(feeRuleRegistry.feeCollector());
         // Calculate fee
         uint256 feeRate = feeRuleRegistry.calFeeRateMulti(
             _getSender(),
             _ruleIndexes
         );
         require(feeRate <= PERCENTAGE_BASE, "fee rate out of range");
-        _setFeeRate(feeRate);
+        cache._setFeeRate(feeRate);
         if (msg.value > 0 && feeRate > 0) {
             // Process ether fee
             uint256 feeEth = _calFee(msg.value, feeRate);
-            payable(_getFeeCollector()).transfer(feeEth);
+            payable(cache._getFeeCollector()).transfer(feeEth);
         }
     }
 
@@ -376,8 +378,8 @@ contract Proxy is IProxy, Storage, Config {
         uint256 amount = address(this).balance;
         if (amount > 0) payable(msg.sender).transfer(amount);
         // Reset cached datas
-        _resetFeeCollector();
-        _resetFeeRate();
+        cache._resetFeeCollector();
+        cache._resetFeeRate();
         _resetSender();
     }
 

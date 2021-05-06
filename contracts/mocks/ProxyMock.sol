@@ -6,6 +6,7 @@ import "../Proxy.sol";
 import "../Config.sol";
 import "./debug/GasProfiler.sol";
 import "./debug/IHandlerEvents.sol";
+import "../lib/LibFeeStorage.sol";
 
 contract ProxyMock is Proxy, GasProfiler, IHandlerEvents {
     using LibStack for bytes32[];
@@ -43,7 +44,7 @@ contract ProxyMock is Proxy, GasProfiler, IHandlerEvents {
         _setSender();
         // Calculate fee
         uint256 feeRate = feeRuleRegistry.calFeeRateMulti(_getSender(), _rules);
-        _setFeeRate(feeRate);
+        cache._setFeeRate(feeRate);
     }
 
     function updateTokenMock(address token) public {
