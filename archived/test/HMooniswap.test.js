@@ -72,7 +72,7 @@ contract('Mooniswap', function([_, user]) {
     this.moonPoolA = await IMoonPool.at(moonPoolAAddress);
     this.moonPoolB = await IMoonPool.at(moonPoolBAddress);
 
-    await this.tokenA.transfer(user, ether('900'), {
+    await this.tokenA.transfer(user, ether('50'), {
       from: tokenAProviderAddress,
     });
     await this.tokenB.transfer(user, ether('900'), {
