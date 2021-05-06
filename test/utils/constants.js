@@ -223,4 +223,10 @@ module.exports = {
 
   // Handler Type
   HANDLER_TYPE: { TOKEN: 0, CUSTOM: 1, OTHERS: 2 },
+
+  // Fee
+  STORAGE_KEY_FEE_RATE:
+    '0x515323fd14ae1d8e2508b9830a3e80e1a884361823ecf1c0f4d3f345ad226225',
+  STORAGE_KEY_FEE_COLLECTOR:
+    '0x0efe2dc3698afe8504a41468034ba33d504aa66b651e1d37f230a3ca6ee9dc72',
 };

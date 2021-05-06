@@ -27,7 +27,12 @@ const {
   KNC_TOKEN,
   KNC_PROVIDER,
 } = require('./utils/constants');
-const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
+const {
+  evmRevert,
+  evmSnapshot,
+  profileGas,
+  checkCacheClean,
+} = require('./utils/utils');
 
 const Proxy = artifacts.require('Proxy');
 const Registry = artifacts.require('Registry');
@@ -117,6 +122,7 @@ contract('Fee', function([_, feeCollector, user]) {
   });
 
   afterEach(async function() {
+    await checkCacheClean(this.proxy.address);
     await evmRevert(id);
   });
 

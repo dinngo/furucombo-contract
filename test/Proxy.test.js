@@ -11,9 +11,13 @@ const abi = require('ethereumjs-abi');
 const utils = web3.utils;
 
 const { expect } = require('chai');
-
-const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
 const { HANDLER_TYPE, OMG_TOKEN } = require('./utils/constants');
+const {
+  evmRevert,
+  evmSnapshot,
+  profileGas,
+  checkCacheClean,
+} = require('./utils/utils');
 
 const Foo = artifacts.require('Foo');
 const FooFactory = artifacts.require('FooFactory');
@@ -39,7 +43,7 @@ contract('Proxy', function([_, deployer, user]) {
 
   before(async function() {
     this.registry = await Registry.new();
-    this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);
+    this.feeRuleRegistry = await FeeRuleRegistry.new('1', _); // intentionally set fee rate to non-zero to make FEE_RATE slot change while processing tx
     this.proxy = await Proxy.new(
       this.registry.address,
       this.feeRuleRegistry.address
@@ -51,6 +55,7 @@ contract('Proxy', function([_, deployer, user]) {
   });
 
   afterEach(async function() {
+    await checkCacheClean(this.proxy.address);
     await evmRevert(id);
   });
 
