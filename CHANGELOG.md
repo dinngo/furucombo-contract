@@ -7,6 +7,8 @@ All notable changes to this project will be documented in this file.
 - Add fee flow for ether and token in `Proxy` and `HFunds` respectively.
 - Add `FeeRuleRegistry` for fee related configurations.
 - Add `RuleBase` as the base of future rules.
+- Duplicate `inject` for `addFunds` in `HFunds`.
+
 
 ## [1.12.0] - 2022-07-27
 

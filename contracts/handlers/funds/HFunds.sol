@@ -37,28 +37,15 @@ contract HFunds is HandlerBase {
         payable
         returns (uint256[] memory)
     {
-        _requireMsg(
-            tokens.length == amounts.length,
-            "inject",
-            "token and amount does not match"
-        );
-        address sender = _getSender();
-        uint256 feeRate = cache._getFeeRate();
-        for (uint256 i = 0; i < tokens.length; i++) {
-            IERC20(tokens[i]).safeTransferFrom(
-                sender,
-                address(this),
-                amounts[i]
-            );
-            if (feeRate > 0) {
-                uint256 fee = _calFee(amounts[i], feeRate);
-                IERC20(tokens[i]).safeTransfer(cache._getFeeCollector(), fee);
-            }
+        _inject(tokens, amounts);
+    }
 
-            // Update involved token
-            _updateToken(tokens[i]);
-        }
-        return amounts;
+    // Same as inject() and just to make another interface for different use case
+    function addFunds(address[] calldata tokens, uint256[] calldata amounts)
+        external
+        payable
+    {
+        _inject(tokens, amounts);
     }
 
     function sendTokens(
@@ -150,6 +137,29 @@ contract HFunds is HandlerBase {
 
     function getBalance(address token) external payable returns (uint256) {
         return _getBalance(token, type(uint256).max);
+    }
+
+    function _inject(address[] calldata tokens, uint256[] calldata amounts)
+        internal
+    {
+        if (tokens.length != amounts.length)
+            _revertMsg("inject", "token and amount does not match");
+        address sender = _getSender();
+        uint256 feeRate = cache._getFeeRate();
+        for (uint256 i = 0; i < tokens.length; i++) {
+            IERC20(tokens[i]).safeTransferFrom(
+                sender,
+                address(this),
+                amounts[i]
+            );
+            if (feeRate > 0) {
+                uint256 fee = _calFee(amounts[i], feeRate);
+                IERC20(tokens[i]).safeTransfer(cache._getFeeCollector(), fee);
+            }
+
+            // Update involved token
+            _updateToken(tokens[i]);
+        }
     }
 
     function _calFee(uint256 _amount, uint256 _feeRate)
