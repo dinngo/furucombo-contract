@@ -1082,7 +1082,7 @@ contract('BProtocol', function([_, user1, user2, someone]) {
       let daiUser;
 
       beforeEach(async function() {
-        const tokenAmount = ether('3000');
+        const tokenAmount = ether('10000');
         const [
           generateLimit,
           minCollateral,
