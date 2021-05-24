@@ -19,22 +19,24 @@ const { expect } = require('chai');
 const {
   ETH_PROVIDER,
   ETH_TOKEN,
+  WETH_TOKEN,
   DAI_TOKEN,
   DAI_UNISWAP,
   BAT_TOKEN,
   AAVEPROTOCOL_PROVIDER,
+  UNISWAPV2_ROUTER02,
 } = require('./utils/constants');
 const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
 
 const HAave = artifacts.require('HAaveProtocol');
 const HMock = artifacts.require('HMock');
-const HUniswap = artifacts.require('HUniswap');
+const HUniswapV2 = artifacts.require('HUniswapV2');
 const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('ProxyMock');
 const IToken = artifacts.require('IERC20');
 const ILendingPool = artifacts.require('ILendingPool');
 const IProvider = artifacts.require('ILendingPoolAddressesProvider');
-const IUniswapExchange = artifacts.require('IUniswapExchange');
+const IUniswapV2Router = artifacts.require('IUniswapV2Router02');
 
 contract('Aave flashloan', function([_, user]) {
   let id;
@@ -71,37 +73,41 @@ contract('Aave flashloan', function([_, user]) {
     const uniswapAddress = DAI_UNISWAP;
 
     before(async function() {
-      this.hUniswap = await HUniswap.new();
+      this.hUniswap = await HUniswapV2.new();
       await this.registry.register(
         this.hUniswap.address,
-        utils.asciiToHex('Uniswap')
+        utils.asciiToHex('Uniswap V2')
       );
       this.token = await IToken.at(tokenAddress);
-      this.swap = await IUniswapExchange.at(uniswapAddress);
+      this.router = await IUniswapV2Router.at(UNISWAPV2_ROUTER02);
     });
 
     it('Uniswap swap and add liquidity', async function() {
       const value = [ether('0.51'), ether('0.49')];
+      const minTokenAmount = ether('0.0000001');
+      const minEthAmount = ether('0.0000001');
+      const path = [WETH_TOKEN, tokenAddress];
       const deadline = (await latest()).add(new BN('100'));
-      const maxToken = await this.swap.ethToTokenSwapInput.call(
-        new BN('1'),
-        deadline,
-        { from: user, value: value[0] }
-      );
+      const retUniV2 = await this.router.getAmountsOut.call(value[0], path, {
+        from: user,
+      });
+      const maxToken = retUniV2[1];
       const flashTo = [this.hUniswap.address, this.hUniswap.address];
       const flashConfig = [ZERO_BYTES32, ZERO_BYTES32];
       const flashData = [
         abi.simpleEncode(
-          'ethToTokenSwapInput(uint256,address,uint256):(uint256)',
+          'swapExactETHForTokens(uint256,uint256,address[]):(uint256[])',
           value[0],
-          tokenAddress,
-          new BN('1')
+          new BN('1'),
+          path
         ),
         abi.simpleEncode(
-          'addLiquidity(uint256,address,uint256):(uint256)',
+          'addLiquidityETH(uint256,address,uint256,uint256,uint256):(uint256,uint256,uint256)',
           value[1],
           tokenAddress,
-          maxToken
+          maxToken,
+          minTokenAmount,
+          minEthAmount
         ),
       ];
       const flashTx = util.toBuffer(
@@ -128,9 +134,6 @@ contract('Aave flashloan', function([_, user]) {
           .sub(value[1])
           .sub(ether('0.1'))
           .sub(new BN(receipt.receipt.gasUsed))
-      );
-      expect(await this.swap.balanceOf.call(user)).to.be.bignumber.gt(
-        ether('0')
       );
     });
   });

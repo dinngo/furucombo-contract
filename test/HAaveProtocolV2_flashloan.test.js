@@ -40,7 +40,6 @@ const SimpleToken = artifacts.require('SimpleToken');
 const IToken = artifacts.require('IERC20');
 const ILendingPoolV2 = artifacts.require('ILendingPoolV2');
 const IProviderV2 = artifacts.require('ILendingPoolAddressesProviderV2');
-const IUniswapExchange = artifacts.require('IUniswapExchange');
 const IVariableDebtToken = artifacts.require('IVariableDebtToken');
 const IStableDebtToken = artifacts.require('IStableDebtToken');
 

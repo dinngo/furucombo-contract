@@ -15,16 +15,22 @@ const utils = web3.utils;
 
 const { expect } = require('chai');
 
-const { DAI_TOKEN, DAI_UNISWAP, CDAI } = require('./utils/constants');
+const {
+  DAI_TOKEN,
+  WETH_TOKEN,
+  DAI_UNISWAP,
+  UNISWAPV2_ROUTER02,
+  CDAI,
+} = require('./utils/constants');
 const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
 
-const HUniswap = artifacts.require('HUniswap');
+const HUniswapV2 = artifacts.require('HUniswapV2');
 const HCToken = artifacts.require('HCToken');
 const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('Proxy');
 const IToken = artifacts.require('IERC20');
 const ICToken = artifacts.require('ICToken');
-const IUniswapExchange = artifacts.require('IUniswapExchange');
+const IUniswapV2Router = artifacts.require('IUniswapV2Router02');
 const Foo = artifacts.require('Foo4');
 const FooHandler = artifacts.require('Foo4Handler');
 
@@ -54,13 +60,13 @@ contract('CubeCounting', function([_, user]) {
     const uniswapAddress = DAI_UNISWAP;
 
     before(async function() {
-      this.hUniswap = await HUniswap.new();
+      this.hUniswap = await HUniswapV2.new();
       await this.registry.register(
         this.hUniswap.address,
-        utils.asciiToHex('Uniswap')
+        utils.asciiToHex('UniswapV2')
       );
       this.token = await IToken.at(tokenAddress);
-      this.swap = await IUniswapExchange.at(uniswapAddress);
+      this.router = await IUniswapV2Router.at(UNISWAPV2_ROUTER02);
       this.foo = await Foo.new();
       this.fooHandler = await FooHandler.new();
       await this.registry.register(
@@ -84,19 +90,19 @@ contract('CubeCounting', function([_, user]) {
       it('revert on 1st cube', async function() {
         let value = [ether('10'), ether('0')];
         const deadline = (await latest()).add(new BN('100'));
-        value[1] = await this.swap.ethToTokenSwapInput.call(
-          new BN('1'),
-          deadline,
-          { from: user, value: value[0] }
-        );
+        const path = [WETH_TOKEN, tokenAddress];
+        const retUniV2 = await this.router.getAmountsOut.call(value[0], path, {
+          from: user,
+        });
+        value[1] = retUniV2[1];
         const to = [this.hUniswap.address, this.hCToken.address];
         const config = [ZERO_BYTES32, ZERO_BYTES32];
         const data = [
           abi.simpleEncode(
-            'ethToTokenSwapInput(uint256,address,uint256):(uint256)',
+            'swapExactETHForTokens(uint256,uint256,address[]):(uint256[])',
             value[0],
-            tokenAddress,
-            new BN('1')
+            new BN('1'),
+            path
           ),
           abi.simpleEncode(
             'mint(address,uint256)',
@@ -111,7 +117,7 @@ contract('CubeCounting', function([_, user]) {
             from: user,
             value: ether('1'),
           }),
-          '1_HUniswap_ethToTokenSwapInput: Unspecified'
+          '1_HUniswapV2_swapExactETHForTokens: Unspecified'
         );
       });
 
