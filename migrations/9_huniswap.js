@@ -1,8 +1,11 @@
+/** Archived
 const Registry = artifacts.require('Registry');
 const Handler = artifacts.require('HUniswap');
 const utils = web3.utils;
+*/
 
 module.exports = function(deployer) {
+  /** Archived
   if (deployer.network === 'development') {
     return;
   }
@@ -15,4 +18,5 @@ module.exports = function(deployer) {
       registry = instance;
       return registry.register(Handler.address, utils.asciiToHex('Uniswap'));
     });
+*/
 };

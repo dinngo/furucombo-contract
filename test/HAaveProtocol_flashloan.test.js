@@ -27,13 +27,11 @@ const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
 
 const HAave = artifacts.require('HAaveProtocol');
 const HMock = artifacts.require('HMock');
-const HUniswap = artifacts.require('HUniswap');
 const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('ProxyMock');
 const IToken = artifacts.require('IERC20');
 const ILendingPool = artifacts.require('ILendingPool');
 const IProvider = artifacts.require('ILendingPoolAddressesProvider');
-const IUniswapExchange = artifacts.require('IUniswapExchange');
 const Faucet = artifacts.require('Faucet');
 
 contract('Aave flashloan', function([_, user]) {
