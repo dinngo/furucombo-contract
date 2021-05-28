@@ -15,7 +15,7 @@ contract HUniswapV3 is HandlerBase {
     using Path for bytes;
 
     // prettier-ignore
-    ISwapRouter public constant ROUTER = ISwapRouter(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D);
+    ISwapRouter public constant ROUTER = ISwapRouter(0xE592427A0AEce92De3Edee1F18E0157C05861564);
     // prettier-ignore
     IWETH9 public constant WETH = IWETH9(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2);
 
@@ -199,6 +199,9 @@ contract HUniswapV3 is HandlerBase {
         uint256 value,
         ISwapRouter.ExactInputSingleParams memory params
     ) internal returns (uint256) {
+        params.deadline = now + 1;
+        params.recipient = address(this);
+
         try ROUTER.exactInputSingle{value: value}(params) returns (
             uint256 amountOut
         ) {
@@ -214,6 +217,9 @@ contract HUniswapV3 is HandlerBase {
         uint256 value,
         ISwapRouter.ExactInputParams memory params
     ) internal returns (uint256) {
+        params.deadline = now + 1;
+        params.recipient = address(this);
+
         try ROUTER.exactInput{value: value}(params) returns (
             uint256 amountOut
         ) {
@@ -229,6 +235,9 @@ contract HUniswapV3 is HandlerBase {
         uint256 value,
         ISwapRouter.ExactOutputSingleParams memory params
     ) internal returns (uint256) {
+        params.deadline = now + 1;
+        params.recipient = address(this);
+
         try ROUTER.exactOutputSingle{value: value}(params) returns (
             uint256 amountIn
         ) {
@@ -244,6 +253,9 @@ contract HUniswapV3 is HandlerBase {
         uint256 value,
         ISwapRouter.ExactOutputParams memory params
     ) internal returns (uint256) {
+        params.deadline = now + 1;
+        params.recipient = address(this);
+
         try ROUTER.exactOutput{value: value}(params) returns (
             uint256 amountIn
         ) {
