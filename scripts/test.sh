@@ -71,4 +71,4 @@ fi
 truffle version
 
 # Execute rest test files with suffix `.test.js` with single `truffle test`
-node_modules/.bin/truffle test "$@" --compile-none
+node_modules/.bin/truffle test "$@"
