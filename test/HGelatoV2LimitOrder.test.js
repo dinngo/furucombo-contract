@@ -6,7 +6,6 @@ const {
   expectRevert,
 } = require('@openzeppelin/test-helpers');
 const { getWitnessAndSecret } = require('@gelatonetwork/limit-orders-lib');
-const { ZERO_BYTES32 } = constants;
 const { tracker } = balance;
 const { expect } = require('chai');
 const { ethers } = require('ethers');
@@ -111,7 +110,7 @@ contract('GelatoLimitOrder', function([_, user]) {
         sellAmount,
         minReturn,
         witness,
-        ZERO_BYTES32 // witness private key but unused, it can fill any bytes.
+        secret
       );
 
       // place order through proxy
@@ -223,7 +222,7 @@ contract('GelatoLimitOrder', function([_, user]) {
         sellAmount,
         minReturn,
         witness,
-        ZERO_BYTES32 // witness private key but unused, it can fill any bytes.
+        secret
       );
 
       await expectRevert.unspecified(
@@ -254,7 +253,7 @@ contract('GelatoLimitOrder', function([_, user]) {
         sellAmount,
         minReturn,
         witness,
-        ZERO_BYTES32 // witness private key but unused, it can fill any bytes.
+        secret
       );
 
       // place order through proxy
@@ -326,7 +325,7 @@ contract('GelatoLimitOrder', function([_, user]) {
         sellAmount,
         minReturn,
         witness,
-        ZERO_BYTES32 // witness private key, but unused, it can fill any bytes.
+        secret // witness private key, but unused, it can fill any bytes.
       );
 
       await this.tokenA.transfer(this.proxy.address, sellAmount, {
@@ -436,7 +435,7 @@ contract('GelatoLimitOrder', function([_, user]) {
         sellAmount,
         minReturn,
         witness,
-        ZERO_BYTES32 // witness private key, but unused, it can fill any bytes.
+        secret // witness private key, but unused, it can fill any bytes.
       );
 
       await this.tokenA.transfer(
@@ -478,7 +477,7 @@ contract('GelatoLimitOrder', function([_, user]) {
         sellAmount,
         minReturn,
         witness,
-        ZERO_BYTES32 // witness private key but unused, it can fill any bytes.
+        secret
       );
 
       await this.tokenA.transfer(this.proxy.address, sellAmount, {
@@ -551,7 +550,7 @@ contract('GelatoLimitOrder', function([_, user]) {
         sellAmount,
         minReturn,
         witness,
-        ZERO_BYTES32 // witness private key but unused, it can fill any bytes.
+        secret
       );
 
       await this.tokenA.transfer(this.proxy.address, sellAmount, {
@@ -661,7 +660,7 @@ contract('GelatoLimitOrder', function([_, user]) {
         sellAmount,
         minReturn,
         witness,
-        ZERO_BYTES32 // witness private key but unused, it can fill any bytes.
+        secret
       );
 
       await this.tokenA.transfer(this.proxy.address, sellAmount, {
@@ -735,7 +734,7 @@ contract('GelatoLimitOrder', function([_, user]) {
         sellAmount,
         minReturn,
         witness,
-        ZERO_BYTES32 // witness private key but unused, it can fill any bytes.
+        secret
       );
 
       // place order through proxy
@@ -864,7 +863,7 @@ contract('GelatoLimitOrder', function([_, user]) {
         sellAmount,
         minReturn,
         witness,
-        ZERO_BYTES32 // witness private key, but unused, it can fill any bytes.
+        secret // witness private key, but unused, it can fill any bytes.
       );
 
       await this.tokenA.transfer(this.proxy.address, sellAmount, {
@@ -990,7 +989,7 @@ contract('GelatoLimitOrder', function([_, user]) {
         sellAmount,
         minReturn,
         witness,
-        ZERO_BYTES32 // witness private key but unused, it can fill any bytes.
+        secret
       );
 
       await this.tokenA.transfer(this.proxy.address, sellAmount, {
