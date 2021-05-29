@@ -24,96 +24,166 @@ contract HUniswapV3 is HandlerBase {
     }
 
     function exactInputSingleFromEther(
-        ISwapRouter.ExactInputSingleParams memory params
+        address tokenIn,
+        address tokenOut,
+        uint24 fee,
+        uint256 amountIn,
+        uint256 amountOutMinimum,
+        uint160 sqrtPriceLimitX96
     ) external payable returns (uint256 amountOut) {
-        params.amountIn = _getBalance(address(0), params.amountIn);
-        amountOut = _exactInputSingle(params.amountIn, params);
+        ISwapRouter.ExactInputSingleParams memory params;
+        params.tokenIn = tokenIn;
+        params.tokenOut = tokenOut;
+        params.fee = fee;
+        params.amountIn = _getBalance(address(0), amountIn);
+        params.amountOutMinimum = amountOutMinimum;
+        params.sqrtPriceLimitX96 = sqrtPriceLimitX96;
 
-        _updateToken(params.tokenOut);
-    }
+        amountOut = _exactInputSingle(amountIn, params);
 
-    function exactInputSingleToEther(
-        ISwapRouter.ExactInputSingleParams memory params
-    ) external payable returns (uint256 amountOut) {
-        params.amountIn = _getBalance(params.tokenIn, params.amountIn);
-        IERC20(params.tokenIn).safeTransfer(address(ROUTER), params.amountIn);
-        amountOut = _exactInputSingle(0, params);
-
-        WETH.withdraw(amountOut);
-    }
-
-    function exactInputSingle(ISwapRouter.ExactInputSingleParams memory params)
-        external
-        payable
-        returns (uint256 amountOut)
-    {
-        params.amountIn = _getBalance(params.tokenIn, params.amountIn);
-        IERC20(params.tokenIn).safeTransfer(address(ROUTER), params.amountIn);
-        amountOut = _exactInputSingle(0, params);
-
-        _updateToken(params.tokenOut);
-    }
-
-    function exactInputFromEther(ISwapRouter.ExactInputParams memory params)
-        external
-        payable
-        returns (uint256 amountOut)
-    {
-        params.amountIn = _getBalance(address(0), params.amountIn);
-        amountOut = _exactInput(params.amountIn, params);
-
-        address tokenOut = _getTokenOut(params.path);
         _updateToken(tokenOut);
     }
 
-    function exactInputToEther(ISwapRouter.ExactInputParams memory params)
-        external
-        payable
-        returns (uint256 amountOut)
-    {
-        (address tokenIn, , ) = params.path.decodeFirstPool();
-        params.amountIn = _getBalance(tokenIn, params.amountIn);
-        IERC20(tokenIn).safeTransfer(address(ROUTER), params.amountIn);
+    function exactInputSingleToEther(
+        address tokenIn,
+        address tokenOut,
+        uint24 fee,
+        uint256 amountIn,
+        uint256 amountOutMinimum,
+        uint160 sqrtPriceLimitX96
+    ) external payable returns (uint256 amountOut) {
+        ISwapRouter.ExactInputSingleParams memory params;
+        params.tokenIn = tokenIn;
+        params.tokenOut = tokenOut;
+        params.fee = fee;
+        params.amountIn = _getBalance(tokenIn, amountIn);
+        params.amountOutMinimum = amountOutMinimum;
+        params.sqrtPriceLimitX96 = sqrtPriceLimitX96;
+
+        // Approve token
+        _tokenApprove(tokenIn, address(ROUTER), amountIn);
+        amountOut = _exactInputSingle(0, params);
+
+        WETH.withdraw(amountOut);
+    }
+
+    function exactInputSingle(
+        address tokenIn,
+        address tokenOut,
+        uint24 fee,
+        uint256 amountIn,
+        uint256 amountOutMinimum,
+        uint160 sqrtPriceLimitX96
+    ) external payable returns (uint256 amountOut) {
+        ISwapRouter.ExactInputSingleParams memory params;
+        params.tokenIn = tokenIn;
+        params.tokenOut = tokenOut;
+        params.fee = fee;
+        params.amountIn = _getBalance(tokenIn, amountIn);
+        params.amountOutMinimum = amountOutMinimum;
+        params.sqrtPriceLimitX96 = sqrtPriceLimitX96;
+
+        // Approve token
+        _tokenApprove(tokenIn, address(ROUTER), amountIn);
+        amountOut = _exactInputSingle(0, params);
+
+        _updateToken(tokenOut);
+    }
+
+    function exactInputFromEther(
+        bytes calldata path,
+        uint256 amountIn,
+        uint256 amountOutMinimum
+    ) external payable returns (uint256 amountOut) {
+        ISwapRouter.ExactInputParams memory params;
+        params.path = new bytes(path.length);
+        params.path = path;
+        params.amountIn = _getBalance(address(0), amountIn);
+        params.amountOutMinimum = amountOutMinimum;
+
+        amountOut = _exactInput(amountIn, params);
+
+        address tokenOut = _getTokenOut(path);
+        _updateToken(tokenOut);
+    }
+
+    function exactInputToEther(
+        bytes calldata path,
+        uint256 amountIn,
+        uint256 amountOutMinimum
+    ) external payable returns (uint256 amountOut) {
+        ISwapRouter.ExactInputParams memory params;
+        params.path = new bytes(path.length);
+        params.path = path;
+        (address tokenIn, , ) = path.decodeFirstPool();
+        params.amountIn = _getBalance(tokenIn, amountIn);
+        params.amountOutMinimum = amountOutMinimum;
+
+        // Approve token
+        _tokenApprove(tokenIn, address(ROUTER), amountIn);
         amountOut = _exactInput(0, params);
 
         WETH.withdraw(amountOut);
     }
 
-    function exactInput(ISwapRouter.ExactInputParams memory params)
-        external
-        payable
-        returns (uint256 amountOut)
-    {
-        (address tokenIn, , ) = params.path.decodeFirstPool();
-        params.amountIn = _getBalance(tokenIn, params.amountIn);
-        IERC20(tokenIn).safeTransfer(address(ROUTER), params.amountIn);
+    function exactInput(
+        bytes calldata path,
+        uint256 amountIn,
+        uint256 amountOutMinimum
+    ) external payable returns (uint256 amountOut) {
+        ISwapRouter.ExactInputParams memory params;
+        params.path = new bytes(path.length);
+        params.path = path;
+        (address tokenIn, , ) = path.decodeFirstPool();
+        params.amountIn = _getBalance(tokenIn, amountIn);
+        params.amountOutMinimum = amountOutMinimum;
+
+        // Approve token
+        _tokenApprove(tokenIn, address(ROUTER), amountIn);
         amountOut = _exactInput(0, params);
 
-        address tokenOut = _getTokenOut(params.path);
+        address tokenOut = _getTokenOut(path);
         _updateToken(tokenOut);
     }
 
     function exactOutputSingleFromEther(
-        ISwapRouter.ExactOutputSingleParams memory params
+        address tokenIn,
+        address tokenOut,
+        uint24 fee,
+        uint256 amountOut,
+        uint256 amountInMaximum,
+        uint160 sqrtPriceLimitX96
     ) external payable returns (uint256 amountIn) {
+        ISwapRouter.ExactOutputSingleParams memory params;
+        params.tokenIn = tokenIn;
+        params.tokenOut = tokenOut;
+        params.fee = fee;
+        params.amountOut = amountOut;
         // if amount == uint256(-1) return balance of Proxy
-        params.amountInMaximum = _getBalance(
-            params.tokenIn,
-            params.amountInMaximum
-        );
-        amountIn = _exactOutputSingle(params.amountInMaximum, params);
+        params.amountInMaximum = _getBalance(address(0), amountInMaximum);
+        params.sqrtPriceLimitX96 = sqrtPriceLimitX96;
 
-        _updateToken(params.tokenOut);
+        amountIn = _exactOutputSingle(amountInMaximum, params);
+
+        _updateToken(tokenOut);
     }
 
     function exactOutputSingleToEther(
-        ISwapRouter.ExactOutputSingleParams memory params
+        address tokenIn,
+        address tokenOut,
+        uint24 fee,
+        uint256 amountOut,
+        uint256 amountInMaximum,
+        uint160 sqrtPriceLimitX96
     ) external payable returns (uint256 amountIn) {
+        ISwapRouter.ExactOutputSingleParams memory params;
+        params.tokenIn = tokenIn;
+        params.tokenOut = tokenOut;
+        params.fee = fee;
+        params.amountOut = amountOut;
         // if amount == uint256(-1) return balance of Proxy
-        params.amountInMaximum = _getBalance(
-            params.tokenIn,
-            params.amountInMaximum
-        );
+        params.amountInMaximum = _getBalance(tokenIn, amountInMaximum);
+        params.sqrtPriceLimitX96 = sqrtPriceLimitX96;
 
         // Approve token
         _tokenApprove(params.tokenIn, address(ROUTER), params.amountInMaximum);
@@ -123,63 +193,83 @@ contract HUniswapV3 is HandlerBase {
     }
 
     function exactOutputSingle(
-        ISwapRouter.ExactOutputSingleParams memory params
+        address tokenIn,
+        address tokenOut,
+        uint24 fee,
+        uint256 amountOut,
+        uint256 amountInMaximum,
+        uint160 sqrtPriceLimitX96
     ) external payable returns (uint256 amountIn) {
+        ISwapRouter.ExactOutputSingleParams memory params;
+        params.tokenIn = tokenIn;
+        params.tokenOut = tokenOut;
+        params.fee = fee;
+        params.amountOut = amountOut;
         // if amount == uint256(-1) return balance of Proxy
-        params.amountInMaximum = _getBalance(
-            params.tokenIn,
-            params.amountInMaximum
-        );
+        params.amountInMaximum = _getBalance(tokenIn, amountInMaximum);
+        params.sqrtPriceLimitX96 = sqrtPriceLimitX96;
+
         // Approve token
-        _tokenApprove(params.tokenIn, address(ROUTER), params.amountInMaximum);
+        _tokenApprove(params.tokenIn, address(ROUTER), amountInMaximum);
         amountIn = _exactOutputSingle(0, params);
 
         _updateToken(params.tokenOut);
     }
 
-    function exactOutputFromEther(ISwapRouter.ExactOutputParams memory params)
-        external
-        payable
-        returns (uint256 amountIn)
-    {
-        params.amountInMaximum = _getBalance(
-            address(0),
-            params.amountInMaximum
-        );
-        amountIn = _exactOutput(params.amountInMaximum, params);
+    function exactOutputFromEther(
+        bytes calldata path,
+        uint256 amountOut,
+        uint256 amountInMaximum
+    ) external payable returns (uint256 amountIn) {
+        ISwapRouter.ExactOutputParams memory params;
+        params.path = new bytes(path.length);
+        params.path = path;
+        params.amountOut = amountOut;
+        params.amountInMaximum = _getBalance(address(0), amountInMaximum);
 
-        address tokenOut = _getTokenOut(params.path);
+        amountIn = _exactOutput(amountInMaximum, params);
+
+        address tokenOut = _getTokenOut(path);
         _updateToken(tokenOut);
     }
 
-    function exactOutputToEther(ISwapRouter.ExactOutputParams memory params)
-        external
-        payable
-        returns (uint256 amountIn)
-    {
+    function exactOutputToEther(
+        bytes calldata path,
+        uint256 amountOut,
+        uint256 amountInMaximum
+    ) external payable returns (uint256 amountIn) {
+        ISwapRouter.ExactOutputParams memory params;
+        params.path = new bytes(path.length);
+        params.path = path;
+        params.amountOut = amountOut;
         (address tokenIn, , ) = params.path.decodeFirstPool();
         // if amount == uint256(-1) return balance of Proxy
-        params.amountInMaximum = _getBalance(tokenIn, params.amountInMaximum);
+        params.amountInMaximum = _getBalance(tokenIn, amountInMaximum);
         // Approve token
-        _tokenApprove(tokenIn, address(ROUTER), params.amountInMaximum);
+        _tokenApprove(tokenIn, address(ROUTER), amountInMaximum);
         amountIn = _exactOutput(0, params);
 
-        WETH.withdraw(params.amountOut);
+        WETH.withdraw(amountOut);
     }
 
-    function exactOutput(ISwapRouter.ExactOutputParams memory params)
-        external
-        payable
-        returns (uint256 amountIn)
-    {
+    function exactOutput(
+        bytes calldata path,
+        uint256 amountOut,
+        uint256 amountInMaximum
+    ) external payable returns (uint256 amountIn) {
+        ISwapRouter.ExactOutputParams memory params;
+        params.path = new bytes(path.length);
+        params.path = path;
+        params.amountOut = amountOut;
         (address tokenIn, , ) = params.path.decodeFirstPool();
         // if amount == uint256(-1) return balance of Proxy
-        params.amountInMaximum = _getBalance(tokenIn, params.amountInMaximum);
+        params.amountInMaximum = _getBalance(tokenIn, amountInMaximum);
+
         // Approve token
-        _tokenApprove(tokenIn, address(ROUTER), params.amountInMaximum);
+        _tokenApprove(tokenIn, address(ROUTER), amountInMaximum);
         amountIn = _exactOutput(0, params);
 
-        address tokenOut = _getTokenOut(params.path);
+        address tokenOut = _getTokenOut(path);
         _updateToken(tokenOut);
     }
 
