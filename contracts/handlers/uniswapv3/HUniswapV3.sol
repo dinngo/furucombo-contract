@@ -103,7 +103,7 @@ contract HUniswapV3 is HandlerBase {
 
         amountOut = _exactInput(amountIn, params);
 
-        address tokenOut = _getTokenOut(path);
+        address tokenOut = _getLastToken(path);
         _updateToken(tokenOut);
     }
 
@@ -115,7 +115,7 @@ contract HUniswapV3 is HandlerBase {
         ISwapRouter.ExactInputParams memory params;
         params.path = new bytes(path.length);
         params.path = path;
-        (address tokenIn, , ) = path.decodeFirstPool();
+        address tokenIn = _getFirstToken(path);
         params.amountIn = _getBalance(tokenIn, amountIn);
         params.amountOutMinimum = amountOutMinimum;
 
@@ -134,7 +134,7 @@ contract HUniswapV3 is HandlerBase {
         ISwapRouter.ExactInputParams memory params;
         params.path = new bytes(path.length);
         params.path = path;
-        (address tokenIn, , ) = path.decodeFirstPool();
+        address tokenIn = _getFirstToken(path);
         params.amountIn = _getBalance(tokenIn, amountIn);
         params.amountOutMinimum = amountOutMinimum;
 
@@ -142,7 +142,7 @@ contract HUniswapV3 is HandlerBase {
         _tokenApprove(tokenIn, address(ROUTER), amountIn);
         amountOut = _exactInput(0, params);
 
-        address tokenOut = _getTokenOut(path);
+        address tokenOut = _getLastToken(path);
         _updateToken(tokenOut);
     }
 
@@ -229,7 +229,7 @@ contract HUniswapV3 is HandlerBase {
 
         amountIn = _exactOutput(amountInMaximum, params);
 
-        address tokenOut = _getTokenOut(path);
+        address tokenOut = _getFirstToken(path);
         _updateToken(tokenOut);
     }
 
@@ -242,7 +242,7 @@ contract HUniswapV3 is HandlerBase {
         params.path = new bytes(path.length);
         params.path = path;
         params.amountOut = amountOut;
-        (address tokenIn, , ) = params.path.decodeFirstPool();
+        address tokenIn = _getLastToken(path);
         // if amount == uint256(-1) return balance of Proxy
         params.amountInMaximum = _getBalance(tokenIn, amountInMaximum);
         // Approve token
@@ -261,7 +261,7 @@ contract HUniswapV3 is HandlerBase {
         params.path = new bytes(path.length);
         params.path = path;
         params.amountOut = amountOut;
-        (address tokenIn, , ) = params.path.decodeFirstPool();
+        address tokenIn = _getLastToken(path);
         // if amount == uint256(-1) return balance of Proxy
         params.amountInMaximum = _getBalance(tokenIn, amountInMaximum);
 
@@ -269,11 +269,18 @@ contract HUniswapV3 is HandlerBase {
         _tokenApprove(tokenIn, address(ROUTER), amountInMaximum);
         amountIn = _exactOutput(0, params);
 
-        address tokenOut = _getTokenOut(path);
+        address tokenOut = _getFirstToken(path);
         _updateToken(tokenOut);
     }
 
-    function _getTokenOut(bytes memory path)
+    function _getFirstToken(bytes memory path)
+        internal
+        returns (address tokenOut)
+    {
+        (tokenOut, , ) = path.decodeFirstPool();
+    }
+
+    function _getLastToken(bytes memory path)
         internal
         returns (address tokenOut)
     {
