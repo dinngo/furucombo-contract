@@ -39,7 +39,7 @@ contract HUniswapV3 is HandlerBase {
         params.amountOutMinimum = amountOutMinimum;
         params.sqrtPriceLimitX96 = sqrtPriceLimitX96;
 
-        amountOut = _exactInputSingle(amountIn, params);
+        amountOut = _exactInputSingle(params.amountIn, params);
 
         _updateToken(tokenOut);
     }
@@ -61,7 +61,7 @@ contract HUniswapV3 is HandlerBase {
         params.sqrtPriceLimitX96 = sqrtPriceLimitX96;
 
         // Approve token
-        _tokenApprove(tokenIn, address(ROUTER), amountIn);
+        _tokenApprove(tokenIn, address(ROUTER), params.amountIn);
         amountOut = _exactInputSingle(0, params);
 
         WETH.withdraw(amountOut);
@@ -84,7 +84,7 @@ contract HUniswapV3 is HandlerBase {
         params.sqrtPriceLimitX96 = sqrtPriceLimitX96;
 
         // Approve token
-        _tokenApprove(tokenIn, address(ROUTER), amountIn);
+        _tokenApprove(tokenIn, address(ROUTER), params.amountIn);
         amountOut = _exactInputSingle(0, params);
 
         _updateToken(tokenOut);
@@ -101,7 +101,7 @@ contract HUniswapV3 is HandlerBase {
         params.amountIn = _getBalance(address(0), amountIn);
         params.amountOutMinimum = amountOutMinimum;
 
-        amountOut = _exactInput(amountIn, params);
+        amountOut = _exactInput(params.amountIn, params);
 
         address tokenOut = _getLastToken(path);
         _updateToken(tokenOut);
@@ -120,7 +120,7 @@ contract HUniswapV3 is HandlerBase {
         params.amountOutMinimum = amountOutMinimum;
 
         // Approve token
-        _tokenApprove(tokenIn, address(ROUTER), amountIn);
+        _tokenApprove(tokenIn, address(ROUTER), params.amountIn);
         amountOut = _exactInput(0, params);
 
         WETH.withdraw(amountOut);
@@ -139,7 +139,7 @@ contract HUniswapV3 is HandlerBase {
         params.amountOutMinimum = amountOutMinimum;
 
         // Approve token
-        _tokenApprove(tokenIn, address(ROUTER), amountIn);
+        _tokenApprove(tokenIn, address(ROUTER), params.amountIn);
         amountOut = _exactInput(0, params);
 
         address tokenOut = _getLastToken(path);
@@ -163,7 +163,7 @@ contract HUniswapV3 is HandlerBase {
         params.amountInMaximum = _getBalance(address(0), amountInMaximum);
         params.sqrtPriceLimitX96 = sqrtPriceLimitX96;
 
-        amountIn = _exactOutputSingle(amountInMaximum, params);
+        amountIn = _exactOutputSingle(params.amountInMaximum, params);
 
         _updateToken(tokenOut);
     }
@@ -210,7 +210,7 @@ contract HUniswapV3 is HandlerBase {
         params.sqrtPriceLimitX96 = sqrtPriceLimitX96;
 
         // Approve token
-        _tokenApprove(params.tokenIn, address(ROUTER), amountInMaximum);
+        _tokenApprove(params.tokenIn, address(ROUTER), params.amountInMaximum);
         amountIn = _exactOutputSingle(0, params);
 
         _updateToken(params.tokenOut);
@@ -227,7 +227,7 @@ contract HUniswapV3 is HandlerBase {
         params.amountOut = amountOut;
         params.amountInMaximum = _getBalance(address(0), amountInMaximum);
 
-        amountIn = _exactOutput(amountInMaximum, params);
+        amountIn = _exactOutput(params.amountInMaximum, params);
 
         address tokenOut = _getFirstToken(path);
         _updateToken(tokenOut);
@@ -246,7 +246,7 @@ contract HUniswapV3 is HandlerBase {
         // if amount == uint256(-1) return balance of Proxy
         params.amountInMaximum = _getBalance(tokenIn, amountInMaximum);
         // Approve token
-        _tokenApprove(tokenIn, address(ROUTER), amountInMaximum);
+        _tokenApprove(tokenIn, address(ROUTER), params.amountInMaximum);
         amountIn = _exactOutput(0, params);
 
         WETH.withdraw(amountOut);
@@ -266,7 +266,7 @@ contract HUniswapV3 is HandlerBase {
         params.amountInMaximum = _getBalance(tokenIn, amountInMaximum);
 
         // Approve token
-        _tokenApprove(tokenIn, address(ROUTER), amountInMaximum);
+        _tokenApprove(tokenIn, address(ROUTER), params.amountInMaximum);
         amountIn = _exactOutput(0, params);
 
         address tokenOut = _getFirstToken(path);
