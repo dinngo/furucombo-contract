@@ -81,7 +81,7 @@ contract('OneInch Swap', function([_, user]) {
 
     describe('Exact input', function() {
       it('normal', async function() {
-        const value = ether('1');
+        const value = ether('0.1');
         const to = this.hOneInchV2.address;
         const slippage = 3;
 
@@ -130,7 +130,7 @@ contract('OneInch Swap', function([_, user]) {
       });
 
       it('msg.value greater than input ether amount', async function() {
-        const value = ether('1');
+        const value = ether('0.1');
         const to = this.hOneInchV2.address;
         const slippage = 3;
 
