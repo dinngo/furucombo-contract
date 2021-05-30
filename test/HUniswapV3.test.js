@@ -347,11 +347,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           await this.proxy.updateTokenMock(this.token.address);
 
           // Estimate result
-          const result = await this.quoter.quoteExactInput.call(
-            path,
-            amountIn,
-            amountOutMinimum
-          );
+          const result = await this.quoter.quoteExactInput.call(path, amountIn);
 
           // Execution
           const data = getCallData(HUniswapV3, 'exactInputToEther', [
@@ -412,11 +408,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           await this.proxy.updateTokenMock(this.token.address);
 
           // Estimate result
-          const result = await this.quoter.quoteExactInput.call(
-            path,
-            amountIn,
-            amountOutMinimum
-          );
+          const result = await this.quoter.quoteExactInput.call(path, amountIn);
 
           // Execution
           const data = getCallData(HUniswapV3, 'exactInput', [
@@ -645,15 +637,167 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
 
     describe('Multi path', function() {
       describe('Ether in', function() {
-        it('normal', async function() {});
+        it('normal', async function() {
+          const value = ether('1');
+          const to = this.hUniswapV3.address;
+          // Set swap info
+          const tokens = [tokenAddress, token2Address, WETH_TOKEN];
+          const fees = [new BN('500'), new BN('3000')];
+          const path = encodePath(tokens, fees);
+          const amountOut = ether('2000');
+          const amountInMaximum = value;
+
+          // Estimate result
+          const result = await this.quoter.quoteExactOutput.call(
+            path,
+            amountOut
+          );
+
+          // Execution
+          const data = getCallData(HUniswapV3, 'exactOutputFromEther', [
+            path,
+            amountOut,
+            amountInMaximum,
+          ]);
+
+          const receipt = await this.proxy.execMock(to, data, {
+            from: user,
+            value: value,
+          });
+
+          profileGas(receipt);
+
+          const handlerReturn = utils.toBN(
+            getHandlerReturn(receipt, ['uint256'])[0]
+          );
+
+          // Verify result
+          expect(handlerReturn).to.be.bignumber.eq(result);
+          expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
+            tokenUser.add(amountOut)
+          );
+          expect(
+            await this.token.balanceOf.call(this.proxy.address)
+          ).to.be.bignumber.eq(ether('0'));
+          expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
+          expect(await balanceUser.delta()).to.be.bignumber.eq(
+            ether('0')
+              .sub(value)
+              .sub(new BN(receipt.receipt.gasUsed))
+          );
+        });
       });
 
       describe('Ether out', function() {
-        it('normal', async function() {});
+        it('normal', async function() {
+          const value = ether('1');
+          const to = this.hUniswapV3.address;
+          // Set swap info
+          const tokens = [WETH_TOKEN, token2Address, tokenAddress];
+          const fees = [new BN('3000'), new BN('500')];
+          const path = encodePath(tokens, fees);
+          const amountOut = ether('1');
+          const amountInMaximum = ether('10000');
+          await this.token.transfer(this.proxy.address, amountInMaximum, {
+            from: tokenProvider,
+          });
+          await this.proxy.updateTokenMock(tokenAddress);
+
+          // Estimate result
+          const result = await this.quoter.quoteExactOutput.call(
+            path,
+            amountOut
+          );
+
+          // Execution
+          const data = getCallData(HUniswapV3, 'exactOutputToEther', [
+            path,
+            amountOut,
+            amountInMaximum,
+          ]);
+
+          const receipt = await this.proxy.execMock(to, data, {
+            from: user,
+            value: value,
+          });
+
+          profileGas(receipt);
+
+          const handlerReturn = utils.toBN(
+            getHandlerReturn(receipt, ['uint256'])[0]
+          );
+
+          // Verify result
+          const userBalanceDelta = await balanceUser.delta();
+          expect(handlerReturn).to.be.bignumber.eq(result);
+          expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
+            tokenUser.add(amountInMaximum).sub(result)
+          );
+          expect(
+            await this.token.balanceOf.call(this.proxy.address)
+          ).to.be.bignumber.eq(ether('0'));
+          expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
+          expect(userBalanceDelta).to.be.bignumber.eq(
+            amountOut.sub(new BN(receipt.receipt.gasUsed))
+          );
+        });
       });
 
       describe('Token only', function() {
-        it('normal', async function() {});
+        it('normal', async function() {
+          const value = ether('1');
+          const to = this.hUniswapV3.address;
+          // Set swap info
+          const tokens = [WETH_TOKEN, token2Address, tokenAddress];
+          const fees = [new BN('3000'), new BN('500')];
+          const path = encodePath(tokens, fees);
+          const amountOut = ether('1');
+          const amountInMaximum = ether('10000');
+          await this.token.transfer(this.proxy.address, amountInMaximum, {
+            from: tokenProvider,
+          });
+          await this.proxy.updateTokenMock(tokenAddress);
+
+          // Estimate result
+          const result = await this.quoter.quoteExactOutput.call(
+            path,
+            amountOut
+          );
+
+          // Execution
+          const data = getCallData(HUniswapV3, 'exactOutput', [
+            path,
+            amountOut,
+            amountInMaximum,
+          ]);
+
+          const receipt = await this.proxy.execMock(to, data, {
+            from: user,
+            value: value,
+          });
+
+          profileGas(receipt);
+
+          const handlerReturn = utils.toBN(
+            getHandlerReturn(receipt, ['uint256'])[0]
+          );
+
+          // Verify result
+          expect(handlerReturn).to.be.bignumber.eq(result);
+
+          expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
+            tokenUser.add(amountInMaximum).sub(result)
+          );
+          expect(
+            await this.token.balanceOf.call(this.proxy.address)
+          ).to.be.bignumber.eq(ether('0'));
+          expect(
+            await this.weth.balanceOf.call(this.proxy.address)
+          ).to.be.bignumber.eq(ether('0'));
+          expect(await this.weth.balanceOf.call(user)).to.be.bignumber.eq(
+            wethUser.add(amountOut)
+          );
+        });
       });
     });
   });
