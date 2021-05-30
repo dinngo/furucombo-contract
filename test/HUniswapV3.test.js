@@ -202,6 +202,35 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
               .sub(new BN(receipt.receipt.gasUsed))
           );
         });
+
+        it('insufficient ether', async function() {
+          const value = ether('1');
+          const to = this.hUniswapV3.address;
+          // Set swap info
+          const tokenIn = WETH_TOKEN;
+          const tokenOut = tokenAddress;
+          const fee = new BN('3000');
+          const amountIn = value;
+          const amountOutMinimum = new BN('0');
+          const sqrtPriceLimitX96 = new BN('0');
+
+          // Execution
+          const data = getCallData(HUniswapV3, 'exactInputSingleFromEther', [
+            tokenIn,
+            tokenOut,
+            fee,
+            amountIn,
+            amountOutMinimum,
+            sqrtPriceLimitX96,
+          ]);
+
+          await expectRevert.unspecified(
+            this.proxy.execMock(to, data, {
+              from: user,
+              value: value.div(new BN('2')),
+            })
+          );
+        });
       });
 
       describe('Ether out', function() {
@@ -340,6 +369,44 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
               .sub(new BN(receipt.receipt.gasUsed))
           );
         });
+
+        it('insuffient token', async function() {
+          const value = ether('1');
+          const to = this.hUniswapV3.address;
+          // Set swap info
+          const tokenIn = tokenAddress;
+          const tokenOut = WETH_TOKEN;
+          const fee = new BN('3000');
+          const amountIn = value;
+          const amountOutMinimum = new BN('0');
+          const sqrtPriceLimitX96 = new BN('0');
+          await this.token.transfer(
+            this.proxy.address,
+            amountIn.div(new BN('2')),
+            {
+              from: tokenProvider,
+            }
+          );
+          await this.proxy.updateTokenMock(this.token.address);
+
+          // Execution
+          const data = getCallData(HUniswapV3, 'exactInputSingleToEther', [
+            tokenIn,
+            tokenOut,
+            fee,
+            amountIn,
+            amountOutMinimum,
+            sqrtPriceLimitX96,
+          ]);
+
+          await expectRevert(
+            this.proxy.execMock(to, data, {
+              from: user,
+              value: value,
+            }),
+            'HUniswapV3_exactInputSingle: STF'
+          );
+        });
       });
 
       describe('Token only', function() {
@@ -462,6 +529,44 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           ).to.be.bignumber.eq(ether('0'));
           expect(await this.weth.balanceOf.call(user)).to.be.bignumber.eq(
             wethUser.add(result)
+          );
+        });
+
+        it('insufficient token', async function() {
+          const value = ether('1');
+          const to = this.hUniswapV3.address;
+          // Set swap info
+          const tokenIn = tokenAddress;
+          const tokenOut = WETH_TOKEN;
+          const fee = new BN('3000');
+          const amountIn = value;
+          const amountOutMinimum = new BN('0');
+          const sqrtPriceLimitX96 = new BN('0');
+          await this.token.transfer(
+            this.proxy.address,
+            amountIn.div(new BN('2')),
+            {
+              from: tokenProvider,
+            }
+          );
+          await this.proxy.updateTokenMock(this.token.address);
+
+          // Execution
+          const data = getCallData(HUniswapV3, 'exactInputSingle', [
+            tokenIn,
+            tokenOut,
+            fee,
+            amountIn,
+            amountOutMinimum,
+            sqrtPriceLimitX96,
+          ]);
+
+          await expectRevert(
+            this.proxy.execMock(to, data, {
+              from: user,
+              value: value,
+            }),
+            'HUniswapV3_exactInputSingle: STF'
           );
         });
       });
@@ -562,6 +667,31 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
               .sub(new BN(receipt.receipt.gasUsed))
           );
         });
+
+        it('insufficient ether', async function() {
+          const value = ether('1');
+          const to = this.hUniswapV3.address;
+          // Set swap info
+          const tokens = [WETH_TOKEN, token2Address, tokenAddress];
+          const fees = [new BN('3000'), new BN('500')];
+          const amountIn = value;
+          const amountOutMinimum = new BN('0');
+          const path = encodePath(tokens, fees);
+
+          // Execution
+          const data = getCallData(HUniswapV3, 'exactInputFromEther', [
+            path,
+            amountIn,
+            amountOutMinimum,
+          ]);
+
+          await expectRevert.unspecified(
+            this.proxy.execMock(to, data, {
+              from: user,
+              value: value.div(new BN('2')),
+            })
+          );
+        });
       });
 
       describe('Ether out', function() {
@@ -680,6 +810,40 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
               .sub(new BN(receipt.receipt.gasUsed))
           );
         });
+
+        it('insufficient token', async function() {
+          const value = ether('1');
+          const to = this.hUniswapV3.address;
+          // Set swap info
+          const tokens = [tokenAddress, token2Address, WETH_TOKEN];
+          const fees = [new BN('500'), new BN('3000')];
+          const path = encodePath(tokens, fees);
+          const amountIn = value;
+          const amountOutMinimum = new BN('0');
+          await this.token.transfer(
+            this.proxy.address,
+            amountIn.div(new BN('2')),
+            {
+              from: tokenProvider,
+            }
+          );
+          await this.proxy.updateTokenMock(this.token.address);
+
+          // Execution
+          const data = getCallData(HUniswapV3, 'exactInputToEther', [
+            path,
+            amountIn,
+            amountOutMinimum,
+          ]);
+
+          await expectRevert(
+            this.proxy.execMock(to, data, {
+              from: user,
+              value: value,
+            }),
+            'HUniswapV3_exactInput: STF'
+          );
+        });
       });
 
       describe('Token only', function() {
@@ -784,6 +948,41 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           ).to.be.bignumber.eq(ether('0'));
           expect(await this.weth.balanceOf.call(user)).to.be.bignumber.eq(
             wethUser.add(result)
+          );
+        });
+
+        it('insufficient token', async function() {
+          const value = ether('1');
+          const to = this.hUniswapV3.address;
+          // Set swap info
+          const tokens = [tokenAddress, token2Address, WETH_TOKEN];
+          const fees = [new BN('500'), new BN('3000')];
+          const path = encodePath(tokens, fees);
+          const amountIn = value;
+          const amountOutMinimum = new BN('0');
+          const sqrtPriceLimitX96 = new BN('0');
+          await this.token.transfer(
+            this.proxy.address,
+            amountIn.div(new BN('2')),
+            {
+              from: tokenProvider,
+            }
+          );
+          await this.proxy.updateTokenMock(this.token.address);
+
+          // Execution
+          const data = getCallData(HUniswapV3, 'exactInput', [
+            path,
+            amountIn,
+            amountOutMinimum,
+          ]);
+
+          await expectRevert(
+            this.proxy.execMock(to, data, {
+              from: user,
+              value: value,
+            }),
+            'HUniswapV3_exactInput: STF'
           );
         });
       });
@@ -906,6 +1105,36 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
               .sub(new BN(receipt.receipt.gasUsed))
           );
         });
+
+        it('desired amount to high', async function() {
+          const value = ether('1');
+          const to = this.hUniswapV3.address;
+          // Set swap info
+          const tokenIn = WETH_TOKEN;
+          const tokenOut = tokenAddress;
+          const fee = new BN('3000');
+          const amountOut = ether('100000');
+          const amountInMaximum = value;
+          const sqrtPriceLimitX96 = new BN('0');
+
+          // Execution
+          const data = getCallData(HUniswapV3, 'exactOutputSingleFromEther', [
+            tokenIn,
+            tokenOut,
+            fee,
+            amountOut,
+            amountInMaximum,
+            sqrtPriceLimitX96,
+          ]);
+
+          await expectRevert(
+            this.proxy.execMock(to, data, {
+              from: user,
+              value: value,
+            }),
+            'HUniswapV3_exactOutputSingle: STF'
+          );
+        });
       });
 
       describe('Ether out', function() {
@@ -1026,6 +1255,40 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
           expect(userBalanceDelta).to.be.bignumber.eq(
             amountOut.sub(new BN(receipt.receipt.gasUsed))
+          );
+        });
+
+        it('desired amount too high', async function() {
+          const value = ether('1');
+          const to = this.hUniswapV3.address;
+          // Set swap info
+          const tokenIn = tokenAddress;
+          const tokenOut = WETH_TOKEN;
+          const fee = new BN('3000');
+          const amountOut = ether('100');
+          const amountInMaximum = ether('10000');
+          const sqrtPriceLimitX96 = new BN('0');
+          await this.token.transfer(this.proxy.address, amountInMaximum, {
+            from: tokenProvider,
+          });
+          await this.proxy.updateTokenMock(tokenAddress);
+
+          // Execution
+          const data = getCallData(HUniswapV3, 'exactOutputSingleToEther', [
+            tokenIn,
+            tokenOut,
+            fee,
+            amountOut,
+            amountInMaximum,
+            sqrtPriceLimitX96,
+          ]);
+
+          await expectRevert(
+            this.proxy.execMock(to, data, {
+              from: user,
+              value: value,
+            }),
+            'HUniswapV3_exactOutputSingle: STF'
           );
         });
       });
@@ -1152,6 +1415,40 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           ).to.be.bignumber.eq(ether('0'));
           expect(await this.weth.balanceOf.call(user)).to.be.bignumber.eq(
             wethUser.add(amountOut)
+          );
+        });
+
+        it('desired amount too high', async function() {
+          const value = ether('1');
+          const to = this.hUniswapV3.address;
+          // Set swap info
+          const tokenIn = tokenAddress;
+          const tokenOut = WETH_TOKEN;
+          const fee = new BN('3000');
+          const amountOut = ether('100');
+          const amountInMaximum = ether('10000');
+          const sqrtPriceLimitX96 = new BN('0');
+          await this.token.transfer(this.proxy.address, amountInMaximum, {
+            from: tokenProvider,
+          });
+          await this.proxy.updateTokenMock(tokenAddress);
+
+          // Execution
+          const data = getCallData(HUniswapV3, 'exactOutputSingle', [
+            tokenIn,
+            tokenOut,
+            fee,
+            amountOut,
+            amountInMaximum,
+            sqrtPriceLimitX96,
+          ]);
+
+          await expectRevert(
+            this.proxy.execMock(to, data, {
+              from: user,
+              value: value,
+            }),
+            'HUniswapV3_exactOutputSingle: STF'
           );
         });
       });
@@ -1258,6 +1555,32 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
               .sub(new BN(receipt.receipt.gasUsed))
           );
         });
+
+        it('desired amount too high', async function() {
+          const value = ether('1');
+          const to = this.hUniswapV3.address;
+          // Set swap info
+          const tokens = [tokenAddress, token2Address, WETH_TOKEN];
+          const fees = [new BN('500'), new BN('3000')];
+          const path = encodePath(tokens, fees);
+          const amountOut = ether('200000');
+          const amountInMaximum = value;
+
+          // Execution
+          const data = getCallData(HUniswapV3, 'exactOutputFromEther', [
+            path,
+            amountOut,
+            amountInMaximum,
+          ]);
+
+          await expectRevert(
+            this.proxy.execMock(to, data, {
+              from: user,
+              value: value,
+            }),
+            'HUniswapV3_exactOutput: STF'
+          );
+        });
       });
 
       describe('Ether out', function() {
@@ -1364,6 +1687,36 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
           expect(userBalanceDelta).to.be.bignumber.eq(
             amountOut.sub(new BN(receipt.receipt.gasUsed))
+          );
+        });
+
+        it('desired amount too high', async function() {
+          const value = ether('1');
+          const to = this.hUniswapV3.address;
+          // Set swap info
+          const tokens = [WETH_TOKEN, token2Address, tokenAddress];
+          const fees = [new BN('3000'), new BN('500')];
+          const path = encodePath(tokens, fees);
+          const amountOut = ether('100');
+          const amountInMaximum = ether('10000');
+          await this.token.transfer(this.proxy.address, amountInMaximum, {
+            from: tokenProvider,
+          });
+          await this.proxy.updateTokenMock(tokenAddress);
+
+          // Execution
+          const data = getCallData(HUniswapV3, 'exactOutputToEther', [
+            path,
+            amountOut,
+            amountInMaximum,
+          ]);
+
+          await expectRevert(
+            this.proxy.execMock(to, data, {
+              from: user,
+              value: value,
+            }),
+            'HUniswapV3_exactOutput: STF'
           );
         });
       });
@@ -1476,6 +1829,36 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           ).to.be.bignumber.eq(ether('0'));
           expect(await this.weth.balanceOf.call(user)).to.be.bignumber.eq(
             wethUser.add(amountOut)
+          );
+        });
+
+        it('desired amount too high', async function() {
+          const value = ether('1');
+          const to = this.hUniswapV3.address;
+          // Set swap info
+          const tokens = [WETH_TOKEN, token2Address, tokenAddress];
+          const fees = [new BN('3000'), new BN('500')];
+          const path = encodePath(tokens, fees);
+          const amountOut = ether('100');
+          const amountInMaximum = ether('10000');
+          await this.token.transfer(this.proxy.address, amountInMaximum, {
+            from: tokenProvider,
+          });
+          await this.proxy.updateTokenMock(tokenAddress);
+
+          // Execution
+          const data = getCallData(HUniswapV3, 'exactOutput', [
+            path,
+            amountOut,
+            amountInMaximum,
+          ]);
+
+          await expectRevert(
+            this.proxy.execMock(to, data, {
+              from: user,
+              value: value,
+            }),
+            'HUniswapV3_exactOutput: STF'
           );
         });
       });
