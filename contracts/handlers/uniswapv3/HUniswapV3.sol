@@ -7,17 +7,20 @@ import "@openzeppelin/contracts/math/SafeMath.sol";
 import "../HandlerBase.sol";
 import "../weth/IWETH9.sol";
 import "./ISwapRouter.sol";
-import "./libraries/Path.sol";
+import "./libraries/BytesLib.sol";
 
 contract HUniswapV3 is HandlerBase {
     using SafeERC20 for IERC20;
     using SafeMath for uint256;
-    using Path for bytes;
+    using BytesLib for bytes;
 
     // prettier-ignore
     ISwapRouter public constant ROUTER = ISwapRouter(0xE592427A0AEce92De3Edee1F18E0157C05861564);
     // prettier-ignore
     IWETH9 public constant WETH = IWETH9(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2);
+
+    uint256 private constant PATH_SIZE = 43; // address + address + uint24
+    uint256 private constant ADDRESS_SIZE = 20;
 
     function getContractName() public pure override returns (string memory) {
         return "HUniswapV3";
@@ -277,26 +280,23 @@ contract HUniswapV3 is HandlerBase {
         internal
         returns (address tokenOut)
     {
-        (tokenOut, , ) = path.decodeFirstPool();
+        return path.toAddress(0);
     }
 
     function _getLastToken(bytes memory path)
         internal
         returns (address tokenOut)
     {
-        // TODO: optimize the fetching flow
-        while (path.hasMultiplePools()) {
-            path = path.skipToken();
-        }
-
-        (, tokenOut, ) = path.decodeFirstPool();
+        if (path.length < PATH_SIZE)
+            _revertMsg("General", "Path size too small");
+        return path.toAddress(path.length - ADDRESS_SIZE);
     }
 
     function _exactInputSingle(
         uint256 value,
         ISwapRouter.ExactInputSingleParams memory params
     ) internal returns (uint256) {
-        params.deadline = now + 1;
+        params.deadline = now;
         params.recipient = address(this);
 
         try ROUTER.exactInputSingle{value: value}(params) returns (
@@ -314,7 +314,7 @@ contract HUniswapV3 is HandlerBase {
         uint256 value,
         ISwapRouter.ExactInputParams memory params
     ) internal returns (uint256) {
-        params.deadline = now + 1;
+        params.deadline = now;
         params.recipient = address(this);
 
         try ROUTER.exactInput{value: value}(params) returns (
@@ -332,7 +332,7 @@ contract HUniswapV3 is HandlerBase {
         uint256 value,
         ISwapRouter.ExactOutputSingleParams memory params
     ) internal returns (uint256) {
-        params.deadline = now + 1;
+        params.deadline = now;
         params.recipient = address(this);
 
         try ROUTER.exactOutputSingle{value: value}(params) returns (
@@ -350,7 +350,7 @@ contract HUniswapV3 is HandlerBase {
         uint256 value,
         ISwapRouter.ExactOutputParams memory params
     ) internal returns (uint256) {
-        params.deadline = now + 1;
+        params.deadline = now;
         params.recipient = address(this);
 
         try ROUTER.exactOutput{value: value}(params) returns (
