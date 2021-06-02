@@ -38,7 +38,7 @@ const { secret, witness } = getWitnessAndSecret();
 const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('ProxyMock');
 const HUniswapV2 = artifacts.require('HUniswapV2');
-const HGelatoLimitOrder = artifacts.require('HGelatoLimitOrder');
+const HGelatoV2LimitOrder = artifacts.require('HGelatoV2LimitOrder');
 const IToken = artifacts.require('IERC20');
 const IGelatoPineCore = artifacts.require('IGelatoPineCore');
 const IUniswapV2Router = artifacts.require('IUniswapV2Router02');
@@ -65,10 +65,10 @@ contract('GelatoLimitOrder', function([_, user]) {
       utils.asciiToHex('HUniswapV2')
     );
 
-    this.hGelatoLimitOrder = await HGelatoLimitOrder.new();
+    this.hGelatoLimitOrder = await HGelatoV2LimitOrder.new();
     await this.registry.register(
       this.hGelatoLimitOrder.address,
-      utils.asciiToHex('HGelatoLimitOrder')
+      utils.asciiToHex('HGelatoV2LimitOrder')
     );
 
     this.gelatoPine = await IGelatoPineCore.at(GELATOV2_PINE);
@@ -168,14 +168,13 @@ contract('GelatoLimitOrder', function([_, user]) {
       );
 
       // Get witness signature
-      const hash = ethers.utils.solidityKeccak256(
-        ['address'],
-        [GELATOV2_RELAYER]
-      );
-      const wallet = new ethers.Wallet(secret);
-      const sig = ethers.utils.joinSignature(
-        wallet._signingKey().signDigest(hash)
-      ); // Unsafe but not for this.
+      const hash = web3.utils.soliditySha3({
+        t: 'address',
+        v: GELATOV2_RELAYER,
+      });
+
+      const sigBuffer = util.ecsign(util.toBuffer(hash), util.toBuffer(secret));
+      const sig = util.toRpcSig(sigBuffer.v, sigBuffer.r, sigBuffer.s);
 
       const exceptExecuteAmountOut = (
         await this.uniswapRouter.getAmountsOut.call(sellAmount.sub(fee), path, {
@@ -382,14 +381,13 @@ contract('GelatoLimitOrder', function([_, user]) {
         )
       );
 
-      const hash = ethers.utils.solidityKeccak256(
-        ['address'],
-        [GELATOV2_RELAYER]
-      );
-      const wallet = new ethers.Wallet(secret);
-      const sig = ethers.utils.joinSignature(
-        wallet._signingKey().signDigest(hash)
-      ); // Unsafe but not for this.
+      const hash = web3.utils.soliditySha3({
+        t: 'address',
+        v: GELATOV2_RELAYER,
+      });
+
+      const sigBuffer = util.ecsign(util.toBuffer(hash), util.toBuffer(secret));
+      const sig = util.toRpcSig(sigBuffer.v, sigBuffer.r, sigBuffer.s);
 
       const exceptExecuteAmountOut = (
         await this.uniswapRouter.getAmountsOut(sellAmount, path, {
@@ -417,7 +415,7 @@ contract('GelatoLimitOrder', function([_, user]) {
 
     it('Should revert: insufficient Token', async function() {
       // Place the order
-      const sellAmount = ether('5000');
+      const sellAmount = ether('500');
       const path = [this.tokenA.address, this.tokenB.address];
       const amountOut = (
         await this.uniswapRouter.getAmountsOut(sellAmount, path, {
@@ -453,7 +451,7 @@ contract('GelatoLimitOrder', function([_, user]) {
           from: user,
           value: ether('1'),
         }),
-        'swapETHForExactTokens: Token order placement failed'
+        'HGelatoV2LimitOrder_placeLimitOrder: Dai/insufficient-balance'
       );
     });
 
@@ -533,7 +531,11 @@ contract('GelatoLimitOrder', function([_, user]) {
     it('Should place and execute Token to Token order successfully', async function() {
       // Place the order
       const sellAmount = ether('50');
-      const path = [this.tokenA.address, this.tokenC.address];
+      const path = [
+        this.tokenA.address,
+        this.tokenB.address,
+        this.tokenC.address,
+      ];
       const amountOut = (
         await this.uniswapRouter.getAmountsOut(sellAmount, path, {
           from: user,
@@ -586,7 +588,9 @@ contract('GelatoLimitOrder', function([_, user]) {
       expect(orderExists).to.be.true;
 
       // Change price to make order executable
-      const dumpAmount = sellAmount.div(new BN(10));
+      // const dumpAmount = sellAmount.div(new BN(10));
+      const dumpAmount = sellAmount.mul(new BN(2));
+
       await this.tokenC.approve(this.uniswapRouter.address, dumpAmount, {
         from: tokenCProviderAddress,
       });
@@ -594,7 +598,7 @@ contract('GelatoLimitOrder', function([_, user]) {
       await this.uniswapRouter.swapExactTokensForTokens(
         dumpAmount,
         0,
-        [this.tokenC.address, this.tokenA.address],
+        [this.tokenC.address, this.tokenB.address, this.tokenA.address],
         user,
         10000000000,
         {
@@ -611,14 +615,13 @@ contract('GelatoLimitOrder', function([_, user]) {
         )
       );
 
-      const hash = ethers.utils.solidityKeccak256(
-        ['address'],
-        [GELATOV2_RELAYER]
-      );
-      const wallet = new ethers.Wallet(secret);
-      const sig = ethers.utils.joinSignature(
-        wallet._signingKey().signDigest(hash)
-      ); // Unsafe but not for this.
+      const hash = web3.utils.soliditySha3({
+        t: 'address',
+        v: GELATOV2_RELAYER,
+      });
+
+      const sigBuffer = util.ecsign(util.toBuffer(hash), util.toBuffer(secret));
+      const sig = util.toRpcSig(sigBuffer.v, sigBuffer.r, sigBuffer.s);
 
       // Trigger execute order
       const tokenCUserBefore = await this.tokenC.balanceOf.call(user);
@@ -805,14 +808,13 @@ contract('GelatoLimitOrder', function([_, user]) {
       );
 
       // Get witness signature
-      const hash = ethers.utils.solidityKeccak256(
-        ['address'],
-        [GELATOV2_RELAYER]
-      );
-      const wallet = new ethers.Wallet(secret);
-      const sig = ethers.utils.joinSignature(
-        wallet._signingKey().signDigest(hash)
-      ); // Unsafe but not for this.
+      const hash = web3.utils.soliditySha3({
+        t: 'address',
+        v: GELATOV2_RELAYER,
+      });
+
+      const sigBuffer = util.ecsign(util.toBuffer(hash), util.toBuffer(secret));
+      const sig = util.toRpcSig(sigBuffer.v, sigBuffer.r, sigBuffer.s);
 
       const exceptExecuteAmountOut = (
         await this.uniswapRouter.getAmountsOut.call(
@@ -843,7 +845,7 @@ contract('GelatoLimitOrder', function([_, user]) {
       );
     });
 
-    it('Should place and execute Token to ETH order successfully', async function() {
+    it('Double place and execute Token to ETH order successfully', async function() {
       // Place the order
       const sellAmount = ether('5000');
       const path = [this.tokenA.address, this.tokenB.address];
@@ -932,14 +934,12 @@ contract('GelatoLimitOrder', function([_, user]) {
         )
       );
 
-      const hash = ethers.utils.solidityKeccak256(
-        ['address'],
-        [GELATOV2_RELAYER]
-      );
-      const wallet = new ethers.Wallet(secret);
-      const sig = ethers.utils.joinSignature(
-        wallet._signingKey().signDigest(hash)
-      ); // Unsafe but not for this.
+      const hash = web3.utils.soliditySha3({
+        t: 'address',
+        v: GELATOV2_RELAYER,
+      });
+      const sigBuffer = util.ecsign(util.toBuffer(hash), util.toBuffer(secret));
+      const sig = util.toRpcSig(sigBuffer.v, sigBuffer.r, sigBuffer.s);
 
       const exceptExecuteAmountOut = (
         await this.uniswapRouter.getAmountsOut(
@@ -969,10 +969,14 @@ contract('GelatoLimitOrder', function([_, user]) {
       );
     });
 
-    it('Should place and execute Token to Token order successfully', async function() {
+    it('Double place and execute Token to Token order successfully', async function() {
       // Place the order
       const sellAmount = ether('50');
-      const path = [this.tokenA.address, this.tokenC.address];
+      const path = [
+        this.tokenA.address,
+        this.tokenB.address,
+        this.tokenC.address,
+      ];
       const amountOut = (
         await this.uniswapRouter.getAmountsOut(sellAmount, path, {
           from: user,
@@ -1064,14 +1068,13 @@ contract('GelatoLimitOrder', function([_, user]) {
         )
       );
 
-      const hash = ethers.utils.solidityKeccak256(
-        ['address'],
-        [GELATOV2_RELAYER]
-      );
-      const wallet = new ethers.Wallet(secret);
-      const sig = ethers.utils.joinSignature(
-        wallet._signingKey().signDigest(hash)
-      ); // Unsafe but not for this.
+      const hash = web3.utils.soliditySha3({
+        t: 'address',
+        v: GELATOV2_RELAYER,
+      });
+
+      const sigBuffer = util.ecsign(util.toBuffer(hash), util.toBuffer(secret));
+      const sig = util.toRpcSig(sigBuffer.v, sigBuffer.r, sigBuffer.s);
 
       // Trigger execute order
       const tokenCUserBefore = await this.tokenC.balanceOf.call(user);
@@ -1090,9 +1093,7 @@ contract('GelatoLimitOrder', function([_, user]) {
 
       // Because gelato will swap TokenA -> WETH -> (WETH - fee) -> TokenB,
       // so it couldn't get amountOut by uniswapV2 amountOut call directly
-      expect(tokenCUserEnd.sub(tokenCUserBefore)).to.be.bignumber.gt(
-        minReturn.add(minReturn)
-      );
+      expect(tokenCUserEnd.sub(tokenCUserBefore)).to.be.bignumber.gt(minReturn);
     });
   });
 });
