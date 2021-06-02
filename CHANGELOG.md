@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+- Support gelatov2 limit order.
+
 ### Changed
 
 - Archive Uniswap and Mooniswap handlers.
