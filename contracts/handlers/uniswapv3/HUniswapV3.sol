@@ -176,6 +176,7 @@ contract HUniswapV3 is HandlerBase {
         params.sqrtPriceLimitX96 = sqrtPriceLimitX96;
 
         amountIn = _exactOutputSingle(params.amountInMaximum, params);
+        ROUTER.refundETH();
 
         _updateToken(tokenOut);
     }
@@ -247,6 +248,7 @@ contract HUniswapV3 is HandlerBase {
         params.amountInMaximum = _getBalance(address(0), amountInMaximum);
 
         amountIn = _exactOutput(params.amountInMaximum, params);
+        ROUTER.refundETH();
 
         _updateToken(tokenOut);
     }
