@@ -27,15 +27,15 @@ contract HUniswapV3 is HandlerBase {
     }
 
     function exactInputSingleFromEther(
-        address tokenIn,
         address tokenOut,
         uint24 fee,
         uint256 amountIn,
         uint256 amountOutMinimum,
         uint160 sqrtPriceLimitX96
     ) external payable returns (uint256 amountOut) {
+        // Build params for router call
         ISwapRouter.ExactInputSingleParams memory params;
-        params.tokenIn = tokenIn;
+        params.tokenIn = address(WETH);
         params.tokenOut = tokenOut;
         params.fee = fee;
         params.amountIn = _getBalance(address(0), amountIn);
@@ -49,15 +49,15 @@ contract HUniswapV3 is HandlerBase {
 
     function exactInputSingleToEther(
         address tokenIn,
-        address tokenOut,
         uint24 fee,
         uint256 amountIn,
         uint256 amountOutMinimum,
         uint160 sqrtPriceLimitX96
     ) external payable returns (uint256 amountOut) {
+        // Build params for router call
         ISwapRouter.ExactInputSingleParams memory params;
         params.tokenIn = tokenIn;
-        params.tokenOut = tokenOut;
+        params.tokenOut = address(WETH);
         params.fee = fee;
         params.amountIn = _getBalance(tokenIn, amountIn);
         params.amountOutMinimum = amountOutMinimum;
@@ -78,6 +78,7 @@ contract HUniswapV3 is HandlerBase {
         uint256 amountOutMinimum,
         uint160 sqrtPriceLimitX96
     ) external payable returns (uint256 amountOut) {
+        // Build params for router call
         ISwapRouter.ExactInputSingleParams memory params;
         params.tokenIn = tokenIn;
         params.tokenOut = tokenOut;
@@ -94,31 +95,39 @@ contract HUniswapV3 is HandlerBase {
     }
 
     function exactInputFromEther(
-        bytes calldata path,
+        bytes memory path,
         uint256 amountIn,
         uint256 amountOutMinimum
     ) external payable returns (uint256 amountOut) {
+        // Build params for router call
         ISwapRouter.ExactInputParams memory params;
-        params.path = new bytes(path.length);
         params.path = path;
+        address tokenOut = _getLastToken(path);
+        address tokenIn = _getFirstToken(path);
+        // Input token must be WETH
+        if (tokenIn != address(WETH))
+            _revertMsg("exactInputFromEther", "Input not WETH");
         params.amountIn = _getBalance(address(0), amountIn);
         params.amountOutMinimum = amountOutMinimum;
 
         amountOut = _exactInput(params.amountIn, params);
 
-        address tokenOut = _getLastToken(path);
         _updateToken(tokenOut);
     }
 
     function exactInputToEther(
-        bytes calldata path,
+        bytes memory path,
         uint256 amountIn,
         uint256 amountOutMinimum
     ) external payable returns (uint256 amountOut) {
+        // Build params for router call
         ISwapRouter.ExactInputParams memory params;
-        params.path = new bytes(path.length);
         params.path = path;
         address tokenIn = _getFirstToken(path);
+        address tokenOut = _getLastToken(path);
+        // Output token must be WETH
+        if (tokenOut != address(WETH))
+            _revertMsg("exactInputToEther", "Output not WETH");
         params.amountIn = _getBalance(tokenIn, amountIn);
         params.amountOutMinimum = amountOutMinimum;
 
@@ -130,12 +139,12 @@ contract HUniswapV3 is HandlerBase {
     }
 
     function exactInput(
-        bytes calldata path,
+        bytes memory path,
         uint256 amountIn,
         uint256 amountOutMinimum
     ) external payable returns (uint256 amountOut) {
+        // Build params for router call
         ISwapRouter.ExactInputParams memory params;
-        params.path = new bytes(path.length);
         params.path = path;
         address tokenIn = _getFirstToken(path);
         params.amountIn = _getBalance(tokenIn, amountIn);
@@ -150,15 +159,15 @@ contract HUniswapV3 is HandlerBase {
     }
 
     function exactOutputSingleFromEther(
-        address tokenIn,
         address tokenOut,
         uint24 fee,
         uint256 amountOut,
         uint256 amountInMaximum,
         uint160 sqrtPriceLimitX96
     ) external payable returns (uint256 amountIn) {
+        // Build params for router call
         ISwapRouter.ExactOutputSingleParams memory params;
-        params.tokenIn = tokenIn;
+        params.tokenIn = address(WETH);
         params.tokenOut = tokenOut;
         params.fee = fee;
         params.amountOut = amountOut;
@@ -173,15 +182,15 @@ contract HUniswapV3 is HandlerBase {
 
     function exactOutputSingleToEther(
         address tokenIn,
-        address tokenOut,
         uint24 fee,
         uint256 amountOut,
         uint256 amountInMaximum,
         uint160 sqrtPriceLimitX96
     ) external payable returns (uint256 amountIn) {
+        // Build params for router call
         ISwapRouter.ExactOutputSingleParams memory params;
         params.tokenIn = tokenIn;
-        params.tokenOut = tokenOut;
+        params.tokenOut = address(WETH);
         params.fee = fee;
         params.amountOut = amountOut;
         // if amount == uint256(-1) return balance of Proxy
@@ -203,6 +212,7 @@ contract HUniswapV3 is HandlerBase {
         uint256 amountInMaximum,
         uint160 sqrtPriceLimitX96
     ) external payable returns (uint256 amountIn) {
+        // Build params for router call
         ISwapRouter.ExactOutputSingleParams memory params;
         params.tokenIn = tokenIn;
         params.tokenOut = tokenOut;
@@ -220,32 +230,42 @@ contract HUniswapV3 is HandlerBase {
     }
 
     function exactOutputFromEther(
-        bytes calldata path,
+        bytes memory path,
         uint256 amountOut,
         uint256 amountInMaximum
     ) external payable returns (uint256 amountIn) {
+        // Build params for router call
         ISwapRouter.ExactOutputParams memory params;
-        params.path = new bytes(path.length);
         params.path = path;
+        // Note that the first token is tokenOut in exactOutput functions, vice versa
+        address tokenOut = _getFirstToken(path);
+        address tokenIn = _getLastToken(path);
+        // Input token must be WETH
+        if (tokenIn != address(WETH))
+            _revertMsg("exactOutputFromEther", "Input not WETH");
         params.amountOut = amountOut;
         params.amountInMaximum = _getBalance(address(0), amountInMaximum);
 
         amountIn = _exactOutput(params.amountInMaximum, params);
 
-        address tokenOut = _getFirstToken(path);
         _updateToken(tokenOut);
     }
 
     function exactOutputToEther(
-        bytes calldata path,
+        bytes memory path,
         uint256 amountOut,
         uint256 amountInMaximum
     ) external payable returns (uint256 amountIn) {
+        // Build params for router call
         ISwapRouter.ExactOutputParams memory params;
-        params.path = new bytes(path.length);
         params.path = path;
-        params.amountOut = amountOut;
+        // Note that the first token is tokenOut in exactOutput functions, vice versa
         address tokenIn = _getLastToken(path);
+        address tokenOut = _getFirstToken(path);
+        // Out token must be WETH
+        if (tokenOut != address(WETH))
+            _revertMsg("exactOutputToEther", "Output not WETH");
+        params.amountOut = amountOut;
         // if amount == uint256(-1) return balance of Proxy
         params.amountInMaximum = _getBalance(tokenIn, amountInMaximum);
         // Approve token
@@ -256,15 +276,17 @@ contract HUniswapV3 is HandlerBase {
     }
 
     function exactOutput(
-        bytes calldata path,
+        bytes memory path,
         uint256 amountOut,
         uint256 amountInMaximum
     ) external payable returns (uint256 amountIn) {
+        // Build params for router call
         ISwapRouter.ExactOutputParams memory params;
-        params.path = new bytes(path.length);
         params.path = path;
-        params.amountOut = amountOut;
+        // Note that the first token is tokenOut in exactOutput functions, vice versa
         address tokenIn = _getLastToken(path);
+        address tokenOut = _getFirstToken(path);
+        params.amountOut = amountOut;
         // if amount == uint256(-1) return balance of Proxy
         params.amountInMaximum = _getBalance(tokenIn, amountInMaximum);
 
@@ -272,21 +294,14 @@ contract HUniswapV3 is HandlerBase {
         _tokenApprove(tokenIn, address(ROUTER), params.amountInMaximum);
         amountIn = _exactOutput(0, params);
 
-        address tokenOut = _getFirstToken(path);
         _updateToken(tokenOut);
     }
 
-    function _getFirstToken(bytes memory path)
-        internal
-        returns (address tokenOut)
-    {
+    function _getFirstToken(bytes memory path) internal returns (address) {
         return path.toAddress(0);
     }
 
-    function _getLastToken(bytes memory path)
-        internal
-        returns (address tokenOut)
-    {
+    function _getLastToken(bytes memory path) internal returns (address) {
         if (path.length < PATH_SIZE)
             _revertMsg("General", "Path size too small");
         return path.toAddress(path.length - ADDRESS_SIZE);
