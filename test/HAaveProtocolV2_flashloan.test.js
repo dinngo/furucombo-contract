@@ -28,7 +28,12 @@ const {
   AWETH_V2_DEBT_VARIABLE,
   AAVE_RATEMODE,
 } = require('./utils/constants');
-const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
+const {
+  evmRevert,
+  evmSnapshot,
+  profileGas,
+  errorCompare,
+} = require('./utils/utils');
 
 const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('ProxyMock');
@@ -157,9 +162,7 @@ contract('AaveV2 flashloan', function([_, user, someone]) {
         0,
         { from: this.tokenBProvider }
       );
-      expect(await this.aTokenB.balanceOf.call(user)).to.be.bignumber.eq(
-        depositAmount
-      );
+      errorCompare(await this.aTokenB.balanceOf.call(user), depositAmount);
     });
 
     it('single asset with no debt', async function() {

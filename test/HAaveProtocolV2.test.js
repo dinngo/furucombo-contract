@@ -32,6 +32,7 @@ const {
   profileGas,
   getHandlerReturn,
   mulPercent,
+  errorCompare,
 } = require('./utils/utils');
 
 const HAaveV2 = artifacts.require('HAaveProtocolV2');
