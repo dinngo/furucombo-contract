@@ -38,6 +38,7 @@ const {
   profileGas,
   getHandlerReturn,
   mulPercent,
+  errorCompare,
 } = require('./utils/utils');
 
 const HAaveV2 = artifacts.require('HAaveProtocolV2');
@@ -119,9 +120,7 @@ contract('Aave V2', function([_, user, someone]) {
         0,
         { from: providerAddress }
       );
-      expect(await this.aToken.balanceOf.call(user)).to.be.bignumber.eq(
-        depositAmount
-      );
+      errorCompare(await this.aToken.balanceOf.call(user), depositAmount);
 
       borrowTokenUserBefore = await this.borrowToken.balanceOf.call(user);
       borrowWETHUserBefore = await this.weth.balanceOf.call(user);
@@ -398,9 +397,7 @@ contract('Aave V2', function([_, user, someone]) {
         0,
         { from: providerAddress }
       );
-      expect(await this.aToken.balanceOf.call(user)).to.be.bignumber.eq(
-        depositAmount
-      );
+      errorCompare(await this.aToken.balanceOf.call(user), depositAmount);
 
       borrowTokenUserBefore = await this.borrowToken.balanceOf.call(user);
       borrowWETHUserBefore = await this.weth.balanceOf.call(user);
@@ -443,9 +440,7 @@ contract('Aave V2', function([_, user, someone]) {
 
       //  borrowAmount <= (debtTokenUserAfter-debtTokenUserBefore) < borrowAmount + interestMax
       const interestMax = borrowAmount.mul(new BN(1)).div(new BN(10000));
-      expect(debtTokenUserAfter.sub(debtTokenUserBefore)).to.be.bignumber.gte(
-        borrowAmount
-      );
+      errorCompare(debtTokenUserAfter.sub(debtTokenUserBefore), borrowAmount);
       expect(debtTokenUserAfter.sub(debtTokenUserBefore)).to.be.bignumber.lt(
         borrowAmount.add(interestMax)
       );
