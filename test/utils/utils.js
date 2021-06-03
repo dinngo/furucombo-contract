@@ -2,6 +2,8 @@ const { BN, ether } = require('@openzeppelin/test-helpers');
 const fetch = require('node-fetch');
 const { ETH_PROVIDER, RecordHandlerResultSig } = require('./constants');
 
+const { expect } = require('chai');
+
 function profileGas(receipt) {
   receipt.logs.forEach(element => {
     if (element.event === 'DeltaGas')
@@ -88,6 +90,10 @@ function getHandlerReturn(receipt, dataTypes) {
   return handlerResult;
 }
 
+function errorCompare(a, b, e = new BN('1')) {
+  expect(a.sub(b).abs()).to.be.bignumber.lte(e);
+}
+
 module.exports = {
   profileGas,
   evmSnapshot,
@@ -96,4 +102,5 @@ module.exports = {
   mulPercent,
   cUnit,
   getHandlerReturn,
+  errorCompare,
 };
