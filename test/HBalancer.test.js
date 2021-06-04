@@ -106,7 +106,7 @@ contract('Balancer', function([_, user]) {
     describe('Add Liquidity Single Asset', function() {
       it('normal', async function() {
         // Prepare handler data
-        const tokenAAmount = ether('1');
+        const tokenAAmount = ether('0.1');
         const minPoolAmountOut = new BN('1');
         const to = this.hBalancer.address;
         const data = abi.simpleEncode(
@@ -162,7 +162,7 @@ contract('Balancer', function([_, user]) {
 
       it('max amount', async function() {
         // Prepare handler data
-        const tokenAAmount = ether('1');
+        const tokenAAmount = ether('0.1');
         const minPoolAmountOut = new BN('1');
         const to = this.hBalancer.address;
         const data = abi.simpleEncode(
