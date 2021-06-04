@@ -4,7 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+### Added
+
 - Support gelatov2 limit order.
+- Support uniswap v3 swapping.
 
 ### Changed
 
