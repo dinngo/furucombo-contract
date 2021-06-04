@@ -299,11 +299,11 @@ contract HUniswapV3 is HandlerBase {
         _updateToken(tokenOut);
     }
 
-    function _getFirstToken(bytes memory path) internal returns (address) {
+    function _getFirstToken(bytes memory path) internal pure returns (address) {
         return path.toAddress(0);
     }
 
-    function _getLastToken(bytes memory path) internal returns (address) {
+    function _getLastToken(bytes memory path) internal view returns (address) {
         if (path.length < PATH_SIZE)
             _revertMsg("General", "Path size too small");
         return path.toAddress(path.length - ADDRESS_SIZE);
