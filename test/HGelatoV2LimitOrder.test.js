@@ -8,7 +8,6 @@ const {
 const { getWitnessAndSecret } = require('@gelatonetwork/limit-orders-lib');
 const { tracker } = balance;
 const { expect } = require('chai');
-const { ethers } = require('ethers');
 const util = require('ethereumjs-util');
 const abi = require('ethereumjs-abi');
 const utils = web3.utils;
@@ -176,7 +175,7 @@ contract('GelatoLimitOrder', function([_, user]) {
       const sigBuffer = util.ecsign(util.toBuffer(hash), util.toBuffer(secret));
       const sig = util.toRpcSig(sigBuffer.v, sigBuffer.r, sigBuffer.s);
 
-      const exceptExecuteAmountOut = (
+      const expectExecuteAmountOut = (
         await this.uniswapRouter.getAmountsOut.call(sellAmount.sub(fee), path, {
           from: user,
         })
@@ -197,7 +196,7 @@ contract('GelatoLimitOrder', function([_, user]) {
       );
       const postTokenBalance = await this.tokenA.balanceOf(user);
       expect(postTokenBalance.sub(preTokenBalance)).to.be.bignumber.eq(
-        exceptExecuteAmountOut
+        expectExecuteAmountOut
       );
     });
 
@@ -297,6 +296,15 @@ contract('GelatoLimitOrder', function([_, user]) {
         }
       );
 
+      expect(
+        await this.gelatoPine.existOrder.call(
+          GELATOV2_LIMIT_ORDER_MODULE,
+          ETH_TOKEN,
+          user,
+          witness,
+          encodedData
+        )
+      ).to.be.false;
       expect(await balanceUser.delta()).to.be.bignumber.eq(
         ether('0')
           .add(sellAmount)
@@ -389,7 +397,7 @@ contract('GelatoLimitOrder', function([_, user]) {
       const sigBuffer = util.ecsign(util.toBuffer(hash), util.toBuffer(secret));
       const sig = util.toRpcSig(sigBuffer.v, sigBuffer.r, sigBuffer.s);
 
-      const exceptExecuteAmountOut = (
+      const expectExecuteAmountOut = (
         await this.uniswapRouter.getAmountsOut(sellAmount, path, {
           from: user,
         })
@@ -409,7 +417,7 @@ contract('GelatoLimitOrder', function([_, user]) {
         }
       );
       expect(await balanceUser.delta()).to.be.bignumber.eq(
-        exceptExecuteAmountOut.sub(fee)
+        expectExecuteAmountOut.sub(fee)
       );
     });
 
@@ -523,6 +531,16 @@ contract('GelatoLimitOrder', function([_, user]) {
         }
       );
       const tokenAUserEnd = await this.tokenA.balanceOf(user);
+
+      expect(
+        await this.gelatoPine.existOrder.call(
+          GELATOV2_LIMIT_ORDER_MODULE,
+          this.tokenA.address,
+          user,
+          witness,
+          encodedData
+        )
+      ).to.be.false;
       expect(tokenAUserEnd.sub(tokenAUserBefore)).to.be.bignumber.eq(
         sellAmount
       );
@@ -646,7 +664,11 @@ contract('GelatoLimitOrder', function([_, user]) {
     it('Should place and cancel Token to Token order successfully', async function() {
       // Place the order
       const sellAmount = ether('50');
-      const path = [this.tokenA.address, this.tokenC.address];
+      const path = [
+        this.tokenA.address,
+        this.tokenB.address,
+        this.tokenC.address,
+      ];
       const amountOut = (
         await this.uniswapRouter.getAmountsOut(sellAmount, path, {
           from: user,
@@ -711,6 +733,16 @@ contract('GelatoLimitOrder', function([_, user]) {
         }
       );
       const tokenAUserEnd = await this.tokenA.balanceOf(user);
+
+      expect(
+        await this.gelatoPine.existOrder.call(
+          GELATOV2_LIMIT_ORDER_MODULE,
+          this.tokenA.address,
+          user,
+          witness,
+          encodedData
+        )
+      ).to.be.false;
       expect(tokenAUserEnd.sub(tokenAUserBefore)).to.be.bignumber.eq(
         sellAmount
       );
@@ -741,30 +773,19 @@ contract('GelatoLimitOrder', function([_, user]) {
       );
 
       // place order through proxy
-      await balanceUser.get();
-      const receipt = await this.proxy.execMock(to, placeOrderData, {
-        from: user,
-        value: sellAmount,
-      });
-      expect(await balanceProxy.delta()).to.be.zero;
-      expect(await balanceUser.delta()).to.be.bignumber.eq(
-        ether('0')
-          .sub(sellAmount)
-          .sub(new BN(receipt.receipt.gasUsed))
-      );
-
-      // place order through proxy
-      await balanceUser.get();
-      const receipt2 = await this.proxy.execMock(to, placeOrderData, {
-        from: user,
-        value: sellAmount,
-      });
-      expect(await balanceProxy.delta()).to.be.zero;
-      expect(await balanceUser.delta()).to.be.bignumber.eq(
-        ether('0')
-          .sub(sellAmount)
-          .sub(new BN(receipt2.receipt.gasUsed))
-      );
+      for (var i = 0; i < 2; i++) {
+        await balanceUser.get();
+        const receipt = await this.proxy.execMock(to, placeOrderData, {
+          from: user,
+          value: sellAmount,
+        });
+        expect(await balanceProxy.delta()).to.be.zero;
+        expect(await balanceUser.delta()).to.be.bignumber.eq(
+          ether('0')
+            .sub(sellAmount)
+            .sub(new BN(receipt.receipt.gasUsed))
+        );
+      }
 
       // Check order exists
       const encodedData = util.toBuffer(
@@ -816,7 +837,7 @@ contract('GelatoLimitOrder', function([_, user]) {
       const sigBuffer = util.ecsign(util.toBuffer(hash), util.toBuffer(secret));
       const sig = util.toRpcSig(sigBuffer.v, sigBuffer.r, sigBuffer.s);
 
-      const exceptExecuteAmountOut = (
+      const expectExecuteAmountOut = (
         await this.uniswapRouter.getAmountsOut.call(
           sellAmount.add(sellAmount).sub(fee),
           path,
@@ -841,7 +862,7 @@ contract('GelatoLimitOrder', function([_, user]) {
       );
       const postTokenBalance = await this.tokenA.balanceOf(user);
       expect(postTokenBalance.sub(preTokenBalance)).to.be.bignumber.eq(
-        exceptExecuteAmountOut
+        expectExecuteAmountOut
       );
     });
 
@@ -868,33 +889,23 @@ contract('GelatoLimitOrder', function([_, user]) {
         secret // witness private key, but unused, it can fill any bytes.
       );
 
-      await this.tokenA.transfer(this.proxy.address, sellAmount, {
-        from: tokenAProviderAddress,
-      });
+      for (var i = 0; i < 2; i++) {
+        await this.tokenA.transfer(this.proxy.address, sellAmount, {
+          from: tokenAProviderAddress,
+        });
 
-      // place order through proxy
-      const to = this.hGelatoLimitOrder.address;
-      await balanceUser.get();
-      const receipt = await this.proxy.execMock(to, placeOrderData, {
-        from: user,
-        value: ether('1'),
-      });
-      expect(await balanceProxy.delta()).to.be.zero;
-      expect(await balanceUser.delta()).to.be.bignumber.eq(
-        ether('0').sub(new BN(receipt.receipt.gasUsed))
-      );
-
-      await this.tokenA.transfer(this.proxy.address, sellAmount, {
-        from: tokenAProviderAddress,
-      });
-      const receipt2 = await this.proxy.execMock(to, placeOrderData, {
-        from: user,
-        value: ether('1'),
-      });
-      expect(await balanceProxy.delta()).to.be.zero;
-      expect(await balanceUser.delta()).to.be.bignumber.eq(
-        ether('0').sub(new BN(receipt2.receipt.gasUsed))
-      );
+        // place order through proxy
+        const to = this.hGelatoLimitOrder.address;
+        await balanceUser.get();
+        const receipt = await this.proxy.execMock(to, placeOrderData, {
+          from: user,
+          value: ether('1'),
+        });
+        expect(await balanceProxy.delta()).to.be.zero;
+        expect(await balanceUser.delta()).to.be.bignumber.eq(
+          ether('0').sub(new BN(receipt.receipt.gasUsed))
+        );
+      }
 
       // Check order existed
       const encodedData = util.toBuffer(
@@ -941,7 +952,7 @@ contract('GelatoLimitOrder', function([_, user]) {
       const sigBuffer = util.ecsign(util.toBuffer(hash), util.toBuffer(secret));
       const sig = util.toRpcSig(sigBuffer.v, sigBuffer.r, sigBuffer.s);
 
-      const exceptExecuteAmountOut = (
+      const expectExecuteAmountOut = (
         await this.uniswapRouter.getAmountsOut(
           sellAmount.add(sellAmount),
           path,
@@ -965,7 +976,7 @@ contract('GelatoLimitOrder', function([_, user]) {
         }
       );
       expect(await balanceUser.delta()).to.be.bignumber.eq(
-        exceptExecuteAmountOut.sub(fee)
+        expectExecuteAmountOut.sub(fee)
       );
     });
 
@@ -996,35 +1007,23 @@ contract('GelatoLimitOrder', function([_, user]) {
         secret
       );
 
-      await this.tokenA.transfer(this.proxy.address, sellAmount, {
-        from: tokenAProviderAddress,
-      });
+      for (i = 0; i < 2; i++) {
+        await this.tokenA.transfer(this.proxy.address, sellAmount, {
+          from: tokenAProviderAddress,
+        });
 
-      // place order through proxy
-      const to = this.hGelatoLimitOrder.address;
-      await balanceUser.get();
-      const receipt = await this.proxy.execMock(to, placeOrderData, {
-        from: user,
-        value: ether('1'),
-      });
-      expect(await balanceProxy.delta()).to.be.zero;
-      expect(await balanceUser.delta()).to.be.bignumber.eq(
-        ether('0').sub(new BN(receipt.receipt.gasUsed))
-      );
-
-      await this.tokenA.transfer(this.proxy.address, sellAmount, {
-        from: tokenAProviderAddress,
-      });
-
-      await balanceUser.get();
-      const receipt2 = await this.proxy.execMock(to, placeOrderData, {
-        from: user,
-        value: ether('1'),
-      });
-      expect(await balanceProxy.delta()).to.be.zero;
-      expect(await balanceUser.delta()).to.be.bignumber.eq(
-        ether('0').sub(new BN(receipt2.receipt.gasUsed))
-      );
+        // place order through proxy
+        const to = this.hGelatoLimitOrder.address;
+        await balanceUser.get();
+        const receipt = await this.proxy.execMock(to, placeOrderData, {
+          from: user,
+          value: ether('1'),
+        });
+        expect(await balanceProxy.delta()).to.be.zero;
+        expect(await balanceUser.delta()).to.be.bignumber.eq(
+          ether('0').sub(new BN(receipt.receipt.gasUsed))
+        );
+      }
 
       // Check order existed
       const encodedData = util.toBuffer(
