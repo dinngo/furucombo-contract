@@ -97,7 +97,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           const tokenOut = tokenAddress;
           const fee = new BN('3000');
           const amountIn = value;
-          const amountOutMinimum = new BN('0');
+          const amountOutMinimum = new BN('1');
           const sqrtPriceLimitX96 = new BN('0');
 
           // Estimate result
@@ -106,7 +106,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
             tokenOut,
             fee,
             amountIn,
-            amountOutMinimum
+            sqrtPriceLimitX96
           );
 
           // Execution
@@ -131,6 +131,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
 
           // Verify result
           expect(handlerReturn).to.be.bignumber.eq(result);
+          expect(handlerReturn).to.be.bignumber.gt(new BN('0'));
           expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
             tokenUser.add(result)
           );
@@ -153,7 +154,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           const tokenOut = tokenAddress;
           const fee = new BN('3000');
           const amountIn = value;
-          const amountOutMinimum = new BN('0');
+          const amountOutMinimum = new BN('1');
           const sqrtPriceLimitX96 = new BN('0');
 
           // Estimate result
@@ -162,7 +163,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
             tokenOut,
             fee,
             amountIn,
-            amountOutMinimum
+            sqrtPriceLimitX96
           );
 
           // Execution
@@ -187,6 +188,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
 
           // Verify result
           expect(handlerReturn).to.be.bignumber.eq(result);
+          expect(handlerReturn).to.be.bignumber.gt(new BN('0'));
           expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
             tokenUser.add(result)
           );
@@ -209,7 +211,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           const tokenOut = tokenAddress;
           const fee = new BN('3000');
           const amountIn = value;
-          const amountOutMinimum = new BN('0');
+          const amountOutMinimum = new BN('1');
           const sqrtPriceLimitX96 = new BN('0');
 
           // Execution
@@ -239,7 +241,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           const tokenOut = WETH_TOKEN;
           const fee = new BN('3000');
           const amountIn = value;
-          const amountOutMinimum = new BN('0');
+          const amountOutMinimum = new BN('1');
           const sqrtPriceLimitX96 = new BN('0');
           await this.token.transfer(this.proxy.address, amountIn, {
             from: tokenProvider,
@@ -252,7 +254,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
             tokenOut,
             fee,
             amountIn,
-            amountOutMinimum
+            sqrtPriceLimitX96
           );
 
           // Execution
@@ -277,7 +279,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
 
           // Verify result
           const userBalanceDelta = await balanceUser.delta();
-
+          expect(handlerReturn).to.be.bignumber.gt(new BN('0'));
           expect(handlerReturn).to.be.bignumber.eq(result);
           expect(userBalanceDelta).to.be.bignumber.eq(
             ether('0')
@@ -302,7 +304,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           const tokenOut = WETH_TOKEN;
           const fee = new BN('3000');
           const amountIn = value;
-          const amountOutMinimum = new BN('0');
+          const amountOutMinimum = new BN('1');
           const sqrtPriceLimitX96 = new BN('0');
           await this.token.transfer(this.proxy.address, amountIn, {
             from: tokenProvider,
@@ -315,7 +317,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
             tokenOut,
             fee,
             amountIn,
-            amountOutMinimum
+            sqrtPriceLimitX96
           );
 
           // Execution
@@ -340,7 +342,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
 
           // Verify result
           const userBalanceDelta = await balanceUser.delta();
-
+          expect(handlerReturn).to.be.bignumber.gt(new BN('0'));
           expect(handlerReturn).to.be.bignumber.eq(result);
           expect(userBalanceDelta).to.be.bignumber.eq(
             ether('0')
@@ -365,7 +367,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           const tokenOut = WETH_TOKEN;
           const fee = new BN('3000');
           const amountIn = value;
-          const amountOutMinimum = new BN('0');
+          const amountOutMinimum = new BN('1');
           const sqrtPriceLimitX96 = new BN('0');
           await this.token.transfer(
             this.proxy.address,
@@ -404,7 +406,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           const tokenOut = WETH_TOKEN;
           const fee = new BN('3000');
           const amountIn = value;
-          const amountOutMinimum = new BN('0');
+          const amountOutMinimum = new BN('1');
           const sqrtPriceLimitX96 = new BN('0');
           await this.token.transfer(this.proxy.address, amountIn, {
             from: tokenProvider,
@@ -417,7 +419,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
             tokenOut,
             fee,
             amountIn,
-            amountOutMinimum
+            sqrtPriceLimitX96
           );
 
           // Execution
@@ -443,6 +445,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
 
           // Verify result
           expect(handlerReturn).to.be.bignumber.eq(result);
+          expect(handlerReturn).to.be.bignumber.gt(new BN('0'));
           expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
             tokenUser
           );
@@ -468,7 +471,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           const tokenOut = WETH_TOKEN;
           const fee = new BN('3000');
           const amountIn = value;
-          const amountOutMinimum = new BN('0');
+          const amountOutMinimum = new BN('1');
           const sqrtPriceLimitX96 = new BN('0');
           await this.token.transfer(this.proxy.address, amountIn, {
             from: tokenProvider,
@@ -481,7 +484,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
             tokenOut,
             fee,
             amountIn,
-            amountOutMinimum
+            sqrtPriceLimitX96
           );
 
           // Execution
@@ -507,6 +510,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
 
           // Verify result
           expect(handlerReturn).to.be.bignumber.eq(result);
+          expect(handlerReturn).to.be.bignumber.gt(new BN('0'));
           expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
             tokenUser
           );
@@ -532,7 +536,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           const tokenOut = WETH_TOKEN;
           const fee = new BN('3000');
           const amountIn = value;
-          const amountOutMinimum = new BN('0');
+          const amountOutMinimum = new BN('1');
           const sqrtPriceLimitX96 = new BN('0');
           await this.token.transfer(
             this.proxy.address,
@@ -573,7 +577,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           const tokens = [WETH_TOKEN, token2Address, tokenAddress];
           const fees = [new BN('3000'), new BN('500')];
           const amountIn = value;
-          const amountOutMinimum = new BN('0');
+          const amountOutMinimum = new BN('1');
           const path = encodePath(tokens, fees);
 
           // Estimate result
@@ -599,6 +603,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
 
           // Verify result
           expect(handlerReturn).to.be.bignumber.eq(result);
+          expect(handlerReturn).to.be.bignumber.gt(new BN('0'));
           expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
             tokenUser.add(result)
           );
@@ -620,7 +625,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           const tokens = [WETH_TOKEN, token2Address, tokenAddress];
           const fees = [new BN('3000'), new BN('500')];
           const amountIn = value;
-          const amountOutMinimum = new BN('0');
+          const amountOutMinimum = new BN('1');
           const path = encodePath(tokens, fees);
 
           // Estimate result
@@ -646,6 +651,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
 
           // Verify result
           expect(handlerReturn).to.be.bignumber.eq(result);
+          expect(handlerReturn).to.be.bignumber.gt(new BN('0'));
           expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
             tokenUser.add(result)
           );
@@ -667,7 +673,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           const tokens = [WETH_TOKEN, token2Address, tokenAddress];
           const fees = [new BN('3000'), new BN('500')];
           const amountIn = value;
-          const amountOutMinimum = new BN('0');
+          const amountOutMinimum = new BN('1');
           const path = encodePath(tokens, fees);
 
           // Execution
@@ -695,7 +701,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           const fees = [new BN('500'), new BN('3000')];
           const path = encodePath(tokens, fees);
           const amountIn = value;
-          const amountOutMinimum = new BN('0');
+          const amountOutMinimum = new BN('1');
           await this.token.transfer(this.proxy.address, amountIn, {
             from: tokenProvider,
           });
@@ -724,7 +730,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
 
           // Verify result
           const userBalanceDelta = await balanceUser.delta();
-
+          expect(handlerReturn).to.be.bignumber.gt(new BN('0'));
           expect(handlerReturn).to.be.bignumber.eq(result);
           expect(userBalanceDelta).to.be.bignumber.eq(
             ether('0')
@@ -749,7 +755,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           const fees = [new BN('500'), new BN('3000')];
           const path = encodePath(tokens, fees);
           const amountIn = value;
-          const amountOutMinimum = new BN('0');
+          const amountOutMinimum = new BN('1');
           await this.token.transfer(this.proxy.address, amountIn, {
             from: tokenProvider,
           });
@@ -778,8 +784,8 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
 
           // Verify result
           const userBalanceDelta = await balanceUser.delta();
-
           expect(handlerReturn).to.be.bignumber.eq(result);
+          expect(handlerReturn).to.be.bignumber.gt(new BN('0'));
           expect(userBalanceDelta).to.be.bignumber.eq(
             ether('0')
               .add(handlerReturn)
@@ -803,7 +809,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           const fees = [new BN('500'), new BN('3000')];
           const path = encodePath(tokens, fees);
           const amountIn = value;
-          const amountOutMinimum = new BN('0');
+          const amountOutMinimum = new BN('1');
           await this.token.transfer(
             this.proxy.address,
             amountIn.div(new BN('2')),
@@ -839,7 +845,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           const fees = [new BN('500'), new BN('3000')];
           const path = encodePath(tokens, fees);
           const amountIn = value;
-          const amountOutMinimum = new BN('0');
+          const amountOutMinimum = new BN('1');
           await this.token.transfer(this.proxy.address, amountIn, {
             from: tokenProvider,
           });
@@ -868,6 +874,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
 
           // Verify result
           expect(handlerReturn).to.be.bignumber.eq(result);
+          expect(handlerReturn).to.be.bignumber.gt(new BN('0'));
           expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
             tokenUser
           );
@@ -893,7 +900,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           const fees = [new BN('500'), new BN('3000')];
           const path = encodePath(tokens, fees);
           const amountIn = value;
-          const amountOutMinimum = new BN('0');
+          const amountOutMinimum = new BN('1');
           await this.token.transfer(this.proxy.address, amountIn, {
             from: tokenProvider,
           });
@@ -922,6 +929,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
 
           // Verify result
           expect(handlerReturn).to.be.bignumber.eq(result);
+          expect(handlerReturn).to.be.bignumber.gt(new BN('0'));
           expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
             tokenUser
           );
@@ -947,7 +955,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           const fees = [new BN('500'), new BN('3000')];
           const path = encodePath(tokens, fees);
           const amountIn = value;
-          const amountOutMinimum = new BN('0');
+          const amountOutMinimum = new BN('1');
           await this.token.transfer(
             this.proxy.address,
             amountIn.div(new BN('2')),
