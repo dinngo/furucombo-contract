@@ -20,30 +20,37 @@ contract HPolygon is HandlerBase {
     // prettier-ignore
     address public constant ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
+    event Bridged(address user, address token, uint256 amount);
+
     function getContractName() public pure override returns (string memory) {
         return "HPolygon";
     }
 
     function depositEther(uint256 value) external payable {
+        address user = _getSender();
         value = _getBalance(address(0), value);
+        
         // Use PoS bridge for ether
         try
-            POS_MANAGER.depositEtherFor{value: value}(_getSender())
+            POS_MANAGER.depositEtherFor{value: value}(user)
         {} catch Error(string memory reason) {
             _revertMsg("depositEther", reason);
         } catch {
             _revertMsg("depositEther");
         }
+
+        emit Bridged(user, ETH, value);
     }
 
     function depositERC20(address token, uint256 amount) external payable {
+        address user = _getSender();
         amount = _getBalance(token, amount);
 
         if (token == MATIC) {
             // Use Plasma bridge for MATIC token
             IERC20(token).safeApprove(address(PLASMA_MANAGER), amount);
             try
-                PLASMA_MANAGER.depositERC20ForUser(token, _getSender(), amount)
+                PLASMA_MANAGER.depositERC20ForUser(token, user, amount)
             {} catch Error(string memory reason) {
                 _revertMsg("depositERC20", reason);
             } catch {
@@ -54,12 +61,14 @@ contract HPolygon is HandlerBase {
             bytes memory depositData = abi.encode("uint256", amount);
             IERC20(token).safeApprove(POS_PREDICATE_ERC20, amount);
             try
-                POS_MANAGER.depositFor(_getSender(), token, depositData)
+                POS_MANAGER.depositFor(user, token, depositData)
             {} catch Error(string memory reason) {
                 _revertMsg("depositERC20", reason);
             } catch {
                 _revertMsg("depositERC20");
             }
         }
+
+        emit Bridged(user, token, amount);
     }
 }
