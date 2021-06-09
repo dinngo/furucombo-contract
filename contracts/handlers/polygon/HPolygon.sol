@@ -3,7 +3,6 @@ pragma solidity ^0.6.0;
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 
 import "../HandlerBase.sol";
-import "../weth/IWETH9.sol";
 import "./IRootChainManager.sol";
 import "./IDepositManager.sol";
 
@@ -19,8 +18,6 @@ contract HPolygon is HandlerBase {
     // prettier-ignore
     address public constant MATIC = 0x7D1AfA7B718fb893dB30A3aBc0Cfc608AaCfeBB0;
     // prettier-ignore
-    address payable public constant WETH = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
-    // prettier-ignore
     address public constant ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
     function getContractName() public pure override returns (string memory) {
@@ -29,17 +26,20 @@ contract HPolygon is HandlerBase {
 
     function depositEther(uint256 value) external payable {
         value = _getBalance(address(0), value);
-        _depositEther(value);
+        // Use PoS bridge for ether
+        try
+            POS_MANAGER.depositEtherFor{value: value}(_getSender())
+        {} catch Error(string memory reason) {
+            _revertMsg("depositEther", reason);
+        } catch {
+            _revertMsg("depositEther");
+        }
     }
 
     function depositERC20(address token, uint256 amount) external payable {
         amount = _getBalance(token, amount);
 
-        if (token == WETH) {
-            // Unwrap WETH to ether for consistency
-            IWETH9(WETH).withdraw(amount);
-            _depositEther(amount);
-        } else if (token == MATIC) {
+        if (token == MATIC) {
             // Use Plasma bridge for MATIC token
             IERC20(token).safeApprove(address(PLASMA_MANAGER), amount);
             try
@@ -60,17 +60,6 @@ contract HPolygon is HandlerBase {
             } catch {
                 _revertMsg("depositERC20");
             }
-        }
-    }
-
-    function _depositEther(uint256 value) internal {
-        // Use PoS bridge for ether
-        try
-            POS_MANAGER.depositEtherFor{value: value}(_getSender())
-        {} catch Error(string memory reason) {
-            _revertMsg("depositEther", reason);
-        } catch {
-            _revertMsg("depositEther");
         }
     }
 }
