@@ -20,7 +20,11 @@ contract HPolygon is HandlerBase {
     // prettier-ignore
     address public constant ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
-    event PolygonBridged(address indexed sender, address indexed token, uint256 amount);
+    event PolygonBridged(
+        address indexed sender,
+        address indexed token,
+        uint256 amount
+    );
 
     function getContractName() public pure override returns (string memory) {
         return "HPolygon";
@@ -29,11 +33,11 @@ contract HPolygon is HandlerBase {
     function depositEther(uint256 value) external payable {
         address user = _getSender();
         value = _getBalance(address(0), value);
-        
+
         // Use PoS bridge for ether
-        try
-            POS_MANAGER.depositEtherFor{value: value}(user)
-        {} catch Error(string memory reason) {
+        try POS_MANAGER.depositEtherFor{value: value}(user) {} catch Error(
+            string memory reason
+        ) {
             _revertMsg("depositEther", reason);
         } catch {
             _revertMsg("depositEther");
@@ -60,9 +64,9 @@ contract HPolygon is HandlerBase {
             // Use PoS bridge for other tokens
             bytes memory depositData = abi.encodePacked(amount);
             IERC20(token).safeApprove(POS_PREDICATE_ERC20, amount);
-            try
-                POS_MANAGER.depositFor(user, token, depositData)
-            {} catch Error(string memory reason) {
+            try POS_MANAGER.depositFor(user, token, depositData) {} catch Error(
+                string memory reason
+            ) {
                 _revertMsg("depositERC20", reason);
             } catch {
                 _revertMsg("depositERC20");
