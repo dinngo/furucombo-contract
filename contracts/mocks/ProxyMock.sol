@@ -32,4 +32,13 @@ contract ProxyMock is Proxy, GasProfiler {
     function updateTokenMock(address token) public {
         stack.setAddress(token);
     }
+
+    /* ======= Add handlers' event here for verify purpose in test ======= */
+
+    // HPolygon
+    event PolygonBridged(
+        address indexed sender,
+        address indexed token,
+        uint256 amount
+    );
 }

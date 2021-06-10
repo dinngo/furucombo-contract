@@ -84,6 +84,18 @@ contract('Polygon Token Bridge', function([_, user]) {
         value: value,
       });
 
+      // Verify event
+      await expectEvent.inTransaction(
+        receipt.tx,
+        this.proxy,
+        'PolygonBridged',
+        {
+          sender: user,
+          token: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
+          amount: value,
+        }
+      );
+
       // Verify balance
       expect(await balanceBridge.delta()).to.be.bignumber.eq(value);
       expect(await balanceProxy.get()).to.be.zero;
@@ -113,6 +125,18 @@ contract('Polygon Token Bridge', function([_, user]) {
         from: user,
         value: ether('0.1'),
       });
+
+      // Verify event
+      await expectEvent.inTransaction(
+        receipt.tx,
+        this.proxy,
+        'PolygonBridged',
+        {
+          sender: user,
+          token: token,
+          amount: value,
+        }
+      );
 
       // Verify Bridge balance
       expect(
@@ -159,6 +183,18 @@ contract('Polygon Token Bridge', function([_, user]) {
         from: user,
         value: ether('0.1'),
       });
+
+      // Verify event
+      await expectEvent.inTransaction(
+        receipt.tx,
+        this.proxy,
+        'PolygonBridged',
+        {
+          sender: user,
+          token: token,
+          amount: value,
+        }
+      );
 
       // Verify Bridge balance
       expect(
