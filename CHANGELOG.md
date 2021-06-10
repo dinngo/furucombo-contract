@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- Support Polygon token bridge.
 - Support gelatov2 limit order.
 - Support uniswap v3 swapping.
 
