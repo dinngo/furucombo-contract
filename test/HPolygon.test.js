@@ -34,6 +34,8 @@ const HPolygon = artifacts.require('HPolygon');
 const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('ProxyMock');
 const IToken = artifacts.require('IERC20');
+const IPoSLocker = artifacts.require('IPredicate');
+const IPlasmaLocker = artifacts.require('IDepositManager');
 
 contract('Polygon Token Bridge', function([_, user]) {
   const tokenAddress = DAI_TOKEN;
@@ -50,6 +52,9 @@ contract('Polygon Token Bridge', function([_, user]) {
     );
     this.token = await IToken.at(tokenAddress);
     this.matic = await IToken.at(MATIC_TOKEN);
+    this.lockerPosEther = await IPoSLocker.at(POLYGON_POS_PREDICATE_ETH);
+    this.lockerPosErc20 = await IPoSLocker.at(POLYGON_POS_PREDICATE_ERC20);
+    this.lockerPlasma = await IPlasmaLocker.at(POLYGON_PLASMA_DEPOSIT_MANAGER);
   });
 
   beforeEach(async function() {
@@ -95,7 +100,16 @@ contract('Polygon Token Bridge', function([_, user]) {
           amount: value,
         }
       );
-
+      await expectEvent.inTransaction(
+        receipt.tx,
+        this.lockerPosEther,
+        'LockedEther',
+        {
+          depositor: this.proxy.address,
+          depositReceiver: user,
+          amount: value,
+        }
+      );
       // Verify balance
       expect(await balanceBridge.delta()).to.be.bignumber.eq(value);
       expect(await balanceProxy.get()).to.be.zero;
@@ -137,7 +151,17 @@ contract('Polygon Token Bridge', function([_, user]) {
           amount: value,
         }
       );
-
+      await expectEvent.inTransaction(
+        receipt.tx,
+        this.lockerPosErc20,
+        'LockedERC20',
+        {
+          depositor: this.proxy.address,
+          depositReceiver: user,
+          rootToken: token,
+          amount: value,
+        }
+      );
       // Verify Bridge balance
       expect(
         await this.token.balanceOf.call(POLYGON_POS_PREDICATE_ERC20)
@@ -195,7 +219,16 @@ contract('Polygon Token Bridge', function([_, user]) {
           amount: value,
         }
       );
-
+      await expectEvent.inTransaction(
+        receipt.tx,
+        this.lockerPlasma,
+        'NewDepositBlock',
+        {
+          owner: user,
+          token: token,
+          amountOrNFTId: value,
+        }
+      );
       // Verify Bridge balance
       expect(
         await this.matic.balanceOf.call(POLYGON_PLASMA_DEPOSIT_MANAGER)
