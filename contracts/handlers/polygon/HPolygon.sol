@@ -1,7 +1,5 @@
 pragma solidity ^0.6.0;
 
-import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
-
 import "../HandlerBase.sol";
 import "./IRootChainManager.sol";
 import "./IDepositManager.sol";
@@ -16,9 +14,9 @@ contract HPolygon is HandlerBase {
     // prettier-ignore
     address public constant POS_PREDICATE_ERC20 = 0x40ec5B33f54e0E8A33A975908C5BA1c14e5BbbDf;
     // prettier-ignore
-    address public constant MATIC = 0x7D1AfA7B718fb893dB30A3aBc0Cfc608AaCfeBB0;
+    address public constant MATIC_ADDRESS = 0x7D1AfA7B718fb893dB30A3aBc0Cfc608AaCfeBB0;
     // prettier-ignore
-    address public constant ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
+    address public constant ETH_ADDRESS = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
     event PolygonBridged(
         address indexed sender,
@@ -43,16 +41,16 @@ contract HPolygon is HandlerBase {
             _revertMsg("depositEther");
         }
 
-        emit PolygonBridged(user, ETH, value);
+        emit PolygonBridged(user, ETH_ADDRESS, value);
     }
 
     function depositERC20(address token, uint256 amount) external payable {
         address user = _getSender();
         amount = _getBalance(token, amount);
 
-        if (token == MATIC) {
+        if (token == MATIC_ADDRESS) {
             // Use Plasma bridge for MATIC token
-            IERC20(token).safeApprove(address(PLASMA_MANAGER), amount);
+            _tokenApprove(token, address(PLASMA_MANAGER), amount);
             try
                 PLASMA_MANAGER.depositERC20ForUser(token, user, amount)
             {} catch Error(string memory reason) {
@@ -63,7 +61,7 @@ contract HPolygon is HandlerBase {
         } else {
             // Use PoS bridge for other tokens
             bytes memory depositData = abi.encodePacked(amount);
-            IERC20(token).safeApprove(POS_PREDICATE_ERC20, amount);
+            _tokenApprove(token, POS_PREDICATE_ERC20, amount);
             try POS_MANAGER.depositFor(user, token, depositData) {} catch Error(
                 string memory reason
             ) {
