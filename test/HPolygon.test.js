@@ -5,10 +5,8 @@ const {
   ether,
   expectEvent,
   expectRevert,
-  time,
 } = require('@openzeppelin/test-helpers');
 const { tracker } = balance;
-const { latest } = time;
 const abi = require('ethereumjs-abi');
 const utils = web3.utils;
 
@@ -29,6 +27,7 @@ const {
   profileGas,
   getCallData,
 } = require('./utils/utils');
+const { MAX_UINT256 } = require('@openzeppelin/test-helpers/src/constants');
 
 const HPolygon = artifacts.require('HPolygon');
 const Registry = artifacts.require('Registry');
@@ -77,104 +76,211 @@ contract('Polygon Token Bridge', function([_, user]) {
       balanceBridge = await tracker(POLYGON_POS_PREDICATE_ETH);
     });
 
-    it('ether', async function() {
-      // Prepare handler data
-      const value = ether('10');
-      const to = this.hPolygon.address;
-      const data = getCallData(HPolygon, 'depositEther', [value]);
+    describe('ether', function() {
+      it('normal', async function() {
+        // Prepare handler data
+        const value = ether('10');
+        const to = this.hPolygon.address;
+        const data = getCallData(HPolygon, 'depositEther', [value]);
 
-      // Execute
-      const receipt = await this.proxy.execMock(to, data, {
-        from: user,
-        value: value,
+        // Execute
+        const receipt = await this.proxy.execMock(to, data, {
+          from: user,
+          value: value,
+        });
+
+        // Verify event
+        await expectEvent.inTransaction(
+          receipt.tx,
+          this.proxy,
+          'PolygonBridged',
+          {
+            sender: user,
+            token: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
+            amount: value,
+          }
+        );
+        await expectEvent.inTransaction(
+          receipt.tx,
+          this.lockerPosEther,
+          'LockedEther',
+          {
+            depositor: this.proxy.address,
+            depositReceiver: user,
+            amount: value,
+          }
+        );
+        // Verify balance
+        expect(await balanceBridge.delta()).to.be.bignumber.eq(value);
+        expect(await balanceProxy.get()).to.be.zero;
+        expect(await balanceUser.delta()).to.be.bignumber.eq(
+          ether('0')
+            .sub(value)
+            .sub(new BN(receipt.receipt.gasUsed))
+        );
+        profileGas(receipt);
       });
 
-      // Verify event
-      await expectEvent.inTransaction(
-        receipt.tx,
-        this.proxy,
-        'PolygonBridged',
-        {
-          sender: user,
-          token: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
-          amount: value,
-        }
-      );
-      await expectEvent.inTransaction(
-        receipt.tx,
-        this.lockerPosEther,
-        'LockedEther',
-        {
-          depositor: this.proxy.address,
-          depositReceiver: user,
-          amount: value,
-        }
-      );
-      // Verify balance
-      expect(await balanceBridge.delta()).to.be.bignumber.eq(value);
-      expect(await balanceProxy.get()).to.be.zero;
-      expect(await balanceUser.delta()).to.be.bignumber.eq(
-        ether('0')
-          .sub(value)
-          .sub(new BN(receipt.receipt.gasUsed))
-      );
-      profileGas(receipt);
+      it('max amount', async function() {
+        // Prepare handler data
+        const value = ether('10');
+        const to = this.hPolygon.address;
+        const data = getCallData(HPolygon, 'depositEther', [MAX_UINT256]);
+
+        // Execute
+        const receipt = await this.proxy.execMock(to, data, {
+          from: user,
+          value: value,
+        });
+
+        // Verify event
+        await expectEvent.inTransaction(
+          receipt.tx,
+          this.proxy,
+          'PolygonBridged',
+          {
+            sender: user,
+            token: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
+            amount: value,
+          }
+        );
+        await expectEvent.inTransaction(
+          receipt.tx,
+          this.lockerPosEther,
+          'LockedEther',
+          {
+            depositor: this.proxy.address,
+            depositReceiver: user,
+            amount: value,
+          }
+        );
+        // Verify balance
+        expect(await balanceBridge.delta()).to.be.bignumber.eq(value);
+        expect(await balanceProxy.get()).to.be.zero;
+        expect(await balanceUser.delta()).to.be.bignumber.eq(
+          ether('0')
+            .sub(value)
+            .sub(new BN(receipt.receipt.gasUsed))
+        );
+        profileGas(receipt);
+      });
     });
 
-    it('token', async function() {
-      // Prepare handler data
-      const token = this.token.address;
-      const value = ether('100');
-      const to = this.hPolygon.address;
-      const data = getCallData(HPolygon, 'depositERC20', [token, value]);
+    describe('token', function() {
+      it('normal', async function() {
+        // Prepare handler data
+        const token = this.token.address;
+        const value = ether('100');
+        const to = this.hPolygon.address;
+        const data = getCallData(HPolygon, 'depositERC20', [token, value]);
 
-      // Send tokens to proxy
-      await this.token.transfer(this.proxy.address, value, {
-        from: providerAddress,
+        // Send tokens to proxy
+        await this.token.transfer(this.proxy.address, value, {
+          from: providerAddress,
+        });
+        await this.proxy.updateTokenMock(this.token.address);
+
+        // Execute
+        const receipt = await this.proxy.execMock(to, data, {
+          from: user,
+          value: ether('0.1'),
+        });
+
+        // Verify event
+        await expectEvent.inTransaction(
+          receipt.tx,
+          this.proxy,
+          'PolygonBridged',
+          {
+            sender: user,
+            token: token,
+            amount: value,
+          }
+        );
+        await expectEvent.inTransaction(
+          receipt.tx,
+          this.lockerPosErc20,
+          'LockedERC20',
+          {
+            depositor: this.proxy.address,
+            depositReceiver: user,
+            rootToken: token,
+            amount: value,
+          }
+        );
+        // Verify Bridge balance
+        expect(
+          await this.token.balanceOf.call(POLYGON_POS_PREDICATE_ERC20)
+        ).to.be.bignumber.eq(tokenBridgeAmount.add(value));
+        // Verify Proxy balance
+        expect(await this.token.balanceOf.call(this.proxy.address)).to.be.zero;
+        expect(await balanceProxy.get()).to.be.zero;
+        // Verify User balance
+        expect(await this.token.balanceOf.call(user)).to.be.zero;
+        expect(await balanceUser.delta()).to.be.bignumber.eq(
+          ether('0').sub(new BN(receipt.receipt.gasUsed))
+        );
+        profileGas(receipt);
       });
-      await this.proxy.updateTokenMock(this.token.address);
 
-      // Execute
-      const receipt = await this.proxy.execMock(to, data, {
-        from: user,
-        value: ether('0.1'),
+      it('max amount', async function() {
+        // Prepare handler data
+        const token = this.token.address;
+        const value = ether('100');
+        const to = this.hPolygon.address;
+        const data = getCallData(HPolygon, 'depositERC20', [
+          token,
+          MAX_UINT256,
+        ]);
+
+        // Send tokens to proxy
+        await this.token.transfer(this.proxy.address, value, {
+          from: providerAddress,
+        });
+        await this.proxy.updateTokenMock(this.token.address);
+
+        // Execute
+        const receipt = await this.proxy.execMock(to, data, {
+          from: user,
+          value: ether('0.1'),
+        });
+
+        // Verify event
+        await expectEvent.inTransaction(
+          receipt.tx,
+          this.proxy,
+          'PolygonBridged',
+          {
+            sender: user,
+            token: token,
+            amount: value,
+          }
+        );
+        await expectEvent.inTransaction(
+          receipt.tx,
+          this.lockerPosErc20,
+          'LockedERC20',
+          {
+            depositor: this.proxy.address,
+            depositReceiver: user,
+            rootToken: token,
+            amount: value,
+          }
+        );
+        // Verify Bridge balance
+        expect(
+          await this.token.balanceOf.call(POLYGON_POS_PREDICATE_ERC20)
+        ).to.be.bignumber.eq(tokenBridgeAmount.add(value));
+        // Verify Proxy balance
+        expect(await this.token.balanceOf.call(this.proxy.address)).to.be.zero;
+        expect(await balanceProxy.get()).to.be.zero;
+        // Verify User balance
+        expect(await this.token.balanceOf.call(user)).to.be.zero;
+        expect(await balanceUser.delta()).to.be.bignumber.eq(
+          ether('0').sub(new BN(receipt.receipt.gasUsed))
+        );
+        profileGas(receipt);
       });
-
-      // Verify event
-      await expectEvent.inTransaction(
-        receipt.tx,
-        this.proxy,
-        'PolygonBridged',
-        {
-          sender: user,
-          token: token,
-          amount: value,
-        }
-      );
-      await expectEvent.inTransaction(
-        receipt.tx,
-        this.lockerPosErc20,
-        'LockedERC20',
-        {
-          depositor: this.proxy.address,
-          depositReceiver: user,
-          rootToken: token,
-          amount: value,
-        }
-      );
-      // Verify Bridge balance
-      expect(
-        await this.token.balanceOf.call(POLYGON_POS_PREDICATE_ERC20)
-      ).to.be.bignumber.eq(tokenBridgeAmount.add(value));
-      // Verify Proxy balance
-      expect(await this.token.balanceOf.call(this.proxy.address)).to.be.zero;
-      expect(await balanceProxy.get()).to.be.zero;
-      // Verify User balance
-      expect(await this.token.balanceOf.call(user)).to.be.zero;
-      expect(await balanceUser.delta()).to.be.bignumber.eq(
-        ether('0').sub(new BN(receipt.receipt.gasUsed))
-      );
-      profileGas(receipt);
     });
   });
 
@@ -189,59 +295,119 @@ contract('Polygon Token Bridge', function([_, user]) {
       );
     });
 
-    it('MATIC', async function() {
-      // Prepare handler data
-      const token = this.matic.address;
-      const value = ether('100');
-      const to = this.hPolygon.address;
-      const data = getCallData(HPolygon, 'depositERC20', [token, value]);
+    describe('MATIC', function() {
+      it('normal', async function() {
+        // Prepare handler data
+        const token = this.matic.address;
+        const value = ether('100');
+        const to = this.hPolygon.address;
+        const data = getCallData(HPolygon, 'depositERC20', [token, value]);
 
-      // Send tokens to proxy
-      await this.matic.transfer(this.proxy.address, value, {
-        from: MATIC_PROVIDER,
+        // Send tokens to proxy
+        await this.matic.transfer(this.proxy.address, value, {
+          from: MATIC_PROVIDER,
+        });
+        await this.proxy.updateTokenMock(this.matic.address);
+
+        // Execute
+        const receipt = await this.proxy.execMock(to, data, {
+          from: user,
+          value: ether('0.1'),
+        });
+
+        // Verify event
+        await expectEvent.inTransaction(
+          receipt.tx,
+          this.proxy,
+          'PolygonBridged',
+          {
+            sender: user,
+            token: token,
+            amount: value,
+          }
+        );
+        await expectEvent.inTransaction(
+          receipt.tx,
+          this.lockerPlasma,
+          'NewDepositBlock',
+          {
+            owner: user,
+            token: token,
+            amountOrNFTId: value,
+          }
+        );
+        // Verify Bridge balance
+        expect(
+          await this.matic.balanceOf.call(POLYGON_PLASMA_DEPOSIT_MANAGER)
+        ).to.be.bignumber.eq(maticBridgeAmount.add(value));
+        // Verify Proxy balance
+        expect(await this.matic.balanceOf.call(this.proxy.address)).to.be.zero;
+        expect(await balanceProxy.get()).to.be.zero;
+        // Verify User balance
+        expect(await this.matic.balanceOf.call(user)).to.be.zero;
+        expect(await balanceUser.delta()).to.be.bignumber.eq(
+          ether('0').sub(new BN(receipt.receipt.gasUsed))
+        );
+        profileGas(receipt);
       });
-      await this.proxy.updateTokenMock(this.matic.address);
 
-      // Execute
-      const receipt = await this.proxy.execMock(to, data, {
-        from: user,
-        value: ether('0.1'),
+      it('max amount', async function() {
+        // Prepare handler data
+        const token = this.matic.address;
+        const value = ether('100');
+        const to = this.hPolygon.address;
+        const data = getCallData(HPolygon, 'depositERC20', [
+          token,
+          MAX_UINT256,
+        ]);
+
+        // Send tokens to proxy
+        await this.matic.transfer(this.proxy.address, value, {
+          from: MATIC_PROVIDER,
+        });
+        await this.proxy.updateTokenMock(this.matic.address);
+
+        // Execute
+        const receipt = await this.proxy.execMock(to, data, {
+          from: user,
+          value: ether('0.1'),
+        });
+
+        // Verify event
+        await expectEvent.inTransaction(
+          receipt.tx,
+          this.proxy,
+          'PolygonBridged',
+          {
+            sender: user,
+            token: token,
+            amount: value,
+          }
+        );
+        await expectEvent.inTransaction(
+          receipt.tx,
+          this.lockerPlasma,
+          'NewDepositBlock',
+          {
+            owner: user,
+            token: token,
+            amountOrNFTId: value,
+          }
+        );
+        // Verify Bridge balance
+        expect(
+          await this.matic.balanceOf.call(POLYGON_PLASMA_DEPOSIT_MANAGER)
+        ).to.be.bignumber.eq(maticBridgeAmount.add(value));
+        // Verify Proxy balance
+        expect(await this.matic.balanceOf.call(this.proxy.address)).to.be.zero;
+        expect(await balanceProxy.get()).to.be.zero;
+        // Verify User balance
+        expect(await this.matic.balanceOf.call(user)).to.be.zero;
+        expect(await balanceUser.delta()).to.be.bignumber.eq(
+          ether('0').sub(new BN(receipt.receipt.gasUsed))
+        );
+        profileGas(receipt);
       });
-
-      // Verify event
-      await expectEvent.inTransaction(
-        receipt.tx,
-        this.proxy,
-        'PolygonBridged',
-        {
-          sender: user,
-          token: token,
-          amount: value,
-        }
-      );
-      await expectEvent.inTransaction(
-        receipt.tx,
-        this.lockerPlasma,
-        'NewDepositBlock',
-        {
-          owner: user,
-          token: token,
-          amountOrNFTId: value,
-        }
-      );
-      // Verify Bridge balance
-      expect(
-        await this.matic.balanceOf.call(POLYGON_PLASMA_DEPOSIT_MANAGER)
-      ).to.be.bignumber.eq(maticBridgeAmount.add(value));
-      // Verify Proxy balance
-      expect(await this.matic.balanceOf.call(this.proxy.address)).to.be.zero;
-      expect(await balanceProxy.get()).to.be.zero;
-      // Verify User balance
-      expect(await this.matic.balanceOf.call(user)).to.be.zero;
-      expect(await balanceUser.delta()).to.be.bignumber.eq(
-        ether('0').sub(new BN(receipt.receipt.gasUsed))
-      );
-      profileGas(receipt);
     });
   });
 });
