@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+## [1.6.0] - 2021-06-15
+
 ### Added
 
 - Support Polygon token bridge.
