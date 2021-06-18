@@ -19,10 +19,12 @@ contract HGelatoV2LimitOrder is HandlerBase {
     }
 
     function placeLimitOrder(
-        address inToken,
         uint256 value,
-        bytes calldata limitOrderData,
+        address module, // unused, only for gelato graph bot
+        address inToken,
+        address payable owner, // unused, only for gelato graph bot
         address _witness,
+        bytes calldata limitOrderData,
         bytes32 _secret
     ) external payable {
         // Transfer funds inside Furu Proxy => Will be done by a separate Handler

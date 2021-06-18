@@ -109,11 +109,13 @@ contract('GelatoLimitOrder', function([_, user]) {
       );
       const to = this.hGelatoLimitOrder.address;
       const placeOrderData = abi.simpleEncode(
-        'placeLimitOrder(address,uint256,bytes,address,bytes32)',
-        ETH_TOKEN,
+        'placeLimitOrder(uint256,address,address,address,address,bytes,bytes32)',
         sellAmount,
-        encodedData,
+        GELATOV2_LIMIT_ORDER_MODULE,
+        ETH_TOKEN,
+        user,
         witness,
+        encodedData,
         secret
       );
 
@@ -219,11 +221,13 @@ contract('GelatoLimitOrder', function([_, user]) {
       );
       const to = this.hGelatoLimitOrder.address;
       const placeOrderData = abi.simpleEncode(
-        'placeLimitOrder(address,uint256,bytes,address,bytes32)',
-        ETH_TOKEN,
+        'placeLimitOrder(uint256,address,address,address,address,bytes,bytes32)',
         sellAmount,
-        encodedData,
+        GELATOV2_LIMIT_ORDER_MODULE,
+        ETH_TOKEN,
+        user,
         witness,
+        encodedData,
         secret
       );
 
@@ -255,11 +259,13 @@ contract('GelatoLimitOrder', function([_, user]) {
         )
       );
       const placeOrderData = abi.simpleEncode(
-        'placeLimitOrder(address,uint256,bytes,address,bytes32)',
-        ETH_TOKEN,
+        'placeLimitOrder(uint256,address,address,address,address,bytes,bytes32)',
         sellAmount,
-        encodedData,
+        GELATOV2_LIMIT_ORDER_MODULE,
+        ETH_TOKEN,
+        user,
         witness,
+        encodedData,
         secret
       );
 
@@ -335,11 +341,13 @@ contract('GelatoLimitOrder', function([_, user]) {
         )
       );
       const placeOrderData = abi.simpleEncode(
-        'placeLimitOrder(address,uint256,bytes,address,bytes32)',
-        this.tokenA.address,
+        'placeLimitOrder(uint256,address,address,address,address,bytes,bytes32)',
         sellAmount,
-        encodedData,
+        GELATOV2_LIMIT_ORDER_MODULE,
+        this.tokenA.address,
+        user,
         witness,
+        encodedData,
         secret // witness private key, but unused, it can fill any bytes.
       );
 
@@ -443,11 +451,13 @@ contract('GelatoLimitOrder', function([_, user]) {
         )
       );
       const placeOrderData = abi.simpleEncode(
-        'placeLimitOrder(address,uint256,bytes,address,bytes32)',
-        this.tokenA.address,
+        'placeLimitOrder(uint256,address,address,address,address,bytes,bytes32)',
         sellAmount,
-        encodedData,
+        GELATOV2_LIMIT_ORDER_MODULE,
+        this.tokenA.address,
+        user,
         witness,
+        encodedData,
         secret // witness private key, but unused, it can fill any bytes.
       );
 
@@ -490,14 +500,14 @@ contract('GelatoLimitOrder', function([_, user]) {
         )
       );
       const placeOrderData = abi.simpleEncode(
-        'placeLimitOrder(address,uint256,bytes,address,bytes32)',
-        this.tokenA.address,
-        // ETH_TOKEN,
+        'placeLimitOrder(uint256,address,address,address,address,bytes,bytes32)',
         sellAmount,
-        // minReturn,
-        encodedData,
+        GELATOV2_LIMIT_ORDER_MODULE,
+        this.tokenA.address,
+        user,
         witness,
-        secret
+        encodedData,
+        secret // witness private key, but unused, it can fill any bytes.
       );
 
       await this.tokenA.transfer(this.proxy.address, sellAmount, {
@@ -578,12 +588,14 @@ contract('GelatoLimitOrder', function([_, user]) {
         )
       );
       const placeOrderData = abi.simpleEncode(
-        'placeLimitOrder(address,uint256,bytes,address,bytes32)',
-        this.tokenA.address,
+        'placeLimitOrder(uint256,address,address,address,address,bytes,bytes32)',
         sellAmount,
-        encodedData,
+        GELATOV2_LIMIT_ORDER_MODULE,
+        this.tokenA.address,
+        user,
         witness,
-        secret
+        encodedData,
+        secret // witness private key, but unused, it can fill any bytes.
       );
 
       await this.tokenA.transfer(this.proxy.address, sellAmount, {
@@ -691,12 +703,14 @@ contract('GelatoLimitOrder', function([_, user]) {
         )
       );
       const placeOrderData = abi.simpleEncode(
-        'placeLimitOrder(address,uint256,bytes,address,bytes32)',
-        this.tokenA.address,
+        'placeLimitOrder(uint256,address,address,address,address,bytes,bytes32)',
         sellAmount,
-        encodedData,
+        GELATOV2_LIMIT_ORDER_MODULE,
+        this.tokenA.address,
+        user,
         witness,
-        secret
+        encodedData,
+        secret // witness private key, but unused, it can fill any bytes.
       );
 
       await this.tokenA.transfer(this.proxy.address, sellAmount, {
@@ -774,12 +788,14 @@ contract('GelatoLimitOrder', function([_, user]) {
       );
       const to = this.hGelatoLimitOrder.address;
       const placeOrderData = abi.simpleEncode(
-        'placeLimitOrder(address,uint256,bytes,address,bytes32)',
-        ETH_TOKEN,
+        'placeLimitOrder(uint256,address,address,address,address,bytes,bytes32)',
         sellAmount,
-        encodedData,
+        GELATOV2_LIMIT_ORDER_MODULE,
+        ETH_TOKEN,
+        user,
         witness,
-        secret
+        encodedData,
+        secret // witness private key, but unused, it can fill any bytes.
       );
 
       // place order through proxy
@@ -890,11 +906,13 @@ contract('GelatoLimitOrder', function([_, user]) {
         )
       );
       const placeOrderData = abi.simpleEncode(
-        'placeLimitOrder(address,uint256,bytes,address,bytes32)',
-        this.tokenA.address,
+        'placeLimitOrder(uint256,address,address,address,address,bytes,bytes32)',
         sellAmount,
-        encodedData,
+        GELATOV2_LIMIT_ORDER_MODULE,
+        this.tokenA.address,
+        user,
         witness,
+        encodedData,
         secret // witness private key, but unused, it can fill any bytes.
       );
 
@@ -1007,12 +1025,14 @@ contract('GelatoLimitOrder', function([_, user]) {
         )
       );
       const placeOrderData = abi.simpleEncode(
-        'placeLimitOrder(address,uint256,bytes,address,bytes32)',
-        this.tokenA.address,
+        'placeLimitOrder(uint256,address,address,address,address,bytes,bytes32)',
         sellAmount,
-        encodedData,
+        GELATOV2_LIMIT_ORDER_MODULE,
+        this.tokenA.address,
+        user,
         witness,
-        secret
+        encodedData,
+        secret // witness private key, but unused, it can fill any bytes.
       );
 
       for (i = 0; i < 2; i++) {
