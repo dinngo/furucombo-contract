@@ -4,10 +4,11 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
-## [1.6.0] - 2021-06-09
+## [1.6.0] - 2021-06-15
 
 ### Added
 
+- Support Polygon token bridge.
 - Support gelatov2 limit order.
 - Support uniswap v3 swapping.
 

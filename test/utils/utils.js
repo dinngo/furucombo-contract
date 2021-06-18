@@ -5,7 +5,7 @@ const { ETH_PROVIDER, RecordHandlerResultSig } = require('./constants');
 const { expect } = require('chai');
 
 function profileGas(receipt) {
-  receipt.logs.forEach((element) => {
+  receipt.logs.forEach(element => {
     if (element.event === 'DeltaGas')
       console.log(
         web3.utils.hexToAscii(element.args.tag) +
@@ -78,7 +78,7 @@ function cUnit(amount) {
 
 function getHandlerReturn(receipt, dataTypes) {
   var handlerResult;
-  receipt.receipt.rawLogs.forEach((element) => {
+  receipt.receipt.rawLogs.forEach(element => {
     if (element.topics[0] === RecordHandlerResultSig) {
       const bytesData = web3.eth.abi.decodeParameters(
         ['bytes'],
