@@ -20,9 +20,8 @@ contract HGelatoV2LimitOrder is HandlerBase {
 
     function placeLimitOrder(
         address inToken,
-        address outToken,
         uint256 value,
-        uint256 minimumReturn,
+        bytes calldata limitOrderData,
         address _witness,
         bytes32 _secret
     ) external payable {
@@ -41,7 +40,7 @@ contract HGelatoV2LimitOrder is HandlerBase {
                         inToken,
                         payable(_getSender()),
                         _witness,
-                        abi.encode(outToken, minimumReturn),
+                        limitOrderData,
                         _secret
                     )
                 )
@@ -51,25 +50,21 @@ contract HGelatoV2LimitOrder is HandlerBase {
                 _revertMsg("placeLimitOrder");
             }
         } else {
-            (bool success, bytes memory ret) =
-                inToken.call(
-                    IGelatoPineCore(GELATO_PINE).encodeTokenOrder(
+            try
+                IERC20(inToken).transfer(
+                    IGelatoPineCore(GELATO_PINE).vaultOfOrder(
                         GELATO_LIMIT_ORDER_MODULE,
-                        IERC20(inToken),
+                        inToken,
                         payable(_getSender()),
                         _witness,
-                        abi.encode(outToken, minimumReturn),
-                        _secret,
-                        value
-                    )
-                );
-
-            if (!success) {
-                if (ret.length < 68) _revertMsg("placeLimitOrder");
-                assembly {
-                    ret := add(ret, 0x04)
-                }
-                _revertMsg("placeLimitOrder", abi.decode(ret, (string)));
+                        limitOrderData
+                    ),
+                    value
+                )
+            {} catch Error(string memory reason) {
+                _revertMsg("placeLimitOrder", reason);
+            } catch {
+                _revertMsg("placeLimitOrder");
             }
         }
     }

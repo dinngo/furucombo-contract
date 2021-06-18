@@ -109,4 +109,21 @@ interface IGelatoPineCore {
         bytes calldata _data,
         bytes calldata _auxData
     ) external view returns (bool);
+
+    /**
+     * @notice Get the vault's address of a token to token/ETH order
+     * @param _module - Address of the module to use for the order execution
+     * @param _inputToken - Address of the input token
+     * @param _owner - Address of the order's owner
+     * @param _witness - Address of the witness
+     * @param _data - Bytes of the order's data
+     * @return address - The address of the vault
+     */
+    function vaultOfOrder(
+        address _module,
+        address _inputToken,
+        address payable _owner,
+        address _witness,
+        bytes calldata _data
+    ) external view returns (address);
 }
