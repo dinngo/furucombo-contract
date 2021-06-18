@@ -64,7 +64,10 @@ contract('GelatoLimitOrder', function([_, user]) {
       utils.asciiToHex('HUniswapV2')
     );
 
-    this.hGelatoLimitOrder = await HGelatoV2LimitOrder.new();
+    this.hGelatoLimitOrder = await HGelatoV2LimitOrder.new(
+      GELATOV2_PINE,
+      GELATOV2_LIMIT_ORDER_MODULE
+    );
     await this.registry.register(
       this.hGelatoLimitOrder.address,
       utils.asciiToHex('HGelatoV2LimitOrder')

@@ -9,10 +9,13 @@ contract HGelatoV2LimitOrder is HandlerBase {
     using SafeERC20 for IERC20;
     using SafeMath for uint256;
 
-    // prettier-ignore
-    address public constant GELATO_PINE = 0x36049D479A97CdE1fC6E2a5D2caE30B666Ebf92B;
-    // prettier-ignore
-    address public constant GELATO_LIMIT_ORDER_MODULE = 0x037fc8e71445910e1E0bBb2a0896d5e9A7485318;
+    address public immutable GELATO_PINE;
+    address public immutable GELATO_LIMIT_ORDER_MODULE;
+
+    constructor(address _gelatoPine, address _module) public {
+        GELATO_PINE = _gelatoPine;
+        GELATO_LIMIT_ORDER_MODULE = _module;
+    }
 
     function getContractName() public pure override returns (string memory) {
         return "HGelatoV2LimitOrder";
