@@ -18,8 +18,8 @@ contract Proxy is IProxy, Storage, Config {
     using SafeERC20 for IERC20;
     using LibParam for bytes32;
 
-    modifier isNotBanned(address agent) {
-        require(registry.bannedAgents(agent) == 0, "Banned");
+    modifier isNotBanned() {
+        require(registry.bannedAgents(address(this)) == 0, "Banned");
         _;
     }
 
@@ -38,13 +38,7 @@ contract Proxy is IProxy, Storage, Config {
      * @notice Direct transfer from EOA should be reverted.
      * @dev Callback function will be handled here.
      */
-    fallback()
-        external
-        payable
-        isNotHalted
-        isNotBanned(msg.sender)
-        isInitialized
-    {
+    fallback() external payable isNotHalted isNotBanned isInitialized {
         // If triggered by a function call, caller should be registered in
         // registry.
         // The function call will then be forwarded to the location registered
@@ -80,7 +74,7 @@ contract Proxy is IProxy, Storage, Config {
         address[] calldata tos,
         bytes32[] calldata configs,
         bytes[] memory datas
-    ) external payable override isNotHalted isNotBanned(msg.sender) {
+    ) external payable override isNotHalted isNotBanned {
         _preProcess();
         _execs(tos, configs, datas);
         _postProcess();
@@ -95,14 +89,7 @@ contract Proxy is IProxy, Storage, Config {
         address[] calldata tos,
         bytes32[] calldata configs,
         bytes[] memory datas
-    )
-        external
-        payable
-        override
-        isNotHalted
-        isNotBanned(msg.sender)
-        isInitialized
-    {
+    ) external payable override isNotHalted isNotBanned isInitialized {
         require(msg.sender == address(this), "Does not allow external calls");
         _execs(tos, configs, datas);
     }
