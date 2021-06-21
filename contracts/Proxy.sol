@@ -290,20 +290,18 @@ contract Proxy is IProxy, Storage, Config {
 
     /// @notice The post-process phase.
     function _postProcess() internal {
-        // If the top of stack is HandlerType.Custom (which makes it being zero
-        // address when `stack.getAddress()`), get the handler address and execute
-        // the handler with it and the post-process function selector.
-        // If not, use it as token address and send the token back to user.
+        // Handler type will be parsed at the beginning. Will send the token back to
+        // user if the handler type is "Token". Will get the handler address and
+        // execute the customized post-process if handler type is "Custom".
         while (stack.length > 0) {
             bytes32 top = stack.get();
             // Get handler type
-            Config.HandlerType handlerType =
-                Config.HandlerType(uint96(bytes12(top)));
-            if (handlerType == Config.HandlerType.Token) {
-                address addr = address(bytes20(uint160(uint256(top))));
+            HandlerType handlerType = HandlerType(uint96(bytes12(top)));
+            if (handlerType == HandlerType.Token) {
+                address addr = address(uint160(uint256(top)));
                 uint256 amount = IERC20(addr).balanceOf(address(this));
                 if (amount > 0) IERC20(addr).safeTransfer(msg.sender, amount);
-            } else if (handlerType == Config.HandlerType.Custom) {
+            } else if (handlerType == HandlerType.Custom) {
                 address addr = stack.getAddress();
                 _exec(addr, abi.encodeWithSelector(POSTPROCESS_SIG));
             } else {
