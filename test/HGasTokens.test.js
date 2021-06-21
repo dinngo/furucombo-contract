@@ -6,10 +6,16 @@ const abi = require('ethereumjs-abi');
 const utils = web3.utils;
 const {
   DAI_TOKEN,
+  DAI_PROVIDER,
   CHI_TOKEN,
   CHI_PROVIDER,
   GST2_TOKEN,
   GST2_PROVIDER,
+  MAKER_CDP_MANAGER,
+  MAKER_PROXY_REGISTRY,
+  MAKER_MCD_VAT,
+  MAKER_MCD_JOIN_ETH_A,
+  MAKER_MCD_JOIN_DAI,
 } = require('./utils/constants');
 const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
 
@@ -17,24 +23,36 @@ const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('ProxyMock');
 const HGasTokens = artifacts.require('HGasTokens');
 const IGasTokens = artifacts.require('IGasTokens');
+const IDSProxyRegistry = artifacts.require('IDSProxyRegistry');
 const IToken = artifacts.require('IERC20');
-const HKyberNetwork = artifacts.require('HKyberNetwork');
+const HMaker = artifacts.require('HMaker');
+const IMakerVat = artifacts.require('IMakerVat');
 
-contract('GasTokens', function([_, user]) {
+async function getGenerateLimitAndMinCollateral(ilk) {
+  const vat = await IMakerVat.at(MAKER_MCD_VAT);
+  const conf = await vat.ilks.call(ilk);
+  const generateLimit = conf[4].div(ether('1000000000'));
+  const minCollateral = conf[4].div(conf[2]).mul(new BN(2));
+  return [generateLimit, minCollateral];
+}
+
+contract('GasTokens', function([_, user1, user2]) {
   let id;
 
   before(async function() {
+    this.dsRegistry = await IDSProxyRegistry.at(MAKER_PROXY_REGISTRY);
     this.registry = await Registry.new();
     this.proxy = await Proxy.new(this.registry.address);
+    await this.dsRegistry.build(this.proxy.address);
     this.hGasTokens = await HGasTokens.new();
     await this.registry.register(
       this.hGasTokens.address,
       utils.asciiToHex('HGasTokens')
     );
-    this.hKyberNetwork = await HKyberNetwork.new();
+    this.hMaker = await HMaker.new();
     await this.registry.register(
-      this.hKyberNetwork.address,
-      utils.asciiToHex('HKyberswap')
+      this.hMaker.address,
+      utils.asciiToHex('Maker')
     );
   });
 
@@ -48,69 +66,77 @@ contract('GasTokens', function([_, user]) {
 
   describe('Free gas tokens', function() {
     it('CHI token', async function() {
-      // Create a combo including gas token cube and 1 dummy kyber cube
+      const token = await IToken.at(CHI_TOKEN);
+      const holdings = new BN('100');
+      await token.transfer(user1, holdings, {
+        from: CHI_PROVIDER,
+      });
+      await token.approve(this.proxy.address, holdings, { from: user1 });
+      await token.transfer(user2, holdings, {
+        from: CHI_PROVIDER,
+      });
+      await token.approve(this.proxy.address, holdings, { from: user2 });
+      // Create a combo including gas token cube and 1 dummy maker cube
 
       // Firstly get gas cost when consume 0 gas token
-      const value = ether('1');
+      const value = ether('5');
+      const ilkEth = utils.padRight(utils.asciiToHex('ETH-A'), 64);
+      const [
+        generateLimit,
+        minCollateral,
+      ] = await getGenerateLimitAndMinCollateral(ilkEth);
+      const wadD = generateLimit;
       const config = [ZERO_BYTES32, ZERO_BYTES32];
-      const toBefore = [this.hGasTokens.address, this.hKyberNetwork.address];
-      const dataBefore = [
-        abi.simpleEncode('freeCHI(uint256)', 0),
+      const to = [this.hGasTokens.address, this.hMaker.address];
+      let amount = 0;
+      let data = [
+        abi.simpleEncode('freeCHI(uint256)', amount),
         abi.simpleEncode(
-          'swapEtherToToken(uint256,address,uint256):(uint256)',
+          'openLockETHAndDraw(uint256,address,address,bytes32,uint256)',
           value,
-          DAI_TOKEN,
-          new BN('1')
+          MAKER_MCD_JOIN_ETH_A,
+          MAKER_MCD_JOIN_DAI,
+          ilkEth,
+          wadD
         ),
       ];
-      const balanceUserBefore = await tracker(user);
-      const receiptBefore = await this.proxy.batchExec(
-        toBefore,
-        config,
-        dataBefore,
-        {
-          from: user,
-          value: value,
-        }
-      );
+      const balanceUser1 = await tracker(user1);
+      const receiptBefore = await this.proxy.batchExec(to, config, data, {
+        from: user1,
+        value: value,
+      });
       const gasUsedBefore = new BN(receiptBefore.receipt.gasUsed);
-      expect(await balanceUserBefore.delta()).to.be.bignumber.eq(
+      expect(await balanceUser1.delta()).to.be.bignumber.eq(
         ether('0')
           .sub(value)
           .sub(gasUsedBefore)
       );
 
       // Secondly get gas cost when consume 20 gas tokens
-      const token = await IToken.at(CHI_TOKEN);
-      const holdings = new BN('1000');
-      await token.transfer(user, holdings, {
-        from: CHI_PROVIDER,
-      });
-      await token.approve(this.proxy.address, holdings, { from: user });
-      const to = [this.hGasTokens.address, this.hKyberNetwork.address];
-      const amount = new BN('20');
-      const data = [
+      amount = new BN('20');
+      data = [
         abi.simpleEncode('freeCHI(uint256)', amount),
         abi.simpleEncode(
-          'swapEtherToToken(uint256,address,uint256):(uint256)',
+          'openLockETHAndDraw(uint256,address,address,bytes32,uint256)',
           value,
-          DAI_TOKEN,
-          new BN('1')
+          MAKER_MCD_JOIN_ETH_A,
+          MAKER_MCD_JOIN_DAI,
+          ilkEth,
+          wadD
         ),
       ];
-      const balanceUser = await tracker(user);
-      const tokenBalanceBefore = await token.balanceOf.call(user);
+      const balanceUser2 = await tracker(user2);
+      const tokenBalanceBefore = await token.balanceOf.call(user2);
       const receipt = await this.proxy.batchExec(to, config, data, {
-        from: user,
+        from: user2,
         value: value,
       });
       const gasUsed = new BN(receipt.receipt.gasUsed);
-
       // Check proxy token balance
       expect(await token.balanceOf.call(this.proxy.address)).to.be.zero;
 
       // Check user eth balance
-      expect(await balanceUser.delta()).to.be.bignumber.eq(
+      expect(await balanceUser2.delta()).to.be.bignumber.eq(
         ether('0')
           .sub(value)
           .sub(gasUsed)
@@ -120,95 +146,83 @@ contract('GasTokens', function([_, user]) {
       expect(gasUsed).to.be.bignumber.lte(gasUsedBefore);
 
       // Check user gas token consumption should not exceed amount
-      expect(await token.balanceOf.call(user)).to.be.bignumber.gte(
+      expect(await token.balanceOf.call(user2)).to.be.bignumber.gte(
         tokenBalanceBefore.sub(amount)
       );
     });
 
     it('GST2 token', async function() {
-      // Create a combo including gas token cube and 2 dummy kyber cubes
+      const token = await IToken.at(GST2_TOKEN);
+      const holdings = new BN('100');
+      await token.transfer(user1, holdings, {
+        from: GST2_PROVIDER,
+      });
+      await token.approve(this.proxy.address, holdings, { from: user1 });
+      await token.transfer(user2, holdings, {
+        from: GST2_PROVIDER,
+      });
+      await token.approve(this.proxy.address, holdings, { from: user2 });
+      // Create a combo including gas token cube and 1 dummy maker cube
 
       // Firstly get gas cost when consume 0 gas token
-      const value = ether('1');
-      const config = [ZERO_BYTES32, ZERO_BYTES32, ZERO_BYTES32];
-      const toBefore = [
-        this.hGasTokens.address,
-        this.hKyberNetwork.address,
-        this.hKyberNetwork.address,
-      ];
-      const dataBefore = [
-        abi.simpleEncode('freeGST2(uint256)', 0),
+      const value = ether('5');
+      const ilkEth = utils.padRight(utils.asciiToHex('ETH-A'), 64);
+      const [
+        generateLimit,
+        minCollateral,
+      ] = await getGenerateLimitAndMinCollateral(ilkEth);
+      const wadD = generateLimit;
+      const config = [ZERO_BYTES32, ZERO_BYTES32];
+      const to = [this.hGasTokens.address, this.hMaker.address];
+      let amount = 0;
+      let data = [
+        abi.simpleEncode('freeGST2(uint256)', amount),
         abi.simpleEncode(
-          'swapEtherToToken(uint256,address,uint256):(uint256)',
-          value.div(new BN('2')),
-          DAI_TOKEN,
-          new BN('1')
-        ),
-        abi.simpleEncode(
-          'swapEtherToToken(uint256,address,uint256):(uint256)',
-          value.div(new BN('2')),
-          DAI_TOKEN,
-          new BN('1')
+          'openLockETHAndDraw(uint256,address,address,bytes32,uint256)',
+          value,
+          MAKER_MCD_JOIN_ETH_A,
+          MAKER_MCD_JOIN_DAI,
+          ilkEth,
+          wadD
         ),
       ];
-      const balanceUserBefore = await tracker(user);
-      const receiptBefore = await this.proxy.batchExec(
-        toBefore,
-        config,
-        dataBefore,
-        {
-          from: user,
-          value: value,
-        }
-      );
+      const balanceUser1 = await tracker(user1);
+      const receiptBefore = await this.proxy.batchExec(to, config, data, {
+        from: user1,
+        value: value,
+      });
       const gasUsedBefore = new BN(receiptBefore.receipt.gasUsed);
-      expect(await balanceUserBefore.delta()).to.be.bignumber.eq(
+      expect(await balanceUser1.delta()).to.be.bignumber.eq(
         ether('0')
           .sub(value)
           .sub(gasUsedBefore)
       );
 
       // Secondly get gas cost when consume 20 gas tokens
-      const token = await IToken.at(GST2_TOKEN);
-      const holdings = new BN('1000');
-      await token.transfer(user, holdings, {
-        from: GST2_PROVIDER,
-      });
-      await token.approve(this.proxy.address, holdings, { from: user });
-      const to = [
-        this.hGasTokens.address,
-        this.hKyberNetwork.address,
-        this.hKyberNetwork.address,
-      ];
-      const amount = new BN('20');
-      const data = [
+      amount = new BN('20');
+      data = [
         abi.simpleEncode('freeGST2(uint256)', amount),
         abi.simpleEncode(
-          'swapEtherToToken(uint256,address,uint256):(uint256)',
-          value.div(new BN('2')),
-          DAI_TOKEN,
-          new BN('1')
-        ),
-        abi.simpleEncode(
-          'swapEtherToToken(uint256,address,uint256):(uint256)',
-          value.div(new BN('2')),
-          DAI_TOKEN,
-          new BN('1')
+          'openLockETHAndDraw(uint256,address,address,bytes32,uint256)',
+          value,
+          MAKER_MCD_JOIN_ETH_A,
+          MAKER_MCD_JOIN_DAI,
+          ilkEth,
+          wadD
         ),
       ];
-      const balanceUser = await tracker(user);
-      const tokenBalanceBefore = await token.balanceOf.call(user);
+      const balanceUser2 = await tracker(user2);
+      const tokenBalanceBefore = await token.balanceOf.call(user2);
       const receipt = await this.proxy.batchExec(to, config, data, {
-        from: user,
+        from: user2,
         value: value,
       });
       const gasUsed = new BN(receipt.receipt.gasUsed);
-
       // Check proxy token balance
       expect(await token.balanceOf.call(this.proxy.address)).to.be.zero;
 
       // Check user eth balance
-      expect(await balanceUser.delta()).to.be.bignumber.eq(
+      expect(await balanceUser2.delta()).to.be.bignumber.eq(
         ether('0')
           .sub(value)
           .sub(gasUsed)
@@ -218,7 +232,7 @@ contract('GasTokens', function([_, user]) {
       expect(gasUsed).to.be.bignumber.lte(gasUsedBefore);
 
       // Check user gas token consumption should not exceed amount
-      expect(await token.balanceOf.call(user)).to.be.bignumber.gte(
+      expect(await token.balanceOf.call(user2)).to.be.bignumber.gte(
         tokenBalanceBefore.sub(amount)
       );
     });

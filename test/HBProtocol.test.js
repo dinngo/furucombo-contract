@@ -17,8 +17,8 @@ const { ZERO_ADDRESS } = constants;
 const { expect } = require('chai');
 
 const {
-  KNC_TOKEN,
-  KNC_PROVIDER,
+  BAT_TOKEN,
+  BAT_PROVIDER,
   DAI_TOKEN,
   DAI_PROVIDER,
   B_CDP_MANAGER,
@@ -57,7 +57,10 @@ async function getGenerateLimitAndMinCollateral(ilk) {
   const vat = await IMakerVat.at(MAKER_MCD_VAT);
   const conf = await vat.ilks.call(ilk);
   const generateLimit = conf[4].div(ether('1000000000'));
-  const minCollateral = conf[4].div(conf[2]).mul(new BN(2));
+  const minCollateral = conf[4]
+    .div(conf[2])
+    .mul(new BN('12'))
+    .div(new BN('10'));
   return [generateLimit, minCollateral];
 }
 
@@ -91,8 +94,8 @@ async function approveCdp(cdp, owner, user) {
 
 contract('BProtocol', function([_, user1, user2, someone]) {
   let id;
-  const tokenAddress = KNC_TOKEN;
-  const providerAddress = KNC_PROVIDER;
+  const tokenAddress = BAT_TOKEN;
+  const providerAddress = BAT_PROVIDER;
 
   before(async function() {
     this.registry = await Registry.new();
@@ -326,8 +329,8 @@ contract('BProtocol', function([_, user1, user2, someone]) {
     });
 
     describe('Lock Token', function() {
-      const tokenAddress = KNC_TOKEN;
-      const providerAddress = KNC_PROVIDER;
+      const tokenAddress = BAT_TOKEN;
+      const providerAddress = BAT_PROVIDER;
 
       describe('Draw Dai', function() {
         it('User does not has proxy', async function() {
@@ -339,18 +342,18 @@ contract('BProtocol', function([_, user1, user2, someone]) {
           expect(await this.dsRegistry.proxies.call(someone)).eq(ZERO_ADDRESS);
 
           const to = this.hMaker.address;
-          const ilkKnc = utils.padRight(utils.asciiToHex('KNC-A'), 64);
+          const ilkToken = utils.padRight(utils.asciiToHex('BAT-A'), 64);
           const [
             generateLimit,
             minCollateral,
-          ] = await getGenerateLimitAndMinCollateral(ilkKnc);
+          ] = await getGenerateLimitAndMinCollateral(ilkToken);
           const wadD = generateLimit;
           const wadC = minCollateral;
           const data = abi.simpleEncode(
             'openLockGemAndDraw(address,address,bytes32,uint256,uint256)',
-            MAKER_MCD_JOIN_KNC_A,
+            MAKER_MCD_JOIN_BAT_A,
             MAKER_MCD_JOIN_DAI,
-            ilkKnc,
+            ilkToken,
             wadC,
             wadD
           );
@@ -375,7 +378,7 @@ contract('BProtocol', function([_, user1, user2, someone]) {
           const [ilk, debt, lock] = await getCdpInfo(cdp);
 
           expect(cdp).to.be.bignumber.eq(handlerReturn);
-          expect(ilk).eq(ilkKnc);
+          expect(ilk).eq(ilkToken);
           expect(debt).to.be.bignumber.gte(wadD.mul(RAY));
           expect(lock).to.be.bignumber.eq(wadC);
           expect(
@@ -386,18 +389,18 @@ contract('BProtocol', function([_, user1, user2, someone]) {
 
         it('User has proxy', async function() {
           const to = this.hMaker.address;
-          const ilkKnc = utils.padRight(utils.asciiToHex('KNC-A'), 64);
+          const ilkToken = utils.padRight(utils.asciiToHex('BAT-A'), 64);
           const [
             generateLimit,
             minCollateral,
-          ] = await getGenerateLimitAndMinCollateral(ilkKnc);
+          ] = await getGenerateLimitAndMinCollateral(ilkToken);
           const wadC = minCollateral;
           const wadD = generateLimit;
           const data = abi.simpleEncode(
             'openLockGemAndDraw(address,address,bytes32,uint256,uint256)',
-            MAKER_MCD_JOIN_KNC_A,
+            MAKER_MCD_JOIN_BAT_A,
             MAKER_MCD_JOIN_DAI,
-            ilkKnc,
+            ilkToken,
             wadC,
             wadD
           );
@@ -421,7 +424,7 @@ contract('BProtocol', function([_, user1, user2, someone]) {
           const [ilk, debt, lock] = await getCdpInfo(cdp);
 
           expect(cdp).to.be.bignumber.eq(handlerReturn);
-          expect(ilk).eq(ilkKnc);
+          expect(ilk).eq(ilkToken);
           expect(debt).to.be.bignumber.gte(wadD.mul(RAY));
           expect(lock).to.be.bignumber.eq(wadC);
           expect(
@@ -449,7 +452,7 @@ contract('BProtocol', function([_, user1, user2, someone]) {
       const new2 = abi.simpleEncode(
         'open(address,bytes32,address)',
         B_CDP_MANAGER,
-        utils.padRight(utils.asciiToHex('KNC-A'), 64),
+        utils.padRight(utils.asciiToHex('BAT-A'), 64),
         this.user2Proxy.address
       );
       await this.user1Proxy.execute(B_PROXY_ACTIONS, new1, { from: user1 });
@@ -519,8 +522,8 @@ contract('BProtocol', function([_, user1, user2, someone]) {
     describe('Lock Token', function() {
       let balanceUser;
       let tokenUser;
-      const tokenAddress = KNC_TOKEN;
-      const providerAddress = KNC_PROVIDER;
+      const tokenAddress = BAT_TOKEN;
+      const providerAddress = BAT_PROVIDER;
 
       before(async function() {
         cdp = await this.cdpManager.last.call(this.user2Proxy.address);
@@ -539,12 +542,12 @@ contract('BProtocol', function([_, user1, user2, someone]) {
           generateLimit,
           minCollateral,
         ] = await getGenerateLimitAndMinCollateral(
-          utils.padRight(utils.asciiToHex('KNC-A'), 64)
+          utils.padRight(utils.asciiToHex('BAT-A'), 64)
         );
         const wad = generateLimit;
         const data = abi.simpleEncode(
           'safeLockGem(address,uint256,uint256)',
-          MAKER_MCD_JOIN_KNC_A,
+          MAKER_MCD_JOIN_BAT_A,
           cdp,
           wad
         );
@@ -568,12 +571,12 @@ contract('BProtocol', function([_, user1, user2, someone]) {
           generateLimit,
           minCollateral,
         ] = await getGenerateLimitAndMinCollateral(
-          utils.padRight(utils.asciiToHex('KNC-A'), 64)
+          utils.padRight(utils.asciiToHex('BAT-A'), 64)
         );
         const wad = generateLimit;
         const data = abi.simpleEncode(
           'safeLockGem(address,uint256,uint256)',
-          MAKER_MCD_JOIN_KNC_A,
+          MAKER_MCD_JOIN_BAT_A,
           cdp,
           MAX_UINT256
         );
@@ -692,9 +695,9 @@ contract('BProtocol', function([_, user1, user2, someone]) {
           'openLockGemAndDraw(address,address,address,address,bytes32,uint256,uint256,bool)',
           B_CDP_MANAGER,
           MAKER_MCD_JUG,
-          MAKER_MCD_JOIN_KNC_A,
+          MAKER_MCD_JOIN_BAT_A,
           MAKER_MCD_JOIN_DAI,
-          utils.padRight(utils.asciiToHex('KNC-A'), 64),
+          utils.padRight(utils.asciiToHex('BAT-A'), 64),
           tokenAmount,
           ether('0'),
           true
@@ -719,7 +722,7 @@ contract('BProtocol', function([_, user1, user2, someone]) {
         const wad = ether('100');
         const data = abi.simpleEncode(
           'freeGem(address,uint256,uint256)',
-          MAKER_MCD_JOIN_KNC_A,
+          MAKER_MCD_JOIN_BAT_A,
           cdp,
           wad
         );
@@ -738,7 +741,7 @@ contract('BProtocol', function([_, user1, user2, someone]) {
         const wad = ether('100');
         const data = abi.simpleEncode(
           'freeGem(address,uint256,uint256)',
-          MAKER_MCD_JOIN_KNC_A,
+          MAKER_MCD_JOIN_BAT_A,
           cdp,
           wad
         );
@@ -756,7 +759,7 @@ contract('BProtocol', function([_, user1, user2, someone]) {
         const wad = ether('100');
         const data = abi.simpleEncode(
           'freeGem(address,uint256,uint256)',
-          MAKER_MCD_JOIN_KNC_A,
+          MAKER_MCD_JOIN_BAT_A,
           cdp,
           wad
         );
@@ -828,7 +831,7 @@ contract('BProtocol', function([_, user1, user2, someone]) {
           generateLimit,
           minCollateral,
         ] = await getGenerateLimitAndMinCollateral(
-          utils.padRight(utils.asciiToHex('KNC-A'), 64)
+          utils.padRight(utils.asciiToHex('BAT-A'), 64)
         );
         const wad = generateLimit;
         const data = abi.simpleEncode(
@@ -852,7 +855,7 @@ contract('BProtocol', function([_, user1, user2, someone]) {
           generateLimit,
           minCollateral,
         ] = await getGenerateLimitAndMinCollateral(
-          utils.padRight(utils.asciiToHex('KNC-A'), 64)
+          utils.padRight(utils.asciiToHex('BAT-A'), 64)
         );
         const wad = generateLimit;
         const data = abi.simpleEncode(
@@ -880,16 +883,16 @@ contract('BProtocol', function([_, user1, user2, someone]) {
           generateLimit,
           minCollateral,
         ] = await getGenerateLimitAndMinCollateral(
-          utils.padRight(utils.asciiToHex('KNC-A'), 64)
+          utils.padRight(utils.asciiToHex('BAT-A'), 64)
         );
         const tokenAmount = minCollateral;
         const new2 = abi.simpleEncode(
           'openLockGemAndDraw(address,address,address,address,bytes32,uint256,uint256,bool)',
           B_CDP_MANAGER,
           MAKER_MCD_JUG,
-          MAKER_MCD_JOIN_KNC_A,
+          MAKER_MCD_JOIN_BAT_A,
           MAKER_MCD_JOIN_DAI,
-          utils.padRight(utils.asciiToHex('KNC-A'), 64),
+          utils.padRight(utils.asciiToHex('BAT-A'), 64),
           tokenAmount,
           ether('0'),
           true
@@ -940,7 +943,7 @@ contract('BProtocol', function([_, user1, user2, someone]) {
           generateLimit,
           minCollateral,
         ] = await getGenerateLimitAndMinCollateral(
-          utils.padRight(utils.asciiToHex('KNC-A'), 64)
+          utils.padRight(utils.asciiToHex('BAT-A'), 64)
         );
         const wad = generateLimit;
         const data = abi.simpleEncode(
@@ -964,7 +967,7 @@ contract('BProtocol', function([_, user1, user2, someone]) {
           generateLimit,
           minCollateral,
         ] = await getGenerateLimitAndMinCollateral(
-          utils.padRight(utils.asciiToHex('KNC-A'), 64)
+          utils.padRight(utils.asciiToHex('BAT-A'), 64)
         );
         const wad = generateLimit;
         const data = abi.simpleEncode(
@@ -1082,23 +1085,22 @@ contract('BProtocol', function([_, user1, user2, someone]) {
       let daiUser;
 
       beforeEach(async function() {
-        const tokenAmount = ether('3000');
         const [
           generateLimit,
           minCollateral,
         ] = await getGenerateLimitAndMinCollateral(
-          utils.padRight(utils.asciiToHex('KNC-A'), 64)
+          utils.padRight(utils.asciiToHex('BAT-A'), 64)
         );
-
+        const tokenAmount = minCollateral;
         const daiAmount = generateLimit.add(ether('10'));
 
         const new2 = abi.simpleEncode(
           'openLockGemAndDraw(address,address,address,address,bytes32,uint256,uint256,bool)',
           B_CDP_MANAGER,
           MAKER_MCD_JUG,
-          MAKER_MCD_JOIN_KNC_A,
+          MAKER_MCD_JOIN_BAT_A,
           MAKER_MCD_JOIN_DAI,
-          utils.padRight(utils.asciiToHex('KNC-A'), 64),
+          utils.padRight(utils.asciiToHex('BAT-A'), 64),
           tokenAmount,
           daiAmount,
           true
@@ -1158,7 +1160,7 @@ contract('BProtocol', function([_, user1, user2, someone]) {
           generateLimit,
           minCollateral,
         ] = await getGenerateLimitAndMinCollateral(
-          utils.padRight(utils.asciiToHex('KNC-A'), 64)
+          utils.padRight(utils.asciiToHex('BAT-A'), 64)
         );
         const wad = generateLimit;
         await this.dai.transfer(

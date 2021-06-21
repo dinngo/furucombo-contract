@@ -22,6 +22,8 @@ const {
   DAI_TOKEN,
   DAI_PROVIDER,
   DAI_UNISWAP,
+  WETH_TOKEN,
+  UNISWAPV2_ROUTER02,
   MAKER_CDP_MANAGER,
   MAKER_PROXY_FACTORY,
   MAKER_PROXY_ACTIONS,
@@ -37,7 +39,7 @@ const {
 const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
 
 const HMaker = artifacts.require('HMaker');
-const HUniswap = artifacts.require('HUniswap');
+const HUniswapV2 = artifacts.require('HUniswapV2');
 const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('ProxyMock');
 const IToken = artifacts.require('IERC20');
@@ -45,7 +47,7 @@ const IDSProxy = artifacts.require('IDSProxy');
 const IDSProxyRegistry = artifacts.require('IDSProxyRegistry');
 const IMakerManager = artifacts.require('IMakerManager');
 const IMakerVat = artifacts.require('IMakerVat');
-const IUniswapExchange = artifacts.require('IUniswapExchange');
+const IUniswapV2Router = artifacts.require('IUniswapV2Router02');
 
 const RAY = new BN('1000000000000000000000000000');
 const RAD = new BN('1000000000000000000000000000000000000000000000');
@@ -102,7 +104,7 @@ contract('Maker', function([_, user]) {
       this.hMaker.address,
       utils.asciiToHex('Maker')
     );
-    this.hUniswap = await HUniswap.new();
+    this.hUniswap = await HUniswapV2.new();
     await this.registry.register(
       this.hUniswap.address,
       utils.asciiToHex('Uniswap')
@@ -144,7 +146,7 @@ contract('Maker', function([_, user]) {
 
         before(async function() {
           this.token = await IToken.at(tokenAddress);
-          this.swap = await IUniswapExchange.at(uniswapAddress);
+          this.router = await IUniswapV2Router.at(UNISWAPV2_ROUTER02);
         });
 
         beforeEach(async function() {
@@ -174,12 +176,13 @@ contract('Maker', function([_, user]) {
             wadD
           );
           const value2 = generateLimit;
+          const path = [tokenAddress, WETH_TOKEN];
           const to2 = this.hUniswap.address;
           const data2 = abi.simpleEncode(
-            'tokenToEthSwapInput(address,uint256,uint256):(uint256)',
-            tokenAddress,
+            'swapExactTokensForETH(uint256,uint256,address[]):(uint256[])',
             value2,
-            new BN('1')
+            new BN('1'),
+            path
           );
           const receipt = await this.proxy.batchExec(
             [to1, to2],

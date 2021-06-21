@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+## [1.6.0] - 2021-06-15
+
+### Added
+
+- Support Polygon token bridge.
+- Support gelatov2 limit order.
+- Support uniswap v3 swapping.
+
+### Changed
+
+- Archive Uniswap and Mooniswap handlers.
+- Change post process handler checking flow.
+- Check proxy instead of sender for ban.
+
 ## [1.5.1] - 2021-05-05
 
 ### Added
@@ -19,6 +33,7 @@ All notable changes to this project will be documented in this file.
 ## [1.4.1] - 2021-04-15
 
 ### Fixed
+
 - Certora audit fix.
 
 ## [1.4.0] - 2021-03-09
@@ -43,6 +58,7 @@ All notable changes to this project will be documented in this file.
 - Read `MCD_JUG` address from Maker ChainLog contract. This change would support JUG contract upgardes on Maker side.
 
 ### Removed
+
 - Remove Oasis related contracts and tests.
 - Remove 1inch related contracts and tests.
 

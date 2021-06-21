@@ -1,11 +1,8 @@
-/** Archived
 const Registry = artifacts.require('Registry');
-const Handler = artifacts.require('HUniswap');
+const Handler = artifacts.require('HUniswapV3');
 const utils = web3.utils;
-*/
 
 module.exports = function(deployer) {
-  /** Archived
   if (deployer.network === 'development') {
     return;
   }
@@ -16,7 +13,6 @@ module.exports = function(deployer) {
     })
     .then(function(instance) {
       registry = instance;
-      return registry.register(Handler.address, utils.asciiToHex('Uniswap'));
+      return registry.register(Handler.address, utils.asciiToHex('HUniswapV3'));
     });
-*/
 };

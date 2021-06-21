@@ -3,8 +3,9 @@ pragma experimental ABIEncoderV2;
 
 import "../Proxy.sol";
 import "./debug/GasProfiler.sol";
+import "./debug/IHandlerEvents.sol";
 
-contract ProxyMock is Proxy, GasProfiler {
+contract ProxyMock is Proxy, GasProfiler, IHandlerEvents {
     constructor(address registry) public Proxy(registry) {}
 
     event RecordHandlerResult(bytes value);

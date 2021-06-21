@@ -1,6 +1,6 @@
 {
   "name": "Furucombo",
-  "version": "1.5.1",
+  "version": "1.6.0",
   "description": "Furucombo contracts",
   "main": "truffle-config.js",
   "directories": {
@@ -24,6 +24,7 @@
     "@balancer-labs/sor": "^0.4.0-5",
     "@openzeppelin/test-helpers": "^0.5.5",
     "@truffle/hdwallet-provider": "^1.0.35",
+    "@uniswap/v3-core": "^1.0.0",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "chai-bignumber": "^3.0.0",
@@ -42,6 +43,7 @@
     "web3-provider-engine": "^15.0.12"
   },
   "dependencies": {
+    "@gelatonetwork/limit-orders-lib": "^0.6.0",
     "@openzeppelin/contracts": "3.3.0",
     "pify": "^5.0.0"
   },

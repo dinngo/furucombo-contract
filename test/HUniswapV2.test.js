@@ -412,7 +412,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
       });
 
       it('HBTC', async function() {
-        const value = ether('10');
+        const value = ether('1');
         const to = this.hUniswapV2.address;
         const path = [HBTC_TOKEN, WETH_TOKEN];
         const result = await this.router.getAmountsOut.call(value, path, {
@@ -683,7 +683,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
       });
 
       it('HBTC', async function() {
-        const value = ether('1000');
+        const value = ether('1');
         const buyAmt = ether('0.1');
         const to = this.hUniswapV2.address;
         const path = [HBTC_TOKEN, WETH_TOKEN];
@@ -1014,7 +1014,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
         profileGas(receipt);
       });
       it('HBTC', async function() {
-        const value = ether('100');
+        const value = ether('1');
         const to = this.hUniswapV2.address;
         const path = [HBTC_TOKEN, WETH_TOKEN, token1Address];
         const result = await this.router.getAmountsOut.call(value, path, {
@@ -1269,7 +1269,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
       });
 
       it('HBTC', async function() {
-        const value = ether('100');
+        const value = ether('1');
         const buyAmt = ether('1');
         const to = this.hUniswapV2.address;
         const path = [HBTC_TOKEN, WETH_TOKEN, token1Address];

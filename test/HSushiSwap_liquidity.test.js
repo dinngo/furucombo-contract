@@ -451,7 +451,7 @@ contract('SushiSwap Liquidity', function([_, user]) {
         deadline,
         {
           from: user,
-          value: ether('0.1'),
+          value: ether('1'),
         }
       );
 
