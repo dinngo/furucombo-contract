@@ -15,6 +15,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - Archive Uniswap and Mooniswap handlers.
+- Change post process handler checking flow.
 
 ## [1.5.1] - 2021-05-05
 
