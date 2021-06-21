@@ -18,8 +18,8 @@ contract Proxy is IProxy, Storage, Config {
     using SafeERC20 for IERC20;
     using LibParam for bytes32;
 
-    modifier isNotBanned(address agent) {
-        require(registry.bannedAgents(agent) == 0, "Banned");
+    modifier isNotBanned() {
+        require(registry.bannedAgents(address(this)) == 0, "Banned");
         _;
     }
 
@@ -38,13 +38,7 @@ contract Proxy is IProxy, Storage, Config {
      * @notice Direct transfer from EOA should be reverted.
      * @dev Callback function will be handled here.
      */
-    fallback()
-        external
-        payable
-        isNotHalted
-        isNotBanned(msg.sender)
-        isInitialized
-    {
+    fallback() external payable isNotHalted isNotBanned isInitialized {
         // If triggered by a function call, caller should be registered in
         // registry.
         // The function call will then be forwarded to the location registered
@@ -80,7 +74,7 @@ contract Proxy is IProxy, Storage, Config {
         address[] calldata tos,
         bytes32[] calldata configs,
         bytes[] memory datas
-    ) external payable override isNotHalted isNotBanned(msg.sender) {
+    ) external payable override isNotHalted isNotBanned {
         _preProcess();
         _execs(tos, configs, datas);
         _postProcess();
@@ -95,14 +89,7 @@ contract Proxy is IProxy, Storage, Config {
         address[] calldata tos,
         bytes32[] calldata configs,
         bytes[] memory datas
-    )
-        external
-        payable
-        override
-        isNotHalted
-        isNotBanned(msg.sender)
-        isInitialized
-    {
+    ) external payable override isNotHalted isNotBanned isInitialized {
         require(msg.sender == address(this), "Does not allow external calls");
         _execs(tos, configs, datas);
     }
@@ -290,18 +277,22 @@ contract Proxy is IProxy, Storage, Config {
 
     /// @notice The post-process phase.
     function _postProcess() internal {
-        // If the top of stack is HandlerType.Custom (which makes it being zero
-        // address when `stack.getAddress()`), get the handler address and execute
-        // the handler with it and the post-process function selector.
-        // If not, use it as token address and send the token back to user.
+        // Handler type will be parsed at the beginning. Will send the token back to
+        // user if the handler type is "Token". Will get the handler address and
+        // execute the customized post-process if handler type is "Custom".
         while (stack.length > 0) {
-            address addr = stack.getAddress();
-            if (addr == address(0)) {
-                addr = stack.getAddress();
-                _exec(addr, abi.encodeWithSelector(POSTPROCESS_SIG));
-            } else {
+            bytes32 top = stack.get();
+            // Get handler type
+            HandlerType handlerType = HandlerType(uint96(bytes12(top)));
+            if (handlerType == HandlerType.Token) {
+                address addr = address(uint160(uint256(top)));
                 uint256 amount = IERC20(addr).balanceOf(address(this));
                 if (amount > 0) IERC20(addr).safeTransfer(msg.sender, amount);
+            } else if (handlerType == HandlerType.Custom) {
+                address addr = stack.getAddress();
+                _exec(addr, abi.encodeWithSelector(POSTPROCESS_SIG));
+            } else {
+                revert("Invalid handler type");
             }
         }
 

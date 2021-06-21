@@ -127,8 +127,8 @@ contract('Proxy', function([_, deployer, user]) {
       await expectRevert(this.proxy.execMock(to, data2), 'Invalid caller');
     });
 
-    it('should revert: banned agent as caller call batchExec()', async function() {
-      await this.registry.ban(user);
+    it('should revert: banned agent executing batchExec()', async function() {
+      await this.registry.ban(this.proxy.address);
       const index = 0;
       const num = new BN('25');
       const to = [this.fooHandler.address];
@@ -142,8 +142,8 @@ contract('Proxy', function([_, deployer, user]) {
       );
     });
 
-    it('should revert: banned agent as caller call fallback()', async function() {
-      await this.registry.ban(user);
+    it('should revert: banned agent executing fallback()', async function() {
+      await this.registry.ban(this.proxy.address);
       await expectRevert(
         web3.eth.sendTransaction({
           from: user,
@@ -155,8 +155,8 @@ contract('Proxy', function([_, deployer, user]) {
       );
     });
 
-    it('should revert: banned agent as caller call execs()', async function() {
-      await this.registry.ban(user);
+    it('should revert: banned agent executing execs()', async function() {
+      await this.registry.ban(this.proxy.address);
       const index = 0;
       const num = new BN('25');
       const to = [this.fooHandler.address];
