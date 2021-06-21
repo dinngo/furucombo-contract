@@ -64,7 +64,10 @@ contract('GelatoLimitOrder', function([_, user]) {
       utils.asciiToHex('HUniswapV2')
     );
 
-    this.hGelatoLimitOrder = await HGelatoV2LimitOrder.new();
+    this.hGelatoLimitOrder = await HGelatoV2LimitOrder.new(
+      GELATOV2_PINE,
+      GELATOV2_LIMIT_ORDER_MODULE
+    );
     await this.registry.register(
       this.hGelatoLimitOrder.address,
       utils.asciiToHex('HGelatoV2LimitOrder')
@@ -101,14 +104,21 @@ contract('GelatoLimitOrder', function([_, user]) {
 
       const desiredIncrease = 101; // 1%
       const minReturn = mulPercent(amountOut, desiredIncrease);
+      const encodedData = util.toBuffer(
+        web3.eth.abi.encodeParameters(
+          ['address', 'uint256'],
+          [this.tokenA.address, minReturn]
+        )
+      );
       const to = this.hGelatoLimitOrder.address;
       const placeOrderData = abi.simpleEncode(
-        'placeLimitOrder(address,address,uint256,uint256,address,bytes32)',
-        ETH_TOKEN,
-        this.tokenA.address,
+        'placeLimitOrder(uint256,address,address,address,address,bytes,bytes32)',
         sellAmount,
-        minReturn,
+        GELATOV2_LIMIT_ORDER_MODULE,
+        ETH_TOKEN,
+        user,
         witness,
+        encodedData,
         secret
       );
 
@@ -126,12 +136,6 @@ contract('GelatoLimitOrder', function([_, user]) {
       );
 
       // Check order exists
-      const encodedData = util.toBuffer(
-        web3.eth.abi.encodeParameters(
-          ['address', 'uint256'],
-          [this.tokenA.address, minReturn]
-        )
-      );
       const orderExists = await this.gelatoPine.existOrder.call(
         GELATOV2_LIMIT_ORDER_MODULE,
         ETH_TOKEN,
@@ -212,14 +216,21 @@ contract('GelatoLimitOrder', function([_, user]) {
 
       const desiredIncrease = 101; // 1%
       const minReturn = mulPercent(amountOut, desiredIncrease);
+      const encodedData = util.toBuffer(
+        web3.eth.abi.encodeParameters(
+          ['address', 'uint256'],
+          [this.tokenA.address, minReturn]
+        )
+      );
       const to = this.hGelatoLimitOrder.address;
       const placeOrderData = abi.simpleEncode(
-        'placeLimitOrder(address,address,uint256,uint256,address,bytes32)',
-        ETH_TOKEN,
-        this.tokenA.address,
+        'placeLimitOrder(uint256,address,address,address,address,bytes,bytes32)',
         sellAmount,
-        minReturn,
+        GELATOV2_LIMIT_ORDER_MODULE,
+        ETH_TOKEN,
+        user,
         witness,
+        encodedData,
         secret
       );
 
@@ -244,13 +255,20 @@ contract('GelatoLimitOrder', function([_, user]) {
       // Prepare limit order data
       const desiredIncrease = 101; // 1%
       const minReturn = mulPercent(amountOut, desiredIncrease);
+      const encodedData = util.toBuffer(
+        web3.eth.abi.encodeParameters(
+          ['address', 'uint256'],
+          [this.tokenA.address, minReturn]
+        )
+      );
       const placeOrderData = abi.simpleEncode(
-        'placeLimitOrder(address,address,uint256,uint256,address,bytes32)',
-        ETH_TOKEN,
-        this.tokenA.address,
+        'placeLimitOrder(uint256,address,address,address,address,bytes,bytes32)',
         sellAmount,
-        minReturn,
+        GELATOV2_LIMIT_ORDER_MODULE,
+        ETH_TOKEN,
+        user,
         witness,
+        encodedData,
         secret
       );
 
@@ -268,12 +286,6 @@ contract('GelatoLimitOrder', function([_, user]) {
       );
 
       // Check order exists
-      const encodedData = util.toBuffer(
-        web3.eth.abi.encodeParameters(
-          ['address', 'uint256'],
-          [this.tokenA.address, minReturn]
-        )
-      );
       const orderExists = await this.gelatoPine.existOrder.call(
         GELATOV2_LIMIT_ORDER_MODULE,
         ETH_TOKEN,
@@ -325,13 +337,20 @@ contract('GelatoLimitOrder', function([_, user]) {
       // Prepare limit order data
       const desiredIncrease = 101; // 1%
       const minReturn = mulPercent(amountOut, desiredIncrease);
+      const encodedData = util.toBuffer(
+        web3.eth.abi.encodeParameters(
+          ['address', 'uint256'],
+          [ETH_TOKEN, minReturn]
+        )
+      );
       const placeOrderData = abi.simpleEncode(
-        'placeLimitOrder(address,address,uint256,uint256,address,bytes32)',
-        this.tokenA.address,
-        ETH_TOKEN,
+        'placeLimitOrder(uint256,address,address,address,address,bytes,bytes32)',
         sellAmount,
-        minReturn,
+        GELATOV2_LIMIT_ORDER_MODULE,
+        this.tokenA.address,
+        user,
         witness,
+        encodedData,
         secret // witness private key, but unused, it can fill any bytes.
       );
 
@@ -352,12 +371,6 @@ contract('GelatoLimitOrder', function([_, user]) {
       );
 
       // Check order existed
-      const encodedData = util.toBuffer(
-        web3.eth.abi.encodeParameters(
-          ['address', 'uint256'],
-          [ETH_TOKEN, minReturn]
-        )
-      );
       const orderExists = await this.gelatoPine.existOrder.call(
         GELATOV2_LIMIT_ORDER_MODULE,
         this.tokenA.address,
@@ -434,13 +447,20 @@ contract('GelatoLimitOrder', function([_, user]) {
       // Prepare limit order data
       const desiredIncrease = 101; // 1%
       const minReturn = mulPercent(amountOut, desiredIncrease);
+      const encodedData = util.toBuffer(
+        web3.eth.abi.encodeParameters(
+          ['address', 'uint256'],
+          [ETH_TOKEN, minReturn]
+        )
+      );
       const placeOrderData = abi.simpleEncode(
-        'placeLimitOrder(address,address,uint256,uint256,address,bytes32)',
-        this.tokenA.address,
-        ETH_TOKEN,
+        'placeLimitOrder(uint256,address,address,address,address,bytes,bytes32)',
         sellAmount,
-        minReturn,
+        GELATOV2_LIMIT_ORDER_MODULE,
+        this.tokenA.address,
+        user,
         witness,
+        encodedData,
         secret // witness private key, but unused, it can fill any bytes.
       );
 
@@ -476,14 +496,21 @@ contract('GelatoLimitOrder', function([_, user]) {
       // Prepare limit order data
       const desiredIncrease = 101; // 1%
       const minReturn = mulPercent(amountOut, desiredIncrease);
+      const encodedData = util.toBuffer(
+        web3.eth.abi.encodeParameters(
+          ['address', 'uint256'],
+          [ETH_TOKEN, minReturn]
+        )
+      );
       const placeOrderData = abi.simpleEncode(
-        'placeLimitOrder(address,address,uint256,uint256,address,bytes32)',
-        this.tokenA.address,
-        ETH_TOKEN,
+        'placeLimitOrder(uint256,address,address,address,address,bytes,bytes32)',
         sellAmount,
-        minReturn,
+        GELATOV2_LIMIT_ORDER_MODULE,
+        this.tokenA.address,
+        user,
         witness,
-        secret
+        encodedData,
+        secret // witness private key, but unused, it can fill any bytes.
       );
 
       await this.tokenA.transfer(this.proxy.address, sellAmount, {
@@ -503,12 +530,6 @@ contract('GelatoLimitOrder', function([_, user]) {
       );
 
       // check order existed
-      const encodedData = util.toBuffer(
-        web3.eth.abi.encodeParameters(
-          ['address', 'uint256'],
-          [ETH_TOKEN, minReturn]
-        )
-      );
       const orderExists = await this.gelatoPine.existOrder.call(
         GELATOV2_LIMIT_ORDER_MODULE,
         this.tokenA.address,
@@ -563,14 +584,21 @@ contract('GelatoLimitOrder', function([_, user]) {
       // Prepare limit order data
       const desiredIncrease = 101; // 1%
       const minReturn = mulPercent(amountOut, desiredIncrease);
+      const encodedData = util.toBuffer(
+        web3.eth.abi.encodeParameters(
+          ['address', 'uint256'],
+          [this.tokenC.address, minReturn]
+        )
+      );
       const placeOrderData = abi.simpleEncode(
-        'placeLimitOrder(address,address,uint256,uint256,address,bytes32)',
-        this.tokenA.address,
-        this.tokenC.address,
+        'placeLimitOrder(uint256,address,address,address,address,bytes,bytes32)',
         sellAmount,
-        minReturn,
+        GELATOV2_LIMIT_ORDER_MODULE,
+        this.tokenA.address,
+        user,
         witness,
-        secret
+        encodedData,
+        secret // witness private key, but unused, it can fill any bytes.
       );
 
       await this.tokenA.transfer(this.proxy.address, sellAmount, {
@@ -590,12 +618,6 @@ contract('GelatoLimitOrder', function([_, user]) {
       );
 
       // Check order existed
-      const encodedData = util.toBuffer(
-        web3.eth.abi.encodeParameters(
-          ['address', 'uint256'],
-          [this.tokenC.address, minReturn]
-        )
-      );
       const orderExists = await this.gelatoPine.existOrder.call(
         GELATOV2_LIMIT_ORDER_MODULE,
         this.tokenA.address,
@@ -606,7 +628,6 @@ contract('GelatoLimitOrder', function([_, user]) {
       expect(orderExists).to.be.true;
 
       // Change price to make order executable
-      // const dumpAmount = sellAmount.div(new BN(10));
       const dumpAmount = sellAmount.mul(new BN(2));
 
       await this.tokenC.approve(this.uniswapRouter.address, dumpAmount, {
@@ -678,14 +699,21 @@ contract('GelatoLimitOrder', function([_, user]) {
       // Prepare limit order data
       const desiredIncrease = 101; // 1%
       const minReturn = mulPercent(amountOut, desiredIncrease);
+      const encodedData = util.toBuffer(
+        web3.eth.abi.encodeParameters(
+          ['address', 'uint256'],
+          [this.tokenC.address, minReturn]
+        )
+      );
       const placeOrderData = abi.simpleEncode(
-        'placeLimitOrder(address,address,uint256,uint256,address,bytes32)',
-        this.tokenA.address,
-        this.tokenC.address,
+        'placeLimitOrder(uint256,address,address,address,address,bytes,bytes32)',
         sellAmount,
-        minReturn,
+        GELATOV2_LIMIT_ORDER_MODULE,
+        this.tokenA.address,
+        user,
         witness,
-        secret
+        encodedData,
+        secret // witness private key, but unused, it can fill any bytes.
       );
 
       await this.tokenA.transfer(this.proxy.address, sellAmount, {
@@ -705,12 +733,6 @@ contract('GelatoLimitOrder', function([_, user]) {
       );
 
       // Check order existed
-      const encodedData = util.toBuffer(
-        web3.eth.abi.encodeParameters(
-          ['address', 'uint256'],
-          [this.tokenC.address, minReturn]
-        )
-      );
       const orderExists = await this.gelatoPine.existOrder.call(
         GELATOV2_LIMIT_ORDER_MODULE,
         this.tokenA.address,
@@ -761,15 +783,22 @@ contract('GelatoLimitOrder', function([_, user]) {
 
       const desiredIncrease = 101; // 1%
       const minReturn = mulPercent(amountOut, desiredIncrease);
+      const encodedData = util.toBuffer(
+        web3.eth.abi.encodeParameters(
+          ['address', 'uint256'],
+          [this.tokenA.address, minReturn]
+        )
+      );
       const to = this.hGelatoLimitOrder.address;
       const placeOrderData = abi.simpleEncode(
-        'placeLimitOrder(address,address,uint256,uint256,address,bytes32)',
-        ETH_TOKEN,
-        this.tokenA.address,
+        'placeLimitOrder(uint256,address,address,address,address,bytes,bytes32)',
         sellAmount,
-        minReturn,
+        GELATOV2_LIMIT_ORDER_MODULE,
+        ETH_TOKEN,
+        user,
         witness,
-        secret
+        encodedData,
+        secret // witness private key, but unused, it can fill any bytes.
       );
 
       // place order through proxy
@@ -788,12 +817,6 @@ contract('GelatoLimitOrder', function([_, user]) {
       }
 
       // Check order exists
-      const encodedData = util.toBuffer(
-        web3.eth.abi.encodeParameters(
-          ['address', 'uint256'],
-          [this.tokenA.address, minReturn]
-        )
-      );
       const orderExists = await this.gelatoPine.existOrder.call(
         GELATOV2_LIMIT_ORDER_MODULE,
         ETH_TOKEN,
@@ -879,13 +902,20 @@ contract('GelatoLimitOrder', function([_, user]) {
       // Prepare limit order data
       const desiredIncrease = 101; // 1%
       const minReturn = mulPercent(amountOut, desiredIncrease);
+      const encodedData = util.toBuffer(
+        web3.eth.abi.encodeParameters(
+          ['address', 'uint256'],
+          [ETH_TOKEN, minReturn]
+        )
+      );
       const placeOrderData = abi.simpleEncode(
-        'placeLimitOrder(address,address,uint256,uint256,address,bytes32)',
-        this.tokenA.address,
-        ETH_TOKEN,
+        'placeLimitOrder(uint256,address,address,address,address,bytes,bytes32)',
         sellAmount,
-        minReturn,
+        GELATOV2_LIMIT_ORDER_MODULE,
+        this.tokenA.address,
+        user,
         witness,
+        encodedData,
         secret // witness private key, but unused, it can fill any bytes.
       );
 
@@ -908,12 +938,6 @@ contract('GelatoLimitOrder', function([_, user]) {
       }
 
       // Check order existed
-      const encodedData = util.toBuffer(
-        web3.eth.abi.encodeParameters(
-          ['address', 'uint256'],
-          [ETH_TOKEN, minReturn]
-        )
-      );
       const orderExists = await this.gelatoPine.existOrder.call(
         GELATOV2_LIMIT_ORDER_MODULE,
         this.tokenA.address,
@@ -997,14 +1021,21 @@ contract('GelatoLimitOrder', function([_, user]) {
       // Prepare limit order data
       const desiredIncrease = 101; // 1%
       const minReturn = mulPercent(amountOut, desiredIncrease);
+      const encodedData = util.toBuffer(
+        web3.eth.abi.encodeParameters(
+          ['address', 'uint256'],
+          [this.tokenC.address, minReturn]
+        )
+      );
       const placeOrderData = abi.simpleEncode(
-        'placeLimitOrder(address,address,uint256,uint256,address,bytes32)',
-        this.tokenA.address,
-        this.tokenC.address,
+        'placeLimitOrder(uint256,address,address,address,address,bytes,bytes32)',
         sellAmount,
-        minReturn,
+        GELATOV2_LIMIT_ORDER_MODULE,
+        this.tokenA.address,
+        user,
         witness,
-        secret
+        encodedData,
+        secret // witness private key, but unused, it can fill any bytes.
       );
 
       for (i = 0; i < 2; i++) {
@@ -1026,12 +1057,6 @@ contract('GelatoLimitOrder', function([_, user]) {
       }
 
       // Check order existed
-      const encodedData = util.toBuffer(
-        web3.eth.abi.encodeParameters(
-          ['address', 'uint256'],
-          [this.tokenC.address, minReturn]
-        )
-      );
       const orderExists = await this.gelatoPine.existOrder.call(
         GELATOV2_LIMIT_ORDER_MODULE,
         this.tokenA.address,
