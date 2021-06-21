@@ -16,6 +16,7 @@ All notable changes to this project will be documented in this file.
 
 - Archive Uniswap and Mooniswap handlers.
 - Change post process handler checking flow.
+- Check proxy instead of sender for ban.
 
 ## [1.5.1] - 2021-05-05
 
