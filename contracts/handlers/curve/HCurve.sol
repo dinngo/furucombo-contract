@@ -24,10 +24,23 @@ contract HCurve is HandlerBase {
         int128 i,
         int128 j,
         uint256 dx,
-        uint256 minDy
+        uint256 minDy,
+        bool isUint256, // indicate type of i and j
+        bool useEth // indicate in and out token is ether instead of weth
     ) external payable returns (uint256) {
         return
-            _exchangeInternal(handler, tokenI, tokenJ, i, j, dx, minDy, false);
+            _exchangeInternal(
+                handler,
+                tokenI,
+                tokenJ,
+                i,
+                j,
+                dx,
+                minDy,
+                false, // useUnderlying
+                isUint256,
+                useEth
+            );
     }
 
     // Curve fixed input exchange underlying
@@ -41,7 +54,18 @@ contract HCurve is HandlerBase {
         uint256 minDy
     ) external payable returns (uint256) {
         return
-            _exchangeInternal(handler, tokenI, tokenJ, i, j, dx, minDy, true);
+            _exchangeInternal(
+                handler,
+                tokenI,
+                tokenJ,
+                i,
+                j,
+                dx,
+                minDy,
+                true, // useUnderlying
+                false, // isUint256
+                false // useEth
+            );
     }
 
     // Curve fixed input exchange supports eth and token
@@ -53,40 +77,46 @@ contract HCurve is HandlerBase {
         int128 j,
         uint256 dx,
         uint256 minDy,
-        bool useUnderlying
+        bool useUnderlying,
+        bool isUint256,
+        bool useEth
     ) internal returns (uint256) {
-        ICurveHandler curveHandler = ICurveHandler(handler);
         dx = _getBalance(tokenI, dx);
         uint256 beforeDy = _getBalance(tokenJ, uint256(-1));
 
         // Approve erc20 token or set eth amount
         uint256 ethAmount = 0;
         if (tokenI != ETH_ADDRESS) {
-            _tokenApprove(tokenI, address(curveHandler), dx);
+            _tokenApprove(tokenI, handler, dx);
         } else {
             ethAmount = dx;
         }
 
         if (useUnderlying) {
-            try
-                curveHandler.exchange_underlying{value: ethAmount}(
-                    i,
-                    j,
+            _exchangeUnderlying(handler, ethAmount, i, j, dx, minDy);
+        } else {
+            if (isUint256 && useEth) {
+                // ethereum tricrypto pool
+                _exchangeUint256Ether(
+                    handler,
+                    ethAmount,
+                    uint256(i),
+                    uint256(j),
                     dx,
                     minDy
-                )
-            {} catch Error(string memory reason) {
-                _revertMsg("exchangeInternal: use underlying", reason);
-            } catch {
-                _revertMsg("exchangeInternal: use underlying");
-            }
-        } else {
-            try
-                curveHandler.exchange{value: ethAmount}(i, j, dx, minDy)
-            {} catch Error(string memory reason) {
-                _revertMsg("exchangeInternal", reason);
-            } catch {
-                _revertMsg("exchangeInternal");
+                );
+            } else if (isUint256 && !useEth) {
+                // polygon tricrypto pool
+                _exchangeUint256(
+                    handler,
+                    ethAmount,
+                    uint256(i),
+                    uint256(j),
+                    dx,
+                    minDy
+                );
+            } else {
+                _exchange(handler, ethAmount, i, j, dx, minDy);
             }
         }
 
@@ -97,6 +127,85 @@ contract HCurve is HandlerBase {
 
         if (tokenJ != ETH_ADDRESS) _updateToken(tokenJ);
         return afterDy.sub(beforeDy);
+    }
+
+    function _exchange(
+        address handler,
+        uint256 ethAmount,
+        int128 i,
+        int128 j,
+        uint256 dx,
+        uint256 minDy
+    ) internal {
+        try
+            ICurveHandler(handler).exchange{value: ethAmount}(i, j, dx, minDy)
+        {} catch Error(string memory reason) {
+            _revertMsg("_exchange", reason);
+        } catch {
+            _revertMsg("_exchange");
+        }
+    }
+
+    function _exchangeUint256(
+        address handler,
+        uint256 ethAmount,
+        uint256 i,
+        uint256 j,
+        uint256 dx,
+        uint256 minDy
+    ) internal {
+        try
+            ICurveHandler(handler).exchange{value: ethAmount}(i, j, dx, minDy)
+        {} catch Error(string memory reason) {
+            _revertMsg("_exchangeUint256", reason);
+        } catch {
+            _revertMsg("_exchangeUint256");
+        }
+    }
+
+    function _exchangeUint256Ether(
+        address handler,
+        uint256 ethAmount,
+        uint256 i,
+        uint256 j,
+        uint256 dx,
+        uint256 minDy
+    ) internal {
+        try
+            ICurveHandler(handler).exchange{value: ethAmount}(
+                i,
+                j,
+                dx,
+                minDy,
+                true // use_eth
+            )
+        {} catch Error(string memory reason) {
+            _revertMsg("_exchangeUint256Ether", reason);
+        } catch {
+            _revertMsg("_exchangeUint256Ether");
+        }
+    }
+
+    function _exchangeUnderlying(
+        address handler,
+        uint256 ethAmount,
+        int128 i,
+        int128 j,
+        uint256 dx,
+        uint256 minDy
+    ) internal {
+        try
+            ICurveHandler(handler).exchange_underlying{value: ethAmount}(
+                i,
+                j,
+                dx,
+                minDy
+            )
+        {} catch Error(string memory reason) {
+            _revertMsg("_exchangeUnderlying", reason);
+        } catch {
+            _revertMsg("_exchangeUnderlying");
+        }
     }
 
     // Curve add liquidity

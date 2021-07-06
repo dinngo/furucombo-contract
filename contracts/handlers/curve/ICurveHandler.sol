@@ -7,11 +7,32 @@ interface ICurveHandler {
         uint256 dx
     ) external view returns (uint256);
 
+    function get_dy(
+        uint256 i,
+        uint256 j,
+        uint256 dx
+    ) external view returns (uint256);
+
     function exchange(
         int128 i,
         int128 j,
         uint256 dx,
         uint256 min_dy
+    ) external payable;
+
+    function exchange(
+        uint256 i,
+        uint256 j,
+        uint256 dx,
+        uint256 min_dy
+    ) external payable;
+
+    function exchange(
+        uint256 i,
+        uint256 j,
+        uint256 dx,
+        uint256 min_dy,
+        bool use_eth
     ) external payable;
 
     function get_dy_underlying(

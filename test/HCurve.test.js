@@ -40,6 +40,7 @@ const {
   CURVE_YDAI_TOKEN,
   CURVE_YUSDT_TOKEN,
   CURVE_HBTC_SWAP,
+  CURVE_TRICRYPTO_SWAP,
 } = require('./utils/constants');
 const {
   evmRevert,
@@ -73,6 +74,7 @@ contract('Curve', function([_, user]) {
     this.sethSwap = await ICurveHandler.at(CURVE_SETH_SWAP);
     this.hbtcSwap = await ICurveHandler.at(CURVE_HBTC_SWAP);
     this.aaveSwap = await ICurveHandler.at(CURVE_AAVE_SWAP);
+    this.tricryptoSwap = await ICurveHandler.at(CURVE_TRICRYPTO_SWAP);
   });
 
   beforeEach(async function() {
@@ -221,14 +223,16 @@ contract('Curve', function([_, user]) {
           from: user,
         });
         const data = abi.simpleEncode(
-          'exchange(address,address,address,int128,int128,uint256,uint256)',
+          'exchange(address,address,address,int128,int128,uint256,uint256,bool,bool)',
           this.sbtcSwap.address,
           this.token0.address,
           this.token1.address,
           1,
           0,
           value,
-          mulPercent(answer, new BN('100').sub(slippage))
+          mulPercent(answer, new BN('100').sub(slippage)),
+          false, // isUint256
+          false // useEth
         );
 
         await this.token0.transfer(this.proxy.address, value, {
@@ -269,14 +273,16 @@ contract('Curve', function([_, user]) {
           from: user,
         });
         const data = abi.simpleEncode(
-          'exchange(address,address,address,int128,int128,uint256,uint256)',
+          'exchange(address,address,address,int128,int128,uint256,uint256,bool,bool)',
           this.sbtcSwap.address,
           this.token0.address,
           this.token1.address,
           1,
           0,
           MAX_UINT256,
-          mulPercent(answer, new BN('100').sub(slippage))
+          mulPercent(answer, new BN('100').sub(slippage)),
+          false, // isUint256
+          false // useEth
         );
         await this.token0.transfer(this.proxy.address, value, {
           from: providerAddress,
@@ -336,14 +342,16 @@ contract('Curve', function([_, user]) {
         });
 
         const data = abi.simpleEncode(
-          'exchange(address,address,address,int128,int128,uint256,uint256)',
+          'exchange(address,address,address,int128,int128,uint256,uint256,bool,bool)',
           this.hbtcSwap.address,
           this.token.address,
           WBTC_TOKEN,
           0,
           1,
           value,
-          mulPercent(answer, new BN('100').sub(slippage))
+          mulPercent(answer, new BN('100').sub(slippage)),
+          false, // isUint256
+          false // useEth
         );
         await this.token.transfer(this.proxy.address, value, {
           from: providerAddress,
@@ -403,14 +411,16 @@ contract('Curve', function([_, user]) {
           from: user,
         });
         const data = abi.simpleEncode(
-          'exchange(address,address,address,int128,int128,uint256,uint256)',
+          'exchange(address,address,address,int128,int128,uint256,uint256,bool,bool)',
           this.sethSwap.address,
           ETH_TOKEN,
           this.token.address,
           0,
           1,
           value,
-          mulPercent(answer, new BN('100').sub(slippage))
+          mulPercent(answer, new BN('100').sub(slippage)),
+          false, // isUint256
+          false // useEth
         );
 
         const receipt = await this.proxy.execMock(this.hCurve.address, data, {
@@ -445,14 +455,16 @@ contract('Curve', function([_, user]) {
           from: user,
         });
         const data = abi.simpleEncode(
-          'exchange(address,address,address,int128,int128,uint256,uint256)',
+          'exchange(address,address,address,int128,int128,uint256,uint256,bool,bool)',
           this.sethSwap.address,
           this.token.address,
           ETH_TOKEN,
           1,
           0,
           value,
-          mulPercent(answer, new BN('100').sub(slippage))
+          mulPercent(answer, new BN('100').sub(slippage)),
+          false, // isUint256
+          false // useEth
         );
         await this.token.transfer(this.proxy.address, value, {
           from: providerAddress,
@@ -484,6 +496,145 @@ contract('Curve', function([_, user]) {
           tokenUser
         );
         profileGas(receipt);
+      });
+    });
+
+    describe('tricrypto pool', function() {
+      const token0Address = USDT_TOKEN;
+      const token1Address = WBTC_TOKEN;
+      const provider0Address = USDT_PROVIDER;
+
+      let token0, token1;
+      let balanceUser, balanceProxy;
+      let token0User, token1User;
+      let answer, receipt;
+
+      before(async function() {
+        token0 = await IToken.at(token0Address);
+        token1 = await IToken.at(token1Address);
+      });
+
+      beforeEach(async function() {
+        balanceUser = await tracker(user);
+        balanceProxy = await tracker(this.proxy.address);
+        token0User = await token0.balanceOf.call(user);
+        token1User = await token1.balanceOf.call(user);
+      });
+
+      afterEach(async function() {
+        // Check handler return
+        const handlerReturn = utils.toBN(
+          getHandlerReturn(receipt, ['uint256'])[0]
+        );
+        expect(handlerReturn).to.be.bignumber.eq(answer);
+
+        // Check proxy
+        expect(await balanceProxy.get()).to.be.zero;
+        expect(await token0.balanceOf.call(this.proxy.address)).to.be.zero;
+        expect(await token1.balanceOf.call(this.proxy.address)).to.be.zero;
+
+        profileGas(receipt);
+      });
+
+      it('Exact input swap USDT to WBTC by exchange', async function() {
+        const value = new BN('1000000');
+        answer = await this.tricryptoSwap.methods[
+          'get_dy(uint256,uint256,uint256)'
+        ](0, 1, value);
+
+        const data = abi.simpleEncode(
+          'exchange(address,address,address,int128,int128,uint256,uint256,bool,bool)',
+          this.tricryptoSwap.address,
+          token0.address,
+          token1.address,
+          0,
+          1,
+          value,
+          mulPercent(answer, new BN('100').sub(slippage)),
+          true, // isUint256
+          true // useEth, token to token don't care this flag
+        );
+        await token0.transfer(this.proxy.address, value, {
+          from: provider0Address,
+        });
+        await this.proxy.updateTokenMock(token0.address);
+        receipt = await this.proxy.execMock(this.hCurve.address, data, {
+          from: user,
+          value: ether('1'), // Ensure handler can correctly deal with ether
+        });
+
+        // Check user
+        expect(await balanceUser.delta()).to.be.bignumber.eq(
+          ether('0').sub(new BN(receipt.receipt.gasUsed))
+        );
+        expect(await token1.balanceOf.call(user)).to.be.bignumber.eq(answer);
+      });
+
+      it('Exact input swap USDT to ETH by exchange', async function() {
+        const value = new BN('1000000');
+        answer = await this.tricryptoSwap.methods[
+          'get_dy(uint256,uint256,uint256)'
+        ](0, 2, value);
+
+        const data = abi.simpleEncode(
+          'exchange(address,address,address,int128,int128,uint256,uint256,bool,bool)',
+          this.tricryptoSwap.address,
+          token0.address,
+          ETH_TOKEN,
+          0,
+          2,
+          value,
+          mulPercent(answer, new BN('100').sub(slippage)),
+          true, // isUint256
+          true // useEth
+        );
+        await token0.transfer(this.proxy.address, value, {
+          from: provider0Address,
+        });
+        await this.proxy.updateTokenMock(token0.address);
+        receipt = await this.proxy.execMock(this.hCurve.address, data, {
+          from: user,
+          value: 0,
+        });
+
+        // Check user
+        expect(await balanceUser.delta()).to.be.bignumber.eq(
+          ether('0')
+            .add(answer)
+            .sub(new BN(receipt.receipt.gasUsed))
+        );
+      });
+
+      it('Exact input swap ETH to WBTC by exchange', async function() {
+        const value = ether('1');
+        answer = await this.tricryptoSwap.methods[
+          'get_dy(uint256,uint256,uint256)'
+        ](2, 1, value);
+
+        const data = abi.simpleEncode(
+          'exchange(address,address,address,int128,int128,uint256,uint256,bool,bool)',
+          this.tricryptoSwap.address,
+          ETH_TOKEN,
+          token1.address,
+          2,
+          1,
+          value,
+          mulPercent(answer, new BN('100').sub(slippage)),
+          true, // isUint256
+          true // useEth
+        );
+        receipt = await this.proxy.execMock(this.hCurve.address, data, {
+          from: user,
+          value: value,
+        });
+
+        // Check user
+        expect(await balanceUser.delta()).to.be.bignumber.eq(
+          ether('0')
+            .sub(value)
+            .sub(new BN(receipt.receipt.gasUsed))
+        );
+        expect(await token1.balanceOf.call(user)).to.be.bignumber.eq(answer);
       });
     });
   });
