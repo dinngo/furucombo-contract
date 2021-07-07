@@ -58,11 +58,6 @@ contract('Curve Crypto', function([_, user]) {
       const token1Address = WBTC_TOKEN;
       const provider0Address = USDT_PROVIDER;
 
-      let token0, token1;
-      let balanceUser, balanceProxy;
-      let token0User, token1User;
-      let answer, receipt;
-
       before(async function() {
         token0 = await IToken.at(token0Address);
         token1 = await IToken.at(token1Address);
@@ -77,9 +72,6 @@ contract('Curve Crypto', function([_, user]) {
 
       afterEach(async function() {
         // Check handler return
-        const handlerReturn = utils.toBN(
-          getHandlerReturn(receipt, ['uint256'])[0]
-        );
         expect(handlerReturn).to.be.bignumber.eq(answer);
 
         // Check proxy
@@ -116,13 +108,14 @@ contract('Curve Crypto', function([_, user]) {
           from: user,
           value: ether('1'), // Ensure handler can correctly deal with ether
         });
+        handlerReturn = utils.toBN(getHandlerReturn(receipt, ['uint256'])[0]);
 
         // Check user
         expect(await balanceUser.delta()).to.be.bignumber.eq(
           ether('0').sub(new BN(receipt.receipt.gasUsed))
         );
         expect(await token1.balanceOf.call(user)).to.be.bignumber.eq(
-          answer.sub(token1User)
+          handlerReturn.sub(token1User)
         );
       });
 
@@ -152,11 +145,12 @@ contract('Curve Crypto', function([_, user]) {
           from: user,
           value: 0,
         });
+        handlerReturn = utils.toBN(getHandlerReturn(receipt, ['uint256'])[0]);
 
         // Check user
         expect(await balanceUser.delta()).to.be.bignumber.eq(
           ether('0')
-            .add(answer)
+            .add(handlerReturn)
             .sub(new BN(receipt.receipt.gasUsed))
         );
       });
@@ -183,6 +177,7 @@ contract('Curve Crypto', function([_, user]) {
           from: user,
           value: value,
         });
+        handlerReturn = utils.toBN(getHandlerReturn(receipt, ['uint256'])[0]);
 
         // Check user
         expect(await balanceUser.delta()).to.be.bignumber.eq(
@@ -191,7 +186,7 @@ contract('Curve Crypto', function([_, user]) {
             .sub(new BN(receipt.receipt.gasUsed))
         );
         expect(await token1.balanceOf.call(user)).to.be.bignumber.eq(
-          answer.sub(token1User)
+          handlerReturn.sub(token1User)
         );
       });
     });
@@ -205,10 +200,6 @@ contract('Curve Crypto', function([_, user]) {
       const provider1Address = WBTC_PROVIDER;
       const poolTokenAddress = CURVE_TRICRYPTOCRV;
       const poolTokenProvider = CURVE_TRICRYPTOCRV_PROVIDER;
-
-      let token0, token1, poolToken;
-      let balanceUser, balanceProxy;
-      let token0User, token1User, poolTokenUser;
 
       before(async function() {
         token0 = await IToken.at(token0Address);
@@ -225,11 +216,17 @@ contract('Curve Crypto', function([_, user]) {
       });
 
       afterEach(async function() {
+        // Check handler return
+        expect(handlerReturn).to.be.bignumber.gte(mulPercent(answer, 99));
+        expect(handlerReturn).to.be.bignumber.lte(mulPercent(answer, 101));
+
         // Check proxy
         expect(await balanceProxy.get()).to.be.zero;
         expect(await token0.balanceOf.call(this.proxy.address)).to.be.zero;
         expect(await token1.balanceOf.call(this.proxy.address)).to.be.zero;
         expect(await poolToken.balanceOf.call(this.proxy.address)).to.be.zero;
+
+        profileGas(receipt);
       });
 
       it('add USDT, WBTC and ETH to pool by addLiquidity', async function() {
@@ -240,7 +237,7 @@ contract('Curve Crypto', function([_, user]) {
         const amounts = [token0Amount, token1Amount, value];
 
         // Get expected answer
-        const answer = await this.tricryptoSwap.methods[
+        answer = await this.tricryptoSwap.methods[
           'calc_token_amount(uint256[3],bool)'
         ](amounts, true);
 
@@ -262,19 +259,11 @@ contract('Curve Crypto', function([_, user]) {
           amounts,
           minMintAmount
         );
-        const receipt = await this.proxy.execMock(this.hCurve.address, data, {
+        receipt = await this.proxy.execMock(this.hCurve.address, data, {
           from: user,
           value: value,
         });
-
-        // Check handler return
-        const handlerReturn = utils.toBN(
-          getHandlerReturn(receipt, ['uint256'])[0]
-        );
-        const poolTokenUserEnd = await poolToken.balanceOf.call(user);
-        expect(handlerReturn).to.be.bignumber.eq(
-          poolTokenUserEnd.sub(poolTokenUser)
-        );
+        handlerReturn = utils.toBN(getHandlerReturn(receipt, ['uint256'])[0]);
 
         // Check user
         expect(await balanceUser.delta()).to.be.bignumber.eq(
@@ -288,19 +277,14 @@ contract('Curve Crypto', function([_, user]) {
         expect(await token1.balanceOf.call(user)).to.be.bignumber.eq(
           token1User
         );
-        // poolToken amount should be greater than answer * 0.999 which is
-        // referenced from tests in curve contract.
-        expect(poolTokenUserEnd).to.be.bignumber.gte(
-          answer.mul(new BN('999')).div(new BN('1000'))
+        expect(await poolToken.balanceOf.call(user)).to.be.bignumber.eq(
+          handlerReturn.sub(poolTokenUser)
         );
-        expect(poolTokenUserEnd).to.be.bignumber.lte(answer);
-
-        profileGas(receipt);
       });
 
       it('remove from pool to USDT by removeLiquidityOneCoin', async function() {
         const amount = ether('0.1');
-        const answer = await this.tricryptoSwap.methods[
+        answer = await this.tricryptoSwap.methods[
           'calc_withdraw_one_coin(uint256,uint256)'
         ](amount, 0);
         await poolToken.transfer(this.proxy.address, amount, {
@@ -318,28 +302,21 @@ contract('Curve Crypto', function([_, user]) {
           minAmount,
           true // isUint256
         );
-        const receipt = await this.proxy.execMock(this.hCurve.address, data, {
+        receipt = await this.proxy.execMock(this.hCurve.address, data, {
           from: user,
           value: ether('1'),
         });
-
-        // Check handler return
-        const handlerReturn = utils.toBN(
-          getHandlerReturn(receipt, ['uint256'])[0]
-        );
-        expect(handlerReturn).to.be.bignumber.eq(answer);
+        handlerReturn = utils.toBN(getHandlerReturn(receipt, ['uint256'])[0]);
 
         // Check user
         expect(await token0.balanceOf.call(user)).to.be.bignumber.eq(
-          token0User.add(answer)
+          handlerReturn.add(token0User)
         );
-
-        profileGas(receipt);
       });
 
       it('remove from pool to ETH by removeLiquidityOneCoin', async function() {
         const amount = ether('0.1');
-        const answer = await this.tricryptoSwap.methods[
+        answer = await this.tricryptoSwap.methods[
           'calc_withdraw_one_coin(uint256,uint256)'
         ](amount, 2);
         await poolToken.transfer(this.proxy.address, amount, {
@@ -357,25 +334,18 @@ contract('Curve Crypto', function([_, user]) {
           minAmount,
           true // isUint256
         );
-        const receipt = await this.proxy.execMock(this.hCurve.address, data, {
+        receipt = await this.proxy.execMock(this.hCurve.address, data, {
           from: user,
           value: 0,
         });
-
-        // Check handler return
-        const handlerReturn = utils.toBN(
-          getHandlerReturn(receipt, ['uint256'])[0]
-        );
-        expect(handlerReturn).to.be.bignumber.eq(answer);
+        handlerReturn = utils.toBN(getHandlerReturn(receipt, ['uint256'])[0]);
 
         // Check user
         expect(await balanceUser.delta()).to.be.bignumber.eq(
           ether('0')
-            .add(answer)
+            .add(handlerReturn)
             .sub(new BN(receipt.receipt.gasUsed))
         );
-
-        profileGas(receipt);
       });
     });
   });
