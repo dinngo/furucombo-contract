@@ -571,7 +571,9 @@ contract('Curve', function([_, user]) {
         expect(await balanceUser.delta()).to.be.bignumber.eq(
           ether('0').sub(new BN(receipt.receipt.gasUsed))
         );
-        expect(await token1.balanceOf.call(user)).to.be.bignumber.eq(answer);
+        expect(await token1.balanceOf.call(user)).to.be.bignumber.eq(
+          answer.sub(token1User)
+        );
       });
 
       it('Exact input swap USDT to ETH by exchange', async function() {
@@ -638,7 +640,9 @@ contract('Curve', function([_, user]) {
             .sub(value)
             .sub(new BN(receipt.receipt.gasUsed))
         );
-        expect(await token1.balanceOf.call(user)).to.be.bignumber.eq(answer);
+        expect(await token1.balanceOf.call(user)).to.be.bignumber.eq(
+          answer.sub(token1User)
+        );
       });
     });
   });
