@@ -282,9 +282,9 @@ contract HCurve is HandlerBase {
                         useUnderlying
                     )
                 {} catch Error(string memory reason) {
-                    _revertMsg("addLiquidityInternal: use underlying", reason);
+                    _revertMsg("_addLiquidityInternal: use underlying", reason);
                 } catch {
-                    _revertMsg("addLiquidityInternal: use underlying");
+                    _revertMsg("_addLiquidityInternal: use underlying");
                 }
             } else {
                 try
@@ -293,9 +293,9 @@ contract HCurve is HandlerBase {
                         minMintAmount
                     )
                 {} catch Error(string memory reason) {
-                    _revertMsg("addLiquidityInternal", reason);
+                    _revertMsg("_addLiquidityInternal", reason);
                 } catch {
-                    _revertMsg("addLiquidityInternal");
+                    _revertMsg("_addLiquidityInternal");
                 }
             }
         } else if (amounts.length == 3) {
@@ -308,9 +308,9 @@ contract HCurve is HandlerBase {
                         useUnderlying
                     )
                 {} catch Error(string memory reason) {
-                    _revertMsg("addLiquidityInternal: use underlying", reason);
+                    _revertMsg("_addLiquidityInternal: use underlying", reason);
                 } catch {
-                    _revertMsg("addLiquidityInternal: use underlying");
+                    _revertMsg("_addLiquidityInternal: use underlying");
                 }
             } else {
                 try
@@ -319,9 +319,9 @@ contract HCurve is HandlerBase {
                         minMintAmount
                     )
                 {} catch Error(string memory reason) {
-                    _revertMsg("addLiquidityInternal", reason);
+                    _revertMsg("_addLiquidityInternal", reason);
                 } catch {
-                    _revertMsg("addLiquidityInternal");
+                    _revertMsg("_addLiquidityInternal");
                 }
             }
         } else if (amounts.length == 4) {
@@ -335,9 +335,9 @@ contract HCurve is HandlerBase {
                         useUnderlying
                     )
                 {} catch Error(string memory reason) {
-                    _revertMsg("addLiquidityInternal: use underlying", reason);
+                    _revertMsg("_addLiquidityInternal: use underlying", reason);
                 } catch {
-                    _revertMsg("addLiquidityInternal: use underlying");
+                    _revertMsg("_addLiquidityInternal: use underlying");
                 }
             } else {
                 try
@@ -346,9 +346,9 @@ contract HCurve is HandlerBase {
                         minMintAmount
                     )
                 {} catch Error(string memory reason) {
-                    _revertMsg("addLiquidityInternal", reason);
+                    _revertMsg("_addLiquidityInternal", reason);
                 } catch {
-                    _revertMsg("addLiquidityInternal");
+                    _revertMsg("_addLiquidityInternal");
                 }
             }
         } else if (amounts.length == 5) {
@@ -362,9 +362,9 @@ contract HCurve is HandlerBase {
                         useUnderlying
                     )
                 {} catch Error(string memory reason) {
-                    _revertMsg("addLiquidityInternal: use underlying", reason);
+                    _revertMsg("_addLiquidityInternal: use underlying", reason);
                 } catch {
-                    _revertMsg("addLiquidityInternal: use underlying");
+                    _revertMsg("_addLiquidityInternal: use underlying");
                 }
             } else {
                 try
@@ -373,9 +373,9 @@ contract HCurve is HandlerBase {
                         minMintAmount
                     )
                 {} catch Error(string memory reason) {
-                    _revertMsg("addLiquidityInternal", reason);
+                    _revertMsg("_addLiquidityInternal", reason);
                 } catch {
-                    _revertMsg("addLiquidityInternal");
+                    _revertMsg("_addLiquidityInternal");
                 }
             }
         } else if (amounts.length == 6) {
@@ -396,9 +396,9 @@ contract HCurve is HandlerBase {
                         useUnderlying
                     )
                 {} catch Error(string memory reason) {
-                    _revertMsg("addLiquidityInternal: use underlying", reason);
+                    _revertMsg("_addLiquidityInternal: use underlying", reason);
                 } catch {
-                    _revertMsg("addLiquidityInternal: use underlying");
+                    _revertMsg("_addLiquidityInternal: use underlying");
                 }
             } else {
                 try
@@ -407,16 +407,19 @@ contract HCurve is HandlerBase {
                         minMintAmount
                     )
                 {} catch Error(string memory reason) {
-                    _revertMsg("addLiquidityInternal", reason);
+                    _revertMsg("_addLiquidityInternal", reason);
                 } catch {
-                    _revertMsg("addLiquidityInternal");
+                    _revertMsg("_addLiquidityInternal");
                 }
             }
         } else {
-            _revertMsg("addLiquidityInternal", "invalid amount array size");
+            _revertMsg("_addLiquidityInternal", "invalid amount array size");
         }
 
         uint256 afterPoolBalance = IERC20(pool).balanceOf(address(this));
+        if (afterPoolBalance <= beforePoolBalance) {
+            _revertMsg("_addLiquidityInternal: after <= before");
+        }
 
         // Update post process
         _updateToken(address(pool));
@@ -430,7 +433,8 @@ contract HCurve is HandlerBase {
         address tokenI,
         uint256 poolAmount,
         int128 i,
-        uint256 minAmount
+        uint256 minAmount,
+        bool isUint256 // indicate type of i
     ) external payable returns (uint256) {
         return
             _removeLiquidityOneCoinInternal(
@@ -440,7 +444,8 @@ contract HCurve is HandlerBase {
                 poolAmount,
                 i,
                 minAmount,
-                false
+                false, // useUnderlying
+                isUint256
             );
     }
 
@@ -461,7 +466,8 @@ contract HCurve is HandlerBase {
                 poolAmount,
                 i,
                 minAmount,
-                true
+                true, // useUnderlying
+                false // isUint256
             );
     }
 
@@ -473,7 +479,8 @@ contract HCurve is HandlerBase {
         uint256 poolAmount,
         int128 i,
         uint256 minAmount,
-        bool useUnderlying
+        bool useUnderlying,
+        bool isUint256 // indicate type of i
     ) internal returns (uint256) {
         ICurveHandler curveHandler = ICurveHandler(handler);
         uint256 beforeTokenIBalance = _getBalance(tokenI, uint256(-1));
@@ -489,19 +496,40 @@ contract HCurve is HandlerBase {
                 )
             {} catch Error(string memory reason) {
                 _revertMsg(
-                    "removeLiquidityOneCoinInternal: use underlying",
+                    "_removeLiquidityOneCoinInternal: use underlying",
                     reason
                 );
             } catch {
-                _revertMsg("removeLiquidityOneCoinInternal: use underlying");
+                _revertMsg("_removeLiquidityOneCoinInternal: use underlying");
             }
         } else {
-            try
-                curveHandler.remove_liquidity_one_coin(poolAmount, i, minAmount)
-            {} catch Error(string memory reason) {
-                _revertMsg("removeLiquidityOneCoinInternal", reason);
-            } catch {
-                _revertMsg("removeLiquidityOneCoinInternal");
+            if (isUint256) {
+                try
+                    curveHandler.remove_liquidity_one_coin(
+                        poolAmount,
+                        uint256(i),
+                        minAmount
+                    )
+                {} catch Error(string memory reason) {
+                    _revertMsg(
+                        "_removeLiquidityOneCoinInternal: is uint256",
+                        reason
+                    );
+                } catch {
+                    _revertMsg("_removeLiquidityOneCoinInternal: is uint256");
+                }
+            } else {
+                try
+                    curveHandler.remove_liquidity_one_coin(
+                        poolAmount,
+                        i,
+                        minAmount
+                    )
+                {} catch Error(string memory reason) {
+                    _revertMsg("_removeLiquidityOneCoinInternal", reason);
+                } catch {
+                    _revertMsg("_removeLiquidityOneCoinInternal");
+                }
             }
         }
         // Some curve non-underlying pools like 3pool won't consume pool token
@@ -510,7 +538,7 @@ contract HCurve is HandlerBase {
         IERC20(pool).safeApprove(address(curveHandler), 0);
         uint256 afterTokenIBalance = _getBalance(tokenI, uint256(-1));
         if (afterTokenIBalance <= beforeTokenIBalance) {
-            _revertMsg("removeLiquidityOneCoinInternal: after <= before");
+            _revertMsg("_removeLiquidityOneCoinInternal: after <= before");
         }
 
         // Update post process
