@@ -104,18 +104,20 @@ contract('Curve', function([_, user]) {
     describe('y pool', function() {
       it('Exact input swap USDT to DAI by exchangeUnderlying', async function() {
         const value = new BN('1000000');
-        const answer = await this.ySwap.get_dy_underlying.call(2, 0, value, {
-          from: user,
-        });
+        const answer = await this.ySwap.methods[
+          'get_dy_underlying(int128,int128,uint256)'
+        ](2, 0, value);
         const data = abi.simpleEncode(
-          'exchangeUnderlying(address,address,address,int128,int128,uint256,uint256)',
+          'exchangeUnderlying(address,address,address,int128,int128,uint256,uint256,bool,bool)',
           this.ySwap.address,
           this.token0.address,
           this.token1.address,
           2,
           0,
           value,
-          mulPercent(answer, new BN('100').sub(slippage))
+          mulPercent(answer, new BN('100').sub(slippage)),
+          false, // isUint256
+          false // useEth
         );
         await this.token0.transfer(this.proxy.address, value, {
           from: providerAddress,
@@ -150,18 +152,20 @@ contract('Curve', function([_, user]) {
 
       it('Exact input swap USDT to DAI by exchangeUnderlying with max amount', async function() {
         const value = new BN('1000000');
-        const answer = await this.ySwap.get_dy_underlying.call(2, 0, value, {
-          from: user,
-        });
+        const answer = await this.ySwap.methods[
+          'get_dy_underlying(int128,int128,uint256)'
+        ](2, 0, value);
         const data = abi.simpleEncode(
-          'exchangeUnderlying(address,address,address,int128,int128,uint256,uint256)',
+          'exchangeUnderlying(address,address,address,int128,int128,uint256,uint256,bool,bool)',
           this.ySwap.address,
           this.token0.address,
           this.token1.address,
           2,
           0,
           MAX_UINT256,
-          mulPercent(answer, new BN('100').sub(slippage))
+          mulPercent(answer, new BN('100').sub(slippage)),
+          false, // isUint256
+          false // useEth
         );
         await this.token0.transfer(this.proxy.address, value, {
           from: providerAddress,
@@ -1124,13 +1128,14 @@ contract('Curve', function([_, user]) {
         await this.proxy.updateTokenMock(this.poolToken.address);
         const minAmount = mulPercent(answer, new BN('100').sub(slippage));
         const data = abi.simpleEncode(
-          'removeLiquidityOneCoinUnderlying(address,address,address,uint256,int128,uint256)',
+          'removeLiquidityOneCoinUnderlying(address,address,address,uint256,int128,uint256,bool)',
           this.aaveSwap.address,
           this.poolToken.address,
           this.token1.address,
           poolTokenUser,
           2,
-          minAmount
+          minAmount,
+          false // isUint256
         );
         const receipt = await this.proxy.execMock(this.hCurve.address, data, {
           from: user,

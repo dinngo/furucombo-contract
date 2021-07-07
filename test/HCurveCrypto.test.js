@@ -29,7 +29,7 @@ const HCurve = artifacts.require('HCurve');
 const ICurveHandler = artifacts.require('ICurveHandler');
 const IToken = artifacts.require('IERC20');
 
-contract('Curve', function([_, user]) {
+contract('Curve Crypto', function([_, user]) {
   const slippage = new BN('3');
   let id;
   before(async function() {

@@ -37,9 +37,9 @@ contract HCurve is HandlerBase {
                 j,
                 dx,
                 minDy,
-                false, // useUnderlying
                 isUint256,
-                useEth
+                useEth,
+                false // useUnderlying
             );
     }
 
@@ -51,7 +51,9 @@ contract HCurve is HandlerBase {
         int128 i,
         int128 j,
         uint256 dx,
-        uint256 minDy
+        uint256 minDy,
+        bool isUint256, // indicate type of i and j
+        bool useEth // indicate in and out token is ether instead of weth
     ) external payable returns (uint256) {
         return
             _exchangeInternal(
@@ -62,9 +64,9 @@ contract HCurve is HandlerBase {
                 j,
                 dx,
                 minDy,
-                true, // useUnderlying
-                false, // isUint256
-                false // useEth
+                isUint256,
+                useEth,
+                true // useUnderlying
             );
     }
 
@@ -77,9 +79,9 @@ contract HCurve is HandlerBase {
         int128 j,
         uint256 dx,
         uint256 minDy,
-        bool useUnderlying,
         bool isUint256,
-        bool useEth
+        bool useEth,
+        bool useUnderlying
     ) internal returns (uint256) {
         dx = _getBalance(tokenI, dx);
         uint256 beforeDy = _getBalance(tokenJ, uint256(-1));
@@ -93,10 +95,29 @@ contract HCurve is HandlerBase {
         }
 
         if (useUnderlying) {
-            _exchangeUnderlying(handler, ethAmount, i, j, dx, minDy);
+            if (isUint256 && useEth) {
+                _exchangeUnderlyingUint256Ether(
+                    handler,
+                    ethAmount,
+                    uint256(i),
+                    uint256(j),
+                    dx,
+                    minDy
+                );
+            } else if (isUint256 && !useEth) {
+                _exchangeUnderlyingUint256(
+                    handler,
+                    ethAmount,
+                    uint256(i),
+                    uint256(j),
+                    dx,
+                    minDy
+                );
+            } else {
+                _exchangeUnderlying(handler, ethAmount, i, j, dx, minDy);
+            }
         } else {
             if (isUint256 && useEth) {
-                // ethereum tricrypto pool
                 _exchangeUint256Ether(
                     handler,
                     ethAmount,
@@ -106,7 +127,6 @@ contract HCurve is HandlerBase {
                     minDy
                 );
             } else if (isUint256 && !useEth) {
-                // polygon tricrypto pool
                 _exchangeUint256(
                     handler,
                     ethAmount,
@@ -205,6 +225,51 @@ contract HCurve is HandlerBase {
             _revertMsg("_exchangeUnderlying", reason);
         } catch {
             _revertMsg("_exchangeUnderlying");
+        }
+    }
+
+    function _exchangeUnderlyingUint256(
+        address handler,
+        uint256 ethAmount,
+        uint256 i,
+        uint256 j,
+        uint256 dx,
+        uint256 minDy
+    ) internal {
+        try
+            ICurveHandler(handler).exchange_underlying{value: ethAmount}(
+                i,
+                j,
+                dx,
+                minDy
+            )
+        {} catch Error(string memory reason) {
+            _revertMsg("_exchangeUnderlyingUint256", reason);
+        } catch {
+            _revertMsg("_exchangeUnderlyingUint256");
+        }
+    }
+
+    function _exchangeUnderlyingUint256Ether(
+        address handler,
+        uint256 ethAmount,
+        uint256 i,
+        uint256 j,
+        uint256 dx,
+        uint256 minDy
+    ) internal {
+        try
+            ICurveHandler(handler).exchange_underlying{value: ethAmount}(
+                i,
+                j,
+                dx,
+                minDy,
+                true // use_eth
+            )
+        {} catch Error(string memory reason) {
+            _revertMsg("_exchangeUnderlyingUint256Ether", reason);
+        } catch {
+            _revertMsg("_exchangeUnderlyingUint256Ether");
         }
     }
 
@@ -444,8 +509,8 @@ contract HCurve is HandlerBase {
                 poolAmount,
                 i,
                 minAmount,
-                false, // useUnderlying
-                isUint256
+                isUint256,
+                false // useUnderlying
             );
     }
 
@@ -456,7 +521,8 @@ contract HCurve is HandlerBase {
         address tokenI,
         uint256 poolAmount,
         int128 i,
-        uint256 minAmount
+        uint256 minAmount,
+        bool isUint256 // indicate type of i
     ) external payable returns (uint256) {
         return
             _removeLiquidityOneCoinInternal(
@@ -466,8 +532,8 @@ contract HCurve is HandlerBase {
                 poolAmount,
                 i,
                 minAmount,
-                true, // useUnderlying
-                false // isUint256
+                isUint256,
+                true // useUnderlying
             );
     }
 
@@ -479,28 +545,50 @@ contract HCurve is HandlerBase {
         uint256 poolAmount,
         int128 i,
         uint256 minAmount,
-        bool useUnderlying,
-        bool isUint256 // indicate type of i
+        bool isUint256, // indicate type of i
+        bool useUnderlying
     ) internal returns (uint256) {
         ICurveHandler curveHandler = ICurveHandler(handler);
         uint256 beforeTokenIBalance = _getBalance(tokenI, uint256(-1));
         poolAmount = _getBalance(pool, poolAmount);
         _tokenApprove(pool, address(curveHandler), poolAmount);
         if (useUnderlying) {
-            try
-                curveHandler.remove_liquidity_one_coin(
-                    poolAmount,
-                    i,
-                    minAmount,
-                    useUnderlying
-                )
-            {} catch Error(string memory reason) {
-                _revertMsg(
-                    "_removeLiquidityOneCoinInternal: use underlying",
-                    reason
-                );
-            } catch {
-                _revertMsg("_removeLiquidityOneCoinInternal: use underlying");
+            if (isUint256) {
+                try
+                    curveHandler.remove_liquidity_one_coin(
+                        poolAmount,
+                        uint256(i),
+                        minAmount,
+                        useUnderlying
+                    )
+                {} catch Error(string memory reason) {
+                    _revertMsg(
+                        "_removeLiquidityOneCoinInternal: use underlying and is uint256",
+                        reason
+                    );
+                } catch {
+                    _revertMsg(
+                        "_removeLiquidityOneCoinInternal: use underlying and is uint256"
+                    );
+                }
+            } else {
+                try
+                    curveHandler.remove_liquidity_one_coin(
+                        poolAmount,
+                        i,
+                        minAmount,
+                        useUnderlying
+                    )
+                {} catch Error(string memory reason) {
+                    _revertMsg(
+                        "_removeLiquidityOneCoinInternal: use underlying",
+                        reason
+                    );
+                } catch {
+                    _revertMsg(
+                        "_removeLiquidityOneCoinInternal: use underlying"
+                    );
+                }
             }
         } else {
             if (isUint256) {
