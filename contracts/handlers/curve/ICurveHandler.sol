@@ -121,6 +121,13 @@ interface ICurveHandler {
         bool use_underlying
     ) external payable;
 
+    // Curve factory metapool deposit zap
+    function add_liquidity(
+        address pool,
+        uint256[4] calldata amounts,
+        uint256 min_mint_amount
+    ) external payable;
+
     function calc_token_amount(uint256[2] calldata amounts, bool deposit)
         external
         view
@@ -145,6 +152,13 @@ interface ICurveHandler {
         external
         view
         returns (uint256);
+
+    // Curve factory metapool deposit zap
+    function calc_token_amount(
+        address pool,
+        uint256[4] calldata amounts,
+        bool deposit
+    ) external view returns (uint256);
 
     function remove_liquidity_one_coin(
         uint256 _token_amount,
@@ -172,6 +186,14 @@ interface ICurveHandler {
         bool boolean
     ) external;
 
+    // Curve factory metapool deposit zap
+    function remove_liquidity_one_coin(
+        address pool,
+        uint256 _token_amount,
+        int128 i,
+        uint256 min_amount
+    ) external;
+
     function calc_withdraw_one_coin(uint256 _token_amount, int128 i)
         external
         view
@@ -181,4 +203,11 @@ interface ICurveHandler {
         external
         view
         returns (uint256);
+
+    // Curve factory metapool deposit zap
+    function calc_withdraw_one_coin(
+        address pool,
+        uint256 _token_amount,
+        int128 i
+    ) external view returns (uint256);
 }

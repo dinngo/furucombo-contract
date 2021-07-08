@@ -279,7 +279,8 @@ contract HCurve is HandlerBase {
         address pool,
         address[] calldata tokens,
         uint256[] calldata amounts,
-        uint256 minMintAmount
+        uint256 minMintAmount,
+        bool isFactoryZap
     ) external payable returns (uint256) {
         return
             _addLiquidityInternal(
@@ -288,7 +289,8 @@ contract HCurve is HandlerBase {
                 tokens,
                 amounts,
                 minMintAmount,
-                false
+                isFactoryZap,
+                false // useUnderlying
             );
     }
 
@@ -307,7 +309,8 @@ contract HCurve is HandlerBase {
                 tokens,
                 amounts,
                 minMintAmount,
-                true
+                false, // isFactoryZap
+                true // useUnderlying
             );
     }
 
@@ -319,6 +322,7 @@ contract HCurve is HandlerBase {
         address[] calldata tokens,
         uint256[] memory amounts,
         uint256 minMintAmount,
+        bool isFactoryZap,
         bool useUnderlying
     ) internal returns (uint256) {
         ICurveHandler curveHandler = ICurveHandler(handler);
@@ -392,7 +396,24 @@ contract HCurve is HandlerBase {
         } else if (amounts.length == 4) {
             uint256[4] memory amts =
                 [amounts[0], amounts[1], amounts[2], amounts[3]];
-            if (useUnderlying) {
+            if (isFactoryZap) {
+                try
+                    curveHandler.add_liquidity{value: ethAmount}(
+                        pool,
+                        amts,
+                        minMintAmount
+                    )
+                {} catch Error(string memory reason) {
+                    _revertMsg(
+                        "_addLiquidityInternal: use underlying and is factory zap",
+                        reason
+                    );
+                } catch {
+                    _revertMsg(
+                        "_addLiquidityInternal: use underlying and is factory zap"
+                    );
+                }
+            } else if (useUnderlying) {
                 try
                     curveHandler.add_liquidity{value: ethAmount}(
                         amts,
@@ -499,7 +520,8 @@ contract HCurve is HandlerBase {
         uint256 poolAmount,
         int128 i,
         uint256 minAmount,
-        bool isUint256 // indicate type of i
+        bool isUint256, // indicate type of i
+        bool isFactoryZap
     ) external payable returns (uint256) {
         return
             _removeLiquidityOneCoinInternal(
@@ -510,6 +532,7 @@ contract HCurve is HandlerBase {
                 i,
                 minAmount,
                 isUint256,
+                isFactoryZap,
                 false // useUnderlying
             );
     }
@@ -533,6 +556,7 @@ contract HCurve is HandlerBase {
                 i,
                 minAmount,
                 isUint256,
+                false, // isFactoryZap
                 true // useUnderlying
             );
     }
@@ -546,6 +570,7 @@ contract HCurve is HandlerBase {
         int128 i,
         uint256 minAmount,
         bool isUint256, // indicate type of i
+        bool isFactoryZap,
         bool useUnderlying
     ) internal returns (uint256) {
         ICurveHandler curveHandler = ICurveHandler(handler);
@@ -591,7 +616,25 @@ contract HCurve is HandlerBase {
                 }
             }
         } else {
-            if (isUint256) {
+            if (isFactoryZap) {
+                try
+                    curveHandler.remove_liquidity_one_coin(
+                        pool,
+                        poolAmount,
+                        i,
+                        minAmount
+                    )
+                {} catch Error(string memory reason) {
+                    _revertMsg(
+                        "_removeLiquidityOneCoinInternal: is factory zap",
+                        reason
+                    );
+                } catch {
+                    _revertMsg(
+                        "_removeLiquidityOneCoinInternal: is factory zap"
+                    );
+                }
+            } else if (isUint256) {
                 try
                     curveHandler.remove_liquidity_one_coin(
                         poolAmount,
