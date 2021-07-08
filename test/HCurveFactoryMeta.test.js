@@ -85,7 +85,7 @@ contract('Curve Factory Meta', function([_, user]) {
         profileGas(receipt);
       });
 
-      it('add TUSD and USDT to pool by addLiquidity', async function() {
+      it('add TUSD and USDT to pool by addLiquidityFactoryZap', async function() {
         const token0Amount = ether('100');
         const token1Amount = new BN('100000000'); // 1e8
         const tokens = [
@@ -112,13 +112,12 @@ contract('Curve Factory Meta', function([_, user]) {
         await this.proxy.updateTokenMock(token1.address);
         const minMintAmount = mulPercent(answer, new BN('100').sub(slippage));
         const data = abi.simpleEncode(
-          'addLiquidity(address,address,address[],uint256[],uint256,bool)',
+          'addLiquidityFactoryZap(address,address,address[],uint256[],uint256)',
           this.zap3Pool.address,
           poolToken.address,
           tokens,
           amounts,
-          minMintAmount,
-          true // isFactoryZap
+          minMintAmount
         );
         receipt = await this.proxy.execMock(this.hCurve.address, data, {
           from: user,
@@ -138,7 +137,7 @@ contract('Curve Factory Meta', function([_, user]) {
         );
       });
 
-      it('remove from pool to TUSD by removeLiquidityOneCoin', async function() {
+      it('remove from pool to TUSD by removeLiquidityOneCoinFactoryZap', async function() {
         const amount = ether('0.1');
         answer = await this.zap3Pool.methods[
           'calc_withdraw_one_coin(address,uint256,int128)'
@@ -149,15 +148,13 @@ contract('Curve Factory Meta', function([_, user]) {
         await this.proxy.updateTokenMock(poolToken.address);
         const minAmount = mulPercent(answer, new BN('100').sub(slippage));
         const data = abi.simpleEncode(
-          'removeLiquidityOneCoin(address,address,address,uint256,int128,uint256,bool,bool)',
+          'removeLiquidityOneCoinFactoryZap(address,address,address,uint256,int128,uint256)',
           this.zap3Pool.address,
           poolToken.address,
           token0.address,
           amount,
           0,
-          minAmount,
-          false, // isUint256
-          true // isFactoryZap
+          minAmount
         );
         receipt = await this.proxy.execMock(this.hCurve.address, data, {
           from: user,

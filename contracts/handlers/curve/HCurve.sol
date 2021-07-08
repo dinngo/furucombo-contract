@@ -16,453 +16,249 @@ contract HCurve is HandlerBase {
     // prettier-ignore
     address public constant ETH_ADDRESS = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
-    // Curve fixed input exchange
+    /// @notice Curve exchange
     function exchange(
         address handler,
         address tokenI,
         address tokenJ,
         int128 i,
         int128 j,
-        uint256 dx,
-        uint256 minDy,
-        bool isUint256, // indicate type of i and j
-        bool useEth // indicate in and out token is ether instead of weth
+        uint256 _amount,
+        uint256 minAmount
     ) external payable returns (uint256) {
-        return
-            _exchangeInternal(
-                handler,
-                tokenI,
-                tokenJ,
+        (uint256 amount, uint256 balanceBefore, uint256 ethAmount) =
+            _exchangeBefore(handler, tokenI, tokenJ, _amount);
+        try
+            ICurveHandler(handler).exchange{value: ethAmount}(
                 i,
                 j,
-                dx,
-                minDy,
-                isUint256,
-                useEth,
-                false // useUnderlying
-            );
+                amount,
+                minAmount
+            )
+        {} catch Error(string memory reason) {
+            _revertMsg("exchange", reason);
+        } catch {
+            _revertMsg("exchange");
+        }
+
+        return _exchangeAfter(tokenJ, balanceBefore);
     }
 
-    // Curve fixed input exchange underlying
+    /// @notice Curve exchange with uint256 ij
+    function exchangeUint256(
+        address handler,
+        address tokenI,
+        address tokenJ,
+        uint256 i,
+        uint256 j,
+        uint256 _amount,
+        uint256 minAmount
+    ) external payable returns (uint256) {
+        (uint256 amount, uint256 balanceBefore, uint256 ethAmount) =
+            _exchangeBefore(handler, tokenI, tokenJ, _amount);
+        try
+            ICurveHandler(handler).exchange{value: ethAmount}(
+                i,
+                j,
+                amount,
+                minAmount
+            )
+        {} catch Error(string memory reason) {
+            _revertMsg("exchangeUint256", reason);
+        } catch {
+            _revertMsg("exchangeUint256");
+        }
+
+        return _exchangeAfter(tokenJ, balanceBefore);
+    }
+
+    /// @notice Curve exchange with uint256 ij and ether flag
+    function exchangeUint256Ether(
+        address handler,
+        address tokenI,
+        address tokenJ,
+        uint256 i,
+        uint256 j,
+        uint256 _amount,
+        uint256 minAmount
+    ) external payable returns (uint256) {
+        (uint256 amount, uint256 balanceBefore, uint256 ethAmount) =
+            _exchangeBefore(handler, tokenI, tokenJ, _amount);
+        try
+            ICurveHandler(handler).exchange{value: ethAmount}(
+                i,
+                j,
+                amount,
+                minAmount,
+                true
+            )
+        {} catch Error(string memory reason) {
+            _revertMsg("exchangeUint256Ether", reason);
+        } catch {
+            _revertMsg("exchangeUint256Ether");
+        }
+
+        return _exchangeAfter(tokenJ, balanceBefore);
+    }
+
+    /// @notice Curve exchange underlying
     function exchangeUnderlying(
         address handler,
         address tokenI,
         address tokenJ,
         int128 i,
         int128 j,
-        uint256 dx,
-        uint256 minDy,
-        bool isUint256, // indicate type of i and j
-        bool useEth // indicate in and out token is ether instead of weth
+        uint256 _amount,
+        uint256 minAmount
     ) external payable returns (uint256) {
-        return
-            _exchangeInternal(
-                handler,
-                tokenI,
-                tokenJ,
+        (uint256 amount, uint256 balanceBefore, uint256 ethAmount) =
+            _exchangeBefore(handler, tokenI, tokenJ, _amount);
+        try
+            ICurveHandler(handler).exchange_underlying{value: ethAmount}(
                 i,
                 j,
-                dx,
-                minDy,
-                isUint256,
-                useEth,
-                true // useUnderlying
-            );
+                amount,
+                minAmount
+            )
+        {} catch Error(string memory reason) {
+            _revertMsg("exchangeUnderlying", reason);
+        } catch {
+            _revertMsg("exchangeUnderlying");
+        }
+
+        return _exchangeAfter(tokenJ, balanceBefore);
     }
 
-    // Curve fixed input exchange supports eth and token
-    function _exchangeInternal(
+    /// @notice Curve exchange underlying with uint256 ij
+    function exchangeUnderlyingUint256(
         address handler,
         address tokenI,
         address tokenJ,
-        int128 i,
-        int128 j,
-        uint256 dx,
-        uint256 minDy,
-        bool isUint256,
-        bool useEth,
-        bool useUnderlying
-    ) internal returns (uint256) {
-        dx = _getBalance(tokenI, dx);
-        uint256 beforeDy = _getBalance(tokenJ, uint256(-1));
+        uint256 i,
+        uint256 j,
+        uint256 _amount,
+        uint256 minAmount
+    ) external payable returns (uint256) {
+        (uint256 amount, uint256 balanceBefore, uint256 ethAmount) =
+            _exchangeBefore(handler, tokenI, tokenJ, _amount);
+        try
+            ICurveHandler(handler).exchange_underlying{value: ethAmount}(
+                i,
+                j,
+                amount,
+                minAmount
+            )
+        {} catch Error(string memory reason) {
+            _revertMsg("exchangeUnderlyingUint256", reason);
+        } catch {
+            _revertMsg("exchangeUnderlyingUint256");
+        }
+
+        return _exchangeAfter(tokenJ, balanceBefore);
+    }
+
+    function _exchangeBefore(
+        address handler,
+        address tokenI,
+        address tokenJ,
+        uint256 amount
+    )
+        internal
+        returns (
+            uint256,
+            uint256,
+            uint256
+        )
+    {
+        amount = _getBalance(tokenI, amount);
+        uint256 balanceBefore = _getBalance(tokenJ, type(uint256).max);
 
         // Approve erc20 token or set eth amount
-        uint256 ethAmount = 0;
+        uint256 ethAmount;
         if (tokenI != ETH_ADDRESS) {
-            _tokenApprove(tokenI, handler, dx);
+            _tokenApprove(tokenI, handler, amount);
         } else {
-            ethAmount = dx;
+            ethAmount = amount;
         }
 
-        if (useUnderlying) {
-            if (isUint256 && useEth) {
-                _exchangeUnderlyingUint256Ether(
-                    handler,
-                    ethAmount,
-                    uint256(i),
-                    uint256(j),
-                    dx,
-                    minDy
-                );
-            } else if (isUint256 && !useEth) {
-                _exchangeUnderlyingUint256(
-                    handler,
-                    ethAmount,
-                    uint256(i),
-                    uint256(j),
-                    dx,
-                    minDy
-                );
-            } else {
-                _exchangeUnderlying(handler, ethAmount, i, j, dx, minDy);
-            }
-        } else {
-            if (isUint256 && useEth) {
-                _exchangeUint256Ether(
-                    handler,
-                    ethAmount,
-                    uint256(i),
-                    uint256(j),
-                    dx,
-                    minDy
-                );
-            } else if (isUint256 && !useEth) {
-                _exchangeUint256(
-                    handler,
-                    ethAmount,
-                    uint256(i),
-                    uint256(j),
-                    dx,
-                    minDy
-                );
-            } else {
-                _exchange(handler, ethAmount, i, j, dx, minDy);
-            }
-        }
+        return (amount, balanceBefore, ethAmount);
+    }
 
-        uint256 afterDy = _getBalance(tokenJ, uint256(-1));
-        if (afterDy <= beforeDy) {
-            _revertMsg("exchangeInternal: afterDy <= beforeDy");
+    function _exchangeAfter(address tokenJ, uint256 balanceBefore)
+        internal
+        returns (uint256)
+    {
+        uint256 balance = _getBalance(tokenJ, type(uint256).max);
+        if (balance <= balanceBefore) {
+            _revertMsg("_exchangeAfter: after <= before");
         }
 
         if (tokenJ != ETH_ADDRESS) _updateToken(tokenJ);
-        return afterDy.sub(beforeDy);
+
+        return balance.sub(balanceBefore);
     }
 
-    function _exchange(
-        address handler,
-        uint256 ethAmount,
-        int128 i,
-        int128 j,
-        uint256 dx,
-        uint256 minDy
-    ) internal {
-        try
-            ICurveHandler(handler).exchange{value: ethAmount}(i, j, dx, minDy)
-        {} catch Error(string memory reason) {
-            _revertMsg("_exchange", reason);
-        } catch {
-            _revertMsg("_exchange");
-        }
-    }
-
-    function _exchangeUint256(
-        address handler,
-        uint256 ethAmount,
-        uint256 i,
-        uint256 j,
-        uint256 dx,
-        uint256 minDy
-    ) internal {
-        try
-            ICurveHandler(handler).exchange{value: ethAmount}(i, j, dx, minDy)
-        {} catch Error(string memory reason) {
-            _revertMsg("_exchangeUint256", reason);
-        } catch {
-            _revertMsg("_exchangeUint256");
-        }
-    }
-
-    function _exchangeUint256Ether(
-        address handler,
-        uint256 ethAmount,
-        uint256 i,
-        uint256 j,
-        uint256 dx,
-        uint256 minDy
-    ) internal {
-        try
-            ICurveHandler(handler).exchange{value: ethAmount}(
-                i,
-                j,
-                dx,
-                minDy,
-                true // use_eth
-            )
-        {} catch Error(string memory reason) {
-            _revertMsg("_exchangeUint256Ether", reason);
-        } catch {
-            _revertMsg("_exchangeUint256Ether");
-        }
-    }
-
-    function _exchangeUnderlying(
-        address handler,
-        uint256 ethAmount,
-        int128 i,
-        int128 j,
-        uint256 dx,
-        uint256 minDy
-    ) internal {
-        try
-            ICurveHandler(handler).exchange_underlying{value: ethAmount}(
-                i,
-                j,
-                dx,
-                minDy
-            )
-        {} catch Error(string memory reason) {
-            _revertMsg("_exchangeUnderlying", reason);
-        } catch {
-            _revertMsg("_exchangeUnderlying");
-        }
-    }
-
-    function _exchangeUnderlyingUint256(
-        address handler,
-        uint256 ethAmount,
-        uint256 i,
-        uint256 j,
-        uint256 dx,
-        uint256 minDy
-    ) internal {
-        try
-            ICurveHandler(handler).exchange_underlying{value: ethAmount}(
-                i,
-                j,
-                dx,
-                minDy
-            )
-        {} catch Error(string memory reason) {
-            _revertMsg("_exchangeUnderlyingUint256", reason);
-        } catch {
-            _revertMsg("_exchangeUnderlyingUint256");
-        }
-    }
-
-    function _exchangeUnderlyingUint256Ether(
-        address handler,
-        uint256 ethAmount,
-        uint256 i,
-        uint256 j,
-        uint256 dx,
-        uint256 minDy
-    ) internal {
-        try
-            ICurveHandler(handler).exchange_underlying{value: ethAmount}(
-                i,
-                j,
-                dx,
-                minDy,
-                true // use_eth
-            )
-        {} catch Error(string memory reason) {
-            _revertMsg("_exchangeUnderlyingUint256Ether", reason);
-        } catch {
-            _revertMsg("_exchangeUnderlyingUint256Ether");
-        }
-    }
-
-    // Curve add liquidity
+    /// @notice Curve add liquidity
     function addLiquidity(
         address handler,
         address pool,
         address[] calldata tokens,
-        uint256[] calldata amounts,
-        uint256 minMintAmount,
-        bool isFactoryZap
+        uint256[] calldata _amounts,
+        uint256 minPoolAmount
     ) external payable returns (uint256) {
-        return
-            _addLiquidityInternal(
-                handler,
-                pool,
-                tokens,
-                amounts,
-                minMintAmount,
-                isFactoryZap,
-                false // useUnderlying
-            );
-    }
-
-    // Curve add liquidity underlying
-    function addLiquidityUnderlying(
-        address handler,
-        address pool,
-        address[] calldata tokens,
-        uint256[] calldata amounts,
-        uint256 minMintAmount
-    ) external payable returns (uint256) {
-        return
-            _addLiquidityInternal(
-                handler,
-                pool,
-                tokens,
-                amounts,
-                minMintAmount,
-                false, // isFactoryZap
-                true // useUnderlying
-            );
-    }
-
-    // Curve add liquidity need exact array size for each pool which supports
-    // eth and token
-    function _addLiquidityInternal(
-        address handler,
-        address pool,
-        address[] calldata tokens,
-        uint256[] memory amounts,
-        uint256 minMintAmount,
-        bool isFactoryZap,
-        bool useUnderlying
-    ) internal returns (uint256) {
-        ICurveHandler curveHandler = ICurveHandler(handler);
-        uint256 beforePoolBalance = IERC20(pool).balanceOf(address(this));
-
-        // Approve non-zero amount erc20 token and set eth amount
-        uint256 ethAmount = 0;
-        for (uint256 i = 0; i < amounts.length; i++) {
-            if (amounts[i] == 0) continue;
-            if (tokens[i] == ETH_ADDRESS) {
-                ethAmount = amounts[i];
-                continue;
-            }
-            amounts[i] = _getBalance(tokens[i], amounts[i]);
-            _tokenApprove(tokens[i], address(curveHandler), amounts[i]);
-        }
+        (uint256[] memory amounts, uint256 balanceBefore, uint256 ethAmount) =
+            _addLiquidityBefore(handler, pool, tokens, _amounts);
 
         // Execute add_liquidity according to amount array size
         if (amounts.length == 2) {
             uint256[2] memory amts = [amounts[0], amounts[1]];
-            if (useUnderlying) {
-                try
-                    curveHandler.add_liquidity{value: ethAmount}(
-                        amts,
-                        minMintAmount,
-                        useUnderlying
-                    )
-                {} catch Error(string memory reason) {
-                    _revertMsg("_addLiquidityInternal: use underlying", reason);
-                } catch {
-                    _revertMsg("_addLiquidityInternal: use underlying");
-                }
-            } else {
-                try
-                    curveHandler.add_liquidity{value: ethAmount}(
-                        amts,
-                        minMintAmount
-                    )
-                {} catch Error(string memory reason) {
-                    _revertMsg("_addLiquidityInternal", reason);
-                } catch {
-                    _revertMsg("_addLiquidityInternal");
-                }
+            try
+                ICurveHandler(handler).add_liquidity{value: ethAmount}(
+                    amts,
+                    minPoolAmount
+                )
+            {} catch Error(string memory reason) {
+                _revertMsg("addLiquidity", reason);
+            } catch {
+                _revertMsg("addLiquidity");
             }
         } else if (amounts.length == 3) {
             uint256[3] memory amts = [amounts[0], amounts[1], amounts[2]];
-            if (useUnderlying) {
-                try
-                    curveHandler.add_liquidity{value: ethAmount}(
-                        amts,
-                        minMintAmount,
-                        useUnderlying
-                    )
-                {} catch Error(string memory reason) {
-                    _revertMsg("_addLiquidityInternal: use underlying", reason);
-                } catch {
-                    _revertMsg("_addLiquidityInternal: use underlying");
-                }
-            } else {
-                try
-                    curveHandler.add_liquidity{value: ethAmount}(
-                        amts,
-                        minMintAmount
-                    )
-                {} catch Error(string memory reason) {
-                    _revertMsg("_addLiquidityInternal", reason);
-                } catch {
-                    _revertMsg("_addLiquidityInternal");
-                }
+            try
+                ICurveHandler(handler).add_liquidity{value: ethAmount}(
+                    amts,
+                    minPoolAmount
+                )
+            {} catch Error(string memory reason) {
+                _revertMsg("addLiquidity", reason);
+            } catch {
+                _revertMsg("addLiquidity");
             }
         } else if (amounts.length == 4) {
             uint256[4] memory amts =
                 [amounts[0], amounts[1], amounts[2], amounts[3]];
-            if (isFactoryZap) {
-                try
-                    curveHandler.add_liquidity{value: ethAmount}(
-                        pool,
-                        amts,
-                        minMintAmount
-                    )
-                {} catch Error(string memory reason) {
-                    _revertMsg(
-                        "_addLiquidityInternal: use underlying and is factory zap",
-                        reason
-                    );
-                } catch {
-                    _revertMsg(
-                        "_addLiquidityInternal: use underlying and is factory zap"
-                    );
-                }
-            } else if (useUnderlying) {
-                try
-                    curveHandler.add_liquidity{value: ethAmount}(
-                        amts,
-                        minMintAmount,
-                        useUnderlying
-                    )
-                {} catch Error(string memory reason) {
-                    _revertMsg("_addLiquidityInternal: use underlying", reason);
-                } catch {
-                    _revertMsg("_addLiquidityInternal: use underlying");
-                }
-            } else {
-                try
-                    curveHandler.add_liquidity{value: ethAmount}(
-                        amts,
-                        minMintAmount
-                    )
-                {} catch Error(string memory reason) {
-                    _revertMsg("_addLiquidityInternal", reason);
-                } catch {
-                    _revertMsg("_addLiquidityInternal");
-                }
+            try
+                ICurveHandler(handler).add_liquidity{value: ethAmount}(
+                    amts,
+                    minPoolAmount
+                )
+            {} catch Error(string memory reason) {
+                _revertMsg("addLiquidity", reason);
+            } catch {
+                _revertMsg("addLiquidity");
             }
         } else if (amounts.length == 5) {
             uint256[5] memory amts =
                 [amounts[0], amounts[1], amounts[2], amounts[3], amounts[4]];
-            if (useUnderlying) {
-                try
-                    curveHandler.add_liquidity{value: ethAmount}(
-                        amts,
-                        minMintAmount,
-                        useUnderlying
-                    )
-                {} catch Error(string memory reason) {
-                    _revertMsg("_addLiquidityInternal: use underlying", reason);
-                } catch {
-                    _revertMsg("_addLiquidityInternal: use underlying");
-                }
-            } else {
-                try
-                    curveHandler.add_liquidity{value: ethAmount}(
-                        amts,
-                        minMintAmount
-                    )
-                {} catch Error(string memory reason) {
-                    _revertMsg("_addLiquidityInternal", reason);
-                } catch {
-                    _revertMsg("_addLiquidityInternal");
-                }
+            try
+                ICurveHandler(handler).add_liquidity{value: ethAmount}(
+                    amts,
+                    minPoolAmount
+                )
+            {} catch Error(string memory reason) {
+                _revertMsg("addLiquidity", reason);
+            } catch {
+                _revertMsg("addLiquidity");
             }
         } else if (amounts.length == 6) {
             uint256[6] memory amts =
@@ -474,241 +270,412 @@ contract HCurve is HandlerBase {
                     amounts[4],
                     amounts[5]
                 ];
-            if (useUnderlying) {
-                try
-                    curveHandler.add_liquidity{value: ethAmount}(
-                        amts,
-                        minMintAmount,
-                        useUnderlying
-                    )
-                {} catch Error(string memory reason) {
-                    _revertMsg("_addLiquidityInternal: use underlying", reason);
-                } catch {
-                    _revertMsg("_addLiquidityInternal: use underlying");
-                }
-            } else {
-                try
-                    curveHandler.add_liquidity{value: ethAmount}(
-                        amts,
-                        minMintAmount
-                    )
-                {} catch Error(string memory reason) {
-                    _revertMsg("_addLiquidityInternal", reason);
-                } catch {
-                    _revertMsg("_addLiquidityInternal");
-                }
+            try
+                ICurveHandler(handler).add_liquidity{value: ethAmount}(
+                    amts,
+                    minPoolAmount
+                )
+            {} catch Error(string memory reason) {
+                _revertMsg("addLiquidity", reason);
+            } catch {
+                _revertMsg("addLiquidity");
             }
         } else {
-            _revertMsg("_addLiquidityInternal", "invalid amount array size");
+            _revertMsg("addLiquidity", "invalid amount[] size");
         }
 
-        uint256 afterPoolBalance = IERC20(pool).balanceOf(address(this));
-        if (afterPoolBalance <= beforePoolBalance) {
-            _revertMsg("_addLiquidityInternal: after <= before");
+        return _addLiquidityAfter(pool, balanceBefore);
+    }
+
+    /// @notice Curve add liquidity with underlying true flag
+    function addLiquidityUnderlying(
+        address handler,
+        address pool,
+        address[] calldata tokens,
+        uint256[] calldata _amounts,
+        uint256 minPoolAmount
+    ) external payable returns (uint256) {
+        (uint256[] memory amounts, uint256 balanceBefore, uint256 ethAmount) =
+            _addLiquidityBefore(handler, pool, tokens, _amounts);
+
+        // Execute add_liquidity according to amount array size
+        if (amounts.length == 2) {
+            uint256[2] memory amts = [amounts[0], amounts[1]];
+            try
+                ICurveHandler(handler).add_liquidity{value: ethAmount}(
+                    amts,
+                    minPoolAmount,
+                    true
+                )
+            {} catch Error(string memory reason) {
+                _revertMsg("addLiquidityUnderlying", reason);
+            } catch {
+                _revertMsg("addLiquidityUnderlying");
+            }
+        } else if (amounts.length == 3) {
+            uint256[3] memory amts = [amounts[0], amounts[1], amounts[2]];
+            try
+                ICurveHandler(handler).add_liquidity{value: ethAmount}(
+                    amts,
+                    minPoolAmount,
+                    true
+                )
+            {} catch Error(string memory reason) {
+                _revertMsg("addLiquidityUnderlying", reason);
+            } catch {
+                _revertMsg("addLiquidityUnderlying");
+            }
+        } else if (amounts.length == 4) {
+            uint256[4] memory amts =
+                [amounts[0], amounts[1], amounts[2], amounts[3]];
+            try
+                ICurveHandler(handler).add_liquidity{value: ethAmount}(
+                    amts,
+                    minPoolAmount,
+                    true
+                )
+            {} catch Error(string memory reason) {
+                _revertMsg("addLiquidityUnderlying", reason);
+            } catch {
+                _revertMsg("addLiquidityUnderlying");
+            }
+        } else if (amounts.length == 5) {
+            uint256[5] memory amts =
+                [amounts[0], amounts[1], amounts[2], amounts[3], amounts[4]];
+            try
+                ICurveHandler(handler).add_liquidity{value: ethAmount}(
+                    amts,
+                    minPoolAmount,
+                    true
+                )
+            {} catch Error(string memory reason) {
+                _revertMsg("addLiquidityUnderlying", reason);
+            } catch {
+                _revertMsg("addLiquidityUnderlying");
+            }
+        } else if (amounts.length == 6) {
+            uint256[6] memory amts =
+                [
+                    amounts[0],
+                    amounts[1],
+                    amounts[2],
+                    amounts[3],
+                    amounts[4],
+                    amounts[5]
+                ];
+            try
+                ICurveHandler(handler).add_liquidity{value: ethAmount}(
+                    amts,
+                    minPoolAmount,
+                    true
+                )
+            {} catch Error(string memory reason) {
+                _revertMsg("addLiquidityUnderlying", reason);
+            } catch {
+                _revertMsg("addLiquidityUnderlying");
+            }
+        } else {
+            _revertMsg("addLiquidityUnderlying", "invalid amount[] size");
+        }
+
+        return _addLiquidityAfter(pool, balanceBefore);
+    }
+
+    /// @notice Curve add liquidity with factory zap
+    function addLiquidityFactoryZap(
+        address handler,
+        address pool,
+        address[] calldata tokens,
+        uint256[] calldata _amounts,
+        uint256 minPoolAmount
+    ) external payable returns (uint256) {
+        (uint256[] memory amounts, uint256 balanceBefore, uint256 ethAmount) =
+            _addLiquidityBefore(handler, pool, tokens, _amounts);
+
+        // Execute add_liquidity according to amount array size
+        if (amounts.length == 3) {
+            uint256[3] memory amts = [amounts[0], amounts[1], amounts[2]];
+            try
+                ICurveHandler(handler).add_liquidity{value: ethAmount}(
+                    pool,
+                    amts,
+                    minPoolAmount
+                )
+            {} catch Error(string memory reason) {
+                _revertMsg("addLiquidity", reason);
+            } catch {
+                _revertMsg("addLiquidity");
+            }
+        } else if (amounts.length == 4) {
+            uint256[4] memory amts =
+                [amounts[0], amounts[1], amounts[2], amounts[3]];
+            try
+                ICurveHandler(handler).add_liquidity{value: ethAmount}(
+                    pool,
+                    amts,
+                    minPoolAmount
+                )
+            {} catch Error(string memory reason) {
+                _revertMsg("addLiquidity", reason);
+            } catch {
+                _revertMsg("addLiquidity");
+            }
+        } else if (amounts.length == 5) {
+            uint256[5] memory amts =
+                [amounts[0], amounts[1], amounts[2], amounts[3], amounts[4]];
+            try
+                ICurveHandler(handler).add_liquidity{value: ethAmount}(
+                    pool,
+                    amts,
+                    minPoolAmount
+                )
+            {} catch Error(string memory reason) {
+                _revertMsg("addLiquidity", reason);
+            } catch {
+                _revertMsg("addLiquidity");
+            }
+        } else if (amounts.length == 6) {
+            uint256[6] memory amts =
+                [
+                    amounts[0],
+                    amounts[1],
+                    amounts[2],
+                    amounts[3],
+                    amounts[4],
+                    amounts[5]
+                ];
+            try
+                ICurveHandler(handler).add_liquidity{value: ethAmount}(
+                    pool,
+                    amts,
+                    minPoolAmount
+                )
+            {} catch Error(string memory reason) {
+                _revertMsg("addLiquidity", reason);
+            } catch {
+                _revertMsg("addLiquidity");
+            }
+        } else {
+            _revertMsg("addLiquidity", "invalid amount[] size");
+        }
+
+        return _addLiquidityAfter(pool, balanceBefore);
+    }
+
+    function _addLiquidityBefore(
+        address handler,
+        address pool,
+        address[] memory tokens,
+        uint256[] memory amounts
+    )
+        internal
+        returns (
+            uint256[] memory,
+            uint256,
+            uint256
+        )
+    {
+        uint256 balanceBefore = IERC20(pool).balanceOf(address(this));
+
+        // Approve non-zero amount erc20 token and set eth amount
+        uint256 ethAmount = 0;
+        for (uint256 i = 0; i < amounts.length; i++) {
+            if (amounts[i] == 0) continue;
+            if (tokens[i] == ETH_ADDRESS) {
+                ethAmount = amounts[i];
+                continue;
+            }
+            amounts[i] = _getBalance(tokens[i], amounts[i]);
+            _tokenApprove(tokens[i], handler, amounts[i]);
+        }
+
+        return (amounts, balanceBefore, ethAmount);
+    }
+
+    function _addLiquidityAfter(address pool, uint256 balanceBefore)
+        internal
+        returns (uint256)
+    {
+        uint256 balance = IERC20(pool).balanceOf(address(this));
+        if (balance <= balanceBefore) {
+            _revertMsg("_addLiquidityAfter: after <= before");
         }
 
         // Update post process
         _updateToken(address(pool));
-        return afterPoolBalance.sub(beforePoolBalance);
+
+        return balance.sub(balanceBefore);
     }
 
-    // Curve remove liquidity one coin
+    /// @notice Curve remove liquidity one coin
     function removeLiquidityOneCoin(
         address handler,
         address pool,
         address tokenI,
-        uint256 poolAmount,
+        uint256 _poolAmount,
         int128 i,
-        uint256 minAmount,
-        bool isUint256, // indicate type of i
-        bool isFactoryZap
+        uint256 minAmount
     ) external payable returns (uint256) {
-        return
-            _removeLiquidityOneCoinInternal(
-                handler,
-                pool,
-                tokenI,
+        (uint256 poolAmount, uint256 balanceBefore) =
+            _removeLiquidityOneCoinBefore(handler, pool, tokenI, _poolAmount);
+        try
+            ICurveHandler(handler).remove_liquidity_one_coin(
                 poolAmount,
                 i,
-                minAmount,
-                isUint256,
-                isFactoryZap,
-                false // useUnderlying
-            );
+                minAmount
+            )
+        {} catch Error(string memory reason) {
+            _revertMsg("removeLiquidityOneCoin", reason);
+        } catch {
+            _revertMsg("removeLiquidityOneCoin");
+        }
+
+        return
+            _removeLiquidityOneCoinAfter(handler, pool, tokenI, balanceBefore);
     }
 
-    // Curve remove liquidity one coin underlying
+    /// @notice Curve remove liquidity one coin with uint256 i
+    function removeLiquidityOneCoinUint256(
+        address handler,
+        address pool,
+        address tokenI,
+        uint256 _poolAmount,
+        uint256 i,
+        uint256 minAmount
+    ) external payable returns (uint256) {
+        (uint256 poolAmount, uint256 balanceBefore) =
+            _removeLiquidityOneCoinBefore(handler, pool, tokenI, _poolAmount);
+        try
+            ICurveHandler(handler).remove_liquidity_one_coin(
+                poolAmount,
+                i,
+                minAmount
+            )
+        {} catch Error(string memory reason) {
+            _revertMsg("removeLiquidityOneCoinUint256", reason);
+        } catch {
+            _revertMsg("removeLiquidityOneCoinUint256");
+        }
+
+        return
+            _removeLiquidityOneCoinAfter(handler, pool, tokenI, balanceBefore);
+    }
+
+    /// @notice Curve remove liquidity one coin underlying
     function removeLiquidityOneCoinUnderlying(
         address handler,
         address pool,
         address tokenI,
-        uint256 poolAmount,
+        uint256 _poolAmount,
         int128 i,
-        uint256 minAmount,
-        bool isUint256 // indicate type of i
+        uint256 minAmount
     ) external payable returns (uint256) {
-        return
-            _removeLiquidityOneCoinInternal(
-                handler,
-                pool,
-                tokenI,
+        (uint256 poolAmount, uint256 balanceBefore) =
+            _removeLiquidityOneCoinBefore(handler, pool, tokenI, _poolAmount);
+        try
+            ICurveHandler(handler).remove_liquidity_one_coin(
                 poolAmount,
                 i,
                 minAmount,
-                isUint256,
-                false, // isFactoryZap
-                true // useUnderlying
-            );
+                true
+            )
+        {} catch Error(string memory reason) {
+            _revertMsg("removeLiquidityOneCoinUnderlying", reason);
+        } catch {
+            _revertMsg("removeLiquidityOneCoinUnderlying");
+        }
+
+        return
+            _removeLiquidityOneCoinAfter(handler, pool, tokenI, balanceBefore);
     }
 
-    // Curve remove liquidity one coin supports eth and token
-    function _removeLiquidityOneCoinInternal(
+    /// @notice Curve remove liquidity one coin underlying with uint256 i
+    function removeLiquidityOneCoinUnderlyingUint256(
         address handler,
         address pool,
         address tokenI,
-        uint256 poolAmount,
-        int128 i,
-        uint256 minAmount,
-        bool isUint256, // indicate type of i
-        bool isFactoryZap,
-        bool useUnderlying
-    ) internal returns (uint256) {
-        ICurveHandler curveHandler = ICurveHandler(handler);
-        uint256 beforeTokenIBalance = _getBalance(tokenI, uint256(-1));
-        poolAmount = _getBalance(pool, poolAmount);
-        _tokenApprove(pool, address(curveHandler), poolAmount);
-        if (useUnderlying) {
-            if (isUint256) {
-                try
-                    curveHandler.remove_liquidity_one_coin(
-                        poolAmount,
-                        uint256(i),
-                        minAmount,
-                        useUnderlying
-                    )
-                {} catch Error(string memory reason) {
-                    _revertMsg(
-                        "_removeLiquidityOneCoinInternal: use underlying and is uint256",
-                        reason
-                    );
-                } catch {
-                    _revertMsg(
-                        "_removeLiquidityOneCoinInternal: use underlying and is uint256"
-                    );
-                }
-            } else {
-                try
-                    curveHandler.remove_liquidity_one_coin(
-                        poolAmount,
-                        i,
-                        minAmount,
-                        useUnderlying
-                    )
-                {} catch Error(string memory reason) {
-                    _revertMsg(
-                        "_removeLiquidityOneCoinInternal: use underlying",
-                        reason
-                    );
-                } catch {
-                    _revertMsg(
-                        "_removeLiquidityOneCoinInternal: use underlying"
-                    );
-                }
-            }
-        } else {
-            if (isFactoryZap) {
-                try
-                    curveHandler.remove_liquidity_one_coin(
-                        pool,
-                        poolAmount,
-                        i,
-                        minAmount
-                    )
-                {} catch Error(string memory reason) {
-                    _revertMsg(
-                        "_removeLiquidityOneCoinInternal: is factory zap",
-                        reason
-                    );
-                } catch {
-                    _revertMsg(
-                        "_removeLiquidityOneCoinInternal: is factory zap"
-                    );
-                }
-            } else if (isUint256) {
-                try
-                    curveHandler.remove_liquidity_one_coin(
-                        poolAmount,
-                        uint256(i),
-                        minAmount
-                    )
-                {} catch Error(string memory reason) {
-                    _revertMsg(
-                        "_removeLiquidityOneCoinInternal: is uint256",
-                        reason
-                    );
-                } catch {
-                    _revertMsg("_removeLiquidityOneCoinInternal: is uint256");
-                }
-            } else {
-                try
-                    curveHandler.remove_liquidity_one_coin(
-                        poolAmount,
-                        i,
-                        minAmount
-                    )
-                {} catch Error(string memory reason) {
-                    _revertMsg("_removeLiquidityOneCoinInternal", reason);
-                } catch {
-                    _revertMsg("_removeLiquidityOneCoinInternal");
-                }
-            }
+        uint256 _poolAmount,
+        uint256 i,
+        uint256 minAmount
+    ) external payable returns (uint256) {
+        (uint256 poolAmount, uint256 balanceBefore) =
+            _removeLiquidityOneCoinBefore(handler, pool, tokenI, _poolAmount);
+        try
+            ICurveHandler(handler).remove_liquidity_one_coin(
+                poolAmount,
+                i,
+                minAmount,
+                true
+            )
+        {} catch Error(string memory reason) {
+            _revertMsg("removeLiquidityOneCoinUnderlyingUint256", reason);
+        } catch {
+            _revertMsg("removeLiquidityOneCoinUnderlyingUint256");
         }
+
+        return
+            _removeLiquidityOneCoinAfter(handler, pool, tokenI, balanceBefore);
+    }
+
+    /// @notice Curve remove liquidity one coin with with factory zap
+    function removeLiquidityOneCoinFactoryZap(
+        address handler,
+        address pool,
+        address tokenI,
+        uint256 _poolAmount,
+        int128 i,
+        uint256 minAmount
+    ) external payable returns (uint256) {
+        (uint256 poolAmount, uint256 balanceBefore) =
+            _removeLiquidityOneCoinBefore(handler, pool, tokenI, _poolAmount);
+        try
+            ICurveHandler(handler).remove_liquidity_one_coin(
+                pool,
+                poolAmount,
+                i,
+                minAmount
+            )
+        {} catch Error(string memory reason) {
+            _revertMsg("removeLiquidityOneCoinFactoryZap", reason);
+        } catch {
+            _revertMsg("removeLiquidityOneCoinFactoryZap");
+        }
+
+        return
+            _removeLiquidityOneCoinAfter(handler, pool, tokenI, balanceBefore);
+    }
+
+    function _removeLiquidityOneCoinBefore(
+        address handler,
+        address pool,
+        address tokenI,
+        uint256 poolAmount
+    ) internal returns (uint256, uint256) {
+        uint256 balanceBefore = _getBalance(tokenI, type(uint256).max);
+        poolAmount = _getBalance(pool, poolAmount);
+        _tokenApprove(pool, handler, poolAmount);
+
+        return (poolAmount, balanceBefore);
+    }
+
+    function _removeLiquidityOneCoinAfter(
+        address handler,
+        address pool,
+        address tokenI,
+        uint256 balanceBefore
+    ) internal returns (uint256) {
         // Some curve non-underlying pools like 3pool won't consume pool token
-        // allowance since pool token was issued by curve swap contract that
-        // don't need to call transferFrom().
-        IERC20(pool).safeApprove(address(curveHandler), 0);
-        uint256 afterTokenIBalance = _getBalance(tokenI, uint256(-1));
-        if (afterTokenIBalance <= beforeTokenIBalance) {
-            _revertMsg("_removeLiquidityOneCoinInternal: after <= before");
+        // allowance since pool token was issued by the pool that don't need to
+        // call transferFrom(). So set approval to 0 here.
+        IERC20(pool).safeApprove(handler, 0);
+        uint256 balance = _getBalance(tokenI, type(uint256).max);
+        if (balance <= balanceBefore) {
+            _revertMsg("_removeLiquidityOneCoinAfter: after <= before");
         }
 
         // Update post process
         if (tokenI != ETH_ADDRESS) _updateToken(tokenI);
-        return afterTokenIBalance.sub(beforeTokenIBalance);
-    }
 
-    // Curve remove liquidity one coin and donate dust
-    function removeLiquidityOneCoinDust(
-        address handler,
-        address pool,
-        address tokenI,
-        uint256 poolAmount,
-        int128 i,
-        uint256 minAmount
-    ) external payable returns (uint256) {
-        ICurveHandler curveHandler = ICurveHandler(handler);
-        uint256 beforeTokenIBalance = IERC20(tokenI).balanceOf(address(this));
-        poolAmount = _getBalance(pool, poolAmount);
-        _tokenApprove(pool, address(curveHandler), poolAmount);
-        try
-            curveHandler.remove_liquidity_one_coin(
-                poolAmount,
-                i,
-                minAmount,
-                true // donate_dust
-            )
-        {} catch Error(string memory reason) {
-            _revertMsg("removeLiquidityOneCoinDust", reason);
-        } catch {
-            _revertMsg("removeLiquidityOneCoinDust");
-        }
-        uint256 afterTokenIBalance = IERC20(tokenI).balanceOf(address(this));
-        if (afterTokenIBalance <= beforeTokenIBalance) {
-            _revertMsg("removeLiquidityOneCoinDust: after <= before");
-        }
-
-        // Update post process
-        _updateToken(tokenI);
-        return afterTokenIBalance.sub(beforeTokenIBalance);
+        return balance.sub(balanceBefore);
     }
 }

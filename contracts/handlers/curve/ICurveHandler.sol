@@ -69,7 +69,7 @@ interface ICurveHandler {
         bool boolean // use_eth
     ) external payable;
 
-    // Curve contract only support static array
+    // Curve add liquidity function only support static array
     function add_liquidity(uint256[2] calldata amounts, uint256 min_mint_amount)
         external
         payable;
@@ -90,42 +90,35 @@ interface ICurveHandler {
         external
         payable;
 
-    // Curve underlying
+    // Curve add liquidity underlying
     function add_liquidity(
         uint256[2] calldata amounts,
         uint256 min_mint_amount,
-        bool use_underlying
+        bool boolean // use_underlying
     ) external payable;
 
     function add_liquidity(
         uint256[3] calldata amounts,
         uint256 min_mint_amount,
-        bool use_underlying
+        bool boolean // use_underlying
     ) external payable;
 
     function add_liquidity(
         uint256[4] calldata amounts,
         uint256 min_mint_amount,
-        bool use_underlying
+        bool boolean // use_underlying
     ) external payable;
 
     function add_liquidity(
         uint256[5] calldata amounts,
         uint256 min_mint_amount,
-        bool use_underlying
+        bool boolean // use_underlying
     ) external payable;
 
     function add_liquidity(
         uint256[6] calldata amounts,
         uint256 min_mint_amount,
-        bool use_underlying
-    ) external payable;
-
-    // Curve factory metapool deposit zap
-    function add_liquidity(
-        address pool,
-        uint256[4] calldata amounts,
-        uint256 min_mint_amount
+        bool boolean // use_underlying
     ) external payable;
 
     function calc_token_amount(uint256[2] calldata amounts, bool deposit)
@@ -153,13 +146,56 @@ interface ICurveHandler {
         view
         returns (uint256);
 
-    // Curve factory metapool deposit zap
+    // Curve add liquidity factory metapool deposit zap
+    function add_liquidity(
+        address pool,
+        uint256[3] calldata amounts,
+        uint256 min_mint_amount
+    ) external payable;
+
+    function add_liquidity(
+        address pool,
+        uint256[4] calldata amounts,
+        uint256 min_mint_amount
+    ) external payable;
+
+    function add_liquidity(
+        address pool,
+        uint256[5] calldata amounts,
+        uint256 min_mint_amount
+    ) external payable;
+
+    function add_liquidity(
+        address pool,
+        uint256[6] calldata amounts,
+        uint256 min_mint_amount
+    ) external payable;
+
+    function calc_token_amount(
+        address pool,
+        uint256[3] calldata amounts,
+        bool deposit
+    ) external view returns (uint256);
+
     function calc_token_amount(
         address pool,
         uint256[4] calldata amounts,
         bool deposit
     ) external view returns (uint256);
 
+    function calc_token_amount(
+        address pool,
+        uint256[5] calldata amounts,
+        bool deposit
+    ) external view returns (uint256);
+
+    function calc_token_amount(
+        address pool,
+        uint256[6] calldata amounts,
+        bool deposit
+    ) external view returns (uint256);
+
+    // Curve remove liquidity
     function remove_liquidity_one_coin(
         uint256 _token_amount,
         int128 i,
@@ -186,7 +222,7 @@ interface ICurveHandler {
         bool boolean
     ) external;
 
-    // Curve factory metapool deposit zap
+    // Curve remove liquidity factory metapool deposit zap
     function remove_liquidity_one_coin(
         address pool,
         uint256 _token_amount,
