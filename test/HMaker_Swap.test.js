@@ -71,7 +71,10 @@ async function getGenerateLimitAndMinCollateral(ilk) {
   const vat = await IMakerVat.at(MAKER_MCD_VAT);
   const conf = await vat.ilks.call(ilk);
   const generateLimit = conf[4].div(ether('1000000000'));
-  const minCollateral = conf[4].div(conf[2]);
+  const minCollateral = conf[4]
+    .div(conf[2])
+    .mul(new BN('12'))
+    .div(new BN('10'));
   return [generateLimit, minCollateral];
 }
 
@@ -139,7 +142,7 @@ contract('Maker', function([_, user]) {
     });
 
     describe('Lock Ether', function() {
-      describe('Draw Dai', function() {
+      describe('Draw Dai and swap', function() {
         let balanceUser;
         let balanceProxy;
         let tokenUser;
@@ -159,13 +162,13 @@ contract('Maker', function([_, user]) {
           const daiUser = await this.dai.balanceOf.call(user);
           const config = [ZERO_BYTES32, ZERO_BYTES32];
           const to1 = this.hMaker.address;
-          const value1 = ether('5');
           const ilkEth = utils.padRight(utils.asciiToHex('ETH-A'), 64);
 
           const [
             generateLimit,
             minCollateral,
           ] = await getGenerateLimitAndMinCollateral(ilkEth);
+          const value1 = minCollateral;
           const wadD = generateLimit;
           const data1 = abi.simpleEncode(
             'openLockETHAndDraw(uint256,address,address,bytes32,uint256)',
@@ -190,7 +193,7 @@ contract('Maker', function([_, user]) {
             [data1, data2],
             {
               from: user,
-              value: ether('5'),
+              value: value1,
             }
           );
           const daiUserEnd = await this.dai.balanceOf.call(user);
