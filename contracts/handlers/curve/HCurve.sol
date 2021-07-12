@@ -190,7 +190,7 @@ contract HCurve is HandlerBase {
     {
         uint256 balance = _getBalance(tokenJ, type(uint256).max);
         if (balance <= balanceBefore) {
-            _revertMsg("_exchangeAfter: after <= before");
+            _revertMsg("_exchangeAfter", "after <= before");
         }
 
         if (tokenJ != ETH_ADDRESS) _updateToken(tokenJ);
@@ -402,9 +402,9 @@ contract HCurve is HandlerBase {
                     minPoolAmount
                 )
             {} catch Error(string memory reason) {
-                _revertMsg("addLiquidity", reason);
+                _revertMsg("addLiquidityFactoryZap", reason);
             } catch {
-                _revertMsg("addLiquidity");
+                _revertMsg("addLiquidityFactoryZap");
             }
         } else if (amounts.length == 4) {
             uint256[4] memory amts =
@@ -416,9 +416,9 @@ contract HCurve is HandlerBase {
                     minPoolAmount
                 )
             {} catch Error(string memory reason) {
-                _revertMsg("addLiquidity", reason);
+                _revertMsg("addLiquidityFactoryZap", reason);
             } catch {
-                _revertMsg("addLiquidity");
+                _revertMsg("addLiquidityFactoryZap");
             }
         } else if (amounts.length == 5) {
             uint256[5] memory amts =
@@ -430,9 +430,9 @@ contract HCurve is HandlerBase {
                     minPoolAmount
                 )
             {} catch Error(string memory reason) {
-                _revertMsg("addLiquidity", reason);
+                _revertMsg("addLiquidityFactoryZap", reason);
             } catch {
-                _revertMsg("addLiquidity");
+                _revertMsg("addLiquidityFactoryZap");
             }
         } else if (amounts.length == 6) {
             uint256[6] memory amts =
@@ -451,12 +451,12 @@ contract HCurve is HandlerBase {
                     minPoolAmount
                 )
             {} catch Error(string memory reason) {
-                _revertMsg("addLiquidity", reason);
+                _revertMsg("addLiquidityFactoryZap", reason);
             } catch {
-                _revertMsg("addLiquidity");
+                _revertMsg("addLiquidityFactoryZap");
             }
         } else {
-            _revertMsg("addLiquidity", "invalid amount[] size");
+            _revertMsg("addLiquidityFactoryZap", "invalid amount[] size");
         }
 
         return _addLiquidityAfter(pool, balanceBefore);
@@ -478,7 +478,7 @@ contract HCurve is HandlerBase {
         uint256 balanceBefore = IERC20(pool).balanceOf(address(this));
 
         // Approve non-zero amount erc20 token and set eth amount
-        uint256 ethAmount = 0;
+        uint256 ethAmount;
         for (uint256 i = 0; i < amounts.length; i++) {
             if (amounts[i] == 0) continue;
             if (tokens[i] == ETH_ADDRESS) {
@@ -498,7 +498,7 @@ contract HCurve is HandlerBase {
     {
         uint256 balance = IERC20(pool).balanceOf(address(this));
         if (balance <= balanceBefore) {
-            _revertMsg("_addLiquidityAfter: after <= before");
+            _revertMsg("_addLiquidityAfter", "after <= before");
         }
 
         // Update post process
@@ -670,7 +670,7 @@ contract HCurve is HandlerBase {
         IERC20(pool).safeApprove(handler, 0);
         uint256 balance = _getBalance(tokenI, type(uint256).max);
         if (balance <= balanceBefore) {
-            _revertMsg("_removeLiquidityOneCoinAfter: after <= before");
+            _revertMsg("_removeLiquidityOneCoinAfter", "after <= before");
         }
 
         // Update post process
