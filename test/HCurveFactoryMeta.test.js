@@ -133,7 +133,7 @@ contract('Curve Factory Meta', function([_, user]) {
           token1User
         );
         expect(await poolToken.balanceOf.call(user)).to.be.bignumber.eq(
-          handlerReturn.sub(poolTokenUser)
+          handlerReturn.add(poolTokenUser)
         );
       });
 
