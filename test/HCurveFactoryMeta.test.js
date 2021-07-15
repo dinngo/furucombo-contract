@@ -58,6 +58,9 @@ contract('Curve Factory Meta', function([_, user]) {
       const poolTokenAddress = CURVE_FACTORY_TUSD;
       const poolTokenProvider = CURVE_FACTORY_TUSD_PROVIDER;
 
+      let token0, token1, poolToken;
+      let balanceProxy, token0User, token1User, poolTokenUser;
+
       before(async function() {
         token0 = await IToken.at(token0Address);
         token1 = await IToken.at(token1Address);

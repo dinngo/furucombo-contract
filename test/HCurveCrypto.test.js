@@ -58,6 +58,9 @@ contract('Curve Crypto', function([_, user]) {
       const token1Address = WBTC_TOKEN;
       const provider0Address = USDT_PROVIDER;
 
+      let token0, token1;
+      let balanceUser, balanceProxy, token0User, token1User;
+
       before(async function() {
         token0 = await IToken.at(token0Address);
         token1 = await IToken.at(token1Address);
@@ -194,6 +197,9 @@ contract('Curve Crypto', function([_, user]) {
       const provider1Address = WBTC_PROVIDER;
       const poolTokenAddress = CURVE_TRICRYPTOCRV;
       const poolTokenProvider = CURVE_TRICRYPTOCRV_PROVIDER;
+
+      let token0, token1, poolToken;
+      let balanceUser, balanceProxy, token0User, token1User, poolTokenUser;
 
       before(async function() {
         token0 = await IToken.at(token0Address);
