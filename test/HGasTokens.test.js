@@ -32,7 +32,10 @@ async function getGenerateLimitAndMinCollateral(ilk) {
   const vat = await IMakerVat.at(MAKER_MCD_VAT);
   const conf = await vat.ilks.call(ilk);
   const generateLimit = conf[4].div(ether('1000000000'));
-  const minCollateral = conf[4].div(conf[2]).mul(new BN(2));
+  const minCollateral = conf[4]
+    .div(conf[2])
+    .mul(new BN('12'))
+    .div(new BN('10'));
   return [generateLimit, minCollateral];
 }
 
@@ -79,13 +82,13 @@ contract('GasTokens', function([_, user1, user2]) {
       // Create a combo including gas token cube and 1 dummy maker cube
 
       // Firstly get gas cost when consume 0 gas token
-      const value = ether('5');
       const ilkEth = utils.padRight(utils.asciiToHex('ETH-A'), 64);
       const [
         generateLimit,
         minCollateral,
       ] = await getGenerateLimitAndMinCollateral(ilkEth);
       const wadD = generateLimit;
+      const value = minCollateral;
       const config = [ZERO_BYTES32, ZERO_BYTES32];
       const to = [this.hGasTokens.address, this.hMaker.address];
       let amount = 0;
@@ -165,13 +168,13 @@ contract('GasTokens', function([_, user1, user2]) {
       // Create a combo including gas token cube and 1 dummy maker cube
 
       // Firstly get gas cost when consume 0 gas token
-      const value = ether('5');
       const ilkEth = utils.padRight(utils.asciiToHex('ETH-A'), 64);
       const [
         generateLimit,
         minCollateral,
       ] = await getGenerateLimitAndMinCollateral(ilkEth);
       const wadD = generateLimit;
+      const value = minCollateral;
       const config = [ZERO_BYTES32, ZERO_BYTES32];
       const to = [this.hGasTokens.address, this.hMaker.address];
       let amount = 0;

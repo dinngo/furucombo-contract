@@ -104,9 +104,9 @@ contract('Curve', function([_, user]) {
     describe('y pool', function() {
       it('Exact input swap USDT to DAI by exchangeUnderlying', async function() {
         const value = new BN('1000000');
-        const answer = await this.ySwap.get_dy_underlying.call(2, 0, value, {
-          from: user,
-        });
+        const answer = await this.ySwap.methods[
+          'get_dy_underlying(int128,int128,uint256)'
+        ](2, 0, value);
         const data = abi.simpleEncode(
           'exchangeUnderlying(address,address,address,int128,int128,uint256,uint256)',
           this.ySwap.address,
@@ -150,9 +150,9 @@ contract('Curve', function([_, user]) {
 
       it('Exact input swap USDT to DAI by exchangeUnderlying with max amount', async function() {
         const value = new BN('1000000');
-        const answer = await this.ySwap.get_dy_underlying.call(2, 0, value, {
-          from: user,
-        });
+        const answer = await this.ySwap.methods[
+          'get_dy_underlying(int128,int128,uint256)'
+        ](2, 0, value);
         const data = abi.simpleEncode(
           'exchangeUnderlying(address,address,address,int128,int128,uint256,uint256)',
           this.ySwap.address,
@@ -217,9 +217,9 @@ contract('Curve', function([_, user]) {
 
       it('Exact input swap WBTC to renBTC by exchange', async function() {
         const value = new BN('100000000');
-        const answer = await this.sbtcSwap.get_dy.call(1, 0, value, {
-          from: user,
-        });
+        const answer = await this.sbtcSwap.methods[
+          'get_dy(int128,int128,uint256)'
+        ](1, 0, value);
         const data = abi.simpleEncode(
           'exchange(address,address,address,int128,int128,uint256,uint256)',
           this.sbtcSwap.address,
@@ -265,9 +265,9 @@ contract('Curve', function([_, user]) {
 
       it('Exact input swap WBTC to renBTC by exchange with max amount', async function() {
         const value = new BN('100000000');
-        const answer = await this.sbtcSwap.get_dy.call(1, 0, value, {
-          from: user,
-        });
+        const answer = await this.sbtcSwap.methods[
+          'get_dy(int128,int128,uint256)'
+        ](1, 0, value);
         const data = abi.simpleEncode(
           'exchange(address,address,address,int128,int128,uint256,uint256)',
           this.sbtcSwap.address,
@@ -331,10 +331,9 @@ contract('Curve', function([_, user]) {
 
       it('Exact input swap HBTC to WBTC by exchange', async function() {
         const value = ether('1');
-        const answer = await this.hbtcSwap.get_dy.call(0, 1, value, {
-          from: user,
-        });
-
+        const answer = await this.hbtcSwap.methods[
+          'get_dy(int128,int128,uint256)'
+        ](0, 1, value);
         const data = abi.simpleEncode(
           'exchange(address,address,address,int128,int128,uint256,uint256)',
           this.hbtcSwap.address,
@@ -399,9 +398,9 @@ contract('Curve', function([_, user]) {
 
       it('Exact input swap ETH to sETH by exchange', async function() {
         const value = ether('1');
-        const answer = await this.sethSwap.get_dy.call(0, 1, value, {
-          from: user,
-        });
+        const answer = await this.sethSwap.methods[
+          'get_dy(int128,int128,uint256)'
+        ](0, 1, value);
         const data = abi.simpleEncode(
           'exchange(address,address,address,int128,int128,uint256,uint256)',
           this.sethSwap.address,
@@ -441,9 +440,10 @@ contract('Curve', function([_, user]) {
 
       it('Exact input swap sETH to ETH by exchange', async function() {
         const value = ether('1');
-        const answer = await this.sethSwap.get_dy.call(1, 0, value, {
-          from: user,
-        });
+
+        const answer = await this.sethSwap.methods[
+          'get_dy(int128,int128,uint256)'
+        ](1, 0, value);
         const data = abi.simpleEncode(
           'exchange(address,address,address,int128,int128,uint256,uint256)',
           this.sethSwap.address,
@@ -663,10 +663,9 @@ contract('Curve', function([_, user]) {
       it('remove from pool to WBTC by removeLiquidityOneCoin', async function() {
         const poolTokenUser = ether('0.1');
         const token1UserBefore = await this.token1.balanceOf.call(user);
-        const answer = await this.sbtcSwap.calc_withdraw_one_coin.call(
-          poolTokenUser,
-          1
-        );
+        const answer = await this.sbtcSwap.methods[
+          'calc_withdraw_one_coin(uint256,int128)'
+        ](poolTokenUser, 1);
         await this.poolToken.transfer(this.proxy.address, poolTokenUser, {
           from: poolTokenProvider,
         });
@@ -716,10 +715,9 @@ contract('Curve', function([_, user]) {
       it('remove from pool to WBTC by removeLiquidityOneCoin with max amount', async function() {
         const poolTokenUser = ether('0.1');
         const token1UserBefore = await this.token1.balanceOf.call(user);
-        const answer = await this.sbtcSwap.calc_withdraw_one_coin.call(
-          poolTokenUser,
-          1
-        );
+        const answer = await this.sbtcSwap.methods[
+          'calc_withdraw_one_coin(uint256,int128)'
+        ](poolTokenUser, 1);
         await this.poolToken.transfer(this.proxy.address, poolTokenUser, {
           from: poolTokenProvider,
         });
@@ -859,10 +857,9 @@ contract('Curve', function([_, user]) {
 
       it('remove from pool to ETH by removeLiquidityOneCoin', async function() {
         const poolTokenUser = ether('0.1');
-        const answer = await this.sethSwap.calc_withdraw_one_coin.call(
-          poolTokenUser,
-          0
-        );
+        const answer = await this.sethSwap.methods[
+          'calc_withdraw_one_coin(uint256,int128)'
+        ](poolTokenUser, 0);
         await this.poolToken.transfer(this.proxy.address, poolTokenUser, {
           from: poolTokenProvider,
         });
@@ -1101,10 +1098,9 @@ contract('Curve', function([_, user]) {
       it('remove from pool to USDT by removeLiquidityOneCoinUnderlying', async function() {
         const poolTokenUser = ether('0.1');
         const token1UserBefore = await this.token1.balanceOf.call(user);
-        const answer = await this.aaveSwap.calc_withdraw_one_coin.call(
-          poolTokenUser,
-          2
-        );
+        const answer = await this.aaveSwap.methods[
+          'calc_withdraw_one_coin(uint256,int128)'
+        ](poolTokenUser, 2);
         await this.poolToken.transfer(this.proxy.address, poolTokenUser, {
           from: poolTokenProvider,
         });
@@ -1147,38 +1143,33 @@ contract('Curve', function([_, user]) {
     });
   });
 
-  describe('Liquidity for deposit contract', function() {
-    const token0Address = DAI_TOKEN;
-    const token1Address = USDT_TOKEN;
-    const yToken0Address = CURVE_YDAI_TOKEN;
-    const yToken1Address = CURVE_YUSDT_TOKEN;
-    const provider0Address = DAI_PROVIDER;
-    const provider1Address = USDT_PROVIDER;
-    const poolTokenAddress = CURVE_YCRV;
-    const poolTokenProvider = CURVE_YCRV_PROVIDER;
-
-    let token0User;
-    let token1User;
-
-    before(async function() {
-      this.token0 = await IToken.at(token0Address);
-      this.token1 = await IToken.at(token1Address);
-      this.yToken0 = await IYToken.at(yToken0Address);
-      this.yToken1 = await IYToken.at(yToken1Address);
-      this.poolToken = await IToken.at(poolTokenAddress);
-    });
-
-    beforeEach(async function() {
-      token0User = await this.token0.balanceOf.call(user);
-      token1User = await this.token1.balanceOf.call(user);
-      poolTokenUser = await this.poolToken.balanceOf.call(user);
-    });
-
+  describe('Liquidity with deposit contract', function() {
     describe('y pool', function() {
+      const token0Address = DAI_TOKEN;
+      const token1Address = USDT_TOKEN;
+      const yToken0Address = CURVE_YDAI_TOKEN;
+      const yToken1Address = CURVE_YUSDT_TOKEN;
+      const provider0Address = DAI_PROVIDER;
+      const provider1Address = USDT_PROVIDER;
+      const poolTokenAddress = CURVE_YCRV;
+      const poolTokenProvider = CURVE_YCRV_PROVIDER;
+      let token0User;
+      let token1User;
+      before(async function() {
+        this.token0 = await IToken.at(token0Address);
+        this.token1 = await IToken.at(token1Address);
+        this.yToken0 = await IYToken.at(yToken0Address);
+        this.yToken1 = await IYToken.at(yToken1Address);
+        this.poolToken = await IToken.at(poolTokenAddress);
+      });
+      beforeEach(async function() {
+        token0User = await this.token0.balanceOf.call(user);
+        token1User = await this.token1.balanceOf.call(user);
+        poolTokenUser = await this.poolToken.balanceOf.call(user);
+      });
       it('add DAI and USDT to pool by addLiquidity', async function() {
         const token0Amount = ether('1000');
         const token1Amount = new BN('1000000000');
-
         // Get yToken amounts equivalent to underlying token inputs
         await this.token0.transfer(user, token0Amount, {
           from: provider0Address,
@@ -1198,7 +1189,6 @@ contract('Curve', function([_, user]) {
         await this.yToken1.deposit(token1Amount, {
           from: user,
         });
-
         // Get expected answer
         const answer = await this.ySwap.methods[
           'calc_token_amount(uint256[4],bool)'
@@ -1211,7 +1201,6 @@ contract('Curve', function([_, user]) {
           ],
           true
         );
-
         // Execute handler
         await this.token0.transfer(this.proxy.address, token0Amount, {
           from: provider0Address,
@@ -1241,7 +1230,6 @@ contract('Curve', function([_, user]) {
           from: user,
           value: ether('1'),
         });
-
         // Get handler return result
         const handlerReturn = utils.toBN(
           getHandlerReturn(receipt, ['uint256'])[0]
@@ -1250,14 +1238,12 @@ contract('Curve', function([_, user]) {
         expect(handlerReturn).to.be.bignumber.eq(
           poolTokenUserEnd.sub(poolTokenUser)
         );
-
         // Check proxy balance
         expect(await this.token0.balanceOf.call(this.proxy.address)).to.be.zero;
         expect(await this.token1.balanceOf.call(this.proxy.address)).to.be.zero;
         expect(
           await this.poolToken.balanceOf.call(this.proxy.address)
         ).to.be.zero;
-
         // Check user balance
         expect(await this.token0.balanceOf.call(user)).to.be.bignumber.eq(
           token0User
@@ -1265,7 +1251,6 @@ contract('Curve', function([_, user]) {
         expect(await this.token1.balanceOf.call(user)).to.be.bignumber.eq(
           token1User
         );
-
         // poolToken amount should be greater than answer * 0.999 which is
         // referenced from tests in curve contract.
         expect(await this.poolToken.balanceOf.call(user)).to.be.bignumber.gte(
@@ -1274,14 +1259,11 @@ contract('Curve', function([_, user]) {
         expect(await this.poolToken.balanceOf.call(user)).to.be.bignumber.lte(
           answer.mul(new BN('1050')).div(new BN('1000'))
         );
-
         profileGas(receipt);
       });
-
       it('add DAI and USDT to pool by addLiquidity with max amount', async function() {
         const token0Amount = ether('1000');
         const token1Amount = new BN('1000000000');
-
         // Get yToken amounts equivalent to underlying token inputs
         await this.token0.transfer(user, token0Amount, {
           from: provider0Address,
@@ -1301,7 +1283,6 @@ contract('Curve', function([_, user]) {
         await this.yToken1.deposit(token1Amount, {
           from: user,
         });
-
         // Get expected answer
         const answer = await this.ySwap.methods[
           'calc_token_amount(uint256[4],bool)'
@@ -1314,7 +1295,6 @@ contract('Curve', function([_, user]) {
           ],
           true
         );
-
         // Execute handler
         await this.token0.transfer(this.proxy.address, token0Amount, {
           from: provider0Address,
@@ -1344,7 +1324,6 @@ contract('Curve', function([_, user]) {
           from: user,
           value: ether('1'),
         });
-
         // Get handler return result
         const handlerReturn = utils.toBN(
           getHandlerReturn(receipt, ['uint256'])[0]
@@ -1353,14 +1332,12 @@ contract('Curve', function([_, user]) {
         expect(handlerReturn).to.be.bignumber.eq(
           poolTokenUserEnd.sub(poolTokenUser)
         );
-
         // Check proxy balance
         expect(await this.token0.balanceOf.call(this.proxy.address)).to.be.zero;
         expect(await this.token1.balanceOf.call(this.proxy.address)).to.be.zero;
         expect(
           await this.poolToken.balanceOf.call(this.proxy.address)
         ).to.be.zero;
-
         // Check user balance
         expect(await this.token0.balanceOf.call(user)).to.be.bignumber.eq(
           token0User
@@ -1368,7 +1345,6 @@ contract('Curve', function([_, user]) {
         expect(await this.token1.balanceOf.call(user)).to.be.bignumber.eq(
           token1User
         );
-
         // poolToken amount should be greater than answer * 0.999 which is
         // referenced from tests in curve contract.
         expect(await this.poolToken.balanceOf.call(user)).to.be.bignumber.gte(
@@ -1377,24 +1353,21 @@ contract('Curve', function([_, user]) {
         expect(await this.poolToken.balanceOf.call(user)).to.be.bignumber.lte(
           answer
         );
-
         profileGas(receipt);
       });
-
-      it('remove from pool to USDT by removeLiquidityOneCoinDust', async function() {
+      it('remove from pool to USDT by removeLiquidityOneCoinUnderlying', async function() {
         const token1UserBefore = await this.token1.balanceOf.call(user);
         const poolTokenUser = ether('1');
-        const answer = await this.yDeposit.calc_withdraw_one_coin.call(
-          poolTokenUser,
-          2
-        );
+        const answer = await this.yDeposit.methods[
+          'calc_withdraw_one_coin(uint256,int128)'
+        ](poolTokenUser, 2);
         await this.poolToken.transfer(this.proxy.address, poolTokenUser, {
           from: poolTokenProvider,
         });
         await this.proxy.updateTokenMock(this.poolToken.address);
         const minAmount = mulPercent(answer, new BN('100').sub(slippage));
         const data = abi.simpleEncode(
-          'removeLiquidityOneCoinDust(address,address,address,uint256,int128,uint256)',
+          'removeLiquidityOneCoinUnderlying(address,address,address,uint256,int128,uint256)',
           this.yDeposit.address,
           this.poolToken.address,
           this.token1.address,
@@ -1406,20 +1379,17 @@ contract('Curve', function([_, user]) {
           from: user,
           value: ether('1'),
         });
-
         // Get handler return result
         const handlerReturn = utils.toBN(
           getHandlerReturn(receipt, ['uint256'])[0]
         );
         const token1UserEnd = await this.token1.balanceOf.call(user);
         expect(handlerReturn).to.be.bignumber.eq(token1UserEnd.sub(token1User));
-
         // Check proxy balance
         expect(await this.token1.balanceOf.call(this.proxy.address)).to.be.zero;
         expect(
           await this.poolToken.balanceOf.call(this.proxy.address)
         ).to.be.zero;
-
         // amount should be <= answer * 1.001 and >= answer * 0.999 which is
         // referenced from tests in curve contract.
         expect(await this.token1.balanceOf.call(user)).to.be.bignumber.gte(
@@ -1428,7 +1398,6 @@ contract('Curve', function([_, user]) {
         expect(await this.token1.balanceOf.call(user)).to.be.bignumber.lte(
           token1UserBefore.add(answer.mul(new BN('1001')).div(new BN('1000')))
         );
-
         profileGas(receipt);
       });
     });

@@ -150,13 +150,13 @@ contract('Maker', function([_, user1, user2, someone]) {
           expect(await this.dsRegistry.proxies.call(someone)).eq(ZERO_ADDRESS);
 
           const to = this.hMaker.address;
-          const value = ether('5');
           const ilkEth = utils.padRight(utils.asciiToHex('ETH-A'), 64);
           const [
             generateLimit,
             minCollateral,
           ] = await getGenerateLimitAndMinCollateral(ilkEth);
           const wadD = generateLimit;
+          const value = minCollateral;
           const data = abi.simpleEncode(
             'openLockETHAndDraw(uint256,address,address,bytes32,uint256)',
             value,
@@ -167,7 +167,7 @@ contract('Maker', function([_, user1, user2, someone]) {
           );
           const receipt = await this.proxy.execMock(to, data, {
             from: someone,
-            value: ether('10'),
+            value: value,
           });
           const handlerReturn = utils.toBN(
             getHandlerReturn(receipt, ['uint256'])[0]
@@ -200,12 +200,12 @@ contract('Maker', function([_, user1, user2, someone]) {
           expect(await this.dsRegistry.proxies.call(someone)).eq(ZERO_ADDRESS);
 
           const to = this.hMaker.address;
-          const value = ether('5');
           const ilkEth = utils.padRight(utils.asciiToHex('ETH-A'), 64);
           const [
             generateLimit,
             minCollateral,
           ] = await getGenerateLimitAndMinCollateral(ilkEth);
+          const value = minCollateral;
           const wadD = generateLimit;
           const data = abi.simpleEncode(
             'openLockETHAndDraw(uint256,address,address,bytes32,uint256)',
@@ -243,13 +243,13 @@ contract('Maker', function([_, user1, user2, someone]) {
 
         it('User has proxy', async function() {
           const to = this.hMaker.address;
-          const value = ether('5');
           const ilkEth = utils.padRight(utils.asciiToHex('ETH-A'), 64);
           const [
             generateLimit,
             minCollateral,
           ] = await getGenerateLimitAndMinCollateral(ilkEth);
           const wadD = generateLimit;
+          const value = minCollateral;
           const data = abi.simpleEncode(
             'openLockETHAndDraw(uint256,address,address,bytes32,uint256)',
             value,
@@ -260,7 +260,7 @@ contract('Maker', function([_, user1, user2, someone]) {
           );
           const receipt = await this.proxy.execMock(to, data, {
             from: user1,
-            value: ether('10'),
+            value: value,
           });
           const handlerReturn = utils.toBN(
             getHandlerReturn(receipt, ['uint256'])[0]
@@ -285,7 +285,7 @@ contract('Maker', function([_, user1, user2, someone]) {
 
         it('User has proxy with max amount', async function() {
           const to = this.hMaker.address;
-          const value = ether('5');
+          const value = ether('20');
           const ilkEth = utils.padRight(utils.asciiToHex('ETH-A'), 64);
           const [
             generateLimit,
