@@ -70,9 +70,9 @@ contract('Curve Meta', function([_, user]) {
       it('Exact input swap USDT to mUSD by exchangeUnderlying', async function() {
         // 0: mUSD, 1: DAI, 2: USDC, 3: USDT
         const value = new BN('1000000');
-        const answer = await this.musdSwap.get_dy_underlying.call(3, 0, value, {
-          from: user,
-        });
+        const answer = await this.musdSwap.methods[
+          'get_dy_underlying(int128,int128,uint256)'
+        ](3, 0, value);
         const data = abi.simpleEncode(
           'exchangeUnderlying(address,address,address,int128,int128,uint256,uint256)',
           this.musdSwap.address,
@@ -207,10 +207,9 @@ contract('Curve Meta', function([_, user]) {
       it('Remove from pool to mUSD by removeLiquidityOneCoin', async function() {
         const poolTokenUser = ether('1');
         const token0UserBefore = await this.token0.balanceOf.call(user);
-        const answer = await this.musdDeposit.calc_withdraw_one_coin.call(
-          poolTokenUser,
-          0
-        );
+        const answer = await this.musdDeposit.methods[
+          'calc_withdraw_one_coin(uint256,int128)'
+        ](poolTokenUser, 0);
         await this.poolToken.transfer(this.proxy.address, poolTokenUser, {
           from: poolTokenProvider,
         });

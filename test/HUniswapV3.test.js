@@ -1458,7 +1458,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           const tokens = [tokenAddress, token2Address, WETH_TOKEN];
           const fees = [new BN('500'), new BN('3000')];
           const path = encodePath(tokens, fees);
-          const amountOut = ether('2000');
+          const amountOut = ether('1000');
           const amountInMaximum = value;
 
           // Estimate result
@@ -1508,7 +1508,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           const tokens = [tokenAddress, token2Address, WETH_TOKEN];
           const fees = [new BN('500'), new BN('3000')];
           const path = encodePath(tokens, fees);
-          const amountOut = ether('2000');
+          const amountOut = ether('1000');
           const amountInMaximum = value;
 
           // Estimate result

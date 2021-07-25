@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+## [1.7.0] - 2021-07-20
+
+### Added
+
+- Support Curve crypto swap.
+- Support Curve factory metapool.
+
 ## [1.6.0] - 2021-06-15
 
 ### Added
