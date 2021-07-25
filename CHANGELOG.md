@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+## [1.7.0] - 2021-07-20
+
 ### Added
 
 - Support Curve crypto swap.
