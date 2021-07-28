@@ -30,7 +30,7 @@ A new folder named after the service name should be created in `contracts/handle
 
 #### Handler implementation
 
-Every handler MUST inherit [HandlerBase](https://garage.dinngo.co/hackathon-black/legocontract/blob/develop/contracts/handlers/HandlerBase.sol). Every handler MUST update the post processor. There are currently two kinds of post processor
+Every handler MUST inherit [HandlerBase](contracts/handlers/HandlerBase.sol). Every handler MUST update the post processor. There are currently two kinds of post processor
 
 1.  Token refunding. If a new token will involve after the interaction with the external service, be sure to update through `_updateToken()`.
 2.  Customized. If a customized function is required, the function should be implemented under `function postProcess()` in the handler contract. Different post process within a same handler contract is differed by the signature of the function, which means the implementation should get the function signature through `cache.getSig()` first, then follow-up by getting the parameters through `cache.get()`. The parameters will be passed by `_updatePostProcess(bytes32[] memory params)`, which should be called at the end of the handler function.
