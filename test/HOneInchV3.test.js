@@ -17,7 +17,7 @@ const { expect } = require('chai');
 const {
   DAI_TOKEN,
   DAI_PROVIDER,
-  DAI_SYMBOL,
+  CHI_TOKEN,
   USDC_TOKEN,
   USDC_SYMBOL,
 } = require('./utils/constants');
@@ -36,6 +36,9 @@ const HOneInch = artifacts.require('HOneInchV3');
 const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('ProxyMock');
 const IToken = artifacts.require('IERC20');
+
+const SELECTOR_1INCH_SWAP = '0x7c025200';
+const SELECTOR_1INCH_UNOSWAP = '0x2e95b6c8';
 
 contract('OneInchV3 Swap', function([_, user]) {
   let id;
@@ -60,7 +63,7 @@ contract('OneInchV3 Swap', function([_, user]) {
 
   describe('Ether to Token', function() {
     const tokenAddress = DAI_TOKEN;
-    const tokenSymbol = DAI_SYMBOL;
+    const dummyTokenAddress = CHI_TOKEN;
 
     let balanceUser;
     let balanceProxy;
@@ -77,162 +80,234 @@ contract('OneInchV3 Swap', function([_, user]) {
     });
 
     describe('Exact input', function() {
-      it('normal', async function() {
-        const value = ether('0.1');
-        const to = this.hOneInch.address;
-        const slippage = 3;
+      describe('swap', function() {
+        it('normal', async function() {
+          const value = ether('0.1');
+          const to = this.hOneInch.address;
+          const slippage = 3;
 
-        const swapReq = queryString.stringifyUrl({
-          url: 'https://api.1inch.exchange/v3.0/1/swap',
-          query: {
-            fromTokenAddress: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
-            toTokenAddress: tokenAddress,
-            amount: value,
-            slippage: slippage,
-            disableEstimate: true,
-            fromAddress: this.proxy.address,
-            protocols: 'ONE_INCH_LP'
-          },
+          const swapReq = queryString.stringifyUrl({
+            url: 'https://api.1inch.exchange/v3.0/1/swap',
+            query: {
+              fromTokenAddress: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
+              toTokenAddress: tokenAddress,
+              amount: value,
+              slippage: slippage,
+              disableEstimate: true,
+              fromAddress: this.proxy.address,
+              protocols: 'ONE_INCH_LP'
+            },
+          });
+
+          // Call 1inch API
+          const swapResponse = await fetch(swapReq);
+          const swapData = await swapResponse.json();
+          console.log(`swapData = ${JSON.stringify(swapData)}`);
+          // Verify it's `swap` function call
+          expect(swapData.tx.data.substring(0, 10)).to.be.eq(SELECTOR_1INCH_SWAP);
+          const data = swapData.tx.data;
+          const quote = swapData.toTokenAmount;
+
+          // Execute
+          const receipt = await this.proxy.execMock(to, data, {
+            from: user,
+            value: value,
+          });
+
+          // Verify return value
+          const tokenUserEnd = await this.token.balanceOf.call(user);
+          const handlerReturn = utils.toBN(
+            getHandlerReturn(receipt, ['uint256'])[0]
+          );
+          expect(handlerReturn).to.be.bignumber.eq(tokenUserEnd.sub(tokenUser));
+
+          // Verify token balance
+          expect(tokenUserEnd).to.be.bignumber.gte(
+            // sub 1 more percent to tolerate the slippage calculation difference with 1inch
+            tokenUser.add(mulPercent(quote, 100 - slippage - 1))
+          );
+          expect(
+            await this.token.balanceOf.call(this.proxy.address)
+          ).to.be.zero;
+
+          // Verify ether balance
+          expect(await balanceProxy.get()).to.be.zero;
+          expect(await balanceUser.delta()).to.be.bignumber.eq(
+            ether('0')
+              .sub(value)
+              .sub(new BN(receipt.receipt.gasUsed))
+          );
+
+          profileGas(receipt);
         });
 
-        const swapResponse = await fetch(swapReq);
-        const swapData = await swapResponse.json();
-        console.log(`swapData = ${JSON.stringify(swapData)}`);
-        expect(swapData.tx.data.substring(0, 10)).to.be.eq('0x7c025200'); // verify it's `swap` function call
-        const data = swapData.tx.data;
-        const quote = swapData.toTokenAmount;
-        const receipt = await this.proxy.execMock(to, data, {
-          from: user,
-          value: value,
+        it('msg.value greater than input ether amount', async function() {
+          const value = ether('0.1');
+          const to = this.hOneInch.address;
+          const slippage = 3;
+
+          const swapReq = queryString.stringifyUrl({
+            url: 'https://api.1inch.exchange/v3.0/1/swap',
+            query: {
+              fromTokenAddress: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
+              toTokenAddress: tokenAddress,
+              amount: value,
+              slippage: slippage,
+              disableEstimate: true,
+              fromAddress: this.proxy.address,
+              protocols: 'ONE_INCH_LP'
+            },
+          });
+
+          // Call 1inch API
+          const swapResponse = await fetch(swapReq);
+          const swapData = await swapResponse.json();
+          console.log(`swapData = ${JSON.stringify(swapData)}`);
+          // Verify it's `swap` function call
+          expect(swapData.tx.data.substring(0, 10)).to.be.eq(SELECTOR_1INCH_SWAP);
+          const data = swapData.tx.data;
+          const quote = swapData.toTokenAmount;
+
+          // Execute
+          const receipt = await this.proxy.execMock(to, data, {
+            from: user,
+            value: value.add(ether('1')),
+          });
+
+          // Verify return value
+          const tokenUserEnd = await this.token.balanceOf.call(user);
+          const handlerReturn = utils.toBN(
+            getHandlerReturn(receipt, ['uint256'])[0]
+          );
+          expect(handlerReturn).to.be.bignumber.eq(tokenUserEnd.sub(tokenUser));
+
+          // Verify token balance
+          expect(tokenUserEnd).to.be.bignumber.gte(
+            // sub 1 more percent to tolerate the slippage calculation difference with 1inch
+            tokenUser.add(mulPercent(quote, 100 - slippage - 1))
+          );
+          expect(
+            await this.token.balanceOf.call(this.proxy.address)
+          ).to.be.zero;
+
+          // Verify ether balance
+          expect(await balanceProxy.get()).to.be.zero;
+          expect(await balanceUser.delta()).to.be.bignumber.eq(
+            ether('0')
+              .sub(value)
+              .sub(new BN(receipt.receipt.gasUsed))
+          );
+
+          profileGas(receipt);
         });
-
-        const tokenUserEnd = await this.token.balanceOf.call(user);
-        const handlerReturn = utils.toBN(
-          getHandlerReturn(receipt, ['uint256'])[0]
-        );
-        expect(handlerReturn).to.be.bignumber.eq(tokenUserEnd.sub(tokenUser));
-
-        expect(tokenUserEnd).to.be.bignumber.gte(
-          // sub 1 more percent to tolerate the slippage calculation difference with 1inch
-          tokenUser.add(mulPercent(quote, 100 - slippage - 1))
-        );
-        expect(
-          await this.token.balanceOf.call(this.proxy.address)
-        ).to.be.zero;
-        expect(await balanceProxy.get()).to.be.zero;
-        expect(await balanceUser.delta()).to.be.bignumber.eq(
-          ether('0')
-            .sub(value)
-            .sub(new BN(receipt.receipt.gasUsed))
-        );
-
-        profileGas(receipt);
       });
 
-      it('unoswap', async function() {
-        const value = ether('0.1');
-        const to = this.hOneInch.address;
-        const slippage = 3;
+      describe('unoswap', function() {
+        it('normal', async function() {
+          const value = ether('0.1');
+          const to = this.hOneInch.address;
+          const slippage = 3;
 
-        const swapReq = queryString.stringifyUrl({
-          url: 'https://api.1inch.exchange/v3.0/1/swap',
-          query: {
-            fromTokenAddress: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
-            toTokenAddress: tokenAddress,
-            amount: value,
-            slippage: slippage,
-            disableEstimate: true,
-            fromAddress: this.proxy.address,
-            protocols: 'UNISWAP_V2'
-          },
+          const swapReq = queryString.stringifyUrl({
+            url: 'https://api.1inch.exchange/v3.0/1/swap',
+            query: {
+              fromTokenAddress: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
+              toTokenAddress: tokenAddress,
+              amount: value,
+              slippage: slippage,
+              disableEstimate: true,
+              fromAddress: this.proxy.address,
+              protocols: 'UNISWAP_V2'
+            },
+          });
+
+          // Call 1inch API
+          const swapResponse = await fetch(swapReq);
+          const swapData = await swapResponse.json();
+          console.log(`swapData = ${JSON.stringify(swapData)}`);
+          const quote = swapData.toTokenAmount;
+          // Verify it's `unoswap` function call
+          expect(swapData.tx.data.substring(0, 10)).to.be.eq(SELECTOR_1INCH_UNOSWAP);
+          
+          // Reshape data
+          // 1. append dstToken to tx data
+          // 2. change function selector
+          const dataWithoutSelector = '0x' + swapData.tx.data.substring(10);
+          const decoded = web3.eth.abi.decodeParameters(['address', 'uint256', 'uint256', 'bytes32[]'], dataWithoutSelector);
+          const data = getCallData(HOneInch, 'unoswap', [decoded[0], decoded[1], decoded[2], decoded[3], swapData.toToken.address]);
+          
+          // Execute
+          const receipt = await this.proxy.execMock(to, data, {
+            from: user,
+            value: value,
+          });
+
+          // Verify return value
+          const tokenUserEnd = await this.token.balanceOf.call(user);
+          const handlerReturn = utils.toBN(
+            getHandlerReturn(receipt, ['uint256'])[0]
+          );
+          expect(handlerReturn).to.be.bignumber.eq(tokenUserEnd.sub(tokenUser));
+
+          // Verify token balance
+          expect(tokenUserEnd).to.be.bignumber.gte(
+            // sub 1 more percent to tolerate the slippage calculation difference with 1inch
+            tokenUser.add(mulPercent(quote, 100 - slippage - 1))
+          );
+          expect(
+            await this.token.balanceOf.call(this.proxy.address)
+          ).to.be.zero;
+
+          // Verify ether balance
+          expect(await balanceProxy.get()).to.be.zero;
+          expect(await balanceUser.delta()).to.be.bignumber.eq(
+            ether('0')
+              .sub(value)
+              .sub(new BN(receipt.receipt.gasUsed))
+          );
+
+          profileGas(receipt);
         });
 
-        const swapResponse = await fetch(swapReq);
-        const swapData = await swapResponse.json();
-        console.log(`swapData = ${JSON.stringify(swapData)}`);
-        // const data = swapData.tx.data;
-        const quote = swapData.toTokenAmount;
-        /// reshape data
-        expect(swapData.tx.data.substring(0, 10)).to.be.eq('0x2e95b6c8'); // verify it's `unoswap` function call
-        const dataWithoutSelector = '0x' + swapData.tx.data.substring(10);
-        const decoded = web3.eth.abi.decodeParameters(['address', 'uint256', 'uint256', 'bytes32[]'], dataWithoutSelector);
-        const data = getCallData(HOneInch, 'unoswap', [decoded[0], decoded[1], decoded[2], decoded[3], swapData.toToken.address]);
-        // const dstToken = utils.padLeft(swapData.tx.toToken.address, '64');
-        const receipt = await this.proxy.execMock(to, data, {
-          from: user,
-          value: value,
+        it('should revert: append incorrect dst token', async function() {
+          const value = ether('0.1');
+          const to = this.hOneInch.address;
+          const slippage = 3;
+
+          const swapReq = queryString.stringifyUrl({
+            url: 'https://api.1inch.exchange/v3.0/1/swap',
+            query: {
+              fromTokenAddress: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
+              toTokenAddress: tokenAddress,
+              amount: value,
+              slippage: slippage,
+              disableEstimate: true,
+              fromAddress: this.proxy.address,
+              protocols: 'UNISWAP_V2'
+            },
+          });
+
+          // Call 1inch API
+          const swapResponse = await fetch(swapReq);
+          const swapData = await swapResponse.json();
+          console.log(`swapData = ${JSON.stringify(swapData)}`);
+          // Verify it's `unoswap` function call
+          expect(swapData.tx.data.substring(0, 10)).to.be.eq(SELECTOR_1INCH_UNOSWAP);
+          
+          // Reshape data
+          // 1. append dstToken to tx data
+          // 2. change function selector
+          const dataWithoutSelector = '0x' + swapData.tx.data.substring(10);
+          const decoded = web3.eth.abi.decodeParameters(['address', 'uint256', 'uint256', 'bytes32[]'], dataWithoutSelector);
+          // Append different dst toke address
+          const data = getCallData(HOneInch, 'unoswap', [decoded[0], decoded[1], decoded[2], decoded[3], dummyTokenAddress]);
+          
+          // Execute
+          await expectRevert(this.proxy.execMock(to, data, {
+            from: user,
+            value: value,
+          }), 'balance diff not match return amount');
         });
-
-        const tokenUserEnd = await this.token.balanceOf.call(user);
-        const handlerReturn = utils.toBN(
-          getHandlerReturn(receipt, ['uint256'])[0]
-        );
-        expect(handlerReturn).to.be.bignumber.eq(tokenUserEnd.sub(tokenUser));
-
-        expect(tokenUserEnd).to.be.bignumber.gte(
-          // sub 1 more percent to tolerate the slippage calculation difference with 1inch
-          tokenUser.add(mulPercent(quote, 100 - slippage - 1))
-        );
-        expect(
-          await this.token.balanceOf.call(this.proxy.address)
-        ).to.be.zero;
-        expect(await balanceProxy.get()).to.be.zero;
-        expect(await balanceUser.delta()).to.be.bignumber.eq(
-          ether('0')
-            .sub(value)
-            .sub(new BN(receipt.receipt.gasUsed))
-        );
-
-        profileGas(receipt);
-      });
-return;
-      it('msg.value greater than input ether amount', async function() {
-        const value = ether('0.1');
-        const to = this.hOneInch.address;
-        const slippage = 3;
-
-        const swapReq = queryString.stringifyUrl({
-          url: 'https://api.1inch.exchange/v2.0/swap',
-          query: {
-            fromTokenAddress: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
-            toTokenAddress: tokenAddress,
-            amount: value,
-            slippage: slippage,
-            disableEstimate: true,
-            fromAddress: this.proxy.address,
-          },
-        });
-
-        const swapResponse = await fetch(swapReq);
-        const swapData = await swapResponse.json();
-        const data = swapData.tx.data;
-        const quote = swapData.toTokenAmount;
-        const receipt = await this.proxy.execMock(to, data, {
-          from: user,
-          value: value.add(ether('1')),
-        });
-
-        const tokenUserEnd = await this.token.balanceOf.call(user);
-        const handlerReturn = utils.toBN(
-          getHandlerReturn(receipt, ['uint256'])[0]
-        );
-        expect(handlerReturn).to.be.bignumber.eq(tokenUserEnd.sub(tokenUser));
-
-        expect(tokenUserEnd).to.be.bignumber.gte(
-          // sub 1 more percent to tolerate the slippage calculation difference with 1inch
-          tokenUser.add(mulPercent(quote, 100 - slippage - 1))
-        );
-        expect(
-          await this.token.balanceOf.call(this.proxy.address)
-        ).to.be.bignumber.eq(ether('0'));
-        expect(await balanceProxy.get()).to.be.bignumber.eq(ether('0'));
-        expect(await balanceUser.delta()).to.be.bignumber.eq(
-          ether('0')
-            .sub(value)
-            .sub(new BN(receipt.receipt.gasUsed))
-        );
-
-        profileGas(receipt);
       });
     });
   });
