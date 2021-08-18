@@ -27,6 +27,7 @@ const {
   profileGas,
   getHandlerReturn,
   getCallData,
+  decodeInputData,
 } = require('./utils/utils');
 const fetch = require('node-fetch');
 const queryString = require('query-string');
@@ -35,6 +36,7 @@ const HOneInch = artifacts.require('HOneInchV3');
 const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('ProxyMock');
 const IToken = artifacts.require('IERC20');
+const IOneInch = artifacts.require('IAggregationRouterV3');
 
 const SELECTOR_1INCH_SWAP = '0x7c025200';
 const SELECTOR_1INCH_UNOSWAP = '0x2e95b6c8';
@@ -237,8 +239,9 @@ contract('OneInchV3 Swap', function([_, user]) {
         // 1. append dstToken to tx data
         // 2. change function selector
         const dataWithoutSelector = '0x' + swapData.tx.data.substring(10);
-        const decoded = web3.eth.abi.decodeParameters(
-          ['address', 'uint256', 'uint256', 'bytes32[]'],
+        const decoded = decodeInputData(
+          IOneInch,
+          'unoswap',
           dataWithoutSelector
         );
         const data = getCallData(HOneInch, 'unoswap', [
@@ -312,8 +315,9 @@ contract('OneInchV3 Swap', function([_, user]) {
         // 1. append dstToken to tx data
         // 2. change function selector
         const dataWithoutSelector = '0x' + swapData.tx.data.substring(10);
-        const decoded = web3.eth.abi.decodeParameters(
-          ['address', 'uint256', 'uint256', 'bytes32[]'],
+        const decoded = decodeInputData(
+          IOneInch,
+          'unoswap',
           dataWithoutSelector
         );
         // Append different dst toke address
@@ -464,8 +468,9 @@ contract('OneInchV3 Swap', function([_, user]) {
         // 1. append dstToken to tx data
         // 2. change function selector
         const dataWithoutSelector = '0x' + swapData.tx.data.substring(10);
-        const decoded = web3.eth.abi.decodeParameters(
-          ['address', 'uint256', 'uint256', 'bytes32[]'],
+        const decoded = decodeInputData(
+          IOneInch,
+          'unoswap',
           dataWithoutSelector
         );
         const data = getCallData(HOneInch, 'unoswap', [
@@ -644,8 +649,9 @@ contract('OneInchV3 Swap', function([_, user]) {
         // 1. append dstToken to tx data
         // 2. change function selector
         const dataWithoutSelector = '0x' + swapData.tx.data.substring(10);
-        const decoded = web3.eth.abi.decodeParameters(
-          ['address', 'uint256', 'uint256', 'bytes32[]'],
+        const decoded = decodeInputData(
+          IOneInch,
+          'unoswap',
           dataWithoutSelector
         );
         const data = getCallData(HOneInch, 'unoswap', [
