@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+### Added
+
+- Support 1inch v3 swap and unoswap.
+
 ### Changed
 
 - Add `updateTokens` to `HFunds` and add return value for `inject`.
