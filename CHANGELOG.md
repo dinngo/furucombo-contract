@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+### Changed
+
+- Add `updateTokens` to `HFunds` and add return value for `inject`.
+
 ## [1.7.0] - 2021-07-20
 
 ### Added
