@@ -63,15 +63,8 @@ contract HOneInchV3 is HandlerBase {
         bytes32[] calldata data,
         IERC20 dstToken
     ) external payable returns (uint256 returnAmount) {
-        uint256 tokenBefore;
-        uint256 tokenAfter;
-
         // Snapshot dstToken balance
-        if (_isNotNativeToken(address(dstToken))) {
-            tokenBefore = dstToken.balanceOf(address(this));
-        } else {
-            tokenBefore = address(this).balance;
-        }
+        uint256 tokenBefore = _getBalance(address(dstToken), uint256(-1));
 
         // Interact with 1inch
         if (_isNotNativeToken(address(srcToken))) {
@@ -108,17 +101,16 @@ contract HOneInchV3 is HandlerBase {
         }
 
         // Snapshot dstToken balance after swap
-        if (_isNotNativeToken(address(dstToken))) {
-            tokenAfter = dstToken.balanceOf(address(this));
-            // Update involved token
-            _updateToken(address(dstToken));
-        } else {
-            tokenAfter = address(this).balance;
-        }
+        uint256 tokenAfter = _getBalance(address(dstToken), uint256(-1));
 
         // Verify dstToken balance diff
         if (tokenAfter.sub(tokenBefore) != returnAmount)
             _revertMsg("unoswap", "balance diff not match return amount");
+
+        // Update involved token
+        if (_isNotNativeToken(address(dstToken))) {
+            _updateToken(address(dstToken));
+        }
     }
 
     function _isNotNativeToken(address token) internal pure returns (bool) {
