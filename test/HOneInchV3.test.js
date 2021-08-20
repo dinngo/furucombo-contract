@@ -47,6 +47,22 @@ const SELECTOR_1INCH_UNOSWAP = '0x2e95b6c8';
 const URL_1INCH = 'https://api.1inch.exchange/v3.0/1/';
 const URL_1INCH_SWAP = URL_1INCH + 'swap';
 
+const UNOSWAP_PROTOCOLS = ['SHIBASWAP', 'SUSHI', 'UNISWAP_V2'].join(',');
+const NON_UNOSWAP_PROTOCOLS = [
+  'CURVE_V2',
+  'WETH',
+  'CURVE',
+  'UNISWAP_V1',
+  'BALANCER',
+  'BLACKHOLESWAP',
+  'ONE_INCH_LP',
+  'PMM2',
+  'PMM3',
+  'KYBER_DMM',
+  'BALANCER_V2',
+  'UNISWAP_V3',
+].join(',');
+
 contract('OneInchV3 Swap', function([_, user]) {
   let id;
 
@@ -95,7 +111,7 @@ contract('OneInchV3 Swap', function([_, user]) {
     });
 
     describe('Swap', function() {
-      it('normal', async function() {
+      it.only('normal', async function() {
         // Prepare data
         const value = ether('0.1');
         const to = this.hOneInch.address;
@@ -110,12 +126,13 @@ contract('OneInchV3 Swap', function([_, user]) {
             disableEstimate: true,
             fromAddress: this.proxy.address,
             // If the route contains only Uniswap and its' forks, tx.data will invoke `unoswap`
-            protocols: 'ONE_INCH_LP',
+            protocols: NON_UNOSWAP_PROTOCOLS,
           },
         });
 
         // Call 1inch API
         const swapResponse = await fetch(swapReq);
+        expect(swapResponse.ok, '1inch api response not ok').to.be.true;
         const swapData = await swapResponse.json();
         // Verify it's `swap` function call
         expect(swapData.tx.data.substring(0, 10)).to.be.eq(SELECTOR_1INCH_SWAP);
@@ -168,12 +185,13 @@ contract('OneInchV3 Swap', function([_, user]) {
             disableEstimate: true,
             fromAddress: this.proxy.address,
             // If the route contains only Uniswap and its' forks, tx.data will invoke `unoswap`
-            protocols: 'ONE_INCH_LP',
+            protocols: NON_UNOSWAP_PROTOCOLS,
           },
         });
 
         // Call 1inch API
         const swapResponse = await fetch(swapReq);
+        expect(swapResponse.ok, '1inch api response not ok').to.be.true;
         const swapData = await swapResponse.json();
         // Verify it's `swap` function call
         expect(swapData.tx.data.substring(0, 10)).to.be.eq(SELECTOR_1INCH_SWAP);
@@ -228,12 +246,13 @@ contract('OneInchV3 Swap', function([_, user]) {
             disableEstimate: true,
             fromAddress: this.proxy.address,
             // If the route contains only Uniswap and its' forks, tx.data will invoke `unoswap`
-            protocols: 'UNISWAP_V2',
+            protocols: UNOSWAP_PROTOCOLS,
           },
         });
 
         // Call 1inch API
         const swapResponse = await fetch(swapReq);
+        expect(swapResponse.ok, '1inch api response not ok').to.be.true;
         const swapData = await swapResponse.json();
         const quote = swapData.toTokenAmount;
         // Verify it's `unoswap` function call
@@ -304,12 +323,13 @@ contract('OneInchV3 Swap', function([_, user]) {
             disableEstimate: true,
             fromAddress: this.proxy.address,
             // If the route contains only Uniswap and its' forks, tx.data will invoke `unoswap`
-            protocols: 'UNISWAP_V2',
+            protocols: UNOSWAP_PROTOCOLS,
           },
         });
 
         // Call 1inch API
         const swapResponse = await fetch(swapReq);
+        expect(swapResponse.ok, '1inch api response not ok').to.be.true;
         const swapData = await swapResponse.json();
         // Verify it's `unoswap` function call
         expect(swapData.tx.data.substring(0, 10)).to.be.eq(
@@ -380,7 +400,7 @@ contract('OneInchV3 Swap', function([_, user]) {
             disableEstimate: true,
             fromAddress: this.proxy.address,
             // If the route contains only Uniswap and its' forks, tx.data will invoke `unoswap`
-            protocols: 'ONE_INCH_LP',
+            protocols: NON_UNOSWAP_PROTOCOLS,
           },
         });
 
@@ -392,6 +412,7 @@ contract('OneInchV3 Swap', function([_, user]) {
 
         // Call 1inch API
         const swapResponse = await fetch(swapReq);
+        expect(swapResponse.ok, '1inch api response not ok').to.be.true;
         const swapData = await swapResponse.json();
         // Verify it's `swap` function call
         expect(swapData.tx.data.substring(0, 10)).to.be.eq(SELECTOR_1INCH_SWAP);
@@ -448,7 +469,7 @@ contract('OneInchV3 Swap', function([_, user]) {
             disableEstimate: true,
             fromAddress: this.proxy.address,
             // If the route contains only Uniswap and its' forks, tx.data will invoke `unoswap`
-            protocols: 'UNISWAP_V2',
+            protocols: UNOSWAP_PROTOCOLS,
           },
         });
 
@@ -460,6 +481,7 @@ contract('OneInchV3 Swap', function([_, user]) {
 
         // Call 1inch API
         const swapResponse = await fetch(swapReq);
+        expect(swapResponse.ok, '1inch api response not ok').to.be.true;
         const swapData = await swapResponse.json();
         const quote = swapData.toTokenAmount;
         // Verify it's `unoswap` function call
@@ -557,7 +579,7 @@ contract('OneInchV3 Swap', function([_, user]) {
             disableEstimate: true,
             fromAddress: this.proxy.address,
             // If the route contains only Uniswap and its' forks, tx.data will invoke `unoswap`
-            protocols: 'ONE_INCH_LP',
+            protocols: NON_UNOSWAP_PROTOCOLS,
           },
         });
 
@@ -569,6 +591,7 @@ contract('OneInchV3 Swap', function([_, user]) {
 
         // Call 1inch API
         const swapResponse = await fetch(swapReq);
+        expect(swapResponse.ok, '1inch api response not ok').to.be.true;
         const swapData = await swapResponse.json();
         // Verify it's `swap` function call
         expect(swapData.tx.data.substring(0, 10)).to.be.eq(SELECTOR_1INCH_SWAP);
@@ -627,7 +650,7 @@ contract('OneInchV3 Swap', function([_, user]) {
             disableEstimate: true,
             fromAddress: this.proxy.address,
             // If the route contains only Uniswap and its' forks, tx.data will invoke `unoswap`
-            protocols: 'UNISWAP_V2',
+            protocols: UNOSWAP_PROTOCOLS,
           },
         });
 
@@ -639,6 +662,7 @@ contract('OneInchV3 Swap', function([_, user]) {
 
         // Call 1inch API
         const swapResponse = await fetch(swapReq);
+        expect(swapResponse.ok, '1inch api response not ok').to.be.true;
         const swapData = await swapResponse.json();
         const quote = swapData.toTokenAmount;
         // Verify it's `unoswap` function call
