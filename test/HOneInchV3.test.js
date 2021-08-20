@@ -41,15 +41,24 @@ const IOneInch = artifacts.require('IAggregationRouterV3');
 const SELECTOR_1INCH_SWAP = '0x7c025200';
 const SELECTOR_1INCH_UNOSWAP = '0x2e95b6c8';
 /// Change url for different chain
-/// - Ethereum: https://api.1inch.exchange/v3.0/1/swap
-/// - Polygon: https://api.1inch.exchange/v3.0/137/swap
-/// - BSC: https://api.1inch.exchange/v3.0/56/swap
-const URL_1INCH_SWAP = 'https://api.1inch.exchange/v3.0/1/swap';
+/// - Ethereum: https://api.1inch.exchange/v3.0/1/
+/// - Polygon: https://api.1inch.exchange/v3.0/137/
+/// - BSC: https://api.1inch.exchange/v3.0/56/
+const URL_1INCH = 'https://api.1inch.exchange/v3.0/1/';
+const URL_1INCH_SWAP = URL_1INCH + 'swap';
 
 contract('OneInchV3 Swap', function([_, user]) {
   let id;
 
   before(async function() {
+    // ============= 1inch API Health Check =============
+    const healthCkeck = await fetch(URL_1INCH + 'healthcheck');
+    if (!healthCkeck.ok) {
+      console.error(`=====> 1inch API not healthy now, skip the tests`);
+      this.skip();
+    }
+    // ==================================================
+
     this.registry = await Registry.new();
     this.hOneInch = await HOneInch.new();
     await this.registry.register(
@@ -108,7 +117,6 @@ contract('OneInchV3 Swap', function([_, user]) {
         // Call 1inch API
         const swapResponse = await fetch(swapReq);
         const swapData = await swapResponse.json();
-        console.log(`swapData = ${JSON.stringify(swapData)}`);
         // Verify it's `swap` function call
         expect(swapData.tx.data.substring(0, 10)).to.be.eq(SELECTOR_1INCH_SWAP);
         const data = swapData.tx.data;
@@ -167,7 +175,6 @@ contract('OneInchV3 Swap', function([_, user]) {
         // Call 1inch API
         const swapResponse = await fetch(swapReq);
         const swapData = await swapResponse.json();
-        console.log(`swapData = ${JSON.stringify(swapData)}`);
         // Verify it's `swap` function call
         expect(swapData.tx.data.substring(0, 10)).to.be.eq(SELECTOR_1INCH_SWAP);
         const data = swapData.tx.data;
@@ -228,7 +235,6 @@ contract('OneInchV3 Swap', function([_, user]) {
         // Call 1inch API
         const swapResponse = await fetch(swapReq);
         const swapData = await swapResponse.json();
-        console.log(`swapData = ${JSON.stringify(swapData)}`);
         const quote = swapData.toTokenAmount;
         // Verify it's `unoswap` function call
         expect(swapData.tx.data.substring(0, 10)).to.be.eq(
@@ -305,7 +311,6 @@ contract('OneInchV3 Swap', function([_, user]) {
         // Call 1inch API
         const swapResponse = await fetch(swapReq);
         const swapData = await swapResponse.json();
-        console.log(`swapData = ${JSON.stringify(swapData)}`);
         // Verify it's `unoswap` function call
         expect(swapData.tx.data.substring(0, 10)).to.be.eq(
           SELECTOR_1INCH_UNOSWAP
@@ -388,7 +393,6 @@ contract('OneInchV3 Swap', function([_, user]) {
         // Call 1inch API
         const swapResponse = await fetch(swapReq);
         const swapData = await swapResponse.json();
-        console.log(`swapData = ${JSON.stringify(swapData)}`);
         // Verify it's `swap` function call
         expect(swapData.tx.data.substring(0, 10)).to.be.eq(SELECTOR_1INCH_SWAP);
         const data = swapData.tx.data;
@@ -457,7 +461,6 @@ contract('OneInchV3 Swap', function([_, user]) {
         // Call 1inch API
         const swapResponse = await fetch(swapReq);
         const swapData = await swapResponse.json();
-        console.log(`swapData = ${JSON.stringify(swapData)}`);
         const quote = swapData.toTokenAmount;
         // Verify it's `unoswap` function call
         expect(swapData.tx.data.substring(0, 10)).to.be.eq(
@@ -567,7 +570,6 @@ contract('OneInchV3 Swap', function([_, user]) {
         // Call 1inch API
         const swapResponse = await fetch(swapReq);
         const swapData = await swapResponse.json();
-        console.log(`swapData = ${JSON.stringify(swapData)}`);
         // Verify it's `swap` function call
         expect(swapData.tx.data.substring(0, 10)).to.be.eq(SELECTOR_1INCH_SWAP);
         const data = swapData.tx.data;
@@ -638,7 +640,6 @@ contract('OneInchV3 Swap', function([_, user]) {
         // Call 1inch API
         const swapResponse = await fetch(swapReq);
         const swapData = await swapResponse.json();
-        console.log(`swapData = ${JSON.stringify(swapData)}`);
         const quote = swapData.toTokenAmount;
         // Verify it's `unoswap` function call
         expect(swapData.tx.data.substring(0, 10)).to.be.eq(
