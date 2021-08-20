@@ -111,7 +111,7 @@ contract('OneInchV3 Swap', function([_, user]) {
     });
 
     describe('Swap', function() {
-      it.only('normal', async function() {
+      it('normal', async function() {
         // Prepare data
         const value = ether('0.1');
         const to = this.hOneInch.address;
