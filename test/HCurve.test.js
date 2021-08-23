@@ -138,9 +138,9 @@ contract('Curve', function([_, user]) {
           token0User
         );
         // get_dy_underlying flow is different from exchange_underlying,
-        // so give 1*10^12 tolerance for USDT/DAI case.
+        // so give 2*10^12 tolerance for USDT/DAI case.
         expect(await this.token1.balanceOf.call(user)).to.be.bignumber.gte(
-          token1User.add(answer).sub(new BN('1000000000000'))
+          token1User.add(answer).sub(new BN('2000000000000'))
         );
         expect(await this.token1.balanceOf.call(user)).to.be.bignumber.lte(
           token1User.add(answer)
@@ -184,9 +184,9 @@ contract('Curve', function([_, user]) {
           token0User
         );
         // get_dy_underlying flow is different from exchange_underlying,
-        // so give 1*10^12 tolerance for USDT/DAI case.
+        // so give 2*10^12 tolerance for USDT/DAI case.
         expect(await this.token1.balanceOf.call(user)).to.be.bignumber.gte(
-          token1User.add(answer).sub(new BN('1000000000000'))
+          token1User.add(answer).sub(new BN('2000000000000'))
         );
         expect(await this.token1.balanceOf.call(user)).to.be.bignumber.lte(
           token1User.add(answer)
