@@ -14,6 +14,14 @@ contract HOneInchV3 is HandlerBase {
     address private constant ONEINCH_SPENDER = 0x11111112542D85B3EF69AE05771c2dCCff4fAa26;
     // prettier-ignore
     address private constant ETH_ADDRESS = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
+    // prettier-ignore
+    uint256 private constant _UNISWAP_PAIR_TOKEN0_CALL_SELECTOR_32 = 0x0dfe168100000000000000000000000000000000000000000000000000000000;
+    // prettier-ignore
+    uint256 private constant _UNISWAP_PAIR_TOKEN1_CALL_SELECTOR_32 = 0xd21220a700000000000000000000000000000000000000000000000000000000;
+    // prettier-ignore
+    uint256 private constant _ADDRESS_MASK =   0x000000000000000000000000ffffffffffffffffffffffffffffffffffffffff;
+    // prettier-ignore
+    uint256 private constant _REVERSE_MASK =   0x8000000000000000000000000000000000000000000000000000000000000000;
 
     function getContractName() public override pure returns (string memory) {
         return "HOneInchV3";
@@ -60,12 +68,8 @@ contract HOneInchV3 is HandlerBase {
         IERC20 srcToken,
         uint256 amount,
         uint256 minReturn,
-        bytes32[] calldata data,
-        IERC20 dstToken
+        bytes32[] calldata data
     ) external payable returns (uint256 returnAmount) {
-        // Snapshot dstToken balance
-        uint256 tokenBefore = _getBalance(address(dstToken), uint256(-1));
-
         // Interact with 1inch
         if (_isNotNativeToken(address(srcToken))) {
             _tokenApprove(address(srcToken), ONEINCH_SPENDER, amount);
@@ -100,20 +104,40 @@ contract HOneInchV3 is HandlerBase {
             }
         }
 
-        // Snapshot dstToken balance after swap
-        uint256 tokenAfter = _getBalance(address(dstToken), uint256(-1));
-
-        // Verify dstToken balance diff
-        if (tokenAfter.sub(tokenBefore) != returnAmount)
-            _revertMsg("unoswap", "balance diff not match return amount");
-
+        address dstToken = decode(data);
         // Update involved token
-        if (_isNotNativeToken(address(dstToken))) {
-            _updateToken(address(dstToken));
+        if (_isNotNativeToken(dstToken)) {
+            _updateToken(dstToken);
         }
     }
 
     function _isNotNativeToken(address token) internal pure returns (bool) {
         return (token != address(0) && token != ETH_ADDRESS);
+    }
+
+    function decode(bytes32[] calldata) public view returns (address ret) {
+        assembly {
+            function reRevert() {
+                returndatacopy(0, 0, returndatasize())
+                revert(0, returndatasize())
+            }
+
+            let rawPair := calldataload(sub(calldatasize(), 0x20))
+            let pair := and(rawPair, _ADDRESS_MASK)
+            let emptyPtr := mload(0x40)
+            mstore(0x40, add(emptyPtr, 0x20))
+            switch and(rawPair, _REVERSE_MASK)
+                case 0 {
+                    mstore(emptyPtr, _UNISWAP_PAIR_TOKEN1_CALL_SELECTOR_32)
+                }
+                default {
+                    mstore(emptyPtr, _UNISWAP_PAIR_TOKEN0_CALL_SELECTOR_32)
+                }
+            if iszero(staticcall(gas(), pair, emptyPtr, 0x4, emptyPtr, 0x20)) {
+                reRevert()
+            }
+
+            ret := mload(emptyPtr)
+        }
     }
 }

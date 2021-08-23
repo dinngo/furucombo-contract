@@ -259,23 +259,7 @@ contract('OneInchV3 Swap', function([_, user]) {
         expect(swapData.tx.data.substring(0, 10)).to.be.eq(
           SELECTOR_1INCH_UNOSWAP
         );
-
-        // Reshape data
-        // 1. append dstToken to tx data
-        // 2. change function selector
-        const dataWithoutSelector = '0x' + swapData.tx.data.substring(10);
-        const decoded = decodeInputData(
-          IOneInch,
-          'unoswap',
-          dataWithoutSelector
-        );
-        const data = getCallData(HOneInch, 'unoswap', [
-          decoded[0],
-          decoded[1],
-          decoded[2],
-          decoded[3],
-          swapData.toToken.address,
-        ]);
+        const data = swapData.tx.data;
 
         // Execute
         const receipt = await this.proxy.execMock(to, data, {
@@ -306,62 +290,6 @@ contract('OneInchV3 Swap', function([_, user]) {
         );
 
         profileGas(receipt);
-      });
-
-      it('should revert: append incorrect dst token', async function() {
-        // Prepare data
-        const value = ether('0.1');
-        const to = this.hOneInch.address;
-        const slippage = 3;
-        const swapReq = queryString.stringifyUrl({
-          url: URL_1INCH_SWAP,
-          query: {
-            fromTokenAddress: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
-            toTokenAddress: tokenAddress,
-            amount: value,
-            slippage: slippage,
-            disableEstimate: true,
-            fromAddress: this.proxy.address,
-            // If the route contains only Uniswap and its' forks, tx.data will invoke `unoswap`
-            protocols: UNOSWAP_PROTOCOLS,
-          },
-        });
-
-        // Call 1inch API
-        const swapResponse = await fetch(swapReq);
-        expect(swapResponse.ok, '1inch api response not ok').to.be.true;
-        const swapData = await swapResponse.json();
-        // Verify it's `unoswap` function call
-        expect(swapData.tx.data.substring(0, 10)).to.be.eq(
-          SELECTOR_1INCH_UNOSWAP
-        );
-
-        // Reshape data
-        // 1. append dstToken to tx data
-        // 2. change function selector
-        const dataWithoutSelector = '0x' + swapData.tx.data.substring(10);
-        const decoded = decodeInputData(
-          IOneInch,
-          'unoswap',
-          dataWithoutSelector
-        );
-        // Append different dst toke address
-        const data = getCallData(HOneInch, 'unoswap', [
-          decoded[0],
-          decoded[1],
-          decoded[2],
-          decoded[3],
-          dummyTokenAddress,
-        ]);
-
-        // Execute
-        await expectRevert(
-          this.proxy.execMock(to, data, {
-            from: user,
-            value: value,
-          }),
-          'balance diff not match return amount'
-        );
       });
     });
   });
@@ -488,23 +416,7 @@ contract('OneInchV3 Swap', function([_, user]) {
         expect(swapData.tx.data.substring(0, 10)).to.be.eq(
           SELECTOR_1INCH_UNOSWAP
         );
-
-        // Reshape data
-        // 1. append dstToken to tx data
-        // 2. change function selector
-        const dataWithoutSelector = '0x' + swapData.tx.data.substring(10);
-        const decoded = decodeInputData(
-          IOneInch,
-          'unoswap',
-          dataWithoutSelector
-        );
-        const data = getCallData(HOneInch, 'unoswap', [
-          decoded[0],
-          decoded[1],
-          decoded[2],
-          decoded[3],
-          swapData.toToken.address,
-        ]);
+        const data = swapData.tx.data;
 
         // Execute
         const receipt = await this.proxy.execMock(to, data, {
@@ -669,23 +581,7 @@ contract('OneInchV3 Swap', function([_, user]) {
         expect(swapData.tx.data.substring(0, 10)).to.be.eq(
           SELECTOR_1INCH_UNOSWAP
         );
-
-        // Reshape data
-        // 1. append dstToken to tx data
-        // 2. change function selector
-        const dataWithoutSelector = '0x' + swapData.tx.data.substring(10);
-        const decoded = decodeInputData(
-          IOneInch,
-          'unoswap',
-          dataWithoutSelector
-        );
-        const data = getCallData(HOneInch, 'unoswap', [
-          decoded[0],
-          decoded[1],
-          decoded[2],
-          decoded[3],
-          swapData.toToken.address,
-        ]);
+        const data = swapData.tx.data;
 
         // Execute
         const receipt = await this.proxy.execMock(to, data, {
