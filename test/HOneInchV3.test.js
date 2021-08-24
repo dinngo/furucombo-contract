@@ -19,6 +19,8 @@ const {
   DAI_PROVIDER,
   CHI_TOKEN,
   USDC_TOKEN,
+  WETH_TOKEN,
+  WETH_PROVIDER,
 } = require('./utils/constants');
 const {
   evmRevert,
@@ -457,15 +459,19 @@ contract('OneInchV3 Swap', function([_, user]) {
     const token0Address = DAI_TOKEN;
     const token1Address = USDC_TOKEN;
     const providerAddress = DAI_PROVIDER;
+    const wethProviderAddress = WETH_PROVIDER;
 
     let balanceUser;
     let balanceProxy;
     let token0User;
     let token1User;
+    let wethUser;
+    let wethProxy;
 
     before(async function() {
       this.token0 = await IToken.at(token0Address);
       this.token1 = await IToken.at(token1Address);
+      this.weth = await IToken.at(WETH_TOKEN);
     });
 
     beforeEach(async function() {
@@ -473,6 +479,8 @@ contract('OneInchV3 Swap', function([_, user]) {
       balanceProxy = await tracker(this.proxy.address);
       token0User = await this.token0.balanceOf.call(user);
       token1User = await this.token1.balanceOf.call(user);
+      wethUser = await this.weth.balanceOf.call(user);
+      wethProxy = await this.weth.balanceOf.call(this.proxy.address);
     });
 
     describe('Swap', function() {
@@ -608,6 +616,77 @@ contract('OneInchV3 Swap', function([_, user]) {
           token1User.add(mulPercent(quote, 100 - slippage - 1))
         );
         expect(await this.token1.balanceOf.call(this.proxy.address)).to.be.zero;
+
+        // Verify ether balance
+        expect(await balanceProxy.get()).to.be.zero;
+        expect(await balanceUser.delta()).to.be.bignumber.eq(
+          ether('0').sub(new BN(receipt.receipt.gasUsed))
+        );
+
+        profileGas(receipt);
+      });
+
+      it('to weth', async function() {
+        // Prepare data
+        const value = ether('100');
+        const to = this.hOneInch.address;
+        const slippage = 3;
+        const swapReq = queryString.stringifyUrl({
+          url: URL_1INCH_SWAP,
+          query: {
+            fromTokenAddress: token0Address,
+            toTokenAddress: WETH_TOKEN,
+            amount: value,
+            slippage: slippage,
+            disableEstimate: true,
+            fromAddress: this.proxy.address,
+            // If the route contains only Uniswap and its' forks, tx.data will invoke `unoswap`
+            protocols: UNOSWAP_PROTOCOLS,
+          },
+        });
+
+        // Transfer from token to Proxy first
+        await this.token0.transfer(this.proxy.address, value, {
+          from: providerAddress,
+        });
+        await this.proxy.updateTokenMock(this.token0.address);
+
+        // Call 1inch API
+        const swapResponse = await fetch(swapReq);
+        expect(swapResponse.ok, '1inch api response not ok').to.be.true;
+        const swapData = await swapResponse.json();
+        const quote = swapData.toTokenAmount;
+        // Verify it's `unoswap` function call
+        expect(swapData.tx.data.substring(0, 10)).to.be.eq(
+          SELECTOR_1INCH_UNOSWAP
+        );
+        const data = swapData.tx.data;
+
+        // Execute
+        const receipt = await this.proxy.execMock(to, data, {
+          from: user,
+          value: ether('0.1'),
+        });
+
+        // Verify return value
+        const wethUserEnd = await this.weth.balanceOf.call(user);
+        const handlerReturn = utils.toBN(
+          getHandlerReturn(receipt, ['uint256'])[0]
+        );
+        expect(handlerReturn).to.be.bignumber.eq(wethUserEnd.sub(wethUser));
+
+        // Verify token0 balance
+        expect(await this.token0.balanceOf.call(user)).to.be.bignumber.eq(
+          token0User
+        );
+        expect(await this.token0.balanceOf.call(this.proxy.address)).to.be.zero;
+
+        // Verify weth balance
+        expect(await this.weth.balanceOf.call(user)).to.be.bignumber.gte(
+          // sub 1 more percent to tolerate the slippage calculation difference with 1inch
+          wethUser.add(mulPercent(quote, 100 - slippage - 1))
+        );
+        expect(await this.weth.balanceOf.call(this.proxy.address)).to.be.zero;
 
         // Verify ether balance
         expect(await balanceProxy.get()).to.be.zero;
