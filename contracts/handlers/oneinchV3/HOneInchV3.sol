@@ -25,7 +25,7 @@ contract HOneInchV3 is HandlerBase {
     // prettier-ignore
     uint256 private constant _WETH_MASK =      0x4000000000000000000000000000000000000000000000000000000000000000;
 
-    function getContractName() public override pure returns (string memory) {
+    function getContractName() public pure override returns (string memory) {
         return "HOneInchV3";
     }
 

@@ -1,23 +1,10 @@
-const {
-  balance,
-  BN,
-  constants,
-  ether,
-  expectEvent,
-  expectRevert,
-  time,
-} = require('@openzeppelin/test-helpers');
+const { balance, BN, ether } = require('@openzeppelin/test-helpers');
 const { tracker } = balance;
-const { MAX_UINT256 } = constants;
-const { latest } = time;
-const abi = require('ethereumjs-abi');
-const util = require('ethereumjs-util');
 const utils = web3.utils;
 const { expect } = require('chai');
 const {
   DAI_TOKEN,
   DAI_PROVIDER,
-  CHI_TOKEN,
   USDC_TOKEN,
   WETH_TOKEN,
   WETH_PROVIDER,
@@ -28,8 +15,7 @@ const {
   mulPercent,
   profileGas,
   getHandlerReturn,
-  getCallData,
-  decodeInputData,
+  getFuncSig,
 } = require('./utils/utils');
 const fetch = require('node-fetch');
 const queryString = require('query-string');
@@ -40,8 +26,9 @@ const Proxy = artifacts.require('ProxyMock');
 const IToken = artifacts.require('IERC20');
 const IOneInch = artifacts.require('IAggregationRouterV3');
 
-const SELECTOR_1INCH_SWAP = '0x7c025200';
-const SELECTOR_1INCH_UNOSWAP = '0x2e95b6c8';
+const SELECTOR_1INCH_SWAP = getFuncSig(IOneInch, 'swap');
+const SELECTOR_1INCH_UNOSWAP = getFuncSig(IOneInch, 'unoswap');
+
 /// Change url for different chain
 /// - Ethereum: https://api.1inch.exchange/v3.0/1/
 /// - Polygon: https://api.1inch.exchange/v3.0/137/
@@ -96,7 +83,6 @@ contract('OneInchV3 Swap', function([_, user]) {
 
   describe('Ether to Token', function() {
     const tokenAddress = DAI_TOKEN;
-    const dummyTokenAddress = CHI_TOKEN;
 
     let balanceUser;
     let balanceProxy;

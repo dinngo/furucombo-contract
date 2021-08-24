@@ -117,6 +117,10 @@ function decodeOutputData(artifact, name, params) {
   return web3.eth.abi.decodeParameters(getAbi(artifact, name).outputs, params);
 }
 
+function getFuncSig(artifact, name) {
+  return web3.eth.abi.encodeFunctionSignature(getAbi(artifact, name));
+}
+
 module.exports = {
   profileGas,
   evmSnapshot,
@@ -130,4 +134,5 @@ module.exports = {
   getCallData,
   decodeInputData,
   decodeOutputData,
+  getFuncSig,
 };
