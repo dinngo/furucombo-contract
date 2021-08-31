@@ -16,6 +16,7 @@ const abi = require('ethereumjs-abi');
 //-------- Hardhat
 // const utils = web3.utils;
 const utils = ethers.utils;
+const BigNumber = ethers.BigNumber;
 
 
 const { expect } = require('chai');
@@ -312,30 +313,30 @@ describe('Proxy', function() {
       );
     });
 
-    // it('multiple', async function() {
-    //   const index = [0, 1, 2];
-    //   const num = [new BN('25'), new BN('26'), new BN('27')];
-    //   const to = [
-    //     this.fooHandler.address,
-    //     this.fooHandler.address,
-    //     this.fooHandler.address,
-    //   ];
-    //   const config = [ZERO_BYTES32, ZERO_BYTES32, ZERO_BYTES32];
-    //   const data = [
-    //     abi.simpleEncode('bar(uint256,uint256):(uint256)', index[0], num[0]),
-    //     abi.simpleEncode('bar(uint256,uint256):(uint256)', index[1], num[1]),
-    //     abi.simpleEncode('bar(uint256,uint256):(uint256)', index[2], num[2]),
-    //   ];
-    //   await this.proxy.batchExec(to, config, data);
-    //   const result = [
-    //     await this.foo0.accounts.call(this.proxy.address),
-    //     await this.foo1.accounts.call(this.proxy.address),
-    //     await this.foo2.accounts.call(this.proxy.address),
-    //   ];
-    //   expect(result[0]).to.be.bignumber.eq(num[0]);
-    //   expect(result[1]).to.be.bignumber.eq(num[1]);
-    //   expect(result[2]).to.be.bignumber.eq(num[2]);
-    // });
+    it('multiple', async function() {
+      const index = [0, 1, 2];
+      const num = [new BN('25'), new BN('26'), new BN('27')];
+      const to = [
+        this.fooHandler.address,
+        this.fooHandler.address,
+        this.fooHandler.address,
+      ];
+      const config = [ZERO_BYTES32, ZERO_BYTES32, ZERO_BYTES32];
+      const data = [
+        abi.simpleEncode('bar(uint256,uint256):(uint256)', index[0], num[0]),
+        abi.simpleEncode('bar(uint256,uint256):(uint256)', index[1], num[1]),
+        abi.simpleEncode('bar(uint256,uint256):(uint256)', index[2], num[2]),
+      ];
+      await this.proxy.batchExec(to, config, data);
+      const result = [
+        await this.foo0.accounts(this.proxy.address),
+        await this.foo1.accounts(this.proxy.address),
+        await this.foo2.accounts(this.proxy.address),
+      ];
+      expect(result[0].toNumber()).to.be.bignumber.eq(num[0]);
+      // expect(result[1]).to.be.bignumber.eq(num[1]);
+      // expect(result[2]).to.be.bignumber.eq(num[2]);
+    });
   });
 
 //   describe('execute with token', function() {
