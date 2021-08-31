@@ -70,7 +70,7 @@ if ganache_running; then
     echo "Using existing ganache instance"
 else
     echo "Starting new ganache instance"
-    #start_ganache
+    start_ganache
 fi
 
 # truffle version 
@@ -78,4 +78,4 @@ npx hardhat --version
 
 # Execute rest test files with suffix `.test.js` with single `truffle test`
 # node_modules/.bin/truffle test "$@"
-npx hardhat test
+npx hardhat test ./test/Proxy.test.js
