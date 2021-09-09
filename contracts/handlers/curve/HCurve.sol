@@ -498,8 +498,8 @@ contract HCurve is HandlerBase {
         // Approve non-zero amount erc20 token and set eth amount
         uint256 ethAmount;
         for (uint256 i = 0; i < amounts.length; i++) {
-            amounts[i] = _getBalance(tokens[i], amounts[i]);
             if (amounts[i] == 0) continue;
+            amounts[i] = _getBalance(tokens[i], amounts[i]);
             if (tokens[i] == ETH_ADDRESS) {
                 ethAmount = amounts[i];
                 continue;
