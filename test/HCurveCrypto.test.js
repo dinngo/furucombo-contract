@@ -1,4 +1,5 @@
 const { balance, BN, ether, constants } = require('@openzeppelin/test-helpers');
+const { MAX_UINT256 } = require('@openzeppelin/test-helpers/src/constants');
 const { web3 } = require('@openzeppelin/test-helpers/src/setup');
 const { tracker } = balance;
 const { expect } = require('chai');
@@ -257,6 +258,59 @@ contract('Curve Crypto', function([_, user]) {
           poolToken.address,
           tokens,
           amounts,
+          minMintAmount
+        );
+        receipt = await this.proxy.execMock(this.hCurve.address, data, {
+          from: user,
+          value: value,
+        });
+        handlerReturn = utils.toBN(getHandlerReturn(receipt, ['uint256'])[0]);
+
+        // Check user
+        expect(await balanceUser.delta()).to.be.bignumber.eq(
+          ether('0')
+            .sub(value)
+            .sub(new BN(receipt.receipt.gasUsed))
+        );
+        expect(await token0.balanceOf.call(user)).to.be.bignumber.eq(
+          token0User
+        );
+        expect(await token1.balanceOf.call(user)).to.be.bignumber.eq(
+          token1User
+        );
+        expect(await poolToken.balanceOf.call(user)).to.be.bignumber.eq(
+          handlerReturn.add(poolTokenUser)
+        );
+      });
+
+      it('add USDT, WBTC and ETH to pool by addLiquidity with max amount', async function() {
+        const token0Amount = new BN('1000000000'); // 1e9
+        const token1Amount = new BN('10000000'); // 1e7
+        const value = ether('1');
+        const tokens = [token0.address, token1.address, ETH_TOKEN];
+        const amounts = [token0Amount, token1Amount, value];
+
+        // Get expected answer
+        answer = await this.tricryptoSwap.methods[
+          'calc_token_amount(uint256[3],bool)'
+        ](amounts, true);
+
+        // Execute handler
+        await token0.transfer(this.proxy.address, token0Amount, {
+          from: provider0Address,
+        });
+        await token1.transfer(this.proxy.address, token1Amount, {
+          from: provider1Address,
+        });
+        await this.proxy.updateTokenMock(token0.address);
+        await this.proxy.updateTokenMock(token1.address);
+        const minMintAmount = mulPercent(answer, new BN('100').sub(slippage));
+        const data = abi.simpleEncode(
+          'addLiquidity(address,address,address[],uint256[],uint256)',
+          this.tricryptoDeposit.address,
+          poolToken.address,
+          tokens,
+          [MAX_UINT256, MAX_UINT256, MAX_UINT256],
           minMintAmount
         );
         receipt = await this.proxy.execMock(this.hCurve.address, data, {
