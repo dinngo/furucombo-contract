@@ -840,6 +840,7 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
           cWithdrawAmount
         );
         const ethUserBefore = await balance.current(user);
+        const ethUserProxyBefore = await balance.current(this.userProxy.address);
         const borrowBalanceBefore = await this.cEther.borrowBalanceCurrent.call(
           this.userProxy.address
         );
@@ -856,7 +857,7 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
         const borrowBalanceAfter = await this.cEther.borrowBalanceCurrent.call(
           this.userProxy.address
         );
-        expect(ethUserProxyAfter).to.be.bignumber.zero;
+        expect(ethUserProxyAfter).to.be.bignumber.eq(ethUserProxyBefore);
         expect(ethProxyAfter).to.be.bignumber.zero;
         // balance might less than expected since debt might be slightly higher than borrowBalanceStored we got
         expect(ethUserAfter).to.be.bignumber.lte(
