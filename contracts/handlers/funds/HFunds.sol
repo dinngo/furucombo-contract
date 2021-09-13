@@ -7,13 +7,34 @@ import "../HandlerBase.sol";
 contract HFunds is HandlerBase {
     using SafeERC20 for IERC20;
 
+    // prettier-ignore
+    address public constant ETH_ADDRESS = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
+
     function getContractName() public pure override returns (string memory) {
         return "HFunds";
+    }
+
+    function updateTokens(address[] calldata tokens)
+        external
+        payable
+        returns (uint256[] memory)
+    {
+        uint256[] memory balances = new uint256[](tokens.length);
+        for (uint256 i = 0; i < tokens.length; i++) {
+            address token = tokens[i];
+            if (token != address(0) && token != ETH_ADDRESS) {
+                // Update involved token
+                _updateToken(token);
+            }
+            balances[i] = _getBalance(token, uint256(-1));
+        }
+        return balances;
     }
 
     function inject(address[] calldata tokens, uint256[] calldata amounts)
         external
         payable
+        returns (uint256[] memory)
     {
         if (tokens.length != amounts.length)
             _revertMsg("inject", "token and amount does not match");
@@ -28,6 +49,7 @@ contract HFunds is HandlerBase {
             // Update involved token
             _updateToken(tokens[i]);
         }
+        return amounts;
     }
 
     function sendTokens(
@@ -39,11 +61,7 @@ contract HFunds is HandlerBase {
             uint256 amount = _getBalance(tokens[i], amounts[i]);
             if (amount > 0) {
                 // ETH case
-                if (
-                    tokens[i] == address(0) ||
-                    tokens[i] ==
-                    address(0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE)
-                ) {
+                if (tokens[i] == address(0) || tokens[i] == ETH_ADDRESS) {
                     receiver.transfer(amount);
                 } else {
                     IERC20(tokens[i]).safeTransfer(receiver, amount);

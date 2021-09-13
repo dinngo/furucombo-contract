@@ -499,11 +499,11 @@ contract HCurve is HandlerBase {
         uint256 ethAmount;
         for (uint256 i = 0; i < amounts.length; i++) {
             if (amounts[i] == 0) continue;
+            amounts[i] = _getBalance(tokens[i], amounts[i]);
             if (tokens[i] == ETH_ADDRESS) {
                 ethAmount = amounts[i];
                 continue;
             }
-            amounts[i] = _getBalance(tokens[i], amounts[i]);
             _tokenApprove(tokens[i], handler, amounts[i]);
         }
 

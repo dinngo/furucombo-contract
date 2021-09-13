@@ -63,7 +63,7 @@ module.exports = {
         );
       },
       network_id: '*',
-      gasPrice: 0x01,
+      gasPrice: 0x3b9aca00, // 1 gwei
       gas: 5000000,
     },
   },

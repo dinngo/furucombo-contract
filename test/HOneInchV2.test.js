@@ -40,6 +40,9 @@ const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('ProxyMock');
 const IToken = artifacts.require('IERC20');
 
+// const PROTOCOLS = ["PMMX","UNIFI","SHIBASWAP","CLIPPER","DXSWAP","FIXED_FEE_SWAP","DFX_FINANCE","CONVERGENCE_X","SAKESWAP","CREAM_LENDING","DODO_V2","CURVE_V2","SETH_WRAPPER","WETH","MOONISWAP","SUSHI","COMPOUND","KYBER","CREAMSWAP","AAVE","CURVE","UNISWAP_V1","BALANCER","CHAI","OASIS","BANCOR","IEARN","SWERVE","VALUELIQUID","DODO","SHELL","BLACKHOLESWAP","PMM1","DEFISWAP","LUASWAP","MINISWAP","MSTABLE","AAVE_LIQUIDATOR","SYNTHETIX","AAVE_V2","ST_ETH","ONE_INCH_LP","LINKSWAP","S_FINANCE","ONE_INCH_LP_1_1","PSM","ONE_INCH_LP_MIGRATOR_V1_1","UNISWAP_V2_MIGRATOR","SUSHISWAP_MIGRATOR","ONE_INCH_LP_MIGRATOR","POWERINDEX","INDEXED_FINANCE","XSIGMA","SMOOTHY_FINANCE","PMM2","PMM3","SADDLE","PMM4","KYBER_DMM","BALANCER_V2","UNISWAP_V3"].join(',');
+const PROTOCOLS = ['PMMX', 'CURVE_V2', 'UNISWAP_V3'].join(',');
+
 contract('OneInch Swap', function([_, user]) {
   let id;
 
@@ -94,6 +97,7 @@ contract('OneInch Swap', function([_, user]) {
             slippage: slippage,
             disableEstimate: true,
             fromAddress: this.proxy.address,
+            protocols: PROTOCOLS,
           },
         });
 
@@ -143,6 +147,7 @@ contract('OneInch Swap', function([_, user]) {
             slippage: slippage,
             disableEstimate: true,
             fromAddress: this.proxy.address,
+            protocols: PROTOCOLS,
           },
         });
 
@@ -214,6 +219,7 @@ contract('OneInch Swap', function([_, user]) {
             slippage: slippage,
             disableEstimate: true,
             fromAddress: this.proxy.address,
+            protocols: PROTOCOLS,
           },
         });
 
@@ -294,6 +300,7 @@ contract('OneInch Swap', function([_, user]) {
             slippage: slippage,
             disableEstimate: true,
             fromAddress: this.proxy.address,
+            protocols: PROTOCOLS,
           },
         });
 

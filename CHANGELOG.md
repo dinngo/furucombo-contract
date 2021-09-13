@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+## [1.8.0] - 2021-09-13
+
+### Added
+
+- Support 1inch v3 swap and unoswap.
+
+### Changed
+
+- Add `updateTokens` to `HFunds` and add return value for `inject`.
+
+### Fixed
+
+- Fix Curve handler add liquidity getting max amount on native token mechanism.
+
 ## [1.7.0] - 2021-07-20
 
 ### Added
