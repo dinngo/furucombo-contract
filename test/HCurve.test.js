@@ -855,6 +855,74 @@ contract('Curve', function([_, user]) {
         profileGas(receipt);
       });
 
+      it('add ETH and sETH to pool by addLiquidity with max amount', async function() {
+        const value = ether('1');
+        const tokenAmount = ether('2');
+        const tokens = [ETH_TOKEN, this.token.address];
+        const amounts = [value, tokenAmount];
+
+        // Get expected answer
+        const answer = await this.sethSwap.methods[
+          'calc_token_amount(uint256[2],bool)'
+        ](amounts, true);
+
+        // Execute handler
+        await this.token.transfer(this.proxy.address, tokenAmount, {
+          from: providerAddress,
+        });
+        await this.proxy.updateTokenMock(this.token.address);
+        const minMintAmount = mulPercent(answer, new BN('100').sub(slippage));
+        const data = abi.simpleEncode(
+          'addLiquidity(address,address,address[],uint256[],uint256)',
+          this.sethSwap.address,
+          this.poolToken.address,
+          tokens,
+          [MAX_UINT256, MAX_UINT256],
+          minMintAmount
+        );
+        const receipt = await this.proxy.execMock(this.hCurve.address, data, {
+          from: user,
+          value: value,
+        });
+
+        // Get handler return
+        const handlerReturn = utils.toBN(
+          getHandlerReturn(receipt, ['uint256'])[0]
+        );
+        const poolTokenUserEnd = await this.poolToken.balanceOf.call(user);
+        expect(handlerReturn).to.be.bignumber.eq(
+          poolTokenUserEnd.sub(poolTokenUser)
+        );
+
+        // Check proxy balance
+        expect(await balanceProxy.get()).to.be.zero;
+        expect(await this.token.balanceOf.call(this.proxy.address)).to.be.zero;
+        expect(
+          await this.poolToken.balanceOf.call(this.proxy.address)
+        ).to.be.zero;
+
+        // Check user balance
+        expect(await balanceUser.delta()).to.be.bignumber.eq(
+          ether('0')
+            .sub(value)
+            .sub(new BN(receipt.receipt.gasUsed))
+        );
+        expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
+          tokenUser
+        );
+
+        // poolToken amount should be greater than answer * 0.999 which is
+        // referenced from tests in curve contract.
+        expect(await this.poolToken.balanceOf.call(user)).to.be.bignumber.gte(
+          answer.mul(new BN('999')).div(new BN('1000'))
+        );
+        expect(await this.poolToken.balanceOf.call(user)).to.be.bignumber.lte(
+          answer
+        );
+
+        profileGas(receipt);
+      });
+
       it('remove from pool to ETH by removeLiquidityOneCoin', async function() {
         const poolTokenUser = ether('0.1');
         const answer = await this.sethSwap.methods[
