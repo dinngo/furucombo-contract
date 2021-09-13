@@ -122,8 +122,8 @@ contract('Curve', function([_, user]) {
         const token1UserEnd = await this.token1.balanceOf.call(user);
         expect(handlerReturn).to.be.bignumber.eq(token1UserEnd.sub(token1User));
 
-        expect(await this.token0.balanceOf.call(this.proxy.address)).to.be.zero;
-        expect(await this.token1.balanceOf.call(this.proxy.address)).to.be.zero;
+        expect(await this.token0.balanceOf.call(this.proxy.address)).to.be.bignumber.zero;
+        expect(await this.token1.balanceOf.call(this.proxy.address)).to.be.bignumber.zero;
         expect(await this.token0.balanceOf.call(user)).to.be.bignumber.eq(
           token0User
         );
@@ -168,8 +168,8 @@ contract('Curve', function([_, user]) {
         const token1UserEnd = await this.token1.balanceOf.call(user);
         expect(handlerReturn).to.be.bignumber.eq(token1UserEnd.sub(token1User));
 
-        expect(await this.token0.balanceOf.call(this.proxy.address)).to.be.zero;
-        expect(await this.token1.balanceOf.call(this.proxy.address)).to.be.zero;
+        expect(await this.token0.balanceOf.call(this.proxy.address)).to.be.bignumber.zero;
+        expect(await this.token1.balanceOf.call(this.proxy.address)).to.be.bignumber.zero;
         expect(await this.token0.balanceOf.call(user)).to.be.bignumber.eq(
           token0User
         );
@@ -238,8 +238,8 @@ contract('Curve', function([_, user]) {
         const token1UserEnd = await this.token1.balanceOf.call(user);
         expect(handlerReturn).to.be.bignumber.eq(token1UserEnd.sub(token1User));
 
-        expect(await this.token0.balanceOf.call(this.proxy.address)).to.be.zero;
-        expect(await this.token1.balanceOf.call(this.proxy.address)).to.be.zero;
+        expect(await this.token0.balanceOf.call(this.proxy.address)).to.be.bignumber.zero;
+        expect(await this.token1.balanceOf.call(this.proxy.address)).to.be.bignumber.zero;
         expect(await this.token0.balanceOf.call(user)).to.be.bignumber.eq(
           token0User
         );
@@ -285,8 +285,8 @@ contract('Curve', function([_, user]) {
         const token1UserEnd = await this.token1.balanceOf.call(user);
         expect(handlerReturn).to.be.bignumber.eq(token1UserEnd.sub(token1User));
 
-        expect(await this.token0.balanceOf.call(this.proxy.address)).to.be.zero;
-        expect(await this.token1.balanceOf.call(this.proxy.address)).to.be.zero;
+        expect(await this.token0.balanceOf.call(this.proxy.address)).to.be.bignumber.zero;
+        expect(await this.token1.balanceOf.call(this.proxy.address)).to.be.bignumber.zero;
         expect(await this.token0.balanceOf.call(user)).to.be.bignumber.eq(
           token0User
         );
@@ -355,8 +355,8 @@ contract('Curve', function([_, user]) {
         );
 
         // Check proxy
-        expect(await balanceProxy.get()).to.be.zero;
-        expect(await this.token.balanceOf.call(this.proxy.address)).to.be.zero;
+        expect(await balanceProxy.get()).to.be.bignumber.zero;
+        expect(await this.token.balanceOf.call(this.proxy.address)).to.be.bignumber.zero;
 
         // Check user
         expect(handlerReturn).to.be.bignumber.lte(answer);
@@ -419,8 +419,8 @@ contract('Curve', function([_, user]) {
         expect(handlerReturn).to.be.bignumber.eq(tokenUserEnd.sub(tokenUser));
 
         // Check proxy
-        expect(await balanceProxy.get()).to.be.zero;
-        expect(await this.token.balanceOf.call(this.proxy.address)).to.be.zero;
+        expect(await balanceProxy.get()).to.be.bignumber.zero;
+        expect(await this.token.balanceOf.call(this.proxy.address)).to.be.bignumber.zero;
 
         // Check user
         expect(await balanceUser.delta()).to.be.bignumber.eq(
@@ -469,8 +469,8 @@ contract('Curve', function([_, user]) {
         );
 
         // Check proxy
-        expect(await balanceProxy.get()).to.be.zero;
-        expect(await this.token.balanceOf.call(this.proxy.address)).to.be.zero;
+        expect(await balanceProxy.get()).to.be.bignumber.zero;
+        expect(await this.token.balanceOf.call(this.proxy.address)).to.be.bignumber.zero;
 
         // Check user
         expect(handlerReturn).to.be.bignumber.eq(answer);
@@ -558,11 +558,11 @@ contract('Curve', function([_, user]) {
         );
 
         // Check proxy balance
-        expect(await this.token0.balanceOf.call(this.proxy.address)).to.be.zero;
-        expect(await this.token1.balanceOf.call(this.proxy.address)).to.be.zero;
+        expect(await this.token0.balanceOf.call(this.proxy.address)).to.be.bignumber.zero;
+        expect(await this.token1.balanceOf.call(this.proxy.address)).to.be.bignumber.zero;
         expect(
           await this.poolToken.balanceOf.call(this.proxy.address)
-        ).to.be.zero;
+        ).to.be.bignumber.zero;
 
         // Check user balance
         expect(await this.token0.balanceOf.call(user)).to.be.bignumber.eq(
@@ -632,11 +632,11 @@ contract('Curve', function([_, user]) {
         );
 
         // Check proxy balance
-        expect(await this.token0.balanceOf.call(this.proxy.address)).to.be.zero;
-        expect(await this.token1.balanceOf.call(this.proxy.address)).to.be.zero;
+        expect(await this.token0.balanceOf.call(this.proxy.address)).to.be.bignumber.zero;
+        expect(await this.token1.balanceOf.call(this.proxy.address)).to.be.bignumber.zero;
         expect(
           await this.poolToken.balanceOf.call(this.proxy.address)
-        ).to.be.zero;
+        ).to.be.bignumber.zero;
 
         // Check user balance
         expect(await this.token0.balanceOf.call(user)).to.be.bignumber.eq(
@@ -693,10 +693,10 @@ contract('Curve', function([_, user]) {
         );
 
         // Check proxy balance
-        expect(await this.token1.balanceOf.call(this.proxy.address)).to.be.zero;
+        expect(await this.token1.balanceOf.call(this.proxy.address)).to.be.bignumber.zero;
         expect(
           await this.poolToken.balanceOf.call(this.proxy.address)
-        ).to.be.zero;
+        ).to.be.bignumber.zero;
 
         // amount should be <= answer * 1.001 and >= answer * 0.998 which is
         // referenced from tests in curve contract.
@@ -745,10 +745,10 @@ contract('Curve', function([_, user]) {
         );
 
         // Check proxy balance
-        expect(await this.token1.balanceOf.call(this.proxy.address)).to.be.zero;
+        expect(await this.token1.balanceOf.call(this.proxy.address)).to.be.bignumber.zero;
         expect(
           await this.poolToken.balanceOf.call(this.proxy.address)
-        ).to.be.zero;
+        ).to.be.bignumber.zero;
 
         // amount should be <= answer * 1.001 and >= answer * 0.998 which is
         // referenced from tests in curve contract.
@@ -828,11 +828,11 @@ contract('Curve', function([_, user]) {
         );
 
         // Check proxy balance
-        expect(await balanceProxy.get()).to.be.zero;
-        expect(await this.token.balanceOf.call(this.proxy.address)).to.be.zero;
+        expect(await balanceProxy.get()).to.be.bignumber.zero;
+        expect(await this.token.balanceOf.call(this.proxy.address)).to.be.bignumber.zero;
         expect(
           await this.poolToken.balanceOf.call(this.proxy.address)
-        ).to.be.zero;
+        ).to.be.bignumber.zero;
 
         // Check user balance
         expect(await balanceUser.delta()).to.be.bignumber.eq(
@@ -896,11 +896,11 @@ contract('Curve', function([_, user]) {
         );
 
         // Check proxy balance
-        expect(await balanceProxy.get()).to.be.zero;
-        expect(await this.token.balanceOf.call(this.proxy.address)).to.be.zero;
+        expect(await balanceProxy.get()).to.be.bignumber.zero;
+        expect(await this.token.balanceOf.call(this.proxy.address)).to.be.bignumber.zero;
         expect(
           await this.poolToken.balanceOf.call(this.proxy.address)
-        ).to.be.zero;
+        ).to.be.bignumber.zero;
 
         // Check user balance
         expect(await balanceUser.delta()).to.be.bignumber.eq(
@@ -960,10 +960,10 @@ contract('Curve', function([_, user]) {
         );
 
         // Check proxy balance
-        expect(await balanceProxy.get()).to.be.zero;
+        expect(await balanceProxy.get()).to.be.bignumber.zero;
         expect(
           await this.poolToken.balanceOf.call(this.proxy.address)
-        ).to.be.zero;
+        ).to.be.bignumber.zero;
 
         // Check user
         expect(userBalanceDelta).to.be.bignumber.eq(
@@ -1047,11 +1047,11 @@ contract('Curve', function([_, user]) {
         );
 
         // Check proxy balance
-        expect(await balanceProxy.get()).to.be.zero;
-        expect(await this.token.balanceOf.call(this.proxy.address)).to.be.zero;
+        expect(await balanceProxy.get()).to.be.bignumber.zero;
+        expect(await this.token.balanceOf.call(this.proxy.address)).to.be.bignumber.zero;
         expect(
           await this.poolToken.balanceOf.call(this.proxy.address)
-        ).to.be.zero;
+        ).to.be.bignumber.zero;
 
         // Check user balance
         expect(await balanceUser.delta()).to.be.bignumber.eq(
@@ -1149,11 +1149,11 @@ contract('Curve', function([_, user]) {
         );
 
         // Check proxy balance
-        expect(await this.token0.balanceOf.call(this.proxy.address)).to.be.zero;
-        expect(await this.token1.balanceOf.call(this.proxy.address)).to.be.zero;
+        expect(await this.token0.balanceOf.call(this.proxy.address)).to.be.bignumber.zero;
+        expect(await this.token1.balanceOf.call(this.proxy.address)).to.be.bignumber.zero;
         expect(
           await this.poolToken.balanceOf.call(this.proxy.address)
-        ).to.be.zero;
+        ).to.be.bignumber.zero;
 
         // Check user balance
         expect(await this.token0.balanceOf.call(user)).to.be.bignumber.eq(
@@ -1207,10 +1207,10 @@ contract('Curve', function([_, user]) {
         );
 
         // Check proxy balance
-        expect(await this.token1.balanceOf.call(this.proxy.address)).to.be.zero;
+        expect(await this.token1.balanceOf.call(this.proxy.address)).to.be.bignumber.zero;
         expect(
           await this.poolToken.balanceOf.call(this.proxy.address)
-        ).to.be.zero;
+        ).to.be.bignumber.zero;
 
         // Check user
         expect(token1UserEnd).to.be.bignumber.eq(token1UserBefore.add(answer));
@@ -1322,11 +1322,11 @@ contract('Curve', function([_, user]) {
           poolTokenUserEnd.sub(poolTokenUser)
         );
         // Check proxy balance
-        expect(await this.token0.balanceOf.call(this.proxy.address)).to.be.zero;
-        expect(await this.token1.balanceOf.call(this.proxy.address)).to.be.zero;
+        expect(await this.token0.balanceOf.call(this.proxy.address)).to.be.bignumber.zero;
+        expect(await this.token1.balanceOf.call(this.proxy.address)).to.be.bignumber.zero;
         expect(
           await this.poolToken.balanceOf.call(this.proxy.address)
-        ).to.be.zero;
+        ).to.be.bignumber.zero;
         // Check user balance
         expect(await this.token0.balanceOf.call(user)).to.be.bignumber.eq(
           token0User
@@ -1414,11 +1414,11 @@ contract('Curve', function([_, user]) {
           poolTokenUserEnd.sub(poolTokenUser)
         );
         // Check proxy balance
-        expect(await this.token0.balanceOf.call(this.proxy.address)).to.be.zero;
-        expect(await this.token1.balanceOf.call(this.proxy.address)).to.be.zero;
+        expect(await this.token0.balanceOf.call(this.proxy.address)).to.be.bignumber.zero;
+        expect(await this.token1.balanceOf.call(this.proxy.address)).to.be.bignumber.zero;
         expect(
           await this.poolToken.balanceOf.call(this.proxy.address)
-        ).to.be.zero;
+        ).to.be.bignumber.zero;
         // Check user balance
         expect(await this.token0.balanceOf.call(user)).to.be.bignumber.eq(
           token0User
@@ -1465,10 +1465,10 @@ contract('Curve', function([_, user]) {
         const token1UserEnd = await this.token1.balanceOf.call(user);
         expect(handlerReturn).to.be.bignumber.eq(token1UserEnd.sub(token1User));
         // Check proxy balance
-        expect(await this.token1.balanceOf.call(this.proxy.address)).to.be.zero;
+        expect(await this.token1.balanceOf.call(this.proxy.address)).to.be.bignumber.zero;
         expect(
           await this.poolToken.balanceOf.call(this.proxy.address)
-        ).to.be.zero;
+        ).to.be.bignumber.zero;
         // amount should be <= answer * 1.001 and >= answer * 0.999 which is
         // referenced from tests in curve contract.
         expect(await this.token1.balanceOf.call(user)).to.be.bignumber.gte(

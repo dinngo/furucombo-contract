@@ -84,12 +84,12 @@ contract('Furucombo rCOMBO', function([_, user]) {
       });
 
       // Verify
-      expect(await balanceProxy.get()).to.be.zero;
+      expect(await balanceProxy.get()).to.be.bignumber.zero;
       expect(await balanceUser.delta()).to.be.bignumber.eq(
         ether('0').sub(new BN(receipt.receipt.gasUsed))
       );
-      expect(await this.rCOMBO.balanceOf.call(this.proxy.address)).to.be.zero;
-      expect(await this.rCOMBO.balanceOf.call(user)).to.be.zero;
+      expect(await this.rCOMBO.balanceOf.call(this.proxy.address)).to.be.bignumber.zero;
+      expect(await this.rCOMBO.balanceOf.call(user)).to.be.bignumber.zero;
       expect(await this.rCOMBO.provided(user)).to.be.bignumber.eq(amount);
 
       profileGas(receipt);
@@ -113,12 +113,12 @@ contract('Furucombo rCOMBO', function([_, user]) {
       });
 
       // Verify
-      expect(await balanceProxy.get()).to.be.zero;
+      expect(await balanceProxy.get()).to.be.bignumber.zero;
       expect(await balanceUser.delta()).to.be.bignumber.eq(
         ether('0').sub(new BN(receipt.receipt.gasUsed))
       );
-      expect(await this.rCOMBO.balanceOf.call(this.proxy.address)).to.be.zero;
-      expect(await this.rCOMBO.balanceOf.call(user)).to.be.zero;
+      expect(await this.rCOMBO.balanceOf.call(this.proxy.address)).to.be.bignumber.zero;
+      expect(await this.rCOMBO.balanceOf.call(user)).to.be.bignumber.zero;
       expect(await this.rCOMBO.provided(user)).to.be.bignumber.eq(amount);
 
       profileGas(receipt);
@@ -169,11 +169,11 @@ contract('Furucombo rCOMBO', function([_, user]) {
       });
 
       // Verify
-      expect(await balanceProxy.get()).to.be.zero;
+      expect(await balanceProxy.get()).to.be.bignumber.zero;
       expect(await balanceUser.delta()).to.be.bignumber.eq(
         ether('0').sub(new BN(receipt.receipt.gasUsed))
       );
-      expect(await this.combo.balanceOf.call(this.proxy.address)).to.be.zero;
+      expect(await this.combo.balanceOf.call(this.proxy.address)).to.be.bignumber.zero;
       expect(await this.combo.balanceOf(user)).to.be.bignumber.eq(
         await this.rCOMBO.released(user)
       );

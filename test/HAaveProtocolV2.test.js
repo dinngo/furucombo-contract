@@ -95,8 +95,10 @@ contract('Aave V2', function([_, user, someone]) {
           from: user,
           value: value,
         });
-        expect(await balanceProxy.get()).to.be.zero;
-        expect(await this.aweth.balanceOf.call(this.proxy.address)).to.be.zero;
+        expect(await balanceProxy.get()).to.be.bignumber.zero;
+        expect(
+          await this.aweth.balanceOf.call(this.proxy.address)
+        ).to.be.bignumber.zero;
         expectEqWithinBps(await this.aweth.balanceOf.call(user), value, 100);
         expect(await balanceUser.delta()).to.be.bignumber.eq(
           ether('0')
@@ -115,8 +117,10 @@ contract('Aave V2', function([_, user, someone]) {
           from: user,
           value: value,
         });
-        expect(await balanceProxy.get()).to.be.zero;
-        expect(await this.aweth.balanceOf.call(this.proxy.address)).to.be.zero;
+        expect(await balanceProxy.get()).to.be.bignumber.zero;
+        expect(
+          await this.aweth.balanceOf.call(this.proxy.address)
+        ).to.be.bignumber.zero;
         expectEqWithinBps(await this.aweth.balanceOf.call(user), value, 100);
         expect(await balanceUser.delta()).to.be.bignumber.eq(
           ether('0')
@@ -146,8 +150,10 @@ contract('Aave V2', function([_, user, someone]) {
           from: user,
           value: ether('0.1'),
         });
-        expect(await balanceProxy.get()).to.be.zero;
-        expect(await this.aToken.balanceOf.call(this.proxy.address)).to.be.zero;
+        expect(await balanceProxy.get()).to.be.bignumber.zero;
+        expect(
+          await this.aToken.balanceOf.call(this.proxy.address)
+        ).to.be.bignumber.zero;
         expectEqWithinBps(await this.aToken.balanceOf.call(user), value, 100);
         expect(await balanceUser.delta()).to.be.bignumber.eq(
           ether('0').sub(new BN(receipt.receipt.gasUsed))
@@ -173,8 +179,10 @@ contract('Aave V2', function([_, user, someone]) {
           from: user,
           value: ether('0.1'),
         });
-        expect(await balanceProxy.get()).to.be.zero;
-        expect(await this.aToken.balanceOf.call(this.proxy.address)).to.be.zero;
+        expect(await balanceProxy.get()).to.be.bignumber.zero;
+        expect(
+          await this.aToken.balanceOf.call(this.proxy.address)
+        ).to.be.bignumber.zero;
         expectEqWithinBps(await this.aToken.balanceOf.call(user), value, 100);
 
         expect(await balanceUser.delta()).to.be.bignumber.eq(
@@ -242,7 +250,9 @@ contract('Aave V2', function([_, user, someone]) {
         // Verify handler return
         expect(value).to.be.bignumber.eq(handlerReturn);
         // Verify proxy balance
-        expect(await this.aweth.balanceOf.call(this.proxy.address)).to.be.zero;
+        expect(
+          await this.aweth.balanceOf.call(this.proxy.address)
+        ).to.be.bignumber.zero;
         // Verify user balance
         // (deposit - withdraw) <= aTokenAfter < (deposit + interestMax - withdraw)
         expect(aTokenUserAfter).to.be.bignumber.gte(depositAmount.sub(value));
@@ -282,7 +292,9 @@ contract('Aave V2', function([_, user, someone]) {
         expect(mulPercent(value, 101)).to.be.bignumber.gte(handlerReturn);
 
         // Verify proxy balance
-        expect(await this.aweth.balanceOf.call(this.proxy.address)).to.be.zero;
+        expect(
+          await this.aweth.balanceOf.call(this.proxy.address)
+        ).to.be.bignumber.zero;
         // Verify user balance
         // (deposit - withdraw) <= aTokenAfter < (deposit + interestMax - withdraw)
         // NOTE: aTokenUserAfter == (depositAmount - withdraw - 1) (sometime, Ganache bug maybe)
@@ -342,8 +354,12 @@ contract('Aave V2', function([_, user, someone]) {
         // Verify handler return
         expect(value).to.be.bignumber.eq(handlerReturn);
         // Verify proxy balance
-        expect(await this.aToken.balanceOf.call(this.proxy.address)).to.be.zero;
-        expect(await this.token.balanceOf.call(this.proxy.address)).to.be.zero;
+        expect(
+          await this.aToken.balanceOf.call(this.proxy.address)
+        ).to.be.bignumber.zero;
+        expect(
+          await this.token.balanceOf.call(this.proxy.address)
+        ).to.be.bignumber.zero;
 
         // Verify user balance
         // (deposit - withdraw) <= aTokenAfter < (deposit + interestMax - withdraw)
@@ -390,8 +406,12 @@ contract('Aave V2', function([_, user, someone]) {
         expect(mulPercent(value, 101)).to.be.bignumber.gte(handlerReturn);
 
         // Verify proxy balance
-        expect(await this.aToken.balanceOf.call(this.proxy.address)).to.be.zero;
-        expect(await this.token.balanceOf.call(this.proxy.address)).to.be.zero;
+        expect(
+          await this.aToken.balanceOf.call(this.proxy.address)
+        ).to.be.bignumber.zero;
+        expect(
+          await this.token.balanceOf.call(this.proxy.address)
+        ).to.be.bignumber.zero;
         // Verify user balance
         // (deposit - withdraw -1) <= aTokenAfter < (deposit + interestMax - withdraw)
         // NOTE: aTokenUserAfter == (depositAmount - withdraw - 1) (sometime, Ganache bug maybe)
@@ -439,10 +459,14 @@ contract('Aave V2', function([_, user, someone]) {
         // Verify handler return
         expect(handlerReturn).to.be.bignumber.gte(depositAmount);
         // Verify proxy balance
-        expect(await this.aToken.balanceOf.call(this.proxy.address)).to.be.zero;
-        expect(await this.token.balanceOf.call(this.proxy.address)).to.be.zero;
+        expect(
+          await this.aToken.balanceOf.call(this.proxy.address)
+        ).to.be.bignumber.zero;
+        expect(
+          await this.token.balanceOf.call(this.proxy.address)
+        ).to.be.bignumber.zero;
         // Verify user balance
-        expect(aTokenUserAfter).to.be.zero;
+        expect(aTokenUserAfter).to.be.bignumber.zero;
         expect(tokenUserAfter).to.be.bignumber.eq(handlerReturn);
         expect(await balanceUser.delta()).to.be.bignumber.eq(
           ether('0').sub(new BN(receipt.receipt.gasUsed))
