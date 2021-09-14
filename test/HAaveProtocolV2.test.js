@@ -46,6 +46,7 @@ contract('Aave V2', function([_, user, someone]) {
   const tokenAddress = DAI_TOKEN;
   const awethAddress = AWETH_V2;
   const wethAddress = WETH_TOKEN;
+  const ATOKEN_DUST = ether('0.00001');
 
   let id;
   let balanceUser;
@@ -466,7 +467,7 @@ contract('Aave V2', function([_, user, someone]) {
           await this.token.balanceOf.call(this.proxy.address)
         ).to.be.bignumber.zero;
         // Verify user balance
-        expect(aTokenUserAfter).to.be.bignumber.zero;
+        expect(aTokenUserAfter).to.be.bignumber.lt(ATOKEN_DUST);
         expect(tokenUserAfter).to.be.bignumber.eq(handlerReturn);
         expect(await balanceUser.delta()).to.be.bignumber.eq(
           ether('0').sub(new BN(receipt.receipt.gasUsed))
