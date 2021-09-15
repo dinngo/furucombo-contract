@@ -1,5 +1,5 @@
 require("@nomiclabs/hardhat-waffle");
-require("@nomiclabs/hardhat-ethers");
+
 // hardhat-deploy plugin is mainly for evm_snapshot functionality.
 require('hardhat-deploy');
 

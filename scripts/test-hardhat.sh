@@ -19,6 +19,7 @@ ganache_running() {
 }
 
 start_ganache() {
+    echo start_ganache
     TEST_MNEMONIC_PHRASE="dice shove sheriff police boss indoor hospital vivid tenant method game matter"
     ETHER_PROVIDER="0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
     DAI_PROVIDER="0x5A16552f59ea34E44ec81E58b3817833E9fD5436"
@@ -60,21 +61,23 @@ start_ganache() {
     ETH_PROVIDER_CONTRACT="0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
 
     # node_modules/.bin/ganache-cli --gasLimit 0xfffffffffff -m "$TEST_MNEMONIC_PHRASE" > /dev/null &
-    node_modules/.bin/ganache-cli --gasLimit 0xfffffffffff --debug -f $ETH_MAINNET_NODE -m "$TEST_MNEMONIC_PHRASE" -u "$ETHER_PROVIDER" -u "$DAI_PROVIDER" -u "$MKR_PROVIDER" -u "$BAT_PROVIDER" -u "$USDT_PROVIDER" -u "$SUSD_PROVIDER" -u "$WBTC_PROVIDER" -u "$KNC_PROVIDER" -u "$WETH_PROVIDER" -u "$RENBTC_PROVIDER" -u "$YCRV_PROVIDER" -u "$TCRV_PROVIDER" -u "$YFI_PROVIDER" -u "$ALINK_PROVIDER" -u "$CURVE_SBTCCRV_PROVIDER" -u "$CHI_PROVIDER" -u "$GST2_PROVIDER" -u "$MUSD_PROVIDER" -u "$CURVE_MUSDCRV_PROVIDER" -u "$BALANCER_DAI_ETH_PROVIDER" -u "$COMBO_CLAIM_USER" -u "$SETH_PROVIDER" -u "$CURVE_SETHCRV_PROVIDER" -u "$CURVE_AAVECRV_PROVIDER" -u "$CURVE_SCRV_PROVIDER" -u "$SNX_PROVIDER" -u "$HBTC_PROVIDER" -u "$OMG_PROVIDER" -u "$STAKING_REWARDS_ADAPTER_REGISTRY_OWNER" -u "$SUSHI_PROVIDER" -u "$xSUSHI_PROVIDER" -u "$COMBO_PROVIDER" -u "$RCOMBO_PROVIDER" -u "$GELATOV2_ADDRESS" -u "$MATIC_PROVIDER" -u "$CURVE_TRICRYPTOCRV_PROVIDER" -u "$CURVE_FACTORY_TUSD_PROVIDER" -u "$ETH_PROVIDER_CONTRACT" >/dev/null &
-
+    # node_modules/.bin/ganache-cli --gasLimit 0xfffffffffff --debug -f $ETH_MAINNET_NODE -m "$TEST_MNEMONIC_PHRASE" -u "$ETHER_PROVIDER" -u "$DAI_PROVIDER" -u "$MKR_PROVIDER" -u "$BAT_PROVIDER" -u "$USDT_PROVIDER" -u "$SUSD_PROVIDER" -u "$WBTC_PROVIDER" -u "$KNC_PROVIDER" -u "$WETH_PROVIDER" -u "$RENBTC_PROVIDER" -u "$YCRV_PROVIDER" -u "$TCRV_PROVIDER" -u "$YFI_PROVIDER" -u "$ALINK_PROVIDER" -u "$CURVE_SBTCCRV_PROVIDER" -u "$CHI_PROVIDER" -u "$GST2_PROVIDER" -u "$MUSD_PROVIDER" -u "$CURVE_MUSDCRV_PROVIDER" -u "$BALANCER_DAI_ETH_PROVIDER" -u "$COMBO_CLAIM_USER" -u "$SETH_PROVIDER" -u "$CURVE_SETHCRV_PROVIDER" -u "$CURVE_AAVECRV_PROVIDER" -u "$CURVE_SCRV_PROVIDER" -u "$SNX_PROVIDER" -u "$HBTC_PROVIDER" -u "$OMG_PROVIDER" -u "$STAKING_REWARDS_ADAPTER_REGISTRY_OWNER" -u "$SUSHI_PROVIDER" -u "$xSUSHI_PROVIDER" -u "$COMBO_PROVIDER" -u "$RCOMBO_PROVIDER" -u "$GELATOV2_ADDRESS" -u "$MATIC_PROVIDER" -u "$CURVE_TRICRYPTOCRV_PROVIDER" -u "$CURVE_FACTORY_TUSD_PROVIDER" -u "$ETH_PROVIDER_CONTRACT" >/dev/null &
+    npx hardhat node --fork https://eth-mainnet.alchemyapi.io/v2/SzfScxGFsSCR1qCdzGn2qvEzdWkGtIAO >/dev/null &
     ganache_pid=$!
 }
 
 if ganache_running; then
-    echo "Using existing ganache instance"
+    echo "Using existing hardhat network instance"
 else
-    echo "Starting new ganache instance"
+    echo "Starting new hardhat network instance"
     start_ganache
 fi
 
 # truffle version 
+sleep 8
 npx hardhat --version
 
 # Execute rest test files with suffix `.test.js` with single `truffle test`
 # node_modules/.bin/truffle test "$@"
-npx hardhat test ./test/hardhat/Proxy.test.js
+# npx hardhat test ./test/hardhat/Proxy.test.js
+npx hardhat test ./test/hardhat/Proxy.test.js --network localhost

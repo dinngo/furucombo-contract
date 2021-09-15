@@ -17,7 +17,7 @@ const abi = require('ethereumjs-abi');
 // const utils = web3.utils;
 const utils = ethers.utils;
 const BigNumber = ethers.BigNumber;
-
+const createFixtureLoader = waffle.createFixtureLoader;
 
 const { expect } = require('chai');
 
@@ -67,6 +67,9 @@ describe('Proxy', function() {
 
   let deployer;
   let user;
+  let dummyUser;
+  let loadFixture;
+  
   before(async function() {
     //-------- Hardhat Migration
     Foo = await ethers.getContractFactory("Foo");
@@ -88,25 +91,24 @@ describe('Proxy', function() {
     this.registry = await Registry.deploy();
     this.proxy = await Proxy.deploy(this.registry.address);
 
-    [_, deployer, user] = await ethers.getSigners();
-
+    [dummyUser, deployer, user] = await ethers.getSigners();
+    
+    // id = await evmSnapshot();
   });
 
   beforeEach(async function() {
-    
-    
-    await setup();
-    // await deployments.fixture(['Token']);
+    id = await evmSnapshot();
   });
 
   afterEach(async function() {
-    
+    await evmRevert(id);
   });
 
   describe('execute', function() {
     before(async function() {
       //-------- Hardhat Migration
       // this.fooFactory = await FooFactory.new({ from: deployer });
+      console.log('nonce:' + await deployer.getTransactionCount());
       this.fooFactory = await FooFactory.connect(deployer).deploy();
       
       //-------- Hardhat Migration : address check, skip this
@@ -114,9 +116,9 @@ describe('Proxy', function() {
         '0xFdd454EA7BF7ca88C1B7a824c3FB0951Fb8a1318'
       );
 
-      await this.fooFactory.createFoo();
-      await this.fooFactory.createFoo();
-
+      await this.fooFactory.connect(dummyUser).createFoo();
+      await this.fooFactory.connect(dummyUser).createFoo();
+      console.log('nonce:' + await deployer.getTransactionCount());
       //-------- Hardhat Migration : Foo.attach instead of Foo.at
       this.foo0 = await Foo.attach(await this.fooFactory.addressOf(0));
       this.foo1 = await Foo.attach(await this.fooFactory.addressOf(1));
@@ -136,6 +138,7 @@ describe('Proxy', function() {
         //-------- Hardhat Migration
         utils.hexlify(utils.formatBytes32String('foo'))
       );
+      
     });
     it('single', async function() {
       const index = 0;
@@ -333,99 +336,115 @@ describe('Proxy', function() {
         await this.foo1.accounts(this.proxy.address),
         await this.foo2.accounts(this.proxy.address),
       ];
-      expect(result[0].toNumber()).to.be.bignumber.eq(num[0]);
-      // expect(result[1]).to.be.bignumber.eq(num[1]);
-      // expect(result[2]).to.be.bignumber.eq(num[2]);
+      expect(result[0].toString()).to.be.bignumber.eq(num[0]);
+      expect(result[1].toString()).to.be.bignumber.eq(num[1]);
+      expect(result[2].toString()).to.be.bignumber.eq(num[2]);
     });
   });
 
-//   describe('execute with token', function() {
-//     before(async function() {
-//       this.fooFactory = await Foo2Factory.new({ from: deployer });
-//       expect(this.fooFactory.address).to.be.eq(
-//         '0xaB7D1E16d471065629431aeABED38880170876f2'
-//       );
-//       await this.fooFactory.createFoo();
-//       await this.fooFactory.createFoo();
-//       this.foo0 = await Foo2.at(await this.fooFactory.addressOf.call(0));
-//       this.foo1 = await Foo2.at(await this.fooFactory.addressOf.call(1));
-//       this.foo2 = await Foo2.at(await this.fooFactory.addressOf.call(2));
-//       this.fooHandler = await Foo2Handler.new();
-//       await this.registry.register(
-//         this.fooHandler.address,
-//         utils.asciiToHex('foo2')
-//       );
-//     });
+  describe('execute with token', function() {
+    before(async function() {
 
-//     beforeEach(async function() {
-//       balanceUser = await tracker(user);
-//       balanceProxy = await tracker(this.proxy.address);
-//     });
+      this.fooFactory = await Foo2Factory.connect(deployer).deploy();
+      
+      // TODO: temporary skip this 
+      expect(this.fooFactory.address).to.be.eq(
+        '0xaB7D1E16d471065629431aeABED38880170876f2'
+      );
+      await this.fooFactory.createFoo();
+      await this.fooFactory.createFoo();
+      this.foo0 = await Foo2.attach(await this.fooFactory.addressOf(0));
+      this.foo1 = await Foo2.attach(await this.fooFactory.addressOf(1));
+      this.foo2 = await Foo2.attach(await this.fooFactory.addressOf(2));
+      this.fooHandler = await Foo2Handler.deploy();
+      
+      await this.registry.register(
+        this.fooHandler.address,
+        utils.hexlify(utils.formatBytes32String('foo2'))
+      );
+    });
 
-//     it('single', async function() {
-//       const index = 0;
-//       const to = this.fooHandler.address;
-//       const data = abi.simpleEncode(
-//         'bar(uint256,uint256):(uint256)',
-//         ether('1'),
-//         index
-//       );
-//       await this.proxy.execMock(to, data, { value: ether('1') });
-//       expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
-//       expect(
-//         await this.foo0.balanceOf.call(this.proxy.address)
-//       ).to.be.bignumber.eq(ether('0'));
-//     });
+    beforeEach(async function() {
+      balanceUser = await tracker(user.address);
+      balanceProxy = await tracker(this.proxy.address);
+    });
 
-//     it('multiple', async function() {
-//       const index = [0, 1, 2];
-//       const value = [ether('0.1'), ether('0.2'), ether('0.5')];
-//       const to = [
-//         this.fooHandler.address,
-//         this.fooHandler.address,
-//         this.fooHandler.address,
-//       ];
-//       const config = [ZERO_BYTES32, ZERO_BYTES32, ZERO_BYTES32];
-//       const data = [
-//         abi.simpleEncode('bar(uint256,uint256):(uint256)', value[0], index[0]),
-//         abi.simpleEncode('bar(uint256,uint256):(uint256)', value[1], index[1]),
-//         abi.simpleEncode('bar(uint256,uint256):(uint256)', value[2], index[2]),
-//       ];
-//       const receipt = await this.proxy.batchExec(to, config, data, {
-//         from: user,
-//         value: ether('1'),
-//       });
-//       expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
-//       expect(await balanceUser.delta()).to.be.bignumber.eq(
-//         ether('0')
-//           .sub(
-//             value[0]
-//               .add(value[1])
-//               .add(value[2])
-//               .div(new BN('2'))
-//           )
-//           .sub(new BN(receipt.receipt.gasUsed))
-//       );
-//       expect(
-//         await this.foo0.balanceOf.call(this.proxy.address)
-//       ).to.be.bignumber.eq(ether('0'));
-//       expect(await this.foo0.balanceOf.call(user)).to.be.bignumber.eq(
-//         value[0].div(new BN('2'))
-//       );
-//       expect(
-//         await this.foo1.balanceOf.call(this.proxy.address)
-//       ).to.be.bignumber.eq(ether('0'));
-//       expect(await this.foo1.balanceOf.call(user)).to.be.bignumber.eq(
-//         value[1].div(new BN('2'))
-//       );
-//       expect(
-//         await this.foo2.balanceOf.call(this.proxy.address)
-//       ).to.be.bignumber.eq(ether('0'));
-//       expect(await this.foo2.balanceOf.call(user)).to.be.bignumber.eq(
-//         value[2].div(new BN('2'))
-//       );
-//     });
-//   });
+    it('single', async function() {
+      const index = 0;
+      const to = this.fooHandler.address;
+      const data = abi.simpleEncode(
+        'bar(uint256,uint256):(uint256)',
+        ether('1'),
+        index
+      );
+      console.log('balanceProxy:'+ balanceProxy);
+      console.log('to:'+ to);
+    //   user.sendTransaction({
+    //     value: utils.parseEther('1'),
+    //     to: this.proxy.address,
+    //     data: '0x12',
+    // }),
+      await this.proxy.execMock(to, data, { value: utils.parseEther('1') });
+      // await this.proxy.execMock(to, data, { value: ether('1') });
+      console.log('this.proxy.execMock end');
+      expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
+      expect(
+        await this.foo0.balanceOf.call(this.proxy.address)
+      ).to.be.bignumber.eq(ether('0'));
+    });
+
+  //   it('multiple', async function() {
+  //     console.log('-----1')
+  //     const index = [0, 1, 2];
+  //     const value = [ether('0.1'), ether('0.2'), ether('0.5')];
+  //     const to = [
+  //       this.fooHandler.address,
+  //       this.fooHandler.address,
+  //       this.fooHandler.address,
+  //     ];
+  //     const config = [ZERO_BYTES32, ZERO_BYTES32, ZERO_BYTES32];
+  //     const data = [
+  //       abi.simpleEncode('bar(uint256,uint256):(uint256)', value[0], index[0]),
+  //       abi.simpleEncode('bar(uint256,uint256):(uint256)', value[1], index[1]),
+  //       abi.simpleEncode('bar(uint256,uint256):(uint256)', value[2], index[2]),
+  //     ];
+  //     console.log('-----2')
+  //     const receipt = await this.proxy.connect(user).batchExec(to, config, data, {
+  //       value: utils.parseEther('1'),
+  //     });
+  //     console.log('-----3')
+  //     expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
+  //     expect(await balanceUser.delta()).to.be.bignumber.eq(
+  //       ether('0')
+  //         .sub(
+  //           value[0]
+  //             .add(value[1])
+  //             .add(value[2])
+  //             .div(new BN('2'))
+  //         )
+  //         .sub(new BN(receipt.receipt.gasUsed))
+  //     );
+  //     console.log('-----4')
+  //     expect(
+  //       await this.foo0.balanceOf.call(this.proxy.address)
+  //     ).to.be.bignumber.eq(ether('0'));
+  //     expect(await this.foo0.balanceOf.call(user)).to.be.bignumber.eq(
+  //       value[0].div(new BN('2'))
+  //     );
+  //     expect(
+  //       await this.foo1.balanceOf.call(this.proxy.address)
+  //     ).to.be.bignumber.eq(ether('0'));
+  //     expect(await this.foo1.balanceOf.call(user)).to.be.bignumber.eq(
+  //       value[1].div(new BN('2'))
+  //     );
+  //     expect(
+  //       await this.foo2.balanceOf.call(this.proxy.address)
+  //     ).to.be.bignumber.eq(ether('0'));
+  //     expect(await this.foo2.balanceOf.call(user)).to.be.bignumber.eq(
+  //       value[2].div(new BN('2'))
+  //     );
+  //   });
+  });
 
 //   describe('Direct transfer', function() {
 //     it('Should fail', async function() {
@@ -722,5 +741,5 @@ describe('Proxy', function() {
 //         })
 //       );
 //     });
-//   });
+  // });
 });
