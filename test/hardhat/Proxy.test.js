@@ -93,7 +93,6 @@ describe('Proxy', function() {
 
     [dummyUser, deployer, user] = await ethers.getSigners();
     
-    // id = await evmSnapshot();
   });
 
   beforeEach(async function() {
@@ -108,7 +107,6 @@ describe('Proxy', function() {
     before(async function() {
       //-------- Hardhat Migration
       // this.fooFactory = await FooFactory.new({ from: deployer });
-      console.log('nonce:' + await deployer.getTransactionCount());
       this.fooFactory = await FooFactory.connect(deployer).deploy();
       
       //-------- Hardhat Migration : address check, skip this
@@ -118,7 +116,6 @@ describe('Proxy', function() {
 
       await this.fooFactory.connect(dummyUser).createFoo();
       await this.fooFactory.connect(dummyUser).createFoo();
-      console.log('nonce:' + await deployer.getTransactionCount());
       //-------- Hardhat Migration : Foo.attach instead of Foo.at
       this.foo0 = await Foo.attach(await this.fooFactory.addressOf(0));
       this.foo1 = await Foo.attach(await this.fooFactory.addressOf(1));
@@ -377,20 +374,21 @@ describe('Proxy', function() {
         ether('1'),
         index
       );
-      console.log('balanceProxy:'+ balanceProxy);
-      console.log('to:'+ to);
+      
     //   user.sendTransaction({
     //     value: utils.parseEther('1'),
     //     to: this.proxy.address,
     //     data: '0x12',
     // }),
+      
+      
       await this.proxy.execMock(to, data, { value: utils.parseEther('1') });
-      // await this.proxy.execMock(to, data, { value: ether('1') });
-      console.log('this.proxy.execMock end');
-      expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
+      expect((await balanceProxy.delta()).toString()).to.be.bignumber.eq(ether('0'));
+
       expect(
-        await this.foo0.balanceOf.call(this.proxy.address)
+        (await this.foo0.balanceOf(this.proxy.address)).toString()
       ).to.be.bignumber.eq(ether('0'));
+      console.log('end:');
     });
 
   //   it('multiple', async function() {

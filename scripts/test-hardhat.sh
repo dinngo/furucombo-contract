@@ -74,7 +74,7 @@ else
 fi
 
 # truffle version 
-sleep 8
+sleep 9
 npx hardhat --version
 
 # Execute rest test files with suffix `.test.js` with single `truffle test`
