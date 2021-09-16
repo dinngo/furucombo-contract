@@ -407,29 +407,32 @@ describe('Proxy', function() {
         abi.simpleEncode('bar(uint256,uint256):(uint256)', value[2], index[2]),
       ];
       
-      const receipt = await this.proxy.connect(user).batchExec(to, config, data, {
+      const tx = await this.proxy.connect(user).batchExec(to, config, data, {
         value: utils.parseEther('1'),
       });
-      
-      console.log('receipt gasUsed:' + receipt.gasLimit);
+
+      const receipt = await tx.wait();
+      console.log('tx:' + JSON.stringify(tx));
+      console.log('receipt:' + JSON.stringify(receipt));
       
       expect((await balanceProxy.delta()).toString()).to.be.bignumber.eq(ether('0'));
-
-      console.log('receipt:'+ JSON.stringify(receipt));
-      // console.log('receipt:'+ typeof(receipt));
-
-      // TODO: skip cuz can't get gasUsed
-      // expect((await balanceUser.delta()).toString()).to.be.bignumber.eq(
-      //   ether('0')
-      //     .sub(
-      //       value[0]
-      //         .add(value[1])
-      //         .add(value[2])
-      //         .div(new BN('2'))
-      //     )
-      //     .sub(new BN(receipt.receipt.gasUsed))
-      // );
       
+      let gasPrice = tx.gasPrice;
+      let gasUsed = receipt.gasUsed;
+      console.log('gasPrice:' + gasPrice);
+      console.log('gasUsed:' + gasUsed);
+      console.log('gasPrice*gasUsed:' + gasPrice.mul(gasUsed));
+      expect(await balanceUser.delta()).to.be.bignumber.eq(
+        ether('0')
+          .sub(
+            value[0]
+              .add(value[1])
+              .add(value[2])
+              .div(new BN('2'))
+          )
+          // .sub(new BN(receipt.gasUsed.toString()))
+          .sub(new BN((gasPrice.mul(gasUsed)).toString()))
+      );
       
       expect(
         (await this.foo0.balanceOf(this.proxy.address)).toString()
@@ -604,7 +607,7 @@ describe('Proxy', function() {
       await this.proxy.connect(user).batchExec(tos, configs, datas, {
         value: utils.parseEther('1'),
       });
-
+      
       expect(await this.foo.bValue()).eq(r);
     });
 
@@ -625,14 +628,16 @@ describe('Proxy', function() {
         value: utils.parseEther('1'),
       });
 
-      expect(await this.foo.nValue.call()).to.be.bignumber.eq(
-        r.mul(a).div(ether('1'))
+      expect((await this.foo.nValue()).toString()).to.be.bignumber.eq(
+        new BN(r.toString())
+        .mul(a)
+        .div(ether('1'))
       );
     });
 
     it('should revert: location count less than ref count', async function() {
       const tos = [this.fooHandler.address, this.fooHandler.address];
-      const r = await this.foo.bar.call();
+      const r = await this.foo.callStatic.bar();
       const a =
         '0x0000000000000000000000000000000000000000000000000000000000000000';
       const configs = [
@@ -646,8 +651,7 @@ describe('Proxy', function() {
       ];
 
       await expectRevert(
-        this.proxy.batchExec(tos, configs, datas, {
-          from: user,
+        this.proxy.connect(user).batchExec(tos, configs, datas, {
           value: utils.parseEther('1'),
         }),
         'Location count less than ref count'
@@ -656,7 +660,7 @@ describe('Proxy', function() {
 
     it('should revert: location count greater than ref count', async function() {
       const tos = [this.fooHandler.address, this.fooHandler.address];
-      const r = await this.foo.bar.call();
+      const r = await this.foo.callStatic.bar();
       const a =
         '0x0000000000000000000000000000000000000000000000000000000000000000';
       const configs = [
@@ -670,8 +674,7 @@ describe('Proxy', function() {
       ];
 
       await expectRevert(
-        this.proxy.batchExec(tos, configs, datas, {
-          from: user,
+        this.proxy.connect(user).batchExec(tos, configs, datas, {
           value: utils.parseEther('1'),
         }),
         'Location count exceeds ref count'
@@ -680,7 +683,7 @@ describe('Proxy', function() {
 
     it('should revert: ref to out of localStack', async function() {
       const tos = [this.fooHandler.address, this.fooHandler.address];
-      const r = await this.foo.bar.call();
+      const r = await this.foo.callStatic.bar();
       const a =
         '0x0000000000000000000000000000000000000000000000000000000000000000';
       const configs = [
@@ -694,8 +697,7 @@ describe('Proxy', function() {
       ];
 
       await expectRevert(
-        this.proxy.batchExec(tos, configs, datas, {
-          from: user,
+        this.proxy.connect(user).batchExec(tos, configs, datas, {
           value: utils.parseEther('1'),
         }),
         'Reference to out of localStack'
@@ -704,7 +706,7 @@ describe('Proxy', function() {
 
     it('should revert: expected return amount not match', async function() {
       const tos = [this.fooHandler.address, this.fooHandler.address];
-      const r = await this.foo.bar.call();
+      const r = await this.foo.callStatic.bar();
       const a =
         '0x0000000000000000000000000000000000000000000000000000000000000000';
       const configs = [
@@ -718,8 +720,7 @@ describe('Proxy', function() {
       ];
 
       await expectRevert(
-        this.proxy.batchExec(tos, configs, datas, {
-          from: user,
+        this.proxy.connect(user).batchExec(tos, configs, datas, {
           value: utils.parseEther('1'),
         }),
         'Return num and parsed return num not matched'
@@ -728,7 +729,7 @@ describe('Proxy', function() {
 
     it('should revert: overflow during trimming', async function() {
       const tos = [this.fooHandler.address, this.fooHandler.address];
-      const r = await this.foo.barUint.call();
+      const r = await this.foo.callStatic.barUint();
       const a = MAX_UINT256; // multiply by any num greater than 0 will cause overflow
       const configs = [
         '0x0001000000000000000000000000000000000000000000000000000000000000',
@@ -739,8 +740,7 @@ describe('Proxy', function() {
         abi.simpleEncode('barUint1(address,uint256)', this.foo.address, a),
       ];
       await expectRevert.unspecified(
-        this.proxy.batchExec(tos, configs, datas, {
-          from: user,
+        this.proxy.connect(user).batchExec(tos, configs, datas, {
           value: utils.parseEther('1'),
         })
       );
