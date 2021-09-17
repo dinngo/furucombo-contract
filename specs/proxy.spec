@@ -18,13 +18,16 @@ methods {
     ethBalance(address) returns (uint256) envfree
 
     // registry dispatches
-    handlers(address) returns (bytes32) envfree => DISPATCHER(true)
-    callers(address) returns (bytes32) envfree => DISPATCHER(true)
-    bannedAgents(address) returns (uint256) envfree => DISPATCHER(true)
-    fHalt() returns (bool) envfree => DISPATCHER(true)
-    owner() returns (address) envfree => DISPATCHER(true)
-    isValidCaller(address) returns (bool) envfree => DISPATCHER(true)
+    handlers(address) returns (bytes32) => DISPATCHER(true)
+    callers(address) returns (bytes32) => DISPATCHER(true)
+    bannedAgents(address) returns (uint256) => DISPATCHER(true)
+    fHalt() returns (bool) => DISPATCHER(true)
+    owner() returns (address) => DISPATCHER(true)
+    isValidCaller(address) returns (bool) => DISPATCHER(true)
     isValidHandler(address) returns (bool) => DISPATCHER(true)
+    
+    registry.bannedAgents(address) returns (uint256) envfree
+    registry.fHalt() returns (bool) envfree
 
     // for abstracting exec of handler
     0x12345678 => NONDET
@@ -33,15 +36,19 @@ methods {
     transfer(address,uint256) => DISPATCHER(true)
     transferFrom(address,address,uint256) => DISPATCHER(true)
     approve(address,uint256) => DISPATCHER(true)
-    allowance(address,address) returns (uint) envfree => DISPATCHER(true)
-    balanceOf(address) returns (uint) envfree => DISPATCHER(true)
-    totalSupply() returns (uint) envfree => DISPATCHER(true)
+    allowance(address,address) returns (uint) => DISPATCHER(true)
+    balanceOf(address) returns (uint) => DISPATCHER(true)
+    totalSupply() returns (uint) => DISPATCHER(true)
 
     havocMe(address) => DISPATCHER(true)
     havocMeEth() => DISPATCHER(true)
 
     ETH_ADDRESS() returns (address) => DISPATCHER(false)
     WETH() returns (address) => DISPATCHER(false)
+
+    someToken.balanceOf(address) returns (uint) envfree
+    someToken.allowance(address,address) returns (uint) envfree
+    someToken2.balanceOf(address) returns (uint) envfree
 
     // Summary correctness
     summaryInstance.consumedToken() returns (address) envfree
@@ -375,11 +382,11 @@ rule senderIsAlwaysCleanedUp(method f) {
 
 rule cubeCounterIsAlwaysCleanedUp(method f) {
     requireInvariant cubeCounterGreaterThan0IffSenderInitialized();
-    address before = getCubeCounter();
+    uint256 before = getCubeCounter();
 
     arbitrary(f);
 
-    address after = getCubeCounter();
+    uint256 after = getCubeCounter();
 
     assert before == 0 => after == 0;
 }
