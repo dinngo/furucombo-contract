@@ -16,9 +16,15 @@ require('hardhat-deploy');
         mnemonic: "dice shove sheriff police boss indoor hospital vivid tenant method game matter",
         path: "m/44'/60'/0'/0",
         initialIndex: 0
-      },
-      gas: 1000000000,
-      gasPrice: 1000000000
+      }
     },
+    localhost:{
+      //url: "http://127.0.0.1:8545",
+      // accounts:{
+      //   mnemonic: "dice shove sheriff police boss indoor hospital vivid tenant method game matter",
+      //   path: "m/44'/60'/0'/0",
+      //   initialIndex: 0
+      // }
+    }
   },
 };

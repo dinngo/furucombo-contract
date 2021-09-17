@@ -13,44 +13,18 @@ const { tracker } = balance;
 const { ZERO_BYTES32, MAX_UINT256 } = constants;
 const abi = require('ethereumjs-abi');
 
-//-------- Hardhat
-// const utils = web3.utils;
 const utils = ethers.utils;
 const BigNumber = ethers.BigNumber;
-const createFixtureLoader = waffle.createFixtureLoader;
 
 const { expect } = require('chai');
 
-const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
+const { evmRevert, evmSnapshot, profileGas } = require('../utils/utils');
 
-
-const setup = deployments.createFixture(async () => {
-  await deployments.fixture('Proxy.test');
-});
-
-
-//-------- Hardhat Migration
-// const Foo = ethers.require('Foo');
-// const FooFactory = artifacts.require('FooFactory');
-// const FooHandler = artifacts.require('FooHandler');
-// const Foo2 = artifacts.require('Foo2');
-// const Foo2Factory = artifacts.require('Foo2Factory');
-// const Foo2Handler = artifacts.require('Foo2Handler');
-// const Foo3 = artifacts.require('Foo3');
-// const Foo3Handler = artifacts.require('Foo3Handler');
-// const Foo4 = artifacts.require('Foo4');
-// const Foo4Handler = artifacts.require('Foo4Handler');
-// const Foo5Handler = artifacts.require('Foo5Handler');
-// const Registry = artifacts.require('Registry');
-// const Proxy = artifacts.require('ProxyMock');
-
-// contract('Proxy', function([_, deployer, user]) {
 describe('Proxy', function() {
   let id;
   let balanceUser;
   let balanceProxy;
 
-  //-------- Hardhat Migration
   let Foo;
   let FooFactory;
   let FooHandler;
@@ -68,10 +42,8 @@ describe('Proxy', function() {
   let deployer;
   let user;
   let dummyUser;
-  let loadFixture;
   
   before(async function() {
-    //-------- Hardhat Migration
     Foo = await ethers.getContractFactory("Foo");
     FooFactory = await ethers.getContractFactory("FooFactory");
     FooHandler = await ethers.getContractFactory("FooHandler");
@@ -86,8 +58,6 @@ describe('Proxy', function() {
     Registry = await ethers.getContractFactory("Registry");
     Proxy = await ethers.getContractFactory("ProxyMock");
 
-    // this.registry = await Registry.new();
-    // this.proxy = await Proxy.new(this.registry.address);
     this.registry = await Registry.deploy();
     this.proxy = await Proxy.deploy(this.registry.address);
 
@@ -105,34 +75,20 @@ describe('Proxy', function() {
 
   describe('execute', function() {
     before(async function() {
-      //-------- Hardhat Migration
-      // this.fooFactory = await FooFactory.new({ from: deployer });
       this.fooFactory = await FooFactory.connect(deployer).deploy();
-      
-      //-------- Hardhat Migration : address check, skip this
       expect(this.fooFactory.address).to.be.eq(
         '0xFdd454EA7BF7ca88C1B7a824c3FB0951Fb8a1318'
       );
-
+      // await this.fooFactory.createFoo();
       await this.fooFactory.connect(dummyUser).createFoo();
       await this.fooFactory.connect(dummyUser).createFoo();
-      //-------- Hardhat Migration : Foo.attach instead of Foo.at
       this.foo0 = await Foo.attach(await this.fooFactory.addressOf(0));
       this.foo1 = await Foo.attach(await this.fooFactory.addressOf(1));
       this.foo2 = await Foo.attach(await this.fooFactory.addressOf(2));
-      // this.foo0 = await Foo.at(await this.fooFactory.addressOf.call(0));
-      // this.foo1 = await Foo.at(await this.fooFactory.addressOf.call(1));
-      // this.foo2 = await Foo.at(await this.fooFactory.addressOf.call(2));
-      
-
-
-      //-------- Hardhat Migration
-      // this.fooHandler = await FooHandler.new();
       this.fooHandler = await FooHandler.deploy();
 
       await this.registry.register(
         this.fooHandler.address,
-        //-------- Hardhat Migration
         utils.hexlify(utils.formatBytes32String('foo'))
       );
       
@@ -146,14 +102,11 @@ describe('Proxy', function() {
         num
       );
       await this.proxy.execMock(this.fooHandler.address, data);
-
-      // const result = await this.foo0.accounts.call(this.proxy.address);
       const result = await this.foo0.accounts(this.proxy.address);
       expect(result.toString()).to.be.bignumber.eq(num);
     });
     it('should revert: caller as handler', async function() {
       this.fooHandler2 = await FooHandler.deploy();
-      // this.fooHandler2 = await FooHandler.new();
       await this.registry.registerCaller(
         this.fooHandler2.address,
         utils.hexlify(utils.formatBytes32String('foo'))
@@ -173,7 +126,6 @@ describe('Proxy', function() {
 
     it('should revert: handler as caller - directly', async function() {
       this.foo5Handler = await Foo5Handler.deploy();
-      // this.foo5Handler = await Foo5Handler.new();
       await this.registry.register(
         this.foo5Handler.address,
         utils.hexlify(utils.formatBytes32String('foo5'))
@@ -187,21 +139,10 @@ describe('Proxy', function() {
 
     it('should revert: handler as caller - after initialize', async function() {
       this.foo5Handler = await Foo5Handler.deploy();
-      
-
-      //-------- Hardhat Migration
       await this.registry.register(
         this.foo5Handler.address,
         utils.hexlify(utils.formatBytes32String('foo5'))
       );
-
-      // await this.registry.register(
-      //   this.foo5Handler.address,
-      //   this.foo5Handler.address
-      // );
-
-
-
 
       const to = this.foo5Handler.address;
       const data0 = abi.simpleEncode('bar()');
@@ -230,28 +171,16 @@ describe('Proxy', function() {
         this.proxy.connect(user).batchExec(to, config, data),
         'Banned'
       );
-      // await expectRevert(
-        // this.proxy.batchExec(to, config, data, { from: user }),
-        // 'Banned'
-      // );
     });
 
     it('should revert: banned agent executing fallback()', async function() {
       await this.registry.ban(this.proxy.address);
       await expectRevert(
-
-        //-------- Hardhat Migration
         user.sendTransaction({
             value: utils.parseEther('1'),
             to: this.proxy.address,
             data: '0x12',
         }),
-        // web3.eth.sendTransaction({
-        //   from: user,
-        //   to: this.proxy.address,
-        //   value: ether('1'),
-        //   data: '0x123',
-        // }),
         'Banned'
       );
     });
@@ -343,8 +272,6 @@ describe('Proxy', function() {
     before(async function() {
 
       this.fooFactory = await Foo2Factory.connect(deployer).deploy();
-      
-      // TODO: temporary skip this 
       expect(this.fooFactory.address).to.be.eq(
         '0xaB7D1E16d471065629431aeABED38880170876f2'
       );
@@ -374,25 +301,16 @@ describe('Proxy', function() {
         ether('1'),
         index
       );
-      
-    //   user.sendTransaction({
-    //     value: utils.parseEther('1'),
-    //     to: this.proxy.address,
-    //     data: '0x12',
-    // }),
-      
-      
+
       await this.proxy.execMock(to, data, { value: utils.parseEther('1') });
       expect((await balanceProxy.delta()).toString()).to.be.bignumber.eq(ether('0'));
 
       expect(
         (await this.foo0.balanceOf(this.proxy.address)).toString()
       ).to.be.bignumber.eq(ether('0'));
-      console.log('end:');
     });
 
     it('multiple', async function() {
-      console.log('-----1')
       const index = [0, 1, 2];
       const value = [ether('0.1'), ether('0.2'), ether('0.5')];
       const to = [
@@ -410,18 +328,12 @@ describe('Proxy', function() {
       const tx = await this.proxy.connect(user).batchExec(to, config, data, {
         value: utils.parseEther('1'),
       });
-
       const receipt = await tx.wait();
-      console.log('tx:' + JSON.stringify(tx));
-      console.log('receipt:' + JSON.stringify(receipt));
       
       expect((await balanceProxy.delta()).toString()).to.be.bignumber.eq(ether('0'));
       
       let gasPrice = tx.gasPrice;
       let gasUsed = receipt.gasUsed;
-      console.log('gasPrice:' + gasPrice);
-      console.log('gasUsed:' + gasUsed);
-      console.log('gasPrice*gasUsed:' + gasPrice.mul(gasUsed));
       expect(await balanceUser.delta()).to.be.bignumber.eq(
         ether('0')
           .sub(
