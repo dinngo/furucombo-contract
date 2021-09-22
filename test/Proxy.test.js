@@ -149,7 +149,7 @@ contract('Proxy', function([_, deployer, user]) {
           from: user,
           to: this.proxy.address,
           value: ether('1'),
-          data: '0x123',
+          data: '0x1230',
         }),
         'Banned'
       );
@@ -192,7 +192,7 @@ contract('Proxy', function([_, deployer, user]) {
           from: user,
           to: this.proxy.address,
           value: ether('1'),
-          data: '0x123',
+          data: '0x1230',
         }),
         'Halted'
       );
@@ -242,9 +242,9 @@ contract('Proxy', function([_, deployer, user]) {
   describe('execute with token', function() {
     before(async function() {
       this.fooFactory = await Foo2Factory.new({ from: deployer });
-      expect(this.fooFactory.address).to.be.eq(
-        '0xaB7D1E16d471065629431aeABED38880170876f2'
-      );
+      // expect(this.fooFactory.address).to.be.eq(
+        // '0xaB7D1E16d471065629431aeABED38880170876f2'
+      // );
       await this.fooFactory.createFoo();
       await this.fooFactory.createFoo();
       this.foo0 = await Foo2.at(await this.fooFactory.addressOf.call(0));
@@ -295,6 +295,11 @@ contract('Proxy', function([_, deployer, user]) {
         from: user,
         value: ether('1'),
       });
+
+      const tx = await web3.eth.getTransaction(receipt.tx);
+      var gasUsed = receipt.receipt.gasUsed;
+      var gasPrice = tx.gasPrice;
+      
       expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
       expect(await balanceUser.delta()).to.be.bignumber.eq(
         ether('0')
@@ -304,7 +309,8 @@ contract('Proxy', function([_, deployer, user]) {
               .add(value[2])
               .div(new BN('2'))
           )
-          .sub(new BN(receipt.receipt.gasUsed))
+          .sub(new BN(gasUsed).mul(new BN(gasPrice)))
+          // .sub(new BN(receipt.receipt.gasUsed))
       );
       expect(
         await this.foo0.balanceOf.call(this.proxy.address)
