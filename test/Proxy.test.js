@@ -309,8 +309,8 @@ contract('Proxy', function([_, deployer, user]) {
               .add(value[2])
               .div(new BN('2'))
           )
-          .sub(new BN(gasUsed).mul(new BN(gasPrice)))
-          // .sub(new BN(receipt.receipt.gasUsed))
+          // .sub(new BN(gasUsed).mul(new BN(gasPrice)))
+          .sub(new BN(receipt.receipt.gasUsed))
       );
       expect(
         await this.foo0.balanceOf.call(this.proxy.address)
