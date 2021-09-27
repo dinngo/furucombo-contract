@@ -52,6 +52,11 @@ contract('CEther', function([_, user]) {
     );
     this.cEther = await ICEther.at(CETHER);
     this.proxy = await Proxy.new(this.registry.address);
+
+    await hre.network.provider.request({
+      method: "hardhat_impersonateAccount",
+      params: [DAI_PROVIDER],
+    });
   });
 
   beforeEach(async function() {

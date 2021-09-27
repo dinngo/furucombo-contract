@@ -57,10 +57,10 @@ contract('Funds', function([_, user, someone]) {
       utils.asciiToHex('Funds')
     );
 
-    //-----------------------------
+
     await hre.network.provider.request({
-        method: "hardhat_impersonateAccount",
-        params: [DAI_PROVIDER],
+      method: "hardhat_impersonateAccount",
+      params: [DAI_PROVIDER],
     });
     await hre.network.provider.request({
       method: "hardhat_impersonateAccount",
@@ -74,7 +74,7 @@ contract('Funds', function([_, user, someone]) {
       method: "hardhat_impersonateAccount",
       params: [ETH_PROVIDER_CONTRACT],
     });
-    //-----------------------------
+
   });
 
   beforeEach(async function() {

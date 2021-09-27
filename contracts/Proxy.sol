@@ -9,6 +9,8 @@ import "./Config.sol";
 import "./Storage.sol";
 import "./lib/LibParam.sol";
 
+import "hardhat/console.sol";
+
 /**
  * @title The entrance of Furucombo
  * @author Ben Huang
@@ -75,6 +77,9 @@ contract Proxy is IProxy, Storage, Config {
         bytes32[] calldata configs,
         bytes[] memory datas
     ) external payable override isNotHalted isNotBanned {
+        console.log('----------');
+        console.log('tos:%s', tos.length);
+        console.log('tos[0]:%s', tos[0]);
         _preProcess();
         _execs(tos, configs, datas);
         _postProcess();

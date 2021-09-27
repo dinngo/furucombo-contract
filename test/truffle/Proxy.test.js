@@ -1,6 +1,3 @@
-const { ethers } = require("hardhat");
-const {deployments} = require('hardhat');
-
 const {
   balance,
   BN,
@@ -12,57 +9,34 @@ const {
 const { tracker } = balance;
 const { ZERO_BYTES32, MAX_UINT256 } = constants;
 const abi = require('ethereumjs-abi');
-
-const utils = ethers.utils;
-const BigNumber = ethers.BigNumber;
+const utils = web3.utils;
 
 const { expect } = require('chai');
 
-const { evmRevert, evmSnapshot, profileGas } = require('../utils/utils');
+const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
 
-describe('Proxy', function() {
+const Foo = artifacts.require('Foo');
+const FooFactory = artifacts.require('FooFactory');
+const FooHandler = artifacts.require('FooHandler');
+const Foo2 = artifacts.require('Foo2');
+const Foo2Factory = artifacts.require('Foo2Factory');
+const Foo2Handler = artifacts.require('Foo2Handler');
+const Foo3 = artifacts.require('Foo3');
+const Foo3Handler = artifacts.require('Foo3Handler');
+const Foo4 = artifacts.require('Foo4');
+const Foo4Handler = artifacts.require('Foo4Handler');
+const Foo5Handler = artifacts.require('Foo5Handler');
+const Registry = artifacts.require('Registry');
+const Proxy = artifacts.require('ProxyMock');
+
+contract('Proxy', function([_, deployer, user]) {
   let id;
   let balanceUser;
   let balanceProxy;
 
-  let Foo;
-  let FooFactory;
-  let FooHandler;
-  let Foo2;
-  let Foo2Factory;
-  let Foo2Handler;
-  let Foo3;
-  let Foo3Handler;
-  let Foo4;
-  let Foo4Handler;
-  let Foo5Handler;
-  let Registry;
-  let Proxy;
-
-  let deployer;
-  let user;
-  let dummyUser;
-  
   before(async function() {
-    Foo = await ethers.getContractFactory("Foo");
-    FooFactory = await ethers.getContractFactory("FooFactory");
-    FooHandler = await ethers.getContractFactory("FooHandler");
-    Foo2 = await ethers.getContractFactory("Foo2");
-    Foo2Factory = await ethers.getContractFactory("Foo2Factory");
-    Foo2Handler = await ethers.getContractFactory("Foo2Handler");
-    Foo3 = await ethers.getContractFactory("Foo3");
-    Foo3Handler = await ethers.getContractFactory("Foo3Handler");
-    Foo4 = await ethers.getContractFactory("Foo4");
-    Foo4Handler = await ethers.getContractFactory("Foo4Handler");
-    Foo5Handler = await ethers.getContractFactory("Foo5Handler");
-    Registry = await ethers.getContractFactory("Registry");
-    Proxy = await ethers.getContractFactory("ProxyMock");
-
-    this.registry = await Registry.deploy();
-    this.proxy = await Proxy.deploy(this.registry.address);
-
-    [dummyUser, deployer, user] = await ethers.getSigners();
-    
+    this.registry = await Registry.new();
+    this.proxy = await Proxy.new(this.registry.address);
   });
 
   beforeEach(async function() {
@@ -75,24 +49,22 @@ describe('Proxy', function() {
 
   describe('execute', function() {
     before(async function() {
-      this.fooFactory = await FooFactory.connect(deployer).deploy();
+      this.fooFactory = await FooFactory.new({ from: deployer });
       expect(this.fooFactory.address).to.be.eq(
         '0xFdd454EA7BF7ca88C1B7a824c3FB0951Fb8a1318'
       );
-      // await this.fooFactory.createFoo();
-      await this.fooFactory.connect(dummyUser).createFoo();
-      await this.fooFactory.connect(dummyUser).createFoo();
-      this.foo0 = await Foo.attach(await this.fooFactory.addressOf(0));
-      this.foo1 = await Foo.attach(await this.fooFactory.addressOf(1));
-      this.foo2 = await Foo.attach(await this.fooFactory.addressOf(2));
-      this.fooHandler = await FooHandler.deploy();
-
+      await this.fooFactory.createFoo();
+      await this.fooFactory.createFoo();
+      this.foo0 = await Foo.at(await this.fooFactory.addressOf.call(0));
+      this.foo1 = await Foo.at(await this.fooFactory.addressOf.call(1));
+      this.foo2 = await Foo.at(await this.fooFactory.addressOf.call(2));
+      this.fooHandler = await FooHandler.new();
       await this.registry.register(
         this.fooHandler.address,
-        utils.hexlify(utils.formatBytes32String('foo'))
+        utils.asciiToHex('foo')
       );
-      
     });
+
     it('single', async function() {
       const index = 0;
       const num = new BN('25');
@@ -102,14 +74,15 @@ describe('Proxy', function() {
         num
       );
       await this.proxy.execMock(this.fooHandler.address, data);
-      const result = await this.foo0.accounts(this.proxy.address);
-      expect(result.toString()).to.be.bignumber.eq(num);
+      const result = await this.foo0.accounts.call(this.proxy.address);
+      expect(result).to.be.bignumber.eq(num);
     });
+
     it('should revert: caller as handler', async function() {
-      this.fooHandler2 = await FooHandler.deploy();
+      this.fooHandler2 = await FooHandler.new();
       await this.registry.registerCaller(
         this.fooHandler2.address,
-        utils.hexlify(utils.formatBytes32String('foo'))
+        utils.asciiToHex('foo')
       );
       const index = 0;
       const num = new BN('25');
@@ -125,10 +98,10 @@ describe('Proxy', function() {
     });
 
     it('should revert: handler as caller - directly', async function() {
-      this.foo5Handler = await Foo5Handler.deploy();
+      this.foo5Handler = await Foo5Handler.new();
       await this.registry.register(
         this.foo5Handler.address,
-        utils.hexlify(utils.formatBytes32String('foo5'))
+        utils.asciiToHex('foo5')
       );
       const data = abi.simpleEncode('bar()');
       await expectRevert(
@@ -138,12 +111,11 @@ describe('Proxy', function() {
     });
 
     it('should revert: handler as caller - after initialize', async function() {
-      this.foo5Handler = await Foo5Handler.deploy();
+      this.foo5Handler = await Foo5Handler.new();
       await this.registry.register(
         this.foo5Handler.address,
-        utils.hexlify(utils.formatBytes32String('foo5'))
+        this.foo5Handler.address
       );
-
       const to = this.foo5Handler.address;
       const data0 = abi.simpleEncode('bar()');
       const data1 = abi.simpleEncode(
@@ -151,10 +123,8 @@ describe('Proxy', function() {
         this.proxy.address,
         data0
       );
-      
       const data2 = abi.simpleEncode('exec(address,bytes)', to, data1);
       await expectRevert(this.proxy.execMock(to, data2), 'Invalid caller');
-      
     });
 
     it('should revert: banned agent executing batchExec()', async function() {
@@ -166,9 +136,8 @@ describe('Proxy', function() {
       const data = [
         abi.simpleEncode('bar(uint256,uint256):(uint256)', index, num),
       ];
-
       await expectRevert(
-        this.proxy.connect(user).batchExec(to, config, data),
+        this.proxy.batchExec(to, config, data, { from: user }),
         'Banned'
       );
     });
@@ -176,10 +145,11 @@ describe('Proxy', function() {
     it('should revert: banned agent executing fallback()', async function() {
       await this.registry.ban(this.proxy.address);
       await expectRevert(
-        user.sendTransaction({
-            value: utils.parseEther('1'),
-            to: this.proxy.address,
-            data: '0x12',
+        web3.eth.sendTransaction({
+          from: user,
+          to: this.proxy.address,
+          value: ether('1'),
+          data: '0x1230',
         }),
         'Banned'
       );
@@ -195,7 +165,7 @@ describe('Proxy', function() {
         abi.simpleEncode('bar(uint256,uint256):(uint256)', index, num),
       ];
       await expectRevert(
-        this.proxy.connect(user).execs(to, config, data),
+        this.proxy.execs(to, config, data, { from: user }),
         'Banned'
       );
     });
@@ -210,7 +180,7 @@ describe('Proxy', function() {
         abi.simpleEncode('bar(uint256,uint256):(uint256)', index, num),
       ];
       await expectRevert(
-        this.proxy.connect(user).batchExec(to, config, data),
+        this.proxy.batchExec(to, config, data, { from: user }),
         'Halted'
       );
     });
@@ -218,10 +188,11 @@ describe('Proxy', function() {
     it('should revert: call fallback() when registry halted', async function() {
       await this.registry.halt();
       await expectRevert(
-        user.sendTransaction({
-          value: utils.parseEther('1'),
+        web3.eth.sendTransaction({
+          from: user,
           to: this.proxy.address,
-          data: '0x12',
+          value: ether('1'),
+          data: '0x1230',
         }),
         'Halted'
       );
@@ -237,7 +208,7 @@ describe('Proxy', function() {
         abi.simpleEncode('bar(uint256,uint256):(uint256)', index, num),
       ];
       await expectRevert(
-        this.proxy.connect(user).execs(to, config, data),
+        this.proxy.execs(to, config, data, { from: user }),
         'Halted'
       );
     });
@@ -258,38 +229,36 @@ describe('Proxy', function() {
       ];
       await this.proxy.batchExec(to, config, data);
       const result = [
-        await this.foo0.accounts(this.proxy.address),
-        await this.foo1.accounts(this.proxy.address),
-        await this.foo2.accounts(this.proxy.address),
+        await this.foo0.accounts.call(this.proxy.address),
+        await this.foo1.accounts.call(this.proxy.address),
+        await this.foo2.accounts.call(this.proxy.address),
       ];
-      expect(result[0].toString()).to.be.bignumber.eq(num[0]);
-      expect(result[1].toString()).to.be.bignumber.eq(num[1]);
-      expect(result[2].toString()).to.be.bignumber.eq(num[2]);
+      expect(result[0]).to.be.bignumber.eq(num[0]);
+      expect(result[1]).to.be.bignumber.eq(num[1]);
+      expect(result[2]).to.be.bignumber.eq(num[2]);
     });
   });
 
   describe('execute with token', function() {
     before(async function() {
-
-      this.fooFactory = await Foo2Factory.connect(deployer).deploy();
-      expect(this.fooFactory.address).to.be.eq(
-        '0xaB7D1E16d471065629431aeABED38880170876f2'
-      );
+      this.fooFactory = await Foo2Factory.new({ from: deployer });
+      // expect(this.fooFactory.address).to.be.eq(
+        // '0xaB7D1E16d471065629431aeABED38880170876f2'
+      // );
       await this.fooFactory.createFoo();
       await this.fooFactory.createFoo();
-      this.foo0 = await Foo2.attach(await this.fooFactory.addressOf(0));
-      this.foo1 = await Foo2.attach(await this.fooFactory.addressOf(1));
-      this.foo2 = await Foo2.attach(await this.fooFactory.addressOf(2));
-      this.fooHandler = await Foo2Handler.deploy();
-      
+      this.foo0 = await Foo2.at(await this.fooFactory.addressOf.call(0));
+      this.foo1 = await Foo2.at(await this.fooFactory.addressOf.call(1));
+      this.foo2 = await Foo2.at(await this.fooFactory.addressOf.call(2));
+      this.fooHandler = await Foo2Handler.new();
       await this.registry.register(
         this.fooHandler.address,
-        utils.hexlify(utils.formatBytes32String('foo2'))
+        utils.asciiToHex('foo2')
       );
     });
 
     beforeEach(async function() {
-      balanceUser = await tracker(user.address);
+      balanceUser = await tracker(user);
       balanceProxy = await tracker(this.proxy.address);
     });
 
@@ -301,12 +270,10 @@ describe('Proxy', function() {
         ether('1'),
         index
       );
-
-      await this.proxy.execMock(to, data, { value: utils.parseEther('1') });
-      expect((await balanceProxy.delta()).toString()).to.be.bignumber.eq(ether('0'));
-
+      await this.proxy.execMock(to, data, { value: ether('1') });
+      expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
       expect(
-        (await this.foo0.balanceOf(this.proxy.address)).toString()
+        await this.foo0.balanceOf.call(this.proxy.address)
       ).to.be.bignumber.eq(ether('0'));
     });
 
@@ -324,16 +291,16 @@ describe('Proxy', function() {
         abi.simpleEncode('bar(uint256,uint256):(uint256)', value[1], index[1]),
         abi.simpleEncode('bar(uint256,uint256):(uint256)', value[2], index[2]),
       ];
-      
-      const tx = await this.proxy.connect(user).batchExec(to, config, data, {
-        value: utils.parseEther('1'),
+      const receipt = await this.proxy.batchExec(to, config, data, {
+        from: user,
+        value: ether('1'),
       });
-      const receipt = await tx.wait();
+
+      const tx = await web3.eth.getTransaction(receipt.tx);
+      var gasUsed = receipt.receipt.gasUsed;
+      var gasPrice = tx.gasPrice;
       
-      expect((await balanceProxy.delta()).toString()).to.be.bignumber.eq(ether('0'));
-      
-      let gasPrice = tx.gasPrice;
-      let gasUsed = receipt.gasUsed;
+      expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
       expect(await balanceUser.delta()).to.be.bignumber.eq(
         ether('0')
           .sub(
@@ -342,30 +309,25 @@ describe('Proxy', function() {
               .add(value[2])
               .div(new BN('2'))
           )
-          // .sub(new BN(receipt.gasUsed.toString()))
-          .sub(new BN((gasPrice.mul(gasUsed)).toString()))
+          // .sub(new BN(gasUsed).mul(new BN(gasPrice)))
+          .sub(new BN(receipt.receipt.gasUsed))
       );
-      
       expect(
-        (await this.foo0.balanceOf(this.proxy.address)).toString()
+        await this.foo0.balanceOf.call(this.proxy.address)
       ).to.be.bignumber.eq(ether('0'));
-
-      
-      expect( (await this.foo0.balanceOf(user.address)).toString()).to.be.bignumber.eq(
+      expect(await this.foo0.balanceOf.call(user)).to.be.bignumber.eq(
         value[0].div(new BN('2'))
       );
-      
       expect(
-        (await this.foo1.balanceOf(this.proxy.address)).toString()
+        await this.foo1.balanceOf.call(this.proxy.address)
       ).to.be.bignumber.eq(ether('0'));
-      expect((await this.foo1.balanceOf(user.address)).toString()).to.be.bignumber.eq(
+      expect(await this.foo1.balanceOf.call(user)).to.be.bignumber.eq(
         value[1].div(new BN('2'))
       );
-      
       expect(
-        (await this.foo2.balanceOf(this.proxy.address)).toString()
+        await this.foo2.balanceOf.call(this.proxy.address)
       ).to.be.bignumber.eq(ether('0'));
-      expect((await this.foo2.balanceOf(user.address)).toString()).to.be.bignumber.eq(
+      expect(await this.foo2.balanceOf.call(user)).to.be.bignumber.eq(
         value[2].div(new BN('2'))
       );
     });
@@ -374,9 +336,10 @@ describe('Proxy', function() {
   describe('Direct transfer', function() {
     it('Should fail', async function() {
       await expectRevert.unspecified(
-        user.sendTransaction({
+        web3.eth.sendTransaction({
+          from: user,
           to: this.proxy.address,
-          value: utils.parseEther('1'),
+          value: ether('1'),
         })
       );
     });
@@ -384,41 +347,41 @@ describe('Proxy', function() {
 
   describe('execute with customized post process', function() {
     before(async function() {
-      this.foo = await Foo3.deploy();
-      this.fooHandler = await Foo3Handler.deploy();
+      this.foo = await Foo3.new();
+      this.fooHandler = await Foo3Handler.new();
       await this.registry.register(
         this.fooHandler.address,
-        utils.hexlify(utils.formatBytes32String('foo3'))
+        utils.asciiToHex('foo3')
       );
     });
 
     beforeEach(async function() {
-      balanceUser = await tracker(user.address);
+      balanceUser = await tracker(user);
       balanceProxy = await tracker(this.proxy.address);
     });
 
     it('post process 1', async function() {
       const to = this.fooHandler.address;
       const data = abi.simpleEncode('bar1(address)', this.foo.address);
-      await this.proxy.execMock(to, data, { value: utils.parseEther('1') });
-      expect((await this.foo.num()).toString()).to.be.bignumber.eq(new BN('1'));
+      await this.proxy.execMock(to, data, { value: ether('1') });
+      expect(await this.foo.num.call()).to.be.bignumber.eq(new BN('1'));
     });
 
     it('post process 2', async function() {
       const to = this.fooHandler.address;
       const data = abi.simpleEncode('bar2(address)', this.foo.address);
-      await this.proxy.execMock(to, data, { value: utils.parseEther('1') });
-      expect((await this.foo.num()).toString()).to.be.bignumber.eq(new BN('2'));
+      await this.proxy.execMock(to, data, { value: ether('1') });
+      expect(await this.foo.num.call()).to.be.bignumber.eq(new BN('2'));
     });
   });
 
   describe('dynamic parameter', function() {
     before(async function() {
-      this.foo = await Foo4.deploy();
-      this.fooHandler = await Foo4Handler.deploy();
+      this.foo = await Foo4.new();
+      this.fooHandler = await Foo4Handler.new();
       await this.registry.register(
         this.fooHandler.address,
-        utils.hexlify(utils.formatBytes32String('foo4'))
+        utils.asciiToHex('foo4')
       );
     });
 
@@ -433,16 +396,17 @@ describe('Proxy', function() {
         abi.simpleEncode('bar1(address,bytes32)', this.foo.address, a),
       ];
 
-      await this.proxy.connect(user).batchExec(tos, configs, datas, {
-        value: utils.parseEther('1'),
+      await this.proxy.batchExec(tos, configs, datas, {
+        from: user,
+        value: ether('1'),
       });
 
-      expect(await this.foo.bValue()).eq(a);
+      expect(await this.foo.bValue.call()).eq(a);
     });
 
     it('replace parameter', async function() {
       const tos = [this.fooHandler.address, this.fooHandler.address];
-      const r = await this.foo.callStatic.bar();
+      const r = await this.foo.bar.call();
       const a =
         '0x0000000000000000000000000000000000000000000000000000000000000000';
       const configs = [
@@ -455,11 +419,12 @@ describe('Proxy', function() {
         abi.simpleEncode('bar1(address,bytes32)', this.foo.address, a),
       ];
 
-      await this.proxy.connect(user).batchExec(tos, configs, datas, {
-        value: utils.parseEther('1'),
+      await this.proxy.batchExec(tos, configs, datas, {
+        from: user,
+        value: ether('1'),
       });
-      
-      expect(await this.foo.bValue()).eq(r);
+
+      expect(await this.foo.bValue.call()).eq(r);
     });
 
     it('replace parameter with dynamic array return', async function() {
@@ -486,18 +451,19 @@ describe('Proxy', function() {
         abi.simpleEncode('barUint1(address,uint256)', this.foo.address, ratio),
       ];
 
-      const receipt = await this.proxy.connect(user).batchExec(tos, configs, datas, {
-        value: utils.parseEther('1'),
+      const receipt = await this.proxy.batchExec(tos, configs, datas, {
+        from: user,
+        value: ether('1'),
       });
 
-      expect((await this.foo.nValue()).toString()).to.be.bignumber.eq(
+      expect(await this.foo.nValue.call()).to.be.bignumber.eq(
         secAmt.mul(ratio).div(ether('1'))
       );
     });
 
     it('replace third parameter', async function() {
       const tos = [this.fooHandler.address, this.fooHandler.address];
-      const r = await this.foo.callStatic.bar();
+      const r = await this.foo.bar.call();
       const a =
         '0x000000000000000000000000000000000000000000000000000000000000000a';
       const b =
@@ -516,16 +482,17 @@ describe('Proxy', function() {
         ),
       ];
 
-      await this.proxy.connect(user).batchExec(tos, configs, datas, {
-        value: utils.parseEther('1'),
+      await this.proxy.batchExec(tos, configs, datas, {
+        from: user,
+        value: ether('1'),
       });
-      
-      expect(await this.foo.bValue()).eq(r);
+
+      expect(await this.foo.bValue.call()).eq(r);
     });
 
     it('replace parameter by 50% of ref value', async function() {
       const tos = [this.fooHandler.address, this.fooHandler.address];
-      const r = await this.foo.callStatic.barUint();
+      const r = await this.foo.barUint.call();
       const a = ether('0.5');
       const configs = [
         '0x0001000000000000000000000000000000000000000000000000000000000000',
@@ -536,20 +503,19 @@ describe('Proxy', function() {
         abi.simpleEncode('barUint1(address,uint256)', this.foo.address, a),
       ];
 
-      await this.proxy.connect(user).batchExec(tos, configs, datas, {
-        value: utils.parseEther('1'),
+      await this.proxy.batchExec(tos, configs, datas, {
+        from: user,
+        value: ether('1'),
       });
 
-      expect((await this.foo.nValue()).toString()).to.be.bignumber.eq(
-        new BN(r.toString())
-        .mul(a)
-        .div(ether('1'))
+      expect(await this.foo.nValue.call()).to.be.bignumber.eq(
+        r.mul(a).div(ether('1'))
       );
     });
 
     it('should revert: location count less than ref count', async function() {
       const tos = [this.fooHandler.address, this.fooHandler.address];
-      const r = await this.foo.callStatic.bar();
+      const r = await this.foo.bar.call();
       const a =
         '0x0000000000000000000000000000000000000000000000000000000000000000';
       const configs = [
@@ -563,8 +529,9 @@ describe('Proxy', function() {
       ];
 
       await expectRevert(
-        this.proxy.connect(user).batchExec(tos, configs, datas, {
-          value: utils.parseEther('1'),
+        this.proxy.batchExec(tos, configs, datas, {
+          from: user,
+          value: ether('1'),
         }),
         'Location count less than ref count'
       );
@@ -572,7 +539,7 @@ describe('Proxy', function() {
 
     it('should revert: location count greater than ref count', async function() {
       const tos = [this.fooHandler.address, this.fooHandler.address];
-      const r = await this.foo.callStatic.bar();
+      const r = await this.foo.bar.call();
       const a =
         '0x0000000000000000000000000000000000000000000000000000000000000000';
       const configs = [
@@ -586,8 +553,9 @@ describe('Proxy', function() {
       ];
 
       await expectRevert(
-        this.proxy.connect(user).batchExec(tos, configs, datas, {
-          value: utils.parseEther('1'),
+        this.proxy.batchExec(tos, configs, datas, {
+          from: user,
+          value: ether('1'),
         }),
         'Location count exceeds ref count'
       );
@@ -595,7 +563,7 @@ describe('Proxy', function() {
 
     it('should revert: ref to out of localStack', async function() {
       const tos = [this.fooHandler.address, this.fooHandler.address];
-      const r = await this.foo.callStatic.bar();
+      const r = await this.foo.bar.call();
       const a =
         '0x0000000000000000000000000000000000000000000000000000000000000000';
       const configs = [
@@ -609,8 +577,9 @@ describe('Proxy', function() {
       ];
 
       await expectRevert(
-        this.proxy.connect(user).batchExec(tos, configs, datas, {
-          value: utils.parseEther('1'),
+        this.proxy.batchExec(tos, configs, datas, {
+          from: user,
+          value: ether('1'),
         }),
         'Reference to out of localStack'
       );
@@ -618,7 +587,7 @@ describe('Proxy', function() {
 
     it('should revert: expected return amount not match', async function() {
       const tos = [this.fooHandler.address, this.fooHandler.address];
-      const r = await this.foo.callStatic.bar();
+      const r = await this.foo.bar.call();
       const a =
         '0x0000000000000000000000000000000000000000000000000000000000000000';
       const configs = [
@@ -632,8 +601,9 @@ describe('Proxy', function() {
       ];
 
       await expectRevert(
-        this.proxy.connect(user).batchExec(tos, configs, datas, {
-          value: utils.parseEther('1'),
+        this.proxy.batchExec(tos, configs, datas, {
+          from: user,
+          value: ether('1'),
         }),
         'Return num and parsed return num not matched'
       );
@@ -641,7 +611,7 @@ describe('Proxy', function() {
 
     it('should revert: overflow during trimming', async function() {
       const tos = [this.fooHandler.address, this.fooHandler.address];
-      const r = await this.foo.callStatic.barUint();
+      const r = await this.foo.barUint.call();
       const a = MAX_UINT256; // multiply by any num greater than 0 will cause overflow
       const configs = [
         '0x0001000000000000000000000000000000000000000000000000000000000000',
@@ -651,9 +621,11 @@ describe('Proxy', function() {
         abi.simpleEncode('barUint(address)', this.foo.address),
         abi.simpleEncode('barUint1(address,uint256)', this.foo.address, a),
       ];
+
       await expectRevert.unspecified(
-        this.proxy.connect(user).batchExec(tos, configs, datas, {
-          value: utils.parseEther('1'),
+        this.proxy.batchExec(tos, configs, datas, {
+          from: user,
+          value: ether('1'),
         })
       );
     });

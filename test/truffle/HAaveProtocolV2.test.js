@@ -73,15 +73,6 @@ contract('Aave V2', function([_, user, someone]) {
     this.aweth = await IAToken.at(awethAddress);
     this.mockToken = await SimpleToken.new();
 
-    await hre.network.provider.request({
-      method: "hardhat_impersonateAccount",
-      params: [DAI_PROVIDER],
-    });
-    await hre.network.provider.request({
-      method: "hardhat_impersonateAccount",
-      params: [WETH_PROVIDER],
-    });
-
   });
 
   beforeEach(async function() {
@@ -101,7 +92,6 @@ contract('Aave V2', function([_, user, someone]) {
         const to = this.hAaveV2.address;
         const data = abi.simpleEncode('depositETH(uint256)', value);
 
-        console.log('user balance:' + await balanceUser.get());
         const receipt = await this.proxy.execMock(to, data, {
           from: user,
           value: value,
@@ -308,21 +298,9 @@ contract('Aave V2', function([_, user, someone]) {
         expect(aTokenUserAfter).to.be.bignumber.lt(
           depositAmount.add(interestMax).sub(handlerReturn)
         );        
-
-        const tx = await web3.eth.getTransaction(receipt.tx);
-        var gasUsed = receipt.receipt.gasUsed;
-        var gasPrice = tx.gasPrice;
-        console.log('gasUsed:'+ gasUsed);
-        console.log('gasPrice:'+ gasPrice);
-
-        var userBalanceDelta = await balanceUser.delta();
-        console.log('userBalanceDelta:' + userBalanceDelta);
-        expect(userBalanceDelta).to.be.bignumber.eq(
+        expect(await balanceUser.delta()).to.be.bignumber.eq(
           value.sub(new BN(receipt.receipt.gasUsed))
         );
-        // expect(await balanceUser.delta()).to.be.bignumber.eq(
-        //   value.sub(new BN(receipt.receipt.gasUsed))
-        // );
         profileGas(receipt);
       });
     });

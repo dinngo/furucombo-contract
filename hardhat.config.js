@@ -48,6 +48,6 @@ require("@nomiclabs/hardhat-truffle5");
     }
   },
   mocha: {
-    timeout: 180000
+    timeout: 300000
   }
 };
