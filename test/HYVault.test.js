@@ -37,6 +37,16 @@ contract('YVault', function([_, user]) {
       this.hYVault.address,
       utils.asciiToHex('HYVault')
     );
+
+    await hre.network.provider.request({
+      method: "hardhat_impersonateAccount",
+      params: [CURVE_YCRV_PROVIDER],
+    });
+    await hre.network.provider.request({
+      method: "hardhat_impersonateAccount",
+      params: [ALINK_PROVIDER],
+    });
+
   });
 
   beforeEach(async function() {

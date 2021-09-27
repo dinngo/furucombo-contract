@@ -54,6 +54,23 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
     );
     this.router = await IUniswapV2Router.at(UNISWAPV2_ROUTER02);
     this.proxy = await Proxy.new(this.registry.address);
+
+    await hre.network.provider.request({
+      method: "hardhat_impersonateAccount",
+      params: [DAI_PROVIDER],
+    });
+    await hre.network.provider.request({
+      method: "hardhat_impersonateAccount",
+      params: [HBTC_PROVIDER],
+    });
+    await hre.network.provider.request({
+      method: "hardhat_impersonateAccount",
+      params: [OMG_PROVIDER],
+    });
+    await hre.network.provider.request({
+      method: "hardhat_impersonateAccount",
+      params: [USDT_PROVIDER],
+    });
   });
 
   beforeEach(async function() {
@@ -925,7 +942,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
         await this.proxy.updateTokenMock(this.token.address);
         await expectRevert(
           this.proxy.execMock(to, data, { from: user }),
-          'HUniswapV2_swapTokensForExactETH: UniswapV2Router: EXCESSIVE_INPUT_AMOUNT.'
+          '1_HUniswapV2_swapTokensForExactETH: UniswapV2Router: EXCESSIVE_INPUT_AMOUNT'
         );
       });
       it('invalid path', async function() {

@@ -75,4 +75,5 @@ sleep 9
 npx hardhat --version
 
 # Execute rest test files with suffix `.test.js` with single `truffle test`
-npx hardhat test ./test/hardhat/Proxy.test.js --network localhost
+#npx hardhat test ./test/hardhat/Proxy.test.js --network localhost
+npx hardhat test "$@" --network localhost

@@ -14,13 +14,14 @@ const abi = require('ethereumjs-abi');
 const utils = web3.utils;
 const { expect } = require('chai');
 const {
-  SUSHI_TOKEN,
-  xSUSHI_TOKEN,
-  SUSHI_PROVIDER,
-  xSUSHI_PROVIDER,
-  SUSHISWAP_SUSHI_ETH,
-  SUSHISWAP_SUSHI_xSUSHI,
-  SUSHISWAP_ROUTER,
+  DAI_TOKEN,
+  BAT_TOKEN,
+  DAI_PROVIDER,
+  BAT_PROVIDER,
+  ETH_PROVIDER,
+  UNISWAPV2_ETH_DAI,
+  UNISWAPV2_BAT_DAI,
+  UNISWAPV2_ROUTER02,
 } = require('./utils/constants');
 const {
   evmRevert,
@@ -29,21 +30,21 @@ const {
   getHandlerReturn,
 } = require('./utils/utils');
 
-const HSushiSwap = artifacts.require('HSushiSwap');
+const HUniswapV2 = artifacts.require('HUniswapV2');
 const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('ProxyMock');
 const IToken = artifacts.require('IERC20');
 const UniswapV2Router02 = artifacts.require('IUniswapV2Router02');
 
-contract('SushiSwap Liquidity', function([_, user]) {
+contract('UniswapV2 Liquidity', function([_, user]) {
   let id;
-  const tokenAAddress = SUSHI_TOKEN;
-  const tokenBAddress = xSUSHI_TOKEN;
-  const tokenAProviderAddress = SUSHI_PROVIDER;
-  const tokenBProviderAddress = xSUSHI_PROVIDER;
-  const sushiswapPoolAAddress = SUSHISWAP_SUSHI_ETH;
-  const sushiswapPoolBAddress = SUSHISWAP_SUSHI_xSUSHI;
-  const sushiswapRouterAddress = SUSHISWAP_ROUTER;
+  const tokenAAddress = DAI_TOKEN;
+  const tokenBAddress = BAT_TOKEN;
+  const tokenAProviderAddress = DAI_PROVIDER;
+  const tokenBProviderAddress = BAT_PROVIDER;
+  const uniswapV2ETHDAIAddress = UNISWAPV2_ETH_DAI;
+  const uniswapV2BATDAIAddress = UNISWAPV2_BAT_DAI;
+  const uniswapV2RouterAddress = UNISWAPV2_ROUTER02;
 
   let balanceUser;
   let tokenUser;
@@ -52,16 +53,25 @@ contract('SushiSwap Liquidity', function([_, user]) {
   before(async function() {
     this.registry = await Registry.new();
     this.proxy = await Proxy.new(this.registry.address);
-    this.hSushiSwap = await HSushiSwap.new();
+    this.hUniswapV2 = await HUniswapV2.new();
     await this.registry.register(
-      this.hSushiSwap.address,
-      utils.asciiToHex('SushiSwap')
+      this.hUniswapV2.address,
+      utils.asciiToHex('UniswapV2')
     );
     this.tokenA = await IToken.at(tokenAAddress);
     this.tokenB = await IToken.at(tokenBAddress);
-    this.uniTokenEth = await IToken.at(sushiswapPoolAAddress);
-    this.uniTokenToken = await IToken.at(sushiswapPoolBAddress);
-    this.router = await UniswapV2Router02.at(sushiswapRouterAddress);
+    this.uniTokenEth = await IToken.at(uniswapV2ETHDAIAddress);
+    this.uniTokenToken = await IToken.at(uniswapV2BATDAIAddress);
+    this.router = await UniswapV2Router02.at(uniswapV2RouterAddress);
+
+    await hre.network.provider.request({
+      method: "hardhat_impersonateAccount",
+      params: [DAI_PROVIDER],
+    });
+    await hre.network.provider.request({
+      method: "hardhat_impersonateAccount",
+      params: [BAT_PROVIDER],
+    });
 
     await this.tokenA.transfer(user, ether('1000'), {
       from: tokenAProviderAddress,
@@ -69,6 +79,7 @@ contract('SushiSwap Liquidity', function([_, user]) {
     await this.tokenB.transfer(user, ether('1000'), {
       from: tokenBProviderAddress,
     });
+
   });
 
   beforeEach(async function() {
@@ -92,11 +103,11 @@ contract('SushiSwap Liquidity', function([_, user]) {
 
     it('normal', async function() {
       // Prepare handler data
-      const tokenAmount = ether('100');
-      const minTokenAmount = new BN('1');
-      const minEthAmount = new BN('1');
+      const tokenAmount = ether('0.002');
+      const minTokenAmount = ether('0.0000001');
+      const minEthAmount = ether('0.0000001');
       const value = ether('1');
-      const to = this.hSushiSwap.address;
+      const to = this.hUniswapV2.address;
       const data = abi.simpleEncode(
         'addLiquidityETH(uint256,address,uint256,uint256,uint256):(uint256,uint256,uint256)',
         value,
@@ -176,10 +187,10 @@ contract('SushiSwap Liquidity', function([_, user]) {
     it('max amount', async function() {
       // Prepare handler data
       const tokenAmount = ether('0.002');
-      const minTokenAmount = ether('0.000001');
-      const minEthAmount = ether('0.000001');
+      const minTokenAmount = ether('0.0000001');
+      const minEthAmount = ether('0.0000001');
       const value = ether('1');
-      const to = this.hSushiSwap.address;
+      const to = this.hUniswapV2.address;
       const data = abi.simpleEncode(
         'addLiquidityETH(uint256,address,uint256,uint256,uint256):(uint256,uint256,uint256)',
         MAX_UINT256,
@@ -268,7 +279,7 @@ contract('SushiSwap Liquidity', function([_, user]) {
       const tokenBAmount = ether('0.002');
       const minTokenAAmount = ether('0.000001');
       const minTokenBAmount = ether('0.000001');
-      const to = this.hSushiSwap.address;
+      const to = this.hUniswapV2.address;
       const data = abi.simpleEncode(
         'addLiquidity(address,address,uint256,uint256,uint256,uint256):(uint256,uint256,uint256)',
         tokenAAddress,
@@ -288,6 +299,7 @@ contract('SushiSwap Liquidity', function([_, user]) {
       await this.tokenB.transfer(this.proxy.address, tokenBAmount, {
         from: user,
       });
+
       // Add tokens to cache for return user after handler execution
       await this.proxy.updateTokenMock(this.tokenA.address);
       await this.proxy.updateTokenMock(this.tokenB.address);
@@ -353,7 +365,7 @@ contract('SushiSwap Liquidity', function([_, user]) {
       const tokenBAmount = ether('0.002');
       const minTokenAAmount = ether('0.000001');
       const minTokenBAmount = ether('0.000001');
-      const to = this.hSushiSwap.address;
+      const to = this.hUniswapV2.address;
       const data = abi.simpleEncode(
         'addLiquidity(address,address,uint256,uint256,uint256,uint256):(uint256,uint256,uint256)',
         tokenAAddress,
@@ -482,7 +494,7 @@ contract('SushiSwap Liquidity', function([_, user]) {
       await this.proxy.updateTokenMock(this.uniTokenEth.address);
 
       const value = uniTokenUserAmount;
-      const to = this.hSushiSwap.address;
+      const to = this.hUniswapV2.address;
       const data = abi.simpleEncode(
         'removeLiquidityETH(address,uint256,uint256,uint256):(uint256,uint256)',
         tokenAAddress,
@@ -554,7 +566,7 @@ contract('SushiSwap Liquidity', function([_, user]) {
       await this.proxy.updateTokenMock(this.uniTokenEth.address);
 
       const value = uniTokenUserAmount;
-      const to = this.hSushiSwap.address;
+      const to = this.hUniswapV2.address;
       const data = abi.simpleEncode(
         'removeLiquidityETH(address,uint256,uint256,uint256):(uint256,uint256)',
         tokenAAddress,
@@ -673,7 +685,7 @@ contract('SushiSwap Liquidity', function([_, user]) {
       await this.proxy.updateTokenMock(this.uniTokenToken.address);
 
       const value = uniTokenUserAmount;
-      const to = this.hSushiSwap.address;
+      const to = this.hUniswapV2.address;
       const data = abi.simpleEncode(
         'removeLiquidity(address,address,uint256,uint256,uint256):(uint256,uint256)',
         tokenAAddress,
@@ -761,7 +773,7 @@ contract('SushiSwap Liquidity', function([_, user]) {
       await this.proxy.updateTokenMock(this.uniTokenToken.address);
 
       const value = uniTokenUserAmount;
-      const to = this.hSushiSwap.address;
+      const to = this.hUniswapV2.address;
       const data = abi.simpleEncode(
         'removeLiquidity(address,address,uint256,uint256,uint256):(uint256,uint256)',
         tokenAAddress,

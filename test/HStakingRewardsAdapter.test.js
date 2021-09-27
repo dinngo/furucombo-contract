@@ -110,6 +110,15 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
     this.unregisteredAdapter = await StakingRewardsAdapter.at(
       unregisteredAdapterAddr
     );
+
+    await hre.network.provider.request({
+      method: "hardhat_impersonateAccount",
+      params: [DAI_PROVIDER],
+    });
+    await hre.network.provider.request({
+      method: "hardhat_impersonateAccount",
+      params: [KNC_PROVIDER],
+    });
   });
 
   beforeEach(async function() {

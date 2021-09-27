@@ -101,7 +101,6 @@ contract('Aave V2', function([_, user, someone]) {
         const to = this.hAaveV2.address;
         const data = abi.simpleEncode('depositETH(uint256)', value);
 
-        console.log('user balance:' + await balanceUser.get());
         const receipt = await this.proxy.execMock(to, data, {
           from: user,
           value: value,
@@ -276,8 +275,7 @@ contract('Aave V2', function([_, user, someone]) {
         const data = abi.simpleEncode('withdrawETH(uint256)', MAX_UINT256);
         await this.aweth.transfer(this.proxy.address, value, { from: user });
         await this.proxy.updateTokenMock(this.aweth.address);
-        var userBanalceCur = await balanceUser.get();
-        console.log('userBanalceCur:' + userBanalceCur);
+        await balanceUser.get();
 
         const receipt = await this.proxy.execMock(to, data, {
           from: user,
@@ -309,20 +307,13 @@ contract('Aave V2', function([_, user, someone]) {
           depositAmount.add(interestMax).sub(handlerReturn)
         );        
 
-        const tx = await web3.eth.getTransaction(receipt.tx);
-        var gasUsed = receipt.receipt.gasUsed;
-        var gasPrice = tx.gasPrice;
-        console.log('gasUsed:'+ gasUsed);
-        console.log('gasPrice:'+ gasPrice);
-
+        // value <= userBalanceDelta  <= value * 1.01
         var userBalanceDelta = await balanceUser.delta();
-        console.log('userBalanceDelta:' + userBalanceDelta);
-        expect(userBalanceDelta).to.be.bignumber.eq(
-          value.sub(new BN(receipt.receipt.gasUsed))
+        expect(userBalanceDelta).to.be.bignumber.lte(
+          mulPercent(value, 101)
         );
-        // expect(await balanceUser.delta()).to.be.bignumber.eq(
-        //   value.sub(new BN(receipt.receipt.gasUsed))
-        // );
+        expect(userBalanceDelta).to.be.bignumber.gte(value);
+        
         profileGas(receipt);
       });
     });

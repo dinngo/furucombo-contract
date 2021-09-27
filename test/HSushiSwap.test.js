@@ -47,6 +47,11 @@ contract('SushiSwap Swap', function([_, user, someone]) {
     );
     this.router = await IUniswapV2Router.at(SUSHISWAP_ROUTER);
     this.proxy = await Proxy.new(this.registry.address);
+
+    await hre.network.provider.request({
+      method: "hardhat_impersonateAccount",
+      params: [DAI_PROVIDER],
+    });
   });
 
   beforeEach(async function() {
@@ -591,7 +596,7 @@ contract('SushiSwap Swap', function([_, user, someone]) {
 
         await expectRevert(
           this.proxy.execMock(to, data, { from: user }),
-          'HSushiSwap_swapTokensForExactETH: UniswapV2Router: EXCESSIVE_INPUT_AMOUNT.'
+          '1_HSushiSwap_swapTokensForExactETH: UniswapV2Router: EXCESSIVE_INPUT_AMOUNT'
         );
       });
 
