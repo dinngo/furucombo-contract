@@ -54,6 +54,16 @@ contract('Aave flashloan', function([_, user]) {
     this.lendingPool = await ILendingPool.at(lendingPoolAddress);
     await this.registry.registerCaller(lendingPoolAddress, this.hAave.address);
     this.faucet = await Faucet.new();
+
+    await hre.network.provider.request({
+      method: "hardhat_impersonateAccount",
+      params: [ETH_PROVIDER],
+    });
+    await hre.network.provider.request({
+      method: "hardhat_impersonateAccount",
+      params: [DAI_PROVIDER],
+    });
+
     await web3.eth.sendTransaction({
       from: ETH_PROVIDER,
       to: this.faucet.address,

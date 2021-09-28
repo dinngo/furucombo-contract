@@ -74,6 +74,50 @@ contract('Curve', function([_, user]) {
     this.hbtcSwap = await ICurveHandler.at(CURVE_HBTC_SWAP);
     this.aaveSwap = await ICurveHandler.at(CURVE_AAVE_SWAP);
 
+    await hre.network.provider.request({
+      method: "hardhat_impersonateAccount",
+      params: [DAI_PROVIDER],
+    });
+    await hre.network.provider.request({
+      method: "hardhat_impersonateAccount",
+      params: [USDT_PROVIDER],
+    });
+    await hre.network.provider.request({
+      method: "hardhat_impersonateAccount",
+      params: [SETH_PROVIDER],
+    });
+    await hre.network.provider.request({
+      method: "hardhat_impersonateAccount",
+      params: [SUSD_PROVIDER],
+    });
+    await hre.network.provider.request({
+      method: "hardhat_impersonateAccount",
+      params: [WBTC_PROVIDER],
+    });
+    await hre.network.provider.request({
+      method: "hardhat_impersonateAccount",
+      params: [RENBTC_PROVIDER],
+    });
+    await hre.network.provider.request({
+      method: "hardhat_impersonateAccount",
+      params: [HBTC_PROVIDER],
+    });
+    await hre.network.provider.request({
+      method: "hardhat_impersonateAccount",
+      params: [CURVE_YCRV_PROVIDER],
+    });
+    await hre.network.provider.request({
+      method: "hardhat_impersonateAccount",
+      params: [CURVE_SBTCCRV_PROVIDER],
+    });
+    await hre.network.provider.request({
+      method: "hardhat_impersonateAccount",
+      params: [CURVE_SETHCRV_PROVIDER],
+    });
+    await hre.network.provider.request({
+      method: "hardhat_impersonateAccount",
+      params: [CURVE_AAVECRV_PROVIDER],
+    });
   });
 
   beforeEach(async function() {

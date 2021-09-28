@@ -123,6 +123,16 @@ contract('BProtocol', function([_, user1, user2, someone]) {
       await this.dsRegistry.proxies.call(user2)
     );
     this.dai = await IToken.at(DAI_TOKEN);
+
+    await hre.network.provider.request({
+      method: "hardhat_impersonateAccount",
+      params: [DAI_PROVIDER],
+    });
+    await hre.network.provider.request({
+      method: "hardhat_impersonateAccount",
+      params: [BAT_PROVIDER],
+    });
+
   });
 
   beforeEach(async function() {

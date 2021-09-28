@@ -124,6 +124,12 @@ contract('Maker', function([_, user]) {
       await this.dsRegistry.proxies.call(user)
     );
     this.dai = await IToken.at(DAI_TOKEN);
+
+    await hre.network.provider.request({
+      method: "hardhat_impersonateAccount",
+      params: [DAI_PROVIDER],
+    });
+
   });
 
   beforeEach(async function() {

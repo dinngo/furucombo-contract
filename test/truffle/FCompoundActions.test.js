@@ -68,6 +68,12 @@ contract('FCompoundActions', function([_, user]) {
     this.cEther = await ICEther.at(CETHER);
     this.comptroller = await IComptroller.at(COMPOUND_COMPTROLLER);
     this.actionsMock = await ActionsMock.new();
+
+    await hre.network.provider.request({
+      method: "hardhat_impersonateAccount",
+      params: [DAI_PROVIDER],
+    });
+
   });
 
   beforeEach(async function() {
