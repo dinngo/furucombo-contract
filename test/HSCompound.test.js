@@ -65,13 +65,6 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
       this.hsCompound.address,
       utils.asciiToHex('HSCompound')
     );
-    // Use SingletonFactory to deploy FCompoundActions using CREATE2
-    this.singletonFactory = await ISingletonFactory.at(CREATE2_FACTORY);
-
-    await this.singletonFactory.deploy(
-      getFCompoundActionsBytecodeBySolc(),
-      FCOMPOUND_ACTIONS_SALT
-    );
 
     this.dsRegistry = await IDSProxyRegistry.at(MAKER_PROXY_REGISTRY);
     // User build DSProxy
@@ -94,6 +87,11 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
     this.cEther = await ICEther.at(CETHER);
     this.comp = await IToken.at(COMP_TOKEN);
     this.comptroller = await IComptroller.at(COMPOUND_COMPTROLLER);
+
+    await hre.network.provider.request({
+      method: "hardhat_impersonateAccount",
+      params: [DAI_PROVIDER],
+    });
   });
 
   beforeEach(async function() {

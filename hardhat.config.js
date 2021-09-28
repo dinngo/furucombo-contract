@@ -45,10 +45,10 @@ require("@nomiclabs/hardhat-truffle5");
     },
     localhost:{
       gasPrice: 1,
-      timeout: 300000
+      timeout: 600000
     }
   },
   mocha: {
-    timeout: 300000
+    timeout: 600000
   }
 };
