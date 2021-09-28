@@ -77,6 +77,15 @@ contract('Aave V2', function([_, user, someone]) {
     this.aToken = await IAToken.at(aTokenAddress);
     this.weth = await IToken.at(WETH_TOKEN);
     this.mockToken = await SimpleToken.new();
+
+    await hre.network.provider.request({
+      method: "hardhat_impersonateAccount",
+      params: [WETH_PROVIDER],
+    });
+    await hre.network.provider.request({
+      method: "hardhat_impersonateAccount",
+      params: [DAI_PROVIDER],
+    });
   });
 
   beforeEach(async function() {

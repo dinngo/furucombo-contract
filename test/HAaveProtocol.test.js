@@ -67,6 +67,11 @@ contract('Aave', function([_, user]) {
     this.aEther = await IAToken.at(AETHER);
     this.token = await IToken.at(tokenAddress);
     this.aToken = await IAToken.at(aTokenAddress);
+
+    await hre.network.provider.request({
+      method: "hardhat_impersonateAccount",
+      params: [DAI_PROVIDER],
+    });
   });
 
   beforeEach(async function() {

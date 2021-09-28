@@ -44,7 +44,8 @@ require("@nomiclabs/hardhat-truffle5");
       hardfork: "berlin"
     },
     localhost:{
-      gasPrice: 1
+      gasPrice: 1,
+      timeout: 300000
     }
   },
   mocha: {

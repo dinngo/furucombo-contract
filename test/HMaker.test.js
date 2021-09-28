@@ -123,6 +123,16 @@ contract('Maker', function([_, user1, user2, someone]) {
       await this.dsRegistry.proxies.call(user2)
     );
     this.dai = await IToken.at(DAI_TOKEN);
+
+
+    await hre.network.provider.request({
+      method: "hardhat_impersonateAccount",
+      params: [BAT_PROVIDER],
+    });
+    await hre.network.provider.request({
+      method: "hardhat_impersonateAccount",
+      params: [DAI_PROVIDER],
+    });
   });
 
   beforeEach(async function() {
@@ -169,10 +179,12 @@ contract('Maker', function([_, user1, user2, someone]) {
             ilkEth,
             wadD
           );
+          
           const receipt = await this.proxy.execMock(to, data, {
             from: someone,
             value: value,
           });
+         
           const handlerReturn = utils.toBN(
             getHandlerReturn(receipt, ['uint256'])[0]
           );
