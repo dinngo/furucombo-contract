@@ -403,15 +403,15 @@ rule cacheIsAlwaysCleanedUp(bytes32 key, method f) {
     assert before == 0 => after == 0;
 }
 
-rule nonExecutableByBannedAgents(method f) {
+rule nonExecutableWhenProxyIsBanned(method f) {
     require !isHandler();
     require !f.isView; // only non-view functions, that may modify the state, are interesting.
     env e;
-    require registry.bannedAgents(e.msg.sender) == 1; // sender is banned
+    require registry.bannedAgents(currentContract) == 1; // proxy contract is banned
 
     calldataarg arg;
     f@withrevert(e, arg);
-    assert lastReverted, "method invocation did not revert despite being called by a banned agent";
+    assert lastReverted, "method invocation did not revert despite the contract has been banned in registry";
 }
 
 rule nonExecutableWhenHalted(method f) {
