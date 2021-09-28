@@ -444,6 +444,7 @@ nonExecutableWithInitializedSender(method f) {
     require getSender() != 0; // sender is initialized
 
     env e;
+    require e.msg.sender != currentContract;
     calldataarg arg;
     f@withrevert(e, arg);
     assert lastReverted; // all non-view functions should revert if sender is already initialized (maybe except for fallback TODO)
