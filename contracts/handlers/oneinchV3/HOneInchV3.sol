@@ -80,9 +80,9 @@ contract HOneInchV3 is HandlerBase {
         }
 
         // Check, dstToken balance should be increased
-        uint256 dstTokenBalAfter =
+        uint256 dstTokenBalanceAfter =
             _getBalance(address(dstToken), type(uint256).max);
-        if (dstTokenBalAfter.sub(dstTokenBalanceBefore) != returnAmount) {
+        if (dstTokenBalanceAfter.sub(dstTokenBalanceBefore) != returnAmount) {
             _revertMsg("unoswap", "Invalid output token amount");
         }
 
