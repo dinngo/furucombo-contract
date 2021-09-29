@@ -717,7 +717,7 @@ contract('OneInchV3 Swap', function([_, user]) {
         profileGas(receipt);
       });
 
-      it('1inchi data append other data', async function() {
+      it('append extra data to API data at the end', async function() {
         // Prepare data
         const appendData = 'ff0000ff';
         const value = ether('100');
