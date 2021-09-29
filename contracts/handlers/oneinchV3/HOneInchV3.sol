@@ -67,12 +67,12 @@ contract HOneInchV3 is HandlerBase {
         bytes calldata data
     ) external payable returns (uint256 returnAmount) {
         // Get dstToken balance before executing unoswap
-        uint256 dstTokenBalBefore =
+        uint256 dstTokenBalanceBefore =
             _getBalance(address(dstToken), type(uint256).max);
 
-        // Interact with 1inchi
+        // Interact with 1inch
         if (_isNotNativeToken(address(srcToken))) {
-            // ERC token need to approve before unoswap
+            // ERC20 token need to approve before unoswap
             _tokenApprove(address(srcToken), _ONEINCH_SPENDER, amount);
             returnAmount = _unoswapCall(0, data);
         } else {
@@ -82,7 +82,7 @@ contract HOneInchV3 is HandlerBase {
         // Check, dstToken balance should be increased
         uint256 dstTokenBalAfter =
             _getBalance(address(dstToken), type(uint256).max);
-        if (dstTokenBalAfter.sub(dstTokenBalBefore) != returnAmount) {
+        if (dstTokenBalAfter.sub(dstTokenBalanceBefore) != returnAmount) {
             _revertMsg("unoswap", "Invalid output token amount");
         }
 
@@ -96,7 +96,7 @@ contract HOneInchV3 is HandlerBase {
         internal
         returns (uint256 returnAmount)
     {
-        // Interact with 1inchi through contract call with data
+        // Interact with 1inch through contract call with data
         (bool success, bytes memory returnData) =
             _ONEINCH_SPENDER.call{value: value}(data);
 
@@ -104,15 +104,15 @@ contract HOneInchV3 is HandlerBase {
         if (success) {
             returnAmount = abi.decode(returnData, (uint256));
         } else {
-            if (returnData.length > 68) {
+            if (returnData.length < 68) {
+                // If the returnData length is less than 68, then the transaction failed silently.
+                _revertMsg("unoswap");
+            } else {
                 // Look for revert reason and bubble it up if present
                 assembly {
                     returnData := add(returnData, 0x04)
                 }
                 _revertMsg("unoswap", abi.decode(returnData, (string)));
-            } else {
-                // If the returnData length is less than 68, then the transaction failed silently.
-                _revertMsg("unoswap");
             }
         }
     }
