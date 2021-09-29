@@ -16,10 +16,10 @@ const utils = web3.utils;
 const { expect } = require('chai');
 
 const {
-  DAI_TOKEN,
-  DAI_PROVIDER,
-  KNC_TOKEN,
-  KNC_PROVIDER,
+  SNX_TOKEN,
+  SNX_PROVIDER,
+  CURVE_SCRV,
+  CURVE_SCRV_PROVIDER,
   CREATE2_FACTORY,
   STAKING_REWARDS_ADAPTER_REGISTRY_SALT,
   STAKING_REWARDS_ADAPTER_REGISTRY,
@@ -36,7 +36,7 @@ const { getAdapterRegistryBytecodeBySolc } = require('./utils/getBytecode');
 const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('ProxyMock');
 const HStakingRewardsAdapter = artifacts.require('HStakingRewardsAdapter');
-const StakingRewards = artifacts.require('StakingRewards');
+const StakingRewards = artifacts.require('CurveRewards');
 const StakingRewardsAdapter = artifacts.require('StakingRewardsAdapter');
 const StakingRewardsAdapterFactory = artifacts.require(
   'StakingRewardsAdapterFactory'
@@ -46,16 +46,19 @@ const StakingRewardsAdapterRegistry = artifacts.require(
 );
 const IToken = artifacts.require('IERC20');
 const ISingletonFactory = artifacts.require('ISingletonFactory');
+const IRewardDistributionRecipient = artifacts.require(
+  'IRewardDistributionRecipient'
+);
 
-contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
+contract('StakingRewardsLegacyAdapter - Handler', function([_, user, someone]) {
   let id;
   let balanceUser;
   /// st = stakingToken
   /// rt = rewardToken
-  const stAddress = DAI_TOKEN;
-  const stProviderAddress = DAI_PROVIDER;
-  const rtAddress = KNC_TOKEN;
-  const rtProviderAddress = KNC_PROVIDER;
+  const stAddress = CURVE_SCRV;
+  const stProviderAddress = CURVE_SCRV_PROVIDER;
+  const rtAddress = SNX_TOKEN;
+  const rtProviderAddress = SNX_PROVIDER;
 
   before(async function() {
     this.registry = await Registry.new();
@@ -67,25 +70,33 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
     );
     this.st = await IToken.at(stAddress);
     this.rt = await IToken.at(rtAddress);
-    this.staking = await StakingRewards.new(_, _, rtAddress, stAddress);
+    this.staking = await StakingRewards.new();
+    // Legacy contract needs to set RewardDistribution manually
+    this.set = await IRewardDistributionRecipient.at(this.staking.address);
+    await this.set.setRewardDistribution(_);
     // Deploy new adapter through factory
     this.factory = await StakingRewardsAdapterFactory.new();
-    await this.factory.newAdapter(
-      this.staking.address,
-      constants.ZERO_ADDRESS,
-      constants.ZERO_ADDRESS
-    );
+    await this.factory.newAdapter(this.staking.address, stAddress, rtAddress);
     const adapterAddr = await this.factory.adapters.call(
       this.staking.address,
       0
     );
-    // Use SingletonFactory to deploy AdapterRegistry using CREATE2
-    this.singletonFactory = await ISingletonFactory.at(CREATE2_FACTORY);
-    await this.singletonFactory.deploy(
-      getAdapterRegistryBytecodeBySolc(),
-      STAKING_REWARDS_ADAPTER_REGISTRY_SALT
-    );
     this.adapter = await StakingRewardsAdapter.at(adapterAddr);
+    
+    await hre.network.provider.request({
+      method: "hardhat_impersonateAccount",
+      params: [SNX_PROVIDER],
+    });
+    await hre.network.provider.request({
+      method: "hardhat_impersonateAccount",
+      params: [CURVE_SCRV_PROVIDER],
+    });
+    await hre.network.provider.request({
+      method: "hardhat_impersonateAccount",
+      params: [STAKING_REWARDS_ADAPTER_REGISTRY_OWNER],
+    });
+
+
     this.adapterRegistry = await StakingRewardsAdapterRegistry.at(
       STAKING_REWARDS_ADAPTER_REGISTRY
     );
@@ -98,11 +109,7 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
       { from: STAKING_REWARDS_ADAPTER_REGISTRY_OWNER }
     );
     // Deploy another adapter which will not be registered in AdapterRegistry
-    await this.factory.newAdapter(
-      this.staking.address,
-      constants.ZERO_ADDRESS,
-      constants.ZERO_ADDRESS
-    );
+    await this.factory.newAdapter(this.staking.address, stAddress, rtAddress);
     const unregisteredAdapterAddr = await this.factory.adapters.call(
       this.staking.address,
       1
@@ -110,15 +117,6 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
     this.unregisteredAdapter = await StakingRewardsAdapter.at(
       unregisteredAdapterAddr
     );
-
-    await hre.network.provider.request({
-      method: "hardhat_impersonateAccount",
-      params: [DAI_PROVIDER],
-    });
-    await hre.network.provider.request({
-      method: "hardhat_impersonateAccount",
-      params: [KNC_PROVIDER],
-    });
   });
 
   beforeEach(async function() {
@@ -481,7 +479,6 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
 
       // Get handler return result
       const handlerReturn = getHandlerReturn(receipt, ['uint256', 'uint256']);
-
       // Get balance of user after withdrawFor
       const stakingUserAfter = await this.adapter.balanceOf.call(user);
       const stBalanceUserAfter = await this.st.balanceOf.call(user);
