@@ -18,6 +18,17 @@ contract Proxy is IProxy, Storage, Config {
     using SafeERC20 for IERC20;
     using LibParam for bytes32;
 
+    event LogBegin(
+        address indexed handler,
+        bytes4 indexed selector,
+        bytes payload
+    );
+    event LogEnd(
+        address indexed handler,
+        bytes4 indexed selector,
+        bytes result
+    );
+
     modifier isNotBanned() {
         require(registry.bannedAgents(address(this)) == 0, "Banned");
         _;
@@ -123,8 +134,15 @@ contract Proxy is IProxy, Storage, Config {
                 // If so, trim the exectution data base on the configuration and stack content
                 _trim(datas[i], config, localStack, index);
             }
+            // Emit the execution log before call
+            emit LogBegin(tos[i], _getSelector(datas[i]), datas[i]);
+
             // Check if the output will be referenced afterwards
             bytes memory result = _exec(tos[i], datas[i]);
+
+            // Emit the execution log after call
+            emit LogEnd(tos[i], _getSelector(datas[i]), result);
+
             if (config.isReferenced()) {
                 // If so, parse the output and place it into local stack
                 uint256 num = config.getReturnNum();
@@ -313,5 +331,18 @@ contract Proxy is IProxy, Storage, Config {
     /// @notice Check if the caller is valid in registry.
     function _isValidCaller(address caller) internal view returns (bool) {
         return registry.isValidCaller(caller);
+    }
+
+    /// @notice Get payload function selector.
+    function _getSelector(bytes memory payload)
+        internal
+        pure
+        returns (bytes4 selector)
+    {
+        selector =
+            payload[0] |
+            (bytes4(payload[1]) >> 8) |
+            (bytes4(payload[2]) >> 16) |
+            (bytes4(payload[3]) >> 24);
     }
 }
