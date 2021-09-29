@@ -52,12 +52,6 @@ contract('FCompoundActions', function([_, user]) {
   const providerAddress = DAI_PROVIDER;
 
   before(async function() {
-    // Use SingletonFactory to deploy FCompoundActions using CREATE2
-    this.singletonFactory = await ISingletonFactory.at(CREATE2_FACTORY);
-    await this.singletonFactory.deploy(
-      getFCompoundActionsBytecodeBySolc(),
-      FCOMPOUND_ACTIONS_SALT
-    );
     this.dsRegistry = await IDSProxyRegistry.at(MAKER_PROXY_REGISTRY);
     await this.dsRegistry.build(user);
     this.userProxy = await IDSProxy.at(

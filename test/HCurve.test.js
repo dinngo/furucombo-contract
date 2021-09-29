@@ -1464,8 +1464,9 @@ contract('Curve', function([_, user]) {
           answer.mul(new BN('999')).div(new BN('1000'))
         );
         expect(await this.poolToken.balanceOf.call(user)).to.be.bignumber.lte(
-          answer
+          answer.mul(new BN('1001')).div(new BN('1000'))
         );
+
         profileGas(receipt);
       });
       it('remove from pool to USDT by removeLiquidityOneCoinUnderlying', async function() {
