@@ -191,6 +191,7 @@ contract('ProxyLog', function([_, deployer, user]) {
         from: user,
         value: ether('1'),
       });
+      // Pad the data by replacing the parameter part with r, which is the execution result of the first handler
       const paddedData = '0x' + datas[1].toString('hex', 0, 36) + r.slice(2);
 
       expect(await this.foo.bValue.call()).eq(r);
@@ -253,6 +254,7 @@ contract('ProxyLog', function([_, deployer, user]) {
         from: user,
         value: ether('1'),
       });
+      // Pad the data by replacing the parameter part with 0.7 * the execution result of first handler
       const paddedData =
         '0x' +
         datas[1].toString('hex', 0, 36) +
@@ -310,6 +312,7 @@ contract('ProxyLog', function([_, deployer, user]) {
         from: user,
         value: ether('1'),
       });
+      // Pad the data by replacing the third parameter part with the execution result of first handler
       const paddedData = '0x' + datas[1].toString('hex', 0, 68) + r.slice(2);
 
       expect(await this.foo.bValue.call()).eq(r);
@@ -357,6 +360,7 @@ contract('ProxyLog', function([_, deployer, user]) {
         from: user,
         value: ether('1'),
       });
+      // Pad the data by replacing the parameter part with 0.5 * the execution result of first handler
       const paddedData =
         '0x' +
         datas[1].toString('hex', 0, 36) +
