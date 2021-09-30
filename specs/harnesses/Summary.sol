@@ -225,32 +225,31 @@ contract Summary {
         Nothing(msg.sender).nop{value:amt}();
     }
 
-    // HOneInchExchange
-    struct SwapDescription {
+    // HOneInchV3
+    struct SwapDescriptionV3 {
         address srcToken;
         address dstToken;
         address srcReceiver;
         address dstReceiver;
         uint256 amount;
         uint256 minReturnAmount;
-        uint256 guaranteedAmount;
         uint256 flags;
-        address referrer;
         bytes permit;
     }
-    struct CallDescription {
-        uint256 targetWithMandatory;
-        uint256 gasLimit;
-        uint256 value;
-        bytes data;
-    }
-
-    function swap(address a, SwapDescription memory desc, CallDescription[] calldata cd) external returns (uint256) {
+    function swap(address a, SwapDescriptionV3 calldata desc, bytes calldata data) external payable returns (uint256) {
         consumedToken = desc.srcToken;
         generatedToken = desc.dstToken;
         shouldBeConsumedAmount = desc.amount;
         IERC20WithDummyFunctionality(desc.srcToken).transferFrom(msg.sender, address(this), desc.amount);
         IERC20WithDummyFunctionality(desc.dstToken).transfer(msg.sender, someAmount);
+        return executeRetUint256;
+    }
+    function unoswap(address srcToken, uint256 amount, uint256 minReturn, bytes32[] calldata) external payable returns (uint256) {
+        consumedToken = srcToken;
+        // generatedToken = dstToken;
+        shouldBeConsumedAmount = amount;
+        IERC20WithDummyFunctionality(srcToken).transferFrom(msg.sender, address(this), amount);
+        // IERC20WithDummyFunctionality(dstToken).transfer(msg.sender, someAmount);
         return executeRetUint256;
     }
 

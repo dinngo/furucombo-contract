@@ -220,8 +220,9 @@ methods {
     
     pools(address, address) => NONDET
 
-    // HOneInchExchange
-    swap(address,(address,address,address,address,uint256,uint256,uint256,uint256,address,bytes),(uint256,uint256,uint256,bytes)[]) => DISPATCHER(true)
+    // HOneInchV3
+    swap(address,(address,address,address,address,uint256,uint256,uint256,bytes),bytes) => DISPATCHER(true)
+    unoswap(address,uint256,uint256,bytes32[]) => DISPATCHER(true)
     
     // HStakingRewardsToken
     stakingToken() => DISPATCHER(true)
@@ -455,6 +456,7 @@ rule nonExecutableWithInitializedSender(method f) {
 // small havoc issue in batchExec, but getting coverage from execs() too.
 rule transferredTokensMeanThatStackIsUpdated(method f) {
     require summaryInstance.getEthAddress(currentContract) != someToken; // not an eth transfer
+    require someToken != 0; // not an eth transfer
     require someToken.allowance(currentContract, summaryInstance) == 0; // to make sure we're starting clean as implied by approvedTokensAreTemporary
     uint256 balanceBefore = someToken.balanceOf(currentContract);
     uint256 stackLengthBefore = getStackLength();
@@ -470,6 +472,8 @@ rule transferredTokensMeanThatStackIsUpdated(method f) {
 }
 
 rule approvedTokensAreTemporary(method f, address someAllowed) {
+    require summaryInstance.getEthAddress(currentContract) != someToken; // not an eth transfer
+    require someToken != 0; // not an eth transfer
     require someAllowed == summaryInstance; // narrowing down
     uint256 allowanceBefore = someToken.allowance(currentContract, someAllowed);
 
