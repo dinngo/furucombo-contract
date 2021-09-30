@@ -438,16 +438,18 @@ rule nonExecutableWithUninitializedSender(method f) {
 }
 
 // if sender was initialized, and we have a callback, which functions fail? If they fail, it means they can't be callbacks
-nonExecutableWithInitializedSender(method f) {
+rule nonExecutableWithInitializedSender(method f) {
     require !isHandler();
     require !f.isView; // only non-view functions, that may modify the state, are interesting.
     require getSender() != 0; // sender is initialized
 
     env e;
-    require e.msg.sender != currentContract;
+    bool isGoodCaller = registry.isValidCaller(e, e.msg.sender);
     calldataarg arg;
     f@withrevert(e, arg);
-    assert lastReverted; // all non-view functions should revert if sender is already initialized (maybe except for fallback TODO)
+    assert (f.isFallback && !isGoodCaller) => lastReverted; // only valid callers should execute in fallback successfully (would violate since certora prover cannot distinguish between receive and fallback for now)
+    assert (f.selector == execs(address[],bytes32[],bytes[]).selector && e.msg.sender != currentContract) => lastReverted; // `execs` is allowed to be called by proxy itself after initialized
+    assert (!f.isFallback && f.selector != execs(address[],bytes32[],bytes[]).selector) => lastReverted; // all non-view functions other than above ones should revert if sender is already initialized
 }
 
 // small havoc issue in batchExec, but getting coverage from execs() too.
