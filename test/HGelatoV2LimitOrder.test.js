@@ -388,7 +388,7 @@ contract('GelatoLimitOrder', function([_, user]) {
         user,
         10000000000,
         {
-          from: tokenAProviderAddress,
+          from: tokenBProviderAddress,
           value: dumpAmount,
         }
       );
@@ -955,7 +955,7 @@ contract('GelatoLimitOrder', function([_, user]) {
         user,
         10000000000,
         {
-          from: tokenAProviderAddress,
+          from: tokenBProviderAddress,
           value: dumpAmount,
         }
       );
