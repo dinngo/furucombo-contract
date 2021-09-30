@@ -47,15 +47,15 @@ perl -0777 -i -pe 's/is HandlerBase(, [a-zA-Z0-9]+)* \{/is   HandlerBase\1 {
 
     function getStackLength\(\) external view returns \(uint\) { return stack.length; }
 
-    function getSender\(\) public returns \(address\) { return \_getSender\(\); }
-    function getCubeCounter\(\) public returns \(uint256\) { return \_getCubeCounter\(\); }
+    function getSender\(\) public view returns \(address\) { return \_getSender\(\); }
+    function getCubeCounter\(\) public view returns \(uint256\) { return \_getCubeCounter\(\); }
 
     function ethBalance\(address who\) external view returns \(uint\) {
         return who.balance;
     }
 
     \/\/ to distinguish handlers from proxy
-    function isHandler\(\) public returns \(bool\) { return true; }
+    function isHandler\(\) public view returns \(bool\) { return true; }
 
     function _revertMsg(string memory functionName, string memory reason)
         internal override
@@ -89,7 +89,7 @@ perl -0777 -i -pe 's/function redeemUnderlying/function unique_redeemUnderlying/
 perl -0777 -i -pe 's/receiver.transfer\(amount\)/Nothing\(receiver\).nop{value:amount}\(\)/g' contracts/handlers/funds/HFunds.sol
 
 # add ABIEncoderV2 to HMooniswap
-perl -0777 -i -pe 's/pragma solidity/pragma experimental ABIEncoderV2; pragma  solidity/g' contracts/handlers/mooniswap/HMooniswap.sol
+# perl -0777 -i -pe 's/pragma solidity/pragma experimental ABIEncoderV2; pragma  solidity/g' contracts/handlers/mooniswap/HMooniswap.sol
 
 # Distinguish redeem of compound and of aave
 perl -0777 -i -pe 's/compound.redeem\(/compound.compoundredeem\(/g' contracts/handlers/compound/HCToken.sol

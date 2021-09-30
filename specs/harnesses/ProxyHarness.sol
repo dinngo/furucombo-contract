@@ -28,11 +28,11 @@ contract ProxyHarness is Proxy {
     }
 
     // internal-to-public
-    function getSender() public returns (address) { return _getSender(); }
-    function getCubeCounter() public returns (uint256) { return _getCubeCounter(); }
+    function getSender() public view returns (address) { return _getSender(); }
+    function getCubeCounter() public view returns (uint256) { return _getCubeCounter(); }
 
     // to distinguish handlers from proxy
-    function isHandler() public returns (bool) { return false; }
+    function isHandler() public view returns (bool) { return false; }
 
     // to align with handlers, but not existing here
     function postProcess() external { revert(); }
