@@ -212,11 +212,11 @@ methods {
     freeFromUpTo(address,uint256) => DISPATCHER(true)
 
     // HMooniswap
-    deposit(uint256[] amounts, uint256[] minAmounts) returns(uint256)
-        => DISPATCHER(true)
-    withdraw(uint256 amount, uint256[] minReturns)
-        => DISPATCHER(true)
-    getTokens() => DISPATCHER(true)
+    // deposit(uint256[] amounts, uint256[] minAmounts) returns(uint256)
+    //     => DISPATCHER(true)
+    // withdraw(uint256 amount, uint256[] minReturns)
+    //     => DISPATCHER(true)
+    // getTokens() => DISPATCHER(true)
     
     pools(address, address) => NONDET
 

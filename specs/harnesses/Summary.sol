@@ -603,31 +603,31 @@ contract Summary {
         }
 
     // HMooniswap
-    function deposit(uint256[] calldata amounts, uint256[] calldata minAmounts) external payable returns(uint256) {
-        // two tokens here
-        consumedToken = address(erc20A);
-        shouldBeConsumedAmount = amounts[0];
-        require (erc20A < erc20B);
-        erc20A.transferFrom(msg.sender, address(this), amounts[0]);
-        erc20B.transferFrom(msg.sender, address(this), amounts[1]);
-        generatedToken = address(this);
-        transfer(msg.sender, someAmount);
-        return someAmount;
-    }
-    function withdraw(uint256 amount, uint256[] calldata minAmounts) external {
-        generatedToken = address(erc20A);
-        consumedToken = address(this);
-        shouldBeConsumedAmount = amount;
-        transferFrom(msg.sender, address(this), amount);
-        erc20A.transfer(msg.sender, minAmounts[0]);
-        erc20B.transfer(msg.sender, minAmounts[1]);
-    }
-    function getTokens() external returns (address[] memory) {
-        address[] memory ret = new address[](2);
-        ret[0] = address(erc20A);
-        ret[1] = address(erc20B);
-        return ret;
-    }
+    // function deposit(uint256[] calldata amounts, uint256[] calldata minAmounts) external payable returns(uint256) {
+    //     // two tokens here
+    //     consumedToken = address(erc20A);
+    //     shouldBeConsumedAmount = amounts[0];
+    //     require (erc20A < erc20B);
+    //     erc20A.transferFrom(msg.sender, address(this), amounts[0]);
+    //     erc20B.transferFrom(msg.sender, address(this), amounts[1]);
+    //     generatedToken = address(this);
+    //     transfer(msg.sender, someAmount);
+    //     return someAmount;
+    // }
+    // function withdraw(uint256 amount, uint256[] calldata minAmounts) external {
+    //     generatedToken = address(erc20A);
+    //     consumedToken = address(this);
+    //     shouldBeConsumedAmount = amount;
+    //     transferFrom(msg.sender, address(this), amount);
+    //     erc20A.transfer(msg.sender, minAmounts[0]);
+    //     erc20B.transfer(msg.sender, minAmounts[1]);
+    // }
+    // function getTokens() external returns (address[] memory) {
+    //     address[] memory ret = new address[](2);
+    //     ret[0] = address(erc20A);
+    //     ret[1] = address(erc20B);
+    //     return ret;
+    // }
 
     // HStakingRewardsAdapter, partially HFurucomboStaking
     function stakingToken() external view returns (address) {
