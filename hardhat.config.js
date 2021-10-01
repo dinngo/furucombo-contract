@@ -1,7 +1,6 @@
 require("@nomiclabs/hardhat-waffle");
-
-// hardhat-deploy plugin is mainly for evm_snapshot functionality.
 require('hardhat-deploy');
+require("hardhat-deploy-ethers");
 
 // Truffle and Web3.js plugin
 require("@nomiclabs/hardhat-truffle5");
@@ -33,6 +32,9 @@ require("@nomiclabs/hardhat-truffle5");
       }
     }
   },
+  namedAccounts: {
+    deployer: 10
+  },
   defaultNetwork: "hardhat",
   networks: {
     hardhat: {
@@ -43,6 +45,18 @@ require("@nomiclabs/hardhat-truffle5");
       },
       hardfork: "berlin"
     },
+    // migration: {
+    //   // url: `${ETH_MAINNET_NODE}`,
+    //   url: 'https://mainnet.infura.io/v3/e876de601519478790cf4e8c425d0aee',
+    //   accounts:{
+    //     mnemonic: "dice shove sheriff police boss indoor hospital vivid tenant method game matter",
+    //     path: "m/44'/60'/0'/0",
+    //     initialIndex: 0
+    //   },
+    //   gas: 10000000,
+    //   gasPrice: 1000000000,
+    //   timeout: 600000
+    // },
     localhost:{
       gasPrice: 1,
       timeout: 600000
