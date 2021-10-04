@@ -1,8 +1,9 @@
 
-module.exports = async ({getNamedAccounts, deployments}) => {
+module.exports = async (hre) => {
   console.log('-----Start Registry');
-  const {deploy} = deployments;
-  const {deployer} = await getNamedAccounts();
+  const { deployments } = hre;
+  const { deploy } = deployments;
+  const { deployer } = await hre.getNamedAccounts();
   console.log(deployer);
   await deploy('Registry', {
     from: deployer,

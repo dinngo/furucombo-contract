@@ -18,6 +18,8 @@ hardhat_running() {
     nc -z localhost "$hardhat_port"
 }
 
+network="$@" 
+
 start_hardhat() {
     TEST_MNEMONIC_PHRASE="dice shove sheriff police boss indoor hospital vivid tenant method game matter"
     ETHER_PROVIDER="0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
@@ -60,7 +62,14 @@ start_hardhat() {
     ETH_PROVIDER_CONTRACT="0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
 
     # node_modules/.bin/ganache-cli --gasLimit 0xfffffffffff -m "$TEST_MNEMONIC_PHRASE" > /dev/null &
-    npx hardhat node --fork $ETH_MAINNET_NODE >/dev/null &
+    if [ "$network" == "migration" ]; then
+        npx hardhat node --fork $ETH_MAINNET_NODE  >/dev/null &
+        echo "-----migration"
+    else
+        npx hardhat node --fork $ETH_MAINNET_NODE --no-deploy >/dev/null &
+        echo "-----no depoly"
+    fi    
+
     hardhat_pid=$!
 }
 
@@ -76,4 +85,6 @@ npx hardhat --version
 
 # Execute rest test files with suffix `.test.js` with single `truffle test`
 #npx hardhat test ./test/hardhat/Proxy.test.js --network localhost
-npx hardhat test "$@" --network localhost
+npx hardhat test ./test/HWeth.test.js --network localhost
+# npx hardhat test "$@"
+

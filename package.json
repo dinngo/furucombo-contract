@@ -13,7 +13,8 @@
     "test-hardhat": "scripts/test-hardhat.sh",
     "lint:solhint": "solhint \"contracts/**/*.sol\"",
     "lint:prettier": "scripts/prettier.sh",
-    "test-migration": "scripts/test.sh --network migration"
+    "test-migration": "scripts/test.sh --network migration",
+    "test-migration-hardhat": "scripts/test-hardhat.sh migration"
   },
   "repository": {
     "type": "git",
