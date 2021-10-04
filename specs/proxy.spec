@@ -305,6 +305,11 @@ methods {
     yvault_withdraw(uint256) => DISPATCHER(true)
     withdrawETH(uint256) => DISPATCHER(true)
 
+    // HPolygon
+    depositERC20ForUser(address,address,uint256) => DISPATCHER(true)
+    depositFor(address,address,bytes) => DISPATCHER(true)
+    depositEtherFor(address) => DISPATCHER(true)
+
     // No-op for receiving funds without havocs
     nop() => NONDET
 }

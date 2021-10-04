@@ -937,6 +937,26 @@ contract Summary {
         Nothing(msg.sender).nop{value:someAmount}();
     }
 
+    // HPolygon
+    function depositERC20ForUser(address token, address user, uint256 amount) external {
+        consumedToken = token;
+        generatedToken = address(0);
+        shouldBeConsumedAmount = amount;
+        IERC20WithDummyFunctionality(token).transferFrom(msg.sender, address(this), amount);
+    }
+    function depositFor(address user, address token, bytes calldata depositData) external {
+        consumedToken = token;
+        generatedToken = address(0);
+        uint256 amount = abi.decode(depositData, (uint256));
+        shouldBeConsumedAmount = amount;
+        IERC20WithDummyFunctionality(token).transferFrom(msg.sender, address(this), amount);
+    }
+    function depositEtherFor(address user) external payable {
+        consumedToken = address(0);
+        generatedToken = address(0);
+        shouldBeConsumedAmount = msg.value;
+    }
+
     address public consumedToken;
     address public generatedToken;
     uint public shouldBeConsumedAmount;
