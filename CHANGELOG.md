@@ -4,7 +4,11 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
-- Fix 1inch v3 unoswap wrong dst token issue.
+## [1.9.0] - 2021-09-30
+
+### Changed
+
+- Change 1inch v3 unoswap dst token fetching mechanism.
 
 ## [1.8.0] - 2021-09-13
 
