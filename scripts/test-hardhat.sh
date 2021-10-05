@@ -78,6 +78,15 @@ start_hardhat() {
     hardhat_pid=$!
 }
 
+wait_hardhat_ready() {
+
+    while [ -z "$( lsof -i:8545 )" ]
+    do 
+        echo "wait hardhat network launching...might take some time if doing migration script."
+        sleep 3
+    done
+}
+
 if hardhat_running; then
     echo "Using existing hardhat network instance"
 else
@@ -85,7 +94,8 @@ else
     start_hardhat
 fi
 
-sleep 10
+wait_hardhat_ready
+
 npx hardhat --version
 
 # Execute rest test files with suffix `.test.js`
