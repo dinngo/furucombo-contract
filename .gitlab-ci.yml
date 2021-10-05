@@ -68,7 +68,8 @@ build:
   tags:
     - docker
   script:
-    - npm run build
+    - npx hardhat compile
+    # - npm run build
   cache:
     <<: *global_cache
 

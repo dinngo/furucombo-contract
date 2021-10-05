@@ -20,7 +20,7 @@ module.exports = async (hre) => {
         utils.hexlify(utils.formatBytes32String('Kyber Network'))
       );
 
-  console.log('addr:' + hKyberNetwork.address);
+  // console.log('addr:' + hKyberNetwork.address);
   // var a = await registry.isValidHandler.call(hKyberNetwork.address);
   // console.log('isValid:' + a);
 };

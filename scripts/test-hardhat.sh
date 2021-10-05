@@ -18,7 +18,11 @@ hardhat_running() {
     nc -z localhost "$hardhat_port"
 }
 
-network="$@" 
+# if action=migration, will executed deployment script, act like truffle migration.
+action="$1"
+
+# unit test to be executed
+tests="$2"
 
 start_hardhat() {
     TEST_MNEMONIC_PHRASE="dice shove sheriff police boss indoor hospital vivid tenant method game matter"
@@ -61,13 +65,12 @@ start_hardhat() {
     CURVE_FACTORY_TUSD_PROVIDER="0x12C2feBc4f4b34320B4AF07CE03b926eb31944D1"
     ETH_PROVIDER_CONTRACT="0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
 
-    # node_modules/.bin/ganache-cli --gasLimit 0xfffffffffff -m "$TEST_MNEMONIC_PHRASE" > /dev/null &
-    if [ "$network" == "migration" ]; then
+    if [ "$action" == "migration" ]; then
         npx hardhat node --fork $ETH_MAINNET_NODE  >/dev/null &
-        echo "-----migration"
+        echo "deployment script will be executed"
     else
         npx hardhat node --fork $ETH_MAINNET_NODE --no-deploy >/dev/null &
-        echo "-----no depoly"
+        echo "no deployment script will be executed"
     fi    
 
     hardhat_pid=$!
@@ -80,11 +83,9 @@ else
     start_hardhat
 fi
 
-sleep 9
+sleep 10
 npx hardhat --version
 
-# Execute rest test files with suffix `.test.js` with single `truffle test`
-#npx hardhat test ./test/hardhat/Proxy.test.js --network localhost
-npx hardhat test ./test/HWeth.test.js --network localhost
-# npx hardhat test "$@"
+# Execute rest test files with suffix `.test.js`
+npx hardhat --network localhost test $tests
 

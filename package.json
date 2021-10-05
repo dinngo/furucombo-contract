@@ -10,7 +10,7 @@
     "build": "scripts/build.sh",
     "compile": "truffle compile",
     "test": "scripts/test.sh --network development",
-    "test-hardhat": "scripts/test-hardhat.sh",
+    "test-hardhat": "scripts/test-hardhat.sh hardhat-network",
     "lint:solhint": "solhint \"contracts/**/*.sol\"",
     "lint:prettier": "scripts/prettier.sh",
     "test-migration": "scripts/test.sh --network migration",
