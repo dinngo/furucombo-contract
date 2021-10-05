@@ -1,17 +1,15 @@
 
 module.exports = async (hre) => {
-  console.log('-----Start Registry');
   const { deployments } = hre;
   const { deploy } = deployments;
   const { deployer } = await hre.getNamedAccounts();
-  console.log(deployer);
+  console.log('deployer:' + deployer);
   await deploy('Registry', {
     from: deployer,
     args: [],
     log: true,
   });
 
-  console.log('-----Succ');
 };
 
 // module.exports.skip = async (hre) => {
