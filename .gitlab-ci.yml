@@ -11,7 +11,7 @@ cache: &global_cache
 
 before_script:
   - npm install
-  - RUNNER_COUNT=16
+  - RUNNER_COUNT=4
   - FILES=( $(find -H -L ./test/* -regex "^.*.test.js") )
   - len=${#FILES[@]}
   - >
@@ -96,15 +96,16 @@ test_1:
   cache:
     <<: *global_cache
 
-# test_2:
-#   stage: test
-#   tags:
-#     - docker
-#   script:
-#     - apt-get update && apt-get install -y netcat
-#     - npm run test ${UNITTEST_FILES[2]}
-#   cache:
-#     <<: *global_cache
+test_2:
+  stage: test
+  tags:
+    - docker
+  script:
+    - apt-get update && apt-get install -y netcat
+    - npm run test-hardhat ${UNITTEST_FILES[2]}
+    # - npm run test ${UNITTEST_FILES[2]}
+  cache:
+    <<: *global_cache
 
 # test_3:
 #   stage: test
