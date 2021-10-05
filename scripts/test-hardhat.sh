@@ -22,7 +22,7 @@ hardhat_running() {
 action="$1"
 
 # unit test to be executed
-tests="${@:2}"
+tests="$(@:2)"
 echo "running tests:"
 echo "$tests"
 
