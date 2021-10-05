@@ -80,166 +80,167 @@ test_0:
     - docker
   script:
     - apt-get update && apt-get install -y netcat
-    - npm run test-migration ${UNITTEST_FILES[0]}
+    - npm run test-hardhat ${UNITTEST_FILES[0]}
+    # - npm run test-migration ${UNITTEST_FILES[0]}
   cache:
     <<: *global_cache
 
-test_1:
-  stage: test
-  tags:
-    - docker
-  script:
-    - apt-get update && apt-get install -y netcat
-    - npm run test ${UNITTEST_FILES[1]}
-  cache:
-    <<: *global_cache
+# test_1:
+#   stage: test
+#   tags:
+#     - docker
+#   script:
+#     - apt-get update && apt-get install -y netcat
+#     - npm run test ${UNITTEST_FILES[1]}
+#   cache:
+#     <<: *global_cache
 
-test_2:
-  stage: test
-  tags:
-    - docker
-  script:
-    - apt-get update && apt-get install -y netcat
-    - npm run test ${UNITTEST_FILES[2]}
-  cache:
-    <<: *global_cache
+# test_2:
+#   stage: test
+#   tags:
+#     - docker
+#   script:
+#     - apt-get update && apt-get install -y netcat
+#     - npm run test ${UNITTEST_FILES[2]}
+#   cache:
+#     <<: *global_cache
 
-test_3:
-  stage: test
-  tags:
-    - docker
-  script:
-    - apt-get update && apt-get install -y netcat
-    - npm run test ${UNITTEST_FILES[3]}
-  cache:
-    <<: *global_cache
+# test_3:
+#   stage: test
+#   tags:
+#     - docker
+#   script:
+#     - apt-get update && apt-get install -y netcat
+#     - npm run test ${UNITTEST_FILES[3]}
+#   cache:
+#     <<: *global_cache
 
-test_4:
-  stage: test
-  tags:
-    - docker
-  script:
-    - apt-get update && apt-get install -y netcat
-    - npm run test ${UNITTEST_FILES[4]}
-  cache:
-    <<: *global_cache
+# test_4:
+#   stage: test
+#   tags:
+#     - docker
+#   script:
+#     - apt-get update && apt-get install -y netcat
+#     - npm run test ${UNITTEST_FILES[4]}
+#   cache:
+#     <<: *global_cache
 
-test_5:
-  stage: test
-  tags:
-    - docker
-  script:
-    - apt-get update && apt-get install -y netcat
-    - npm run test ${UNITTEST_FILES[5]}
-  cache:
-    <<: *global_cache
+# test_5:
+#   stage: test
+#   tags:
+#     - docker
+#   script:
+#     - apt-get update && apt-get install -y netcat
+#     - npm run test ${UNITTEST_FILES[5]}
+#   cache:
+#     <<: *global_cache
 
-test_6:
-  stage: test
-  tags:
-    - docker
-  script:
-    - apt-get update && apt-get install -y netcat
-    - npm run test ${UNITTEST_FILES[6]}
-  cache:
-    <<: *global_cache
+# test_6:
+#   stage: test
+#   tags:
+#     - docker
+#   script:
+#     - apt-get update && apt-get install -y netcat
+#     - npm run test ${UNITTEST_FILES[6]}
+#   cache:
+#     <<: *global_cache
 
-test_7:
-  stage: test
-  tags:
-    - docker
-  script:
-    - apt-get update && apt-get install -y netcat
-    - npm run test ${UNITTEST_FILES[7]}
-  cache:
-    <<: *global_cache
+# test_7:
+#   stage: test
+#   tags:
+#     - docker
+#   script:
+#     - apt-get update && apt-get install -y netcat
+#     - npm run test ${UNITTEST_FILES[7]}
+#   cache:
+#     <<: *global_cache
 
-test_8:
-  stage: test
-  tags:
-    - docker
-  script:
-    - apt-get update && apt-get install -y netcat
-    - npm run test-migration ${UNITTEST_FILES[8]}
-  cache:
-    <<: *global_cache
+# test_8:
+#   stage: test
+#   tags:
+#     - docker
+#   script:
+#     - apt-get update && apt-get install -y netcat
+#     - npm run test-migration ${UNITTEST_FILES[8]}
+#   cache:
+#     <<: *global_cache
 
-test_9:
-  stage: test
-  tags:
-    - docker
-  script:
-    - apt-get update && apt-get install -y netcat
-    - npm run test ${UNITTEST_FILES[9]}
-  cache:
-    <<: *global_cache
+# test_9:
+#   stage: test
+#   tags:
+#     - docker
+#   script:
+#     - apt-get update && apt-get install -y netcat
+#     - npm run test ${UNITTEST_FILES[9]}
+#   cache:
+#     <<: *global_cache
 
-test_10:
-  stage: test
-  tags:
-    - docker
-  script:
-    - apt-get update && apt-get install -y netcat
-    - npm run test ${UNITTEST_FILES[10]}
-  cache:
-    <<: *global_cache
+# test_10:
+#   stage: test
+#   tags:
+#     - docker
+#   script:
+#     - apt-get update && apt-get install -y netcat
+#     - npm run test ${UNITTEST_FILES[10]}
+#   cache:
+#     <<: *global_cache
 
-test_11:
-  stage: test
-  tags:
-    - docker
-  script:
-    - apt-get update && apt-get install -y netcat
-    - npm run test ${UNITTEST_FILES[11]}
-  cache:
-    <<: *global_cache
+# test_11:
+#   stage: test
+#   tags:
+#     - docker
+#   script:
+#     - apt-get update && apt-get install -y netcat
+#     - npm run test ${UNITTEST_FILES[11]}
+#   cache:
+#     <<: *global_cache
 
-test_12:
-  stage: test
-  tags:
-    - docker
-  script:
-    - apt-get update && apt-get install -y netcat
-    - npm run test ${UNITTEST_FILES[12]}
-  cache:
-    <<: *global_cache
+# test_12:
+#   stage: test
+#   tags:
+#     - docker
+#   script:
+#     - apt-get update && apt-get install -y netcat
+#     - npm run test ${UNITTEST_FILES[12]}
+#   cache:
+#     <<: *global_cache
 
-test_13:
-  stage: test
-  tags:
-    - docker
-  script:
-    - apt-get update && apt-get install -y netcat
-    - npm run test ${UNITTEST_FILES[13]}
-  cache:
-    <<: *global_cache
+# test_13:
+#   stage: test
+#   tags:
+#     - docker
+#   script:
+#     - apt-get update && apt-get install -y netcat
+#     - npm run test ${UNITTEST_FILES[13]}
+#   cache:
+#     <<: *global_cache
 
-test_14:
-  stage: test
-  tags:
-    - docker
-  script:
-    - apt-get update && apt-get install -y netcat
-    - npm run test ${UNITTEST_FILES[14]}
-  cache:
-    <<: *global_cache
+# test_14:
+#   stage: test
+#   tags:
+#     - docker
+#   script:
+#     - apt-get update && apt-get install -y netcat
+#     - npm run test ${UNITTEST_FILES[14]}
+#   cache:
+#     <<: *global_cache
 
-test_15:
-  stage: test
-  tags:
-    - docker
-  script:
-    - apt-get update && apt-get install -y netcat
-    - npm run test ${UNITTEST_FILES[15]}
-  cache:
-    <<: *global_cache
+# test_15:
+#   stage: test
+#   tags:
+#     - docker
+#   script:
+#     - apt-get update && apt-get install -y netcat
+#     - npm run test ${UNITTEST_FILES[15]}
+#   cache:
+#     <<: *global_cache
 
-deploy:
-  stage: deploy
-  tags:
-    - docker
-  script:
-    - ./node_modules/.bin/ganache-cli -p 8242 -a $DEPLOY_OWNER_PRIVKEY &
-      #   - truffle migrate --network integration
-  cache:
-    <<: *global_cache
+# deploy:
+#   stage: deploy
+#   tags:
+#     - docker
+#   script:
+#     - ./node_modules/.bin/ganache-cli -p 8242 -a $DEPLOY_OWNER_PRIVKEY &
+#       #   - truffle migrate --network integration
+#   cache:
+#     <<: *global_cache
