@@ -14,16 +14,6 @@ contract HOneInchV3 is HandlerBase {
     address private constant _ONEINCH_SPENDER = 0x11111112542D85B3EF69AE05771c2dCCff4fAa26;
     // prettier-ignore
     address private constant _ETH_ADDRESS = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
-    // prettier-ignore
-    uint256 private constant _UNISWAP_PAIR_TOKEN0_CALL_SELECTOR_32 = 0x0dfe168100000000000000000000000000000000000000000000000000000000;
-    // prettier-ignore
-    uint256 private constant _UNISWAP_PAIR_TOKEN1_CALL_SELECTOR_32 = 0xd21220a700000000000000000000000000000000000000000000000000000000;
-    // prettier-ignore
-    uint256 private constant _ADDRESS_MASK =   0x000000000000000000000000ffffffffffffffffffffffffffffffffffffffff;
-    // prettier-ignore
-    uint256 private constant _REVERSE_MASK =   0x8000000000000000000000000000000000000000000000000000000000000000;
-    // prettier-ignore
-    uint256 private constant _WETH_MASK =      0x4000000000000000000000000000000000000000000000000000000000000000;
 
     function getContractName() public pure override returns (string memory) {
         return "HOneInchV3";
@@ -73,95 +63,61 @@ contract HOneInchV3 is HandlerBase {
     function unoswap(
         IERC20 srcToken,
         uint256 amount,
-        uint256 minReturn,
-        bytes32[] calldata data
+        IERC20 dstToken,
+        bytes calldata data
     ) external payable returns (uint256 returnAmount) {
+        // Get dstToken balance before executing unoswap
+        uint256 dstTokenBalanceBefore =
+            _getBalance(address(dstToken), type(uint256).max);
+
         // Interact with 1inch
         if (_isNotNativeToken(address(srcToken))) {
+            // ERC20 token need to approve before unoswap
             _tokenApprove(address(srcToken), _ONEINCH_SPENDER, amount);
-            try
-                IAggregationRouterV3(_ONEINCH_SPENDER).unoswap(
-                    srcToken,
-                    amount,
-                    minReturn,
-                    data
-                )
-            returns (uint256 ret) {
-                returnAmount = ret;
-            } catch Error(string memory message) {
-                _revertMsg("unoswap", message);
-            } catch {
-                _revertMsg("unoswap");
-            }
+            returnAmount = _unoswapCall(0, data);
         } else {
-            try
-                IAggregationRouterV3(_ONEINCH_SPENDER).unoswap{value: amount}(
-                    srcToken,
-                    amount,
-                    minReturn,
-                    data
-                )
-            returns (uint256 ret) {
-                returnAmount = ret;
-            } catch Error(string memory message) {
-                _revertMsg("unoswap", message);
-            } catch {
-                _revertMsg("unoswap");
-            }
+            returnAmount = _unoswapCall(amount, data);
         }
 
-        address dstToken = decode(data);
+        // Check, dstToken balance should be increased
+        uint256 dstTokenBalanceAfter =
+            _getBalance(address(dstToken), type(uint256).max);
+        if (dstTokenBalanceAfter.sub(dstTokenBalanceBefore) != returnAmount) {
+            _revertMsg("unoswap", "Invalid output token amount");
+        }
+
         // Update involved token
-        if (_isNotNativeToken(dstToken)) {
-            _updateToken(dstToken);
+        if (_isNotNativeToken(address(dstToken))) {
+            _updateToken(address(dstToken));
+        }
+    }
+
+    function _unoswapCall(uint256 value, bytes calldata data)
+        internal
+        returns (uint256 returnAmount)
+    {
+        // Interact with 1inch through contract call with data
+        (bool success, bytes memory returnData) =
+            _ONEINCH_SPENDER.call{value: value}(data);
+
+        // Verify return status and data
+        if (success) {
+            returnAmount = abi.decode(returnData, (uint256));
+        } else {
+            if (returnData.length < 68) {
+                // If the returnData length is less than 68, then the transaction failed silently.
+                _revertMsg("unoswap");
+            } else {
+                // Look for revert reason and bubble it up if present
+                assembly {
+                    returnData := add(returnData, 0x04)
+                }
+                _revertMsg("unoswap", abi.decode(returnData, (string)));
+            }
         }
     }
 
     function _isNotNativeToken(address token) internal pure returns (bool) {
         return (token != address(0) && token != _ETH_ADDRESS);
-    }
-
-    function decode(bytes32[] calldata) public view returns (address ret) {
-        assembly {
-            function reRevert() {
-                returndatacopy(0, 0, returndatasize())
-                revert(0, returndatasize())
-            }
-
-            // Get last 32 bytes
-            let rawPair := calldataload(sub(calldatasize(), 0x20))
-            let pair := and(rawPair, _ADDRESS_MASK)
-            let emptyPtr := mload(0x40)
-            mstore(0x40, add(emptyPtr, 0x20))
-            // Check WETH_MASK config
-            switch and(rawPair, _WETH_MASK)
-                // If WETH_MASK not set, get token address from pair address
-                case 0 {
-                    switch and(rawPair, _REVERSE_MASK)
-                        case 0 {
-                            mstore(
-                                emptyPtr,
-                                _UNISWAP_PAIR_TOKEN1_CALL_SELECTOR_32
-                            )
-                        }
-                        default {
-                            mstore(
-                                emptyPtr,
-                                _UNISWAP_PAIR_TOKEN0_CALL_SELECTOR_32
-                            )
-                        }
-                    if iszero(
-                        staticcall(gas(), pair, emptyPtr, 0x4, emptyPtr, 0x20)
-                    ) {
-                        reRevert()
-                    }
-
-                    ret := mload(emptyPtr)
-                }
-                // If WETH_MASK is set, return zero address
-                default {
-                    ret := 0x0
-                }
-        }
     }
 }
