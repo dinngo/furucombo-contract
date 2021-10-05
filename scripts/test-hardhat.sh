@@ -22,7 +22,9 @@ hardhat_running() {
 action="$1"
 
 # unit test to be executed
-tests="$2"
+tests="${@:2}"
+echo "running tests:"
+echo "$tests"
 
 start_hardhat() {
     TEST_MNEMONIC_PHRASE="dice shove sheriff police boss indoor hospital vivid tenant method game matter"
