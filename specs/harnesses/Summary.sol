@@ -286,80 +286,80 @@ contract Summary {
     }
 
     // we assume the pair is erc20A <> "eth"
-    function ethToTokenSwapInput(uint256 min_tokens, uint256 deadline) external payable returns (uint256  tokens_bought) {
-        generatedToken = address(erc20A);
-        erc20A.transfer(msg.sender, someAmount);
-        tokens_bought = someAmount;
-    }
-    function ethToTokenSwapOutput(uint256 tokens_bought, uint256 deadline) external payable returns (uint256  eth_sold) {
-        generatedToken = address(erc20A);
-        erc20A.transfer(msg.sender, tokens_bought);
-        eth_sold = msg.value;
-    }
-    function addLiquidity(uint256 min_liquidity, uint256 max_tokens, uint256 deadline) external payable returns (uint256) {
-        // this will be the LP token
-        consumedToken = address(erc20A);
-        require (address(erc20A) != address(this)); // LP token is not exchanged token
-        shouldBeConsumedAmount = someAmount2;
-        // someAmount is how much we get
-        // someAmount2 is how much we give in tokens (msg.value is how much we give in ETH)
-        require (someAmount >= min_liquidity && min_liquidity > 0);
-        generatedToken = address(this);
-        erc20A.transferFrom(msg.sender, address(this), someAmount2);
-        transferFrom(address(0), msg.sender, someAmount);
-        return someAmount;
-    }
-    function tokenToEthSwapInput(uint256 tokens_sold, uint256 min_eth, uint256 deadline) external returns (uint256  eth_bought) {
-        shouldBeConsumedAmount = tokens_sold;
-        consumedToken = address(erc20A);
-        erc20A.transferFrom(msg.sender, address(this), tokens_sold);
-        //require (someAmount > min_eth);
-        eth_bought = someAmount;
-        Nothing(msg.sender).nop{value:someAmount}();
-    }
-    function tokenToEthSwapOutput(uint256 eth_bought, uint256 max_tokens, uint256 deadline) external returns (uint256  tokens_sold) {
-        consumedToken = address(erc20A);
-        shouldBeConsumedAmount = someAmount;
-        require (someAmount <= max_tokens);
-        erc20A.transferFrom(msg.sender, address(this), someAmount);
-        tokens_sold = someAmount;
-        Nothing(msg.sender).nop{value:eth_bought}();
-    }
-    function removeLiquidity(uint256 amount, uint256 min_eth, uint256 min_tokens, uint256 deadline) external returns (uint256, uint256) {
-        // this will be the LP token
-        consumedToken = address(this);
-        shouldBeConsumedAmount = amount;
-        transferFrom(msg.sender, address(0), amount);
-        // transfer someAmount of eth and someAmount2 of tokens
-        erc20A.transfer(msg.sender, someAmount2);
-        Nothing(msg.sender).nop{value:someAmount}();
-        return (someAmount, someAmount2); // ordering is eth, token
-    }
-    function tokenToTokenSwapOutput(uint256 tokens_bought, uint256 max_tokens_sold, uint256 max_eth_sold, uint256 deadline, address token_addr) external returns (uint256  tokens_sold) {
-        require(tokens_bought > 0); // https://github.com/Uniswap/uniswap-v1/blob/c10c08d81d6114f694baa8bd32f555a40f6264da/contracts/uniswap_exchange.vy#L313
-        shouldBeConsumedAmount = someAmount;
-        consumedToken = address(erc20A);
-        require (address(erc20A) != address(this)); // LP token is not the exchanged token
-        generatedToken = token_addr; // can token_addr be the LP token? probably not https://github.com/Uniswap/uniswap-v1/blob/c10c08d81d6114f694baa8bd32f555a40f6264da/contracts/uniswap_exchange.vy#L314
-        require (token_addr != address(this));
-        tokens_sold = someAmount;
-        erc20A.transferFrom(msg.sender, address(this), someAmount);
-        require(token_addr == address(erc20B)); // It doesn't make sense to have a pair token<>token
-        erc20B.transfer(msg.sender, tokens_bought);
-    }
-    function tokenToTokenSwapInput(uint256 tokens_sold, uint256 min_tokens_bought, uint256 min_eth_bought, uint256 deadline, address token_addr) external returns (uint256  tokens_bought) {
-        shouldBeConsumedAmount = tokens_sold;
-        consumedToken = address(erc20A);
-        require (address(erc20A) != address(this)); // LP token is not the exchanged token
-        generatedToken = token_addr;
-        // token_addr is not the LP token https://github.com/Uniswap/uniswap-v1/blob/c10c08d81d6114f694baa8bd32f555a40f6264da/contracts/uniswap_exchange.vy#L273
-        require (token_addr != address(this));
-        erc20A.transferFrom(msg.sender, address(this), tokens_sold);
-        require(token_addr == address(erc20B)); // It doesn't make sense to have a pair token<>token
-        tokens_bought = someAmount;
-        require (tokens_bought > min_tokens_bought && min_tokens_bought > 0); // based on https://github.com/Uniswap/uniswap-v1/blob/c10c08d81d6114f694baa8bd32f555a40f6264da/contracts/uniswap_exchange.vy#L272
-        erc20B.transfer(msg.sender, someAmount);
-    }
+    // function ethToTokenSwapInput(uint256 min_tokens, uint256 deadline) external payable returns (uint256  tokens_bought) {
+    //     generatedToken = address(erc20A);
+    //     erc20A.transfer(msg.sender, someAmount);
+    //     tokens_bought = someAmount;
+    // }
+    // function ethToTokenSwapOutput(uint256 tokens_bought, uint256 deadline) external payable returns (uint256  eth_sold) {
+    //     generatedToken = address(erc20A);
+    //     erc20A.transfer(msg.sender, tokens_bought);
+    //     eth_sold = msg.value;
+    // }
+    // function addLiquidity(uint256 min_liquidity, uint256 max_tokens, uint256 deadline) external payable returns (uint256) {
+    //     // this will be the LP token
+    //     consumedToken = address(erc20A);
+    //     require (address(erc20A) != address(this)); // LP token is not exchanged token
+    //     shouldBeConsumedAmount = someAmount2;
+    //     // someAmount is how much we get
+    //     // someAmount2 is how much we give in tokens (msg.value is how much we give in ETH)
+    //     require (someAmount >= min_liquidity && min_liquidity > 0);
+    //     generatedToken = address(this);
+    //     erc20A.transferFrom(msg.sender, address(this), someAmount2);
+    //     transferFrom(address(0), msg.sender, someAmount);
+    //     return someAmount;
+    // }
+    // function tokenToEthSwapInput(uint256 tokens_sold, uint256 min_eth, uint256 deadline) external returns (uint256  eth_bought) {
+    //     shouldBeConsumedAmount = tokens_sold;
+    //     consumedToken = address(erc20A);
+    //     erc20A.transferFrom(msg.sender, address(this), tokens_sold);
+    //     //require (someAmount > min_eth);
+    //     eth_bought = someAmount;
+    //     Nothing(msg.sender).nop{value:someAmount}();
+    // }
+    // function tokenToEthSwapOutput(uint256 eth_bought, uint256 max_tokens, uint256 deadline) external returns (uint256  tokens_sold) {
+    //     consumedToken = address(erc20A);
+    //     shouldBeConsumedAmount = someAmount;
+    //     require (someAmount <= max_tokens);
+    //     erc20A.transferFrom(msg.sender, address(this), someAmount);
+    //     tokens_sold = someAmount;
+    //     Nothing(msg.sender).nop{value:eth_bought}();
+    // }
+    // function removeLiquidity(uint256 amount, uint256 min_eth, uint256 min_tokens, uint256 deadline) external returns (uint256, uint256) {
+    //     // this will be the LP token
+    //     consumedToken = address(this);
+    //     shouldBeConsumedAmount = amount;
+    //     transferFrom(msg.sender, address(0), amount);
+    //     // transfer someAmount of eth and someAmount2 of tokens
+    //     erc20A.transfer(msg.sender, someAmount2);
+    //     Nothing(msg.sender).nop{value:someAmount}();
+    //     return (someAmount, someAmount2); // ordering is eth, token
+    // }
+    // function tokenToTokenSwapOutput(uint256 tokens_bought, uint256 max_tokens_sold, uint256 max_eth_sold, uint256 deadline, address token_addr) external returns (uint256  tokens_sold) {
+    //     require(tokens_bought > 0); // https://github.com/Uniswap/uniswap-v1/blob/c10c08d81d6114f694baa8bd32f555a40f6264da/contracts/uniswap_exchange.vy#L313
+    //     shouldBeConsumedAmount = someAmount;
+    //     consumedToken = address(erc20A);
+    //     require (address(erc20A) != address(this)); // LP token is not the exchanged token
+    //     generatedToken = token_addr; // can token_addr be the LP token? probably not https://github.com/Uniswap/uniswap-v1/blob/c10c08d81d6114f694baa8bd32f555a40f6264da/contracts/uniswap_exchange.vy#L314
+    //     require (token_addr != address(this));
+    //     tokens_sold = someAmount;
+    //     erc20A.transferFrom(msg.sender, address(this), someAmount);
+    //     require(token_addr == address(erc20B)); // It doesn't make sense to have a pair token<>token
+    //     erc20B.transfer(msg.sender, tokens_bought);
+    // }
+    // function tokenToTokenSwapInput(uint256 tokens_sold, uint256 min_tokens_bought, uint256 min_eth_bought, uint256 deadline, address token_addr) external returns (uint256  tokens_bought) {
+    //     shouldBeConsumedAmount = tokens_sold;
+    //     consumedToken = address(erc20A);
+    //     require (address(erc20A) != address(this)); // LP token is not the exchanged token
+    //     generatedToken = token_addr;
+    //     // token_addr is not the LP token https://github.com/Uniswap/uniswap-v1/blob/c10c08d81d6114f694baa8bd32f555a40f6264da/contracts/uniswap_exchange.vy#L273
+    //     require (token_addr != address(this));
+    //     erc20A.transferFrom(msg.sender, address(this), tokens_sold);
+    //     require(token_addr == address(erc20B)); // It doesn't make sense to have a pair token<>token
+    //     tokens_bought = someAmount;
+    //     require (tokens_bought > min_tokens_bought && min_tokens_bought > 0); // based on https://github.com/Uniswap/uniswap-v1/blob/c10c08d81d6114f694baa8bd32f555a40f6264da/contracts/uniswap_exchange.vy#L272
+    //     erc20B.transfer(msg.sender, someAmount);
+    // }
 
     // HUniswapV2, HSushiSwap
     function addLiquidity(
@@ -670,23 +670,23 @@ contract Summary {
     }
 
     // HKyberNetwork
-    function swapTokenToToken(address src, uint srcAmount, address dest, uint minConversionRate) external returns(uint) {
-        consumedToken = src;
-        generatedToken = dest;
-        shouldBeConsumedAmount = srcAmount;
-        IERC20WithDummyFunctionality(src).transferFrom(msg.sender, address(this), srcAmount);
-        IERC20WithDummyFunctionality(dest).transfer(msg.sender, someAmount);
-    }
-    function swapEtherToToken(address token, uint minConversionRate) external payable returns(uint) {
-        generatedToken = token;
-        IERC20WithDummyFunctionality(token).transfer(msg.sender, someAmount);
-    }
-    function swapTokenToEther(address token, uint srcAmount, uint minConversionRate) external returns(uint) {
-        consumedToken = token;
-        shouldBeConsumedAmount = srcAmount;
-        IERC20WithDummyFunctionality(token).transferFrom(msg.sender, address(this), srcAmount);
-        Nothing(msg.sender).nop{value:someAmount}();
-    }
+    // function swapTokenToToken(address src, uint srcAmount, address dest, uint minConversionRate) external returns(uint) {
+    //     consumedToken = src;
+    //     generatedToken = dest;
+    //     shouldBeConsumedAmount = srcAmount;
+    //     IERC20WithDummyFunctionality(src).transferFrom(msg.sender, address(this), srcAmount);
+    //     IERC20WithDummyFunctionality(dest).transfer(msg.sender, someAmount);
+    // }
+    // function swapEtherToToken(address token, uint minConversionRate) external payable returns(uint) {
+    //     generatedToken = token;
+    //     IERC20WithDummyFunctionality(token).transfer(msg.sender, someAmount);
+    // }
+    // function swapTokenToEther(address token, uint srcAmount, uint minConversionRate) external returns(uint) {
+    //     consumedToken = token;
+    //     shouldBeConsumedAmount = srcAmount;
+    //     IERC20WithDummyFunctionality(token).transferFrom(msg.sender, address(this), srcAmount);
+    //     Nothing(msg.sender).nop{value:someAmount}();
+    // }
 
     // HBalancer
     function exitPool(uint256 poolAmountIn, uint256[] calldata minAmountsOut) external {
@@ -703,13 +703,13 @@ contract Summary {
     }
 
     // HGasTokens
-    function freeFromUpTo(address from, uint256 value)
-        external
-        returns (uint256) {
-            consumedToken = address(this);
-            shouldBeConsumedAmount = value;
-            transferFrom(from, address(0), value);
-        }
+    // function freeFromUpTo(address from, uint256 value)
+    //     external
+    //     returns (uint256) {
+    //         consumedToken = address(this);
+    //         shouldBeConsumedAmount = value;
+    //         transferFrom(from, address(0), value);
+    //     }
 
     // HMooniswap
     // function deposit(uint256[] calldata amounts, uint256[] calldata minAmounts) external payable returns(uint256) {

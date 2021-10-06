@@ -83,14 +83,14 @@ perl -0777 -i -pe 's/_ETH_ADDRESS/ETH_ADDRESS/g' contracts/handlers/oneinchV3/HO
 perl -0777 -i -pe 's/function repay\(/function unique_repay\(/g' contracts/handlers/aavev2/HAaveProtocolV2.sol
 perl -0777 -i -pe 's/function claimComp\(/function unique_claimComp\(/g' contracts/handlers/compound/HSCompound.sol
 perl -0777 -i -pe 's/function claimComp\(/function unique_claimComp\(/g' contracts/handlers/compound/HComptroller.sol
-# perl -0777 -i -pe 's/function swap\(/function unique_swap\(/g' contracts/handlers/oneinchV2/HOneInchExchange.sol
 perl -0777 -i -pe 's/function swap\(/function unique_swap\(/g' contracts/handlers/oneinchV3/HOneInchV3.sol
 perl -0777 -i -pe 's/function unoswap\(/function unique_unoswap\(/g' contracts/handlers/oneinchV3/HOneInchV3.sol
 perl -0777 -i -pe 's/function withdraw\(/function unique_withdraw\(/g' contracts/handlers/weth/HWeth.sol
 perl -0777 -i -pe 's/function deposit\(/function unique_deposit\(/g' contracts/handlers/weth/HWeth.sol
-perl -0777 -i -pe 's/function swap/function unique_swap/g' contracts/handlers/kybernetwork/HKyberNetwork.sol
 perl -0777 -i -pe 's/function redeemUnderlying/function unique_redeemUnderlying/g' contracts/handlers/compound/HCEther.sol
 perl -0777 -i -pe 's/receiver.transfer\(amount\)/Nothing\(receiver\).nop{value:amount}\(\)/g' contracts/handlers/funds/HFunds.sol
+# perl -0777 -i -pe 's/function swap\(/function unique_swap\(/g' contracts/handlers/oneinchV2/HOneInchExchange.sol
+# perl -0777 -i -pe 's/function swap/function unique_swap/g' contracts/handlers/kybernetwork/HKyberNetwork.sol
 # constant keyword being remove above so change pure to view
 perl -0777 -i -pe 's/function _isNotNativeToken\(address token\) internal pure/function _isNotNativeToken\(address token\) internal view/g' contracts/handlers/oneinchV3/HOneInchV3.sol
 

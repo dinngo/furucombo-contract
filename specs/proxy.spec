@@ -95,16 +95,15 @@ methods {
     deposit() => DISPATCHER(true);
 
     // HUniswap
-    addLiquidity(uint256,uint256,uint256) => DISPATCHER(true)
-    removeLiquidity(uint256,uint256,uint256,uint256) => DISPATCHER(true)
-    ethToTokenSwapInput(uint256,uint256) => DISPATCHER(true)
-    ethToTokenSwapOutput(uint256,uint256) => DISPATCHER(true)
-    tokenToEthSwapInput(uint256,uint256,uint256) => DISPATCHER(true)
-    tokenToEthSwapOutput(uint256,uint256,uint256) => DISPATCHER(true)
-    tokenToTokenSwapInput(uint256,uint256,uint256,uint256,address) => DISPATCHER(true)
-    tokenToTokenSwapOutput(uint256,uint256,uint256,uint256,address) => DISPATCHER(true)
-
-    getExchange(address) => NONDET
+    // addLiquidity(uint256,uint256,uint256) => DISPATCHER(true)
+    // removeLiquidity(uint256,uint256,uint256,uint256) => DISPATCHER(true)
+    // ethToTokenSwapInput(uint256,uint256) => DISPATCHER(true)
+    // ethToTokenSwapOutput(uint256,uint256) => DISPATCHER(true)
+    // tokenToEthSwapInput(uint256,uint256,uint256) => DISPATCHER(true)
+    // tokenToEthSwapOutput(uint256,uint256,uint256) => DISPATCHER(true)
+    // tokenToTokenSwapInput(uint256,uint256,uint256,uint256,address) => DISPATCHER(true)
+    // tokenToTokenSwapOutput(uint256,uint256,uint256,uint256,address) => DISPATCHER(true)
+    // getExchange(address) => NONDET
 
     // HUniswapV2
     addLiquidity(
@@ -206,12 +205,12 @@ methods {
     refundETH() => DISPATCHER(true)
     
     // HKyberNetwork
-    swapTokenToToken(address src, uint srcAmount, address dest, uint minConversionRate) 
-        => DISPATCHER(true)
-    swapEtherToToken(address token, uint minConversionRate)
-        => DISPATCHER(true)
-    swapTokenToEther(address token, uint srcAmount, uint minConversionRate)
-        => DISPATCHER(true)
+    // swapTokenToToken(address src, uint srcAmount, address dest, uint minConversionRate) 
+    //     => DISPATCHER(true)
+    // swapEtherToToken(address token, uint minConversionRate)
+    //     => DISPATCHER(true)
+    // swapTokenToEther(address token, uint srcAmount, uint minConversionRate)
+    //     => DISPATCHER(true)
 
     // HBalancer
     exitPool(uint256 poolAmountIn, uint256[] minAmountsOut)
@@ -220,7 +219,7 @@ methods {
         => DISPATCHER(true)
 
     // HGasTokens
-    freeFromUpTo(address,uint256) => DISPATCHER(true)
+    // freeFromUpTo(address,uint256) => DISPATCHER(true)
 
     // HMooniswap
     // deposit(uint256[] amounts, uint256[] minAmounts) returns(uint256)
