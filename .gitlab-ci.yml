@@ -11,7 +11,7 @@ cache: &global_cache
 
 before_script:
   - npm install
-  - RUNNER_COUNT=4
+  - RUNNER_COUNT=16
   - FILES=( $(find -H -L ./test/* -regex "^.*.test.js") )
   - len=${#FILES[@]}
   - >
@@ -110,135 +110,148 @@ test_2:
   cache:
     <<: *global_cache
 
-# test_3:
-#   stage: test
-#   tags:
-#     - docker
-#   script:
-#     - apt-get update && apt-get install -y netcat
-#     - npm run test ${UNITTEST_FILES[3]}
-#   cache:
-#     <<: *global_cache
+test_3:
+  stage: test
+  tags:
+    - docker
+  script:
+    - apt-get update && apt-get install -y netcat
+    - apt-get install lsof
+    - npm run test-hardhat ${UNITTEST_FILES[3]}
+  cache:
+    <<: *global_cache
 
-# test_4:
-#   stage: test
-#   tags:
-#     - docker
-#   script:
-#     - apt-get update && apt-get install -y netcat
-#     - npm run test ${UNITTEST_FILES[4]}
-#   cache:
-#     <<: *global_cache
+test_4:
+  stage: test
+  tags:
+    - docker
+  script:
+    - apt-get update && apt-get install -y netcat
+    - apt-get install lsof
+    - npm run test-hardhat ${UNITTEST_FILES[4]}
+  cache:
+    <<: *global_cache
 
-# test_5:
-#   stage: test
-#   tags:
-#     - docker
-#   script:
-#     - apt-get update && apt-get install -y netcat
-#     - npm run test ${UNITTEST_FILES[5]}
-#   cache:
-#     <<: *global_cache
+test_5:
+  stage: test
+  tags:
+    - docker
+  script:
+    - apt-get update && apt-get install -y netcat
+    - apt-get install lsof
+    - npm run test-hardhat ${UNITTEST_FILES[5]}
+  cache:
+    <<: *global_cache
 
-# test_6:
-#   stage: test
-#   tags:
-#     - docker
-#   script:
-#     - apt-get update && apt-get install -y netcat
-#     - npm run test ${UNITTEST_FILES[6]}
-#   cache:
-#     <<: *global_cache
+test_6:
+  stage: test
+  tags:
+    - docker
+  script:
+    - apt-get update && apt-get install -y netcat
+    - apt-get install lsof
+    - npm run test-hardhat ${UNITTEST_FILES[6]}
+  cache:
+    <<: *global_cache
 
-# test_7:
-#   stage: test
-#   tags:
-#     - docker
-#   script:
-#     - apt-get update && apt-get install -y netcat
-#     - npm run test ${UNITTEST_FILES[7]}
-#   cache:
-#     <<: *global_cache
+test_7:
+  stage: test
+  tags:
+    - docker
+  script:
+    - apt-get update && apt-get install -y netcat
+    - apt-get install lsof
+    - npm run test-hardhat ${UNITTEST_FILES[7]}
+  cache:
+    <<: *global_cache
 
-# test_8:
-#   stage: test
-#   tags:
-#     - docker
-#   script:
-#     - apt-get update && apt-get install -y netcat
-#     - npm run test-migration ${UNITTEST_FILES[8]}
-#   cache:
-#     <<: *global_cache
+test_8:
+  stage: test
+  tags:
+    - docker
+  script:
+    - apt-get update && apt-get install -y netcat
+    - apt-get install lsof
+    - npm run test-hardhat ${UNITTEST_FILES[8]}
+  cache:
+    <<: *global_cache
 
-# test_9:
-#   stage: test
-#   tags:
-#     - docker
-#   script:
-#     - apt-get update && apt-get install -y netcat
-#     - npm run test ${UNITTEST_FILES[9]}
-#   cache:
-#     <<: *global_cache
+test_9:
+  stage: test
+  tags:
+    - docker
+  script:
+    - apt-get update && apt-get install -y netcat
+    - apt-get install lsof
+    - npm run test-hardhat ${UNITTEST_FILES[9]}
+  cache:
+    <<: *global_cache
 
-# test_10:
-#   stage: test
-#   tags:
-#     - docker
-#   script:
-#     - apt-get update && apt-get install -y netcat
-#     - npm run test ${UNITTEST_FILES[10]}
-#   cache:
-#     <<: *global_cache
+test_10:
+  stage: test
+  tags:
+    - docker
+  script:
+    - apt-get update && apt-get install -y netcat
+    - apt-get install lsof
+    - npm run test-hardhat ${UNITTEST_FILES[10]}
+  cache:
+    <<: *global_cache
 
-# test_11:
-#   stage: test
-#   tags:
-#     - docker
-#   script:
-#     - apt-get update && apt-get install -y netcat
-#     - npm run test ${UNITTEST_FILES[11]}
-#   cache:
-#     <<: *global_cache
+test_11:
+  stage: test
+  tags:
+    - docker
+  script:
+    - apt-get update && apt-get install -y netcat
+    - apt-get install lsof
+    - npm run test-hardhat ${UNITTEST_FILES[11]}
+  cache:
+    <<: *global_cache
 
-# test_12:
-#   stage: test
-#   tags:
-#     - docker
-#   script:
-#     - apt-get update && apt-get install -y netcat
-#     - npm run test ${UNITTEST_FILES[12]}
-#   cache:
-#     <<: *global_cache
+test_12:
+  stage: test
+  tags:
+    - docker
+  script:
+    - apt-get update && apt-get install -y netcat
+    - apt-get install lsof
+    - npm run test-hardhat ${UNITTEST_FILES[12]}
+  cache:
+    <<: *global_cache
 
-# test_13:
-#   stage: test
-#   tags:
-#     - docker
-#   script:
-#     - apt-get update && apt-get install -y netcat
-#     - npm run test ${UNITTEST_FILES[13]}
-#   cache:
-#     <<: *global_cache
+test_13:
+  stage: test
+  tags:
+    - docker
+  script:
+    - apt-get update && apt-get install -y netcat
+    - apt-get install lsof
+    - npm run test-hardhat ${UNITTEST_FILES[13]}
+  cache:
+    <<: *global_cache
 
-# test_14:
-#   stage: test
-#   tags:
-#     - docker
-#   script:
-#     - apt-get update && apt-get install -y netcat
-#     - npm run test ${UNITTEST_FILES[14]}
-#   cache:
-#     <<: *global_cache
+test_14:
+  stage: test
+  tags:
+    - docker
+  script:
+    - apt-get update && apt-get install -y netcat
+    - apt-get install lsof
+    - npm run test-hardhat ${UNITTEST_FILES[14]}
+  cache:
+    <<: *global_cache
 
-# test_15:
-#   stage: test
-#   tags:
-#     - docker
-#   script:
-#     - apt-get update && apt-get install -y netcat
-#     - npm run test ${UNITTEST_FILES[15]}
-#   cache:
-#     <<: *global_cache
+test_15:
+  stage: test
+  tags:
+    - docker
+  script:
+    - apt-get update && apt-get install -y netcat
+    - apt-get install lsof
+    - npm run test-hardhat ${UNITTEST_FILES[15]}
+  cache:
+    <<: *global_cache
 
 # deploy:
 #   stage: deploy
