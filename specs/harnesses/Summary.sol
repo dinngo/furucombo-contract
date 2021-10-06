@@ -703,13 +703,13 @@ contract Summary {
     }
 
     // HGasTokens
-    // function freeFromUpTo(address from, uint256 value)
-    //     external
-    //     returns (uint256) {
-    //         consumedToken = address(this);
-    //         shouldBeConsumedAmount = value;
-    //         transferFrom(from, address(0), value);
-    //     }
+    function freeFromUpTo(address from, uint256 value)
+        external
+        returns (uint256) {
+            consumedToken = address(this);
+            shouldBeConsumedAmount = value;
+            transferFrom(from, address(0), value);
+        }
 
     // HMooniswap
     // function deposit(uint256[] calldata amounts, uint256[] calldata minAmounts) external payable returns(uint256) {

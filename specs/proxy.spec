@@ -219,7 +219,7 @@ methods {
         => DISPATCHER(true)
 
     // HGasTokens
-    // freeFromUpTo(address,uint256) => DISPATCHER(true)
+    freeFromUpTo(address,uint256) => DISPATCHER(true)
 
     // HMooniswap
     // deposit(uint256[] amounts, uint256[] minAmounts) returns(uint256)
