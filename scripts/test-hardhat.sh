@@ -21,8 +21,12 @@ hardhat_running() {
 # if action=migration, will executed deployment script, act like truffle migration.
 action="$1"
 
+# shift $2 to $1, $3 to $2, etc.
+# shift
+
 # unit test to be executed
-tests="${@:2}"
+# tests="${@:2}"
+tests="${*:2}"
 echo "running tests:"
 echo "$tests"
 
