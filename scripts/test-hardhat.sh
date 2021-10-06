@@ -22,11 +22,11 @@ hardhat_running() {
 action="$1"
 
 # shift $2 to $1, $3 to $2, etc.
-# shift
+shift
 
 # unit test to be executed
 # tests="${@:2}"
-tests="${*:2}"
+tests="$@"
 echo "running tests:"
 echo "$tests"
 
