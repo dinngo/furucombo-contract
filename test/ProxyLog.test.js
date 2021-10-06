@@ -4,41 +4,25 @@ const {
   constants,
   ether,
   expectEvent,
-  expectRevert,
 } = require('@openzeppelin/test-helpers');
-const { tracker } = balance;
-const { ZERO_BYTES32, MAX_UINT256 } = constants;
+const { ZERO_BYTES32 } = constants;
 const abi = require('ethereumjs-abi');
 const utils = web3.utils;
 
 const { expect } = require('chai');
 
-const {
-  evmRevert,
-  evmSnapshot,
-  getEvent,
-  getFuncSig,
-  profileGas,
-} = require('./utils/utils');
+const { evmRevert, evmSnapshot, getFuncSig } = require('./utils/utils');
 
 const Foo = artifacts.require('Foo');
 const FooFactory = artifacts.require('FooFactory');
 const FooHandler = artifacts.require('FooHandler');
-const Foo2 = artifacts.require('Foo2');
-const Foo2Factory = artifacts.require('Foo2Factory');
-const Foo2Handler = artifacts.require('Foo2Handler');
-const Foo3 = artifacts.require('Foo3');
-const Foo3Handler = artifacts.require('Foo3Handler');
 const Foo4 = artifacts.require('Foo4');
 const Foo4Handler = artifacts.require('Foo4Handler');
-const Foo5Handler = artifacts.require('Foo5Handler');
 const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('ProxyMock');
 
 contract('ProxyLog', function([_, deployer, user]) {
   let id;
-  let balanceUser;
-  let balanceProxy;
 
   before(async function() {
     this.registry = await Registry.new();
@@ -72,33 +56,33 @@ contract('ProxyLog', function([_, deployer, user]) {
     });
 
     it('multiple', async function() {
-      const index = [0, 1, 2];
-      const num = [new BN('25'), new BN('26'), new BN('27')];
-      const to = [
+      const indices = [0, 1, 2];
+      const nums = [new BN('25'), new BN('26'), new BN('27')];
+      const tos = [
         this.fooHandler.address,
         this.fooHandler.address,
         this.fooHandler.address,
       ];
-      const config = [ZERO_BYTES32, ZERO_BYTES32, ZERO_BYTES32];
-      const data = [
-        abi.simpleEncode('bar(uint256,uint256):(uint256)', index[0], num[0]),
-        abi.simpleEncode('bar(uint256,uint256):(uint256)', index[1], num[1]),
-        abi.simpleEncode('bar(uint256,uint256):(uint256)', index[2], num[2]),
+      const configs = [ZERO_BYTES32, ZERO_BYTES32, ZERO_BYTES32];
+      const datas = [
+        abi.simpleEncode('bar(uint256,uint256):(uint256)', indices[0], nums[0]),
+        abi.simpleEncode('bar(uint256,uint256):(uint256)', indices[1], nums[1]),
+        abi.simpleEncode('bar(uint256,uint256):(uint256)', indices[2], nums[2]),
       ];
       const selector = getFuncSig(FooHandler, 'bar');
-      const receipt = await this.proxy.batchExec(to, config, data);
+      const receipt = await this.proxy.batchExec(tos, configs, datas);
       const result = [
         await this.foo0.accounts.call(this.proxy.address),
         await this.foo1.accounts.call(this.proxy.address),
         await this.foo2.accounts.call(this.proxy.address),
       ];
-      expect(result[0]).to.be.bignumber.eq(num[0]);
-      expect(result[1]).to.be.bignumber.eq(num[1]);
-      expect(result[2]).to.be.bignumber.eq(num[2]);
+      expect(result[0]).to.be.bignumber.eq(nums[0]);
+      expect(result[1]).to.be.bignumber.eq(nums[1]);
+      expect(result[2]).to.be.bignumber.eq(nums[2]);
       expectEvent(receipt, 'LogBegin', {
         handler: this.fooHandler.address,
         selector: utils.padRight(selector, 64),
-        payload: '0x' + data[0].toString('hex'),
+        payload: '0x' + datas[0].toString('hex'),
       });
       expectEvent(receipt, 'LogEnd', {
         handler: this.fooHandler.address,
@@ -108,7 +92,7 @@ contract('ProxyLog', function([_, deployer, user]) {
       expectEvent(receipt, 'LogBegin', {
         handler: this.fooHandler.address,
         selector: utils.padRight(selector, 64),
-        payload: '0x' + data[1].toString('hex'),
+        payload: '0x' + datas[1].toString('hex'),
       });
       expectEvent(receipt, 'LogEnd', {
         handler: this.fooHandler.address,
@@ -118,7 +102,7 @@ contract('ProxyLog', function([_, deployer, user]) {
       expectEvent(receipt, 'LogBegin', {
         handler: this.fooHandler.address,
         selector: utils.padRight(selector, 64),
-        payload: '0x' + data[2].toString('hex'),
+        payload: '0x' + datas[2].toString('hex'),
       });
       expectEvent(receipt, 'LogEnd', {
         handler: this.fooHandler.address,
