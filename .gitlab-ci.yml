@@ -80,6 +80,7 @@ test_0:
     - docker
   script:
     - apt-get update && apt-get install -y netcat
+    - apt-get install lsof
     - npm run test-hardhat ${UNITTEST_FILES[0]}
     # - npm run test-migration ${UNITTEST_FILES[0]}
   cache:
@@ -91,6 +92,7 @@ test_1:
     - docker
   script:
     - apt-get update && apt-get install -y netcat
+    - apt-get install lsof
     - npm run test-hardhat ${UNITTEST_FILES[1]}
     # - npm run test ${UNITTEST_FILES[1]}
   cache:
@@ -102,6 +104,7 @@ test_2:
     - docker
   script:
     - apt-get update && apt-get install -y netcat
+    - apt-get install lsof
     - npm run test-hardhat ${UNITTEST_FILES[2]}
     # - npm run test ${UNITTEST_FILES[2]}
   cache:
