@@ -128,20 +128,23 @@ contract Proxy is IProxy, Storage, Config {
             "Tos and configs length inconsistent"
         );
         for (uint256 i = 0; i < tos.length; i++) {
+            address to = tos[i];
             bytes32 config = configs[i];
+            bytes memory data = datas[i];
             // Check if the data contains dynamic parameter
             if (!config.isStatic()) {
                 // If so, trim the exectution data base on the configuration and stack content
-                _trim(datas[i], config, localStack, index);
+                _trim(data, config, localStack, index);
             }
             // Emit the execution log before call
-            emit LogBegin(tos[i], _getSelector(datas[i]), datas[i]);
+            bytes4 selector = _getSelector(data);
+            emit LogBegin(to, selector, data);
 
             // Check if the output will be referenced afterwards
-            bytes memory result = _exec(tos[i], datas[i]);
+            bytes memory result = _exec(to, data);
 
             // Emit the execution log after call
-            emit LogEnd(tos[i], _getSelector(datas[i]), result);
+            emit LogEnd(to, selector, result);
 
             if (config.isReferenced()) {
                 // If so, parse the output and place it into local stack
@@ -155,7 +158,7 @@ contract Proxy is IProxy, Storage, Config {
             }
 
             // Setup the process to be triggered in the post-process phase
-            _setPostProcess(tos[i]);
+            _setPostProcess(to);
         }
     }
 
