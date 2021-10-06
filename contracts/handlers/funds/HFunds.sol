@@ -88,6 +88,15 @@ contract HFunds is HandlerBase {
         }
     }
 
+    /// @notice Send ether to block miner.
+    /// @dev Transfer with built-in 2300 gas cap is safer and acceptable for most miners.
+    /// @param amount The ether amount.
+    function sendEtherToMiner(uint256 amount) external payable {
+        if (amount > 0) {
+            block.coinbase.transfer(amount);
+        }
+    }
+
     function checkSlippage(
         address[] calldata tokens,
         uint256[] calldata amounts
