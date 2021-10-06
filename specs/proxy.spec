@@ -193,6 +193,17 @@ methods {
     ) => DISPATCHER(true)
 
     factory() => NONDET
+
+    // HUniswapV3
+    exactInputSingle((address,address,uint24,address,uint256,uint256,uint256,uint160))
+        => DISPATCHER(true)
+    exactInput((bytes,address,uint256,uint256,uint256))
+        => DISPATCHER(true)
+    exactOutputSingle((address,address,uint24,address,uint256,uint256,uint256,uint160))
+        => DISPATCHER(true)
+    exactOutput((bytes,address,uint256,uint256,uint256))
+        => DISPATCHER(true)
+    refundETH() => DISPATCHER(true)
     
     // HKyberNetwork
     swapTokenToToken(address src, uint srcAmount, address dest, uint minConversionRate) 

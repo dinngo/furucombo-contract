@@ -560,6 +560,115 @@ contract Summary {
         return someArr;
     }
 
+    // HUniswapV3
+    function toAddress(bytes memory _bytes, uint256 _start)
+        internal
+        pure
+        returns (address)
+    {
+        require(_start + 20 >= _start, "toAddress_overflow");
+        require(_bytes.length >= _start + 20, "toAddress_outOfBounds");
+        address tempAddress;
+
+        assembly {
+            tempAddress := div(
+                mload(add(add(_bytes, 0x20), _start)),
+                0x1000000000000000000000000
+            )
+        }
+
+        return tempAddress;
+    }
+    function _getFirstToken(bytes memory path) internal pure returns (address) {
+        return toAddress(path, 0);
+    }
+
+    function _getLastToken(bytes memory path) internal view returns (address) {
+        require(path.length >= 43, "Path size too small"); // PATH_SIZE = 43
+        return toAddress(path, path.length - 43);
+    }
+    struct ExactInputSingleParams {
+        address tokenIn;
+        address tokenOut;
+        uint24 fee;
+        address recipient;
+        uint256 deadline;
+        uint256 amountIn;
+        uint256 amountOutMinimum;
+        uint160 sqrtPriceLimitX96;
+    }
+    struct ExactInputParams {
+        bytes path;
+        address recipient;
+        uint256 deadline;
+        uint256 amountIn;
+        uint256 amountOutMinimum;
+    }
+    struct ExactOutputSingleParams {
+        address tokenIn;
+        address tokenOut;
+        uint24 fee;
+        address recipient;
+        uint256 deadline;
+        uint256 amountOut;
+        uint256 amountInMaximum;
+        uint160 sqrtPriceLimitX96;
+    }
+    struct ExactOutputParams {
+        bytes path;
+        address recipient;
+        uint256 deadline;
+        uint256 amountOut;
+        uint256 amountInMaximum;
+    }
+    function exactInputSingle(ExactInputSingleParams calldata params) external payable returns (uint256 amountOut) {
+        require (params.amountIn > 0 && params.amountOutMinimum > 0);
+        require (params.tokenIn != address(this) && params.tokenOut != address(this));
+        consumedToken = params.tokenIn;
+        generatedToken = params.tokenOut;
+        require (consumedToken != generatedToken);
+        shouldBeConsumedAmount = params.amountIn;
+        IERC20WithDummyFunctionality(consumedToken).transferFrom(msg.sender, address(this), params.amountIn);
+        IERC20WithDummyFunctionality(generatedToken).transfer(params.recipient, params.amountOutMinimum);
+        return params.amountOutMinimum;
+    }
+    function exactInput(ExactInputParams calldata params) external payable returns (uint256 amountOut) {
+        consumedToken = _getFirstToken(params.path);
+        generatedToken = _getLastToken(params.path);
+        require (params.amountIn > 0 && params.amountOutMinimum > 0);
+        require (consumedToken != address(this) && generatedToken != address(this));
+        require (consumedToken != generatedToken);
+        shouldBeConsumedAmount = params.amountIn;
+        IERC20WithDummyFunctionality(consumedToken).transferFrom(msg.sender, address(this), params.amountIn);
+        IERC20WithDummyFunctionality(generatedToken).transfer(params.recipient, params.amountOutMinimum);
+        return params.amountOutMinimum;
+    }
+    function exactOutputSingle(ExactOutputSingleParams calldata params) external payable returns (uint256 amountIn) {
+        require (params.amountInMaximum > 0 && params.amountOut > 0);
+        require (params.tokenIn != address(this) && params.tokenOut != address(this));
+        consumedToken = params.tokenIn;
+        generatedToken = params.tokenOut;
+        require (consumedToken != generatedToken);
+        shouldBeConsumedAmount = params.amountInMaximum;
+        IERC20WithDummyFunctionality(consumedToken).transferFrom(msg.sender, address(this), params.amountInMaximum);
+        IERC20WithDummyFunctionality(generatedToken).transfer(params.recipient, params.amountOut);
+        return params.amountOut;
+    }
+    function exactOutput(ExactOutputParams calldata params) external payable returns (uint256 amountIn) {
+        consumedToken = _getLastToken(params.path);
+        generatedToken = _getFirstToken(params.path);
+        require (params.amountInMaximum > 0 && params.amountOut > 0);
+        require (consumedToken != address(this) && generatedToken != address(this));
+        require (consumedToken != generatedToken);
+        shouldBeConsumedAmount = params.amountInMaximum;
+        IERC20WithDummyFunctionality(consumedToken).transferFrom(msg.sender, address(this), params.amountInMaximum);
+        IERC20WithDummyFunctionality(generatedToken).transfer(params.recipient, params.amountOut);
+        return params.amountOut;
+    }
+    function refundETH() external payable {
+        Nothing(msg.sender).nop{value:0}();
+    }
+
     // HKyberNetwork
     function swapTokenToToken(address src, uint srcAmount, address dest, uint minConversionRate) external returns(uint) {
         consumedToken = src;
