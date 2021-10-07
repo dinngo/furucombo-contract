@@ -18,13 +18,8 @@ hardhat_running() {
     nc -z localhost "$hardhat_port"
 }
 
-# if action=migration, will executed deployment script, act like truffle migration.
-
-# shift $2 to $1, $3 to $2, etc.
-# shift
 
 # unit test to be executed
-# tests="${@:2}"
 tests="$@"
 echo "running tests:"
 echo "$tests"
@@ -70,9 +65,8 @@ start_hardhat() {
     CURVE_FACTORY_TUSD_PROVIDER="0x12C2feBc4f4b34320B4AF07CE03b926eb31944D1"
     ETH_PROVIDER_CONTRACT="0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
 
-    
-    npx hardhat node --fork $ETH_MAINNET_NODE --no-deploy >/dev/null &
-    echo "no deployment script will be executed"    
+    npx hardhat node --fork $ETH_MAINNET_NODE  >/dev/null &
+    echo "deployment script will be executed"  
 
     hardhat_pid=$!
 }

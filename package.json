@@ -10,11 +10,11 @@
     "build": "scripts/build.sh",
     "compile": "truffle compile",
     "test": "scripts/test.sh --network development",
-    "test-hardhat": "scripts/test-hardhat.sh hardhat-network",
+    "test-hardhat": "scripts/test-hardhat.sh",
     "lint:solhint": "solhint \"contracts/**/*.sol\"",
     "lint:prettier": "scripts/prettier.sh",
     "test-migration": "scripts/test.sh --network migration",
-    "test-migration-hardhat": "scripts/test-hardhat.sh migration"
+    "test-migration-hardhat": "scripts/test-hardhat-migration.sh"
   },
   "repository": {
     "type": "git",
