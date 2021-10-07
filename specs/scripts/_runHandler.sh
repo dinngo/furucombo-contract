@@ -69,6 +69,8 @@ perl -0777 -i -pe 's/safeA/a/g' ${handler_file}
 perl -0777 -i -pe 's/safeT/t/g' ${handler_file}
 perl -0777 -i -pe 's/address public constant /address public /g' ${handler_file}
 perl -0777 -i -pe 's/address private constant /address public /g' ${handler_file}
+perl -0777 -i -pe 's/public constant /public /g' ${handler_file}
+perl -0777 -i -pe 's/private constant /public /g' ${handler_file}
 perl -0777 -i -pe 's/address payable public constant / address payable public /g' ${handler_file}
 perl -0777 -i -pe 's/dsProxyPayable.transfer\(amount\)/Nothing\(dsProxyPayable\).nop{value:amount}\(\)/g' ${handler_file}
 
