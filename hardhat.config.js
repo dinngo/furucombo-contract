@@ -43,7 +43,8 @@ require("@nomiclabs/hardhat-truffle5");
         path: "m/44'/60'/0'/0",
         initialIndex: 0
       },
-      hardfork: "berlin"
+      hardfork: "berlin",
+      gas: 30000000
     },
     // migration: {
     //   // url: `${ETH_MAINNET_NODE}`,

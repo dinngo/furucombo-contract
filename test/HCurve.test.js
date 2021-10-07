@@ -1464,7 +1464,7 @@ contract('Curve', function([_, user]) {
           answer.mul(new BN('999')).div(new BN('1000'))
         );
         expect(await this.poolToken.balanceOf.call(user)).to.be.bignumber.lte(
-          answer.mul(new BN('1001')).div(new BN('1000'))
+          answer.mul(new BN('101')).div(new BN('100'))
         );
 
         profileGas(receipt);
