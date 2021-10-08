@@ -80,6 +80,8 @@ perl -0777 -i -pe 's/ETHADDRESS/ETH_ADDRESS/g' contracts/handlers/aave/FlashLoan
 perl -0777 -i -pe 's/ETHADDRESS/ETH_ADDRESS/g' contracts/handlers/aave/HAaveProtocol.sol
 perl -0777 -i -pe 's/ETHADDRESS/ETH_ADDRESS/g' contracts/handlers/aavev2/HAaveProtocolV2.sol
 perl -0777 -i -pe 's/_ETH_ADDRESS/ETH_ADDRESS/g' contracts/handlers/oneinchV3/HOneInchV3.sol
+# Add ETH_ADDRESS getter for HGelatoV2LimitOrder
+perl -0777 -i -pe 's/immutable GELATO_LIMIT_ORDER_MODULE;/immutable  GELATO_LIMIT_ORDER_MODULE;\n    address public ETH_ADDRESS = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;/g' contracts/handlers/gelatov2/HGelatoV2LimitOrder.sol
 
 # handler specific
 perl -0777 -i -pe 's/function repay\(/function unique_repay\(/g' contracts/handlers/aavev2/HAaveProtocolV2.sol

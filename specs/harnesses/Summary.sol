@@ -1066,6 +1066,33 @@ contract Summary {
         shouldBeConsumedAmount = msg.value;
     }
 
+    // HGelatoV2LimitOrder
+    function encodeEthOrder(
+        address _module,
+        address _inputToken,
+        address payable _owner,
+        address _witness,
+        bytes calldata _data,
+        bytes32 _secret
+    ) external pure returns (bytes memory) {
+        return
+            abi.encode(_module, _inputToken, _owner, _witness, _data, _secret);
+    }
+    function depositEth(bytes calldata _data) external payable {
+        consumedToken = address(0);
+        shouldBeConsumedAmount = msg.value;
+    }
+    address vault;
+    function vaultOfOrder(
+        address _module,
+        address _inputToken,
+        address payable _owner,
+        address _witness,
+        bytes memory _data
+    ) public view returns (address) {
+        return vault;
+    }
+
     address public consumedToken;
     address public generatedToken;
     uint public shouldBeConsumedAmount;
