@@ -3,6 +3,7 @@ require('hardhat-deploy');
 require("hardhat-deploy-ethers");
 
 // Truffle and Web3.js plugin
+require("@nomiclabs/hardhat-web3");
 require("@nomiclabs/hardhat-truffle5");
 
 
@@ -44,7 +45,8 @@ require("@nomiclabs/hardhat-truffle5");
         initialIndex: 0
       },
       hardfork: "berlin",
-      gas: 30000000
+      gas: 40000000,
+      blockGasLimit:50000000
     },
     // migration: {
     //   // url: `${ETH_MAINNET_NODE}`,

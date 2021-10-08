@@ -107,7 +107,7 @@ contract('Aave V2', function([_, user, someone]) {
         });
         expect(await balanceProxy.get()).to.be.zero;
         expect(await this.aweth.balanceOf.call(this.proxy.address)).to.be.zero;
-        expect(await this.aweth.balanceOf.call(user)).to.be.bignumber.eq(value);
+        expect(await this.aweth.balanceOf.call(user)).to.be.bignumber.gte(mulPercent(value,99));
         expect(await balanceUser.delta()).to.be.bignumber.eq(
           ether('0')
             .sub(value)
@@ -127,7 +127,7 @@ contract('Aave V2', function([_, user, someone]) {
         });
         expect(await balanceProxy.get()).to.be.zero;
         expect(await this.aweth.balanceOf.call(this.proxy.address)).to.be.zero;
-        expect(await this.aweth.balanceOf.call(user)).to.be.bignumber.eq(value);
+        expect(await this.aweth.balanceOf.call(user)).to.be.bignumber.eq(mulPercent(value,99));
         expect(await balanceUser.delta()).to.be.bignumber.eq(
           ether('0')
             .sub(value)

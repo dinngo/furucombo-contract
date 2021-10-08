@@ -36,6 +36,7 @@ const IOneInch = artifacts.require('IAggregationRouterV3');
 const SELECTOR_1INCH_SWAP = getFuncSig(IOneInch, 'swap');
 const SELECTOR_1INCH_UNOSWAP = getFuncSig(IOneInch, 'unoswap');
 
+const packageDetails = require('../package.json');
 /// Change url for different chain
 /// - Ethereum: https://api.1inch.exchange/v3.0/1/
 /// - Polygon: https://api.1inch.exchange/v3.0/137/
@@ -558,6 +559,16 @@ contract('OneInchV3 Swap', function([_, user]) {
 
     describe('Swap', function() {
       it.only('normal', async function() {
+        console.log('Platform: ', process.platform);
+        console.log('Node version: ', process.version);
+        console.log('Node dependencies: ', process.versions);
+        console.log('Server version: ', packageDetails.version);
+        let keys = Object.keys(packageDetails.dependencies);
+        console.log('Modules: ');
+        keys.forEach((k) => {
+            console.log(`${k}: ${packageDetails.dependencies[k]}`);
+        })
+
         // Prepare data
         const value = ether('100');
         const to = this.hOneInch.address;
@@ -575,6 +586,7 @@ contract('OneInchV3 Swap', function([_, user]) {
             protocols: NON_UNOSWAP_PROTOCOLS,
           },
         });
+        
         console.log('swapReq:');
         console.log(swapReq);
 
@@ -594,6 +606,8 @@ contract('OneInchV3 Swap', function([_, user]) {
         expect(swapData.tx.data.substring(0, 10)).to.be.eq(SELECTOR_1INCH_SWAP);
         const data = swapData.tx.data;
         const quote = swapData.toTokenAmount;
+
+        console.log("data length", swapData.tx.data.length);
 
         // Execute
         const receipt = await this.proxy.execMock(to, data, {
