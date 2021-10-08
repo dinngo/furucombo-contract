@@ -24,6 +24,7 @@ const {
   getCallData,
 } = require('./utils/utils');
 const fetch = require('node-fetch');
+// const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 const queryString = require('query-string');
 
 const HOneInch = artifacts.require('HOneInchV3');
@@ -132,6 +133,8 @@ contract('OneInchV3 Swap', function([_, user]) {
             protocols: NON_UNOSWAP_PROTOCOLS,
           },
         });
+        console.log('swapReq:');
+        console.log(swapReq);
 
         // Call 1inch API
         const swapResponse = await fetch(swapReq);
@@ -142,9 +145,9 @@ contract('OneInchV3 Swap', function([_, user]) {
         const data = swapData.tx.data;
         const quote = swapData.toTokenAmount;
 
+        console.log('swapData:');
+        console.log(swapData);
         // Execute
-        console.log('user addr:' + user);
-        console.log('user balance:' + await balanceUser.get());
         const receipt = await this.proxy.execMock(to, data, {
           from: user,
           value: value,
@@ -206,7 +209,6 @@ contract('OneInchV3 Swap', function([_, user]) {
         const quote = swapData.toTokenAmount;
 
         // Execute
-        console.log('user balance:' + await balanceUser.get());
         const receipt = await this.proxy.execMock(to, data, {
           from: user,
           value: value.add(ether('1')),
@@ -377,9 +379,9 @@ contract('OneInchV3 Swap', function([_, user]) {
     describe('Swap', function() {
       it('normal', async function() {
         // Prepare data
-        const value = ether('100');
+        const value = ether('10');
         const to = this.hOneInch.address;
-        const slippage = 10;
+        const slippage = 3;
         const swapReq = queryString.stringifyUrl({
           url: URL_1INCH_SWAP,
           query: {
@@ -404,8 +406,6 @@ contract('OneInchV3 Swap', function([_, user]) {
         const swapResponse = await fetch(swapReq);
         expect(swapResponse.ok, '1inch api response not ok').to.be.true;
         const swapData = await swapResponse.json();
-        console.log('swapData:');
-        console.log(swapData);
         // Verify it's `swap` function call
         expect(swapData.tx.data.substring(0, 10)).to.be.eq(SELECTOR_1INCH_SWAP);
         const data = swapData.tx.data;
@@ -557,7 +557,7 @@ contract('OneInchV3 Swap', function([_, user]) {
     });
 
     describe('Swap', function() {
-      it('normal', async function() {
+      it.only('normal', async function() {
         // Prepare data
         const value = ether('100');
         const to = this.hOneInch.address;
@@ -575,6 +575,8 @@ contract('OneInchV3 Swap', function([_, user]) {
             protocols: NON_UNOSWAP_PROTOCOLS,
           },
         });
+        console.log('swapReq:');
+        console.log(swapReq);
 
         // Transfer from token to Proxy first
         await this.token0.transfer(this.proxy.address, value, {
@@ -586,6 +588,8 @@ contract('OneInchV3 Swap', function([_, user]) {
         const swapResponse = await fetch(swapReq);
         expect(swapResponse.ok, '1inch api response not ok').to.be.true;
         const swapData = await swapResponse.json();
+        console.log('swapData:');
+        console.log(swapData);
         // Verify it's `swap` function call
         expect(swapData.tx.data.substring(0, 10)).to.be.eq(SELECTOR_1INCH_SWAP);
         const data = swapData.tx.data;

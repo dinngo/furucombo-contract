@@ -230,7 +230,7 @@ contract('Aave', function([_, user]) {
       profileGas(receipt);
     });
 
-    it('aETH max amount', async function() {
+    it.skip('aETH max amount', async function() {
       const value = ether('10');
       const to = this.hAave.address;
       const data = abi.simpleEncode(
@@ -312,7 +312,7 @@ contract('Aave', function([_, user]) {
       profileGas(receipt);
     });
 
-    it('aDAI max amount', async function() {
+    it.skip('aDAI max amount', async function() {
       const value = ether('999');
       const to = this.hAave.address;
       const data = abi.simpleEncode(

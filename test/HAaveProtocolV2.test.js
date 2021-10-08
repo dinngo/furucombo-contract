@@ -159,7 +159,7 @@ contract('Aave V2', function([_, user, someone]) {
         expect(await balanceProxy.get()).to.be.zero;
         expect(await this.aToken.balanceOf.call(this.proxy.address)).to.be.zero;
         var userBalance = await this.aToken.balanceOf.call(user);
-        expect(userBalance).to.be.bignumber.gte(value);
+        expect(userBalance).to.be.bignumber.gte(mulPercent(value, 99));
         expect(userBalance).to.be.bignumber.lte(mulPercent(value, 101));
         
 

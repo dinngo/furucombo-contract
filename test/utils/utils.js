@@ -1,5 +1,6 @@
 const { BN, ether } = require('@openzeppelin/test-helpers');
 const fetch = require('node-fetch');
+// const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 const { ETH_PROVIDER, RecordHandlerResultSig } = require('./constants');
 
 const { expect } = require('chai');
