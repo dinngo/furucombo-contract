@@ -250,9 +250,17 @@ contract('YVault', function([_, user]) {
 
       // User deposits aLINK to get yaLINK
       const amountDeposit = ether('1');
-      await token.transfer(user, amountDeposit, {
-        from: ALINK_PROVIDER,
-      });
+
+      try {
+        await token.transfer(user, amountDeposit, {
+          from: ALINK_PROVIDER,
+        });
+      } catch (error) {
+        await token.transfer(user, amountDeposit, {
+          from: ALINK_PROVIDER,
+        });
+      }
+      
       await token.approve(vault.address, amountDeposit, {
         from: user,
       });
@@ -313,9 +321,16 @@ contract('YVault', function([_, user]) {
 
       // User deposits aLINK to get yaLINK
       const amountDeposit = ether('1');
-      await token.transfer(user, amountDeposit, {
-        from: ALINK_PROVIDER,
-      });
+      try {
+        await token.transfer(user, amountDeposit, {
+          from: ALINK_PROVIDER,
+        });
+      } catch (error) {
+        await token.transfer(user, amountDeposit, {
+          from: ALINK_PROVIDER,
+        });
+      }
+      
       await token.approve(vault.address, amountDeposit, {
         from: user,
       });

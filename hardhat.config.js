@@ -44,9 +44,7 @@ require("@nomiclabs/hardhat-truffle5");
         path: "m/44'/60'/0'/0",
         initialIndex: 0
       },
-      hardfork: "berlin",
-      gas: 40000000,
-      blockGasLimit:50000000
+      hardfork: "berlin"
     },
     // migration: {
     //   // url: `${ETH_MAINNET_NODE}`,
@@ -62,10 +60,11 @@ require("@nomiclabs/hardhat-truffle5");
     // },
     localhost:{
       gasPrice: 1,
-      timeout: 600000
+      gas: 30000000,
+      timeout: 900000
     }
   },
   mocha: {
-    timeout: 600000
+    timeout: 900000
   }
 };

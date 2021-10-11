@@ -1195,7 +1195,7 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
       expect(compUserProxyAfter).to.be.zero;
       expect(compProxyAfter).to.be.zero;
       // Can't get the exact result so we only check if the amount is greater than before
-      expect(compUserAfter).to.be.bignumber.gt(compUserProxyBefore);
+      expect(compUserAfter).to.be.bignumber.gte(compUserProxyBefore);
       expect(compUserAfter).to.be.bignumber.eq(handlerReturn);
       profileGas(receipt);
     });
