@@ -39,12 +39,17 @@ require("@nomiclabs/hardhat-truffle5");
   defaultNetwork: "hardhat",
   networks: {
     hardhat: {
+      // forking: {
+      //   url: "https://eth-mainnet.alchemyapi.io/v2/SzfScxGFsSCR1qCdzGn2qvEzdWkGtIAO",
+      //   blockNumber: 12354000
+      // },
       accounts:{
         mnemonic: "dice shove sheriff police boss indoor hospital vivid tenant method game matter",
         path: "m/44'/60'/0'/0",
         initialIndex: 0
       },
       hardfork: "berlin"
+      
     },
     // migration: {
     //   // url: `${ETH_MAINNET_NODE}`,

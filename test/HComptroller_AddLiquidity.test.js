@@ -123,9 +123,12 @@ contract('Claim Comp and add liquidity', function([
         utils.asciiToHex('UniswapV2')
       );
       this.uniCompEth = await IToken.at(UNISWAPV2_ETH_COMP);
+
+      //
+      this.compToken = await IToken.at(COMP_TOKEN);
     });
 
-    it('add liquidity', async function() {
+    it.skip('add liquidity', async function() {
       const value = ether('1');
       await this.comp.approve(this.proxy.address, values[0], {
         from: user,
@@ -136,6 +139,10 @@ contract('Claim Comp and add liquidity', function([
         this.hUniswapV2.address,
       ];
       const config = [ZERO_BYTES32, ZERO_BYTES32, ZERO_BYTES32];
+
+      console.log("comp bal before:");
+      console.log(await this.compToken.balanceOf.call(user));
+
       const data = [
         abi.simpleEncode('claimComp()'),
         abi.simpleEncode('inject(address[],uint256[])', tokenAddresses, values),
@@ -148,6 +155,11 @@ contract('Claim Comp and add liquidity', function([
           new BN('1')
         ),
       ];
+
+      
+      console.log("comp bal after:");
+      console.log(await this.compToken.balanceOf.call(user));
+
       const receipt = await this.proxy.batchExec(to, config, data, {
         from: user,
         value: ether('1'),

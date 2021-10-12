@@ -72,6 +72,7 @@ start_hardhat() {
 
     
     npx hardhat node --fork $ETH_MAINNET_NODE --no-deploy >/dev/null &
+    # npx hardhat node --no-deploy >/dev/null &
     echo "no deployment script will be executed"    
 
     hardhat_pid=$!
