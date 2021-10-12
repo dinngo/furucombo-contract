@@ -14,14 +14,17 @@ before_script:
   - RUNNER_COUNT=16
   - FILES=( $(find -H -L ./test/* -regex "^.*.test.js") )
   - len=${#FILES[@]}
+  - echo 1
   - >
     for (( i=0; i<${RUNNER_COUNT}; i+=1 )); do
         RUNNER_TEST_CNTS[$i]=0
     done
+  - echo 2
   - >
     for (( i=0; i<${len}; i+=1 )); do
         TestCases[$i]=$(grep -o " it(" ${FILES[$i]} | wc -l)
     done
+  - echo 3
   - >
     for ((i = 0; i<${len}; i++))
     do
@@ -40,9 +43,10 @@ before_script:
             fi
         done
     done
-
+  - echo 4
   - MIN=${RUNNER_TEST_CNTS[0]}
   - MINIDX=0
+  - echo 5
   - >
     for (( i=0; i<${len}; i+=1 )); do
         for j in ${!RUNNER_TEST_CNTS[@]};
@@ -58,7 +62,7 @@ before_script:
         RUNNER_TEST_CNTS[$MINIDX]=`expr ${TestCases[$i]} + ${RUNNER_TEST_CNTS[$MINIDX]}`
         MIN=${RUNNER_TEST_CNTS[$MINIDX]}
     done
-
+  - echo 6
 stages:
   - build
   - test
