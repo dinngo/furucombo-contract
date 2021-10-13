@@ -2,7 +2,7 @@
 set -o errexit
 
 # Configure the existing build directory.
-rm -rf build
+rm -rf artifacts
 
 # Compile everything else.
 npm run compile

@@ -8,13 +8,11 @@
   },
   "scripts": {
     "build": "scripts/build.sh",
-    "compile": "truffle compile",
-    "test": "scripts/test.sh --network development",
-    "test-hardhat": "scripts/test-hardhat.sh",
+    "compile": "npx hardhat compile",
+    "test": "scripts/test-hardhat.sh",
     "lint:solhint": "solhint \"contracts/**/*.sol\"",
     "lint:prettier": "scripts/prettier.sh",
-    "test-migration": "scripts/test.sh --network migration",
-    "test-migration-hardhat": "scripts/test-hardhat-migration.sh"
+    "test-migration": "scripts/test-hardhat-migration.sh"
   },
   "repository": {
     "type": "git",
