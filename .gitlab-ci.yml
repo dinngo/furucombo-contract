@@ -77,7 +77,7 @@ test_0:
   script:
     - apt-get update && apt-get install -y netcat
     - apt-get install lsof
-    - npm run test-migration ${UNITTEST_FILES[0]}
+    - npm run test ${UNITTEST_FILES[0]}
   cache:
     <<: *global_cache
 

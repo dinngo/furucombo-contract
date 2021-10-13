@@ -34,7 +34,9 @@ require("@nomiclabs/hardhat-truffle5");
     }
   },
   namedAccounts: {
-    deployer: 10
+    deployer: {
+      default: 5,
+    },
   },
   defaultNetwork: "hardhat",
   networks: {
@@ -50,7 +52,7 @@ require("@nomiclabs/hardhat-truffle5");
         accountsBalance: "10000000000000000000000"  // 10000 ETH
       },
       hardfork: "berlin",
-      gasPrice: 0
+      // gasPrice: 0
     },
     // migration: {
     //   // url: `${ETH_MAINNET_NODE}`,
