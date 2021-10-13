@@ -69,9 +69,9 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
     this.dsRegistry = await IDSProxyRegistry.at(MAKER_PROXY_REGISTRY);
     // User build DSProxy
     let dsProxyAddr = await this.dsRegistry.proxies.call(user);
-    if (dsProxyAddr == constants.ZERO_ADDRESS) 
-        await this.dsRegistry.build(user);
-    
+    if (dsProxyAddr == constants.ZERO_ADDRESS)
+      await this.dsRegistry.build(user);
+
     this.userProxy = await IDSProxy.at(
       await this.dsRegistry.proxies.call(user)
     );
@@ -92,7 +92,7 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
     this.comptroller = await IComptroller.at(COMPOUND_COMPTROLLER);
 
     await hre.network.provider.request({
-      method: "hardhat_impersonateAccount",
+      method: 'hardhat_impersonateAccount',
       params: [DAI_PROVIDER],
     });
   });
@@ -1198,7 +1198,7 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
       expect(compUserProxyAfter).to.be.zero;
       expect(compProxyAfter).to.be.zero;
       // Can't get the exact result so we only check if the amount is greater than before
-      expect(compUserAfter).to.be.bignumber.gte(compUserProxyBefore);
+      expect(compUserAfter).to.be.bignumber.gt(compUserProxyBefore);
       expect(compUserAfter).to.be.bignumber.eq(handlerReturn);
       profileGas(receipt);
     });

@@ -79,7 +79,6 @@ contract('UniswapV2 Liquidity', function([_, user]) {
     await this.tokenB.transfer(user, ether('1000'), {
       from: tokenBProviderAddress,
     });
-
   });
 
   beforeEach(async function() {

@@ -1463,6 +1463,8 @@ contract('Curve', function([_, user]) {
         expect(await this.poolToken.balanceOf.call(user)).to.be.bignumber.gte(
           answer.mul(new BN('999')).div(new BN('1000'))
         );
+
+        // y pool --> yToken --> token. Estimate may not accurate, set 3% tolerance. 
         expect(await this.poolToken.balanceOf.call(user)).to.be.bignumber.lte(
           answer.mul(new BN('103')).div(new BN('100'))
         );

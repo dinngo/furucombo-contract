@@ -118,7 +118,6 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
     this.unregisteredAdapter = await StakingRewardsAdapter.at(
       unregisteredAdapterAddr
     );
-
   });
 
   beforeEach(async function() {

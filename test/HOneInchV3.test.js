@@ -24,7 +24,6 @@ const {
   getCallData,
 } = require('./utils/utils');
 const fetch = require('node-fetch');
-// const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 const queryString = require('query-string');
 
 const HOneInch = artifacts.require('HOneInchV3');
@@ -36,7 +35,6 @@ const IOneInch = artifacts.require('IAggregationRouterV3');
 const SELECTOR_1INCH_SWAP = getFuncSig(IOneInch, 'swap');
 const SELECTOR_1INCH_UNOSWAP = getFuncSig(IOneInch, 'unoswap');
 
-const packageDetails = require('../package.json');
 /// Change url for different chain
 /// - Ethereum: https://api.1inch.exchange/v3.0/1/
 /// - Polygon: https://api.1inch.exchange/v3.0/137/
@@ -293,9 +291,10 @@ contract('OneInchV3 Swap', function([_, user]) {
         expect(handlerReturn).to.be.bignumber.eq(tokenUserEnd.sub(tokenUser));
 
         // Verify token balance
-        // expect(tokenUserEnd).to.be.bignumber.gte(
+        expect(tokenUserEnd).to.be.bignumber.gte(
           // sub 1 more percent to tolerate the slippage calculation difference with 1inch
-        tokenUser.add(mulPercent(quote, 100 - slippage - 1));
+        tokenUser.add(mulPercent(quote, 100 - slippage - 1))
+        );
         expect(
           await this.token.balanceOf.call(this.proxy.address)
         ).to.be.bignumber.zero;
@@ -378,7 +377,7 @@ contract('OneInchV3 Swap', function([_, user]) {
     describe('Swap', function() {
       it('normal', async function() {
         // Prepare data
-        const value = ether('10');
+        const value = ether('100');
         const to = this.hOneInch.address;
         const slippage = 3;
         const swapReq = queryString.stringifyUrl({
@@ -585,7 +584,6 @@ contract('OneInchV3 Swap', function([_, user]) {
         const swapResponse = await fetch(swapReq);
         expect(swapResponse.ok, '1inch api response not ok').to.be.true;
         const swapData = await swapResponse.json();
-       
         // Verify it's `swap` function call
         expect(swapData.tx.data.substring(0, 10)).to.be.eq(SELECTOR_1INCH_SWAP);
         const data = swapData.tx.data;
@@ -697,9 +695,10 @@ contract('OneInchV3 Swap', function([_, user]) {
         ).to.be.bignumber.zero;
 
         // Verify token1 balance
-        // expect(await this.token1.balanceOf.call(user)).to.be.bignumber.gte(
+        expect(await this.token1.balanceOf.call(user)).to.be.bignumber.gte(
           // sub 1 more percent to tolerate the slippage calculation difference with 1inch
-        token1User.add(mulPercent(quote, 100 - slippage - 1));
+        token1User.add(mulPercent(quote, 100 - slippage - 1))
+        );
         expect(
           await this.token1.balanceOf.call(this.proxy.address)
         ).to.be.bignumber.zero;
@@ -778,9 +777,10 @@ contract('OneInchV3 Swap', function([_, user]) {
         ).to.be.bignumber.zero;
 
         // Verify weth balance
-        // expect(await this.weth.balanceOf.call(user)).to.be.bignumber.gte(
+        expect(await this.weth.balanceOf.call(user)).to.be.bignumber.gte(
           // sub 1 more percent to tolerate the slippage calculation difference with 1inch
-        wethUser.add(mulPercent(quote, 100 - slippage - 1));
+        wethUser.add(mulPercent(quote, 100 - slippage - 1))
+        );
         expect(
           await this.weth.balanceOf.call(this.proxy.address)
         ).to.be.bignumber.zero;
