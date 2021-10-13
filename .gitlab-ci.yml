@@ -20,7 +20,7 @@ before_script:
     done
   - >
     for (( i=0; i<${len}; i+=1 )); do
-        testsNum=$(grep -o " it(" ${TestCases} | wc -l)
+        testsNum=$(grep -o " it(" ${FILES[$i]} | wc -l)
         if [ $testsNum -gt 0 ]; then
           TestCases[$i]=$testsNum
         fi
