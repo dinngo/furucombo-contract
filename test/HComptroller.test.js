@@ -128,7 +128,7 @@ contract('Comptroller', function([_, user, someone]) {
         expect(compUserEnd.sub(compUser)).to.be.bignumber.eq(handlerReturn);
         // TODO: Get the ground truth
         // expect(compUserEnd.sub(compUser)).to.be.bignumber.eq(result);
-        expect(compUserEnd.sub(compUser)).to.be.bignumber.gte(ether('0'));
+        expect(compUserEnd.sub(compUser)).to.be.bignumber.gt(ether('0'));
         profileGas(receipt);
       });
     });
@@ -150,7 +150,7 @@ contract('Comptroller', function([_, user, someone]) {
         expect(compUserEnd.sub(compUser)).to.be.bignumber.eq(handlerReturn);
         // TODO: Get the ground truth
         // expect(compUserEnd.sub(compUser)).to.be.bignumber.eq(result);
-        expect(compUserEnd.sub(compUser)).to.be.bignumber.gte(ether('0'));
+        expect(compUserEnd.sub(compUser)).to.be.bignumber.gt(ether('0'));
         profileGas(receipt);
       });
     });
