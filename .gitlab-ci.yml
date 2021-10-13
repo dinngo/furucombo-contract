@@ -25,8 +25,8 @@ before_script:
     for (( i=0; i<${len}; i+=1 )); do
         echo "---" $i "---" 
         echo ${FILES[$i]}
-        echo $(grep -o " it(" ${FILES[$i]} | wc -l)
-        TestCases[$i]=$(grep -o " it(" ${FILES[$i]} | wc -l)
+        echo $(grep -o " it" ${FILES[$i]} | wc -l)
+        TestCases[$i]=$(grep -o " it" ${FILES[$i]} | wc -l)
         echo ${TestCases[$i]}
     done
   - echo 3
