@@ -52,8 +52,7 @@
     "solhint": "^3.0.0",
     "truffle": "5.1.60",
     "web3": "^1.5.2",
-    "web3-provider-engine": "^15.0.12",
-    "highlight.js": "^11.2.0"
+    "web3-provider-engine": "^15.0.12"
   },
   "dependencies": {
     "@gelatonetwork/limit-orders-lib": "^0.6.0",
