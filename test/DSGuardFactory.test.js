@@ -30,7 +30,10 @@ contract('DSGuardFactory', function([_, furucombo, user, someone]) {
     this.factory = await DSGuardFactory.new();
     this.dsRegistry = await IDSProxyRegistry.at(MAKER_PROXY_REGISTRY);
     // User build DSProxy
-    await this.dsRegistry.build(user);
+    let dsProxyAddr = await this.dsRegistry.proxies.call(user);
+    if (dsProxyAddr == constants.ZERO_ADDRESS) 
+        await this.dsRegistry.build(user);
+    
     this.userProxy = await IDSProxy.at(
       await this.dsRegistry.proxies.call(user)
     );

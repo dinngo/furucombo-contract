@@ -98,7 +98,11 @@ contract('Aave flashloan', function([_, user]) {
     this.cdpManager = await IMakerManager.at(MAKER_CDP_MANAGER);
     this.vat = await IMakerVat.at(MAKER_MCD_VAT);
     await this.dsRegistry.build(this.proxy.address);
-    await this.dsRegistry.build(user);
+
+    let dsProxyAddr = await this.dsRegistry.proxies.call(user);
+    if (dsProxyAddr == constants.ZERO_ADDRESS) 
+        await this.dsRegistry.build(user);
+
     this.dsProxy = await IDSProxy.at(
       await this.dsRegistry.proxies.call(this.proxy.address)
     );
