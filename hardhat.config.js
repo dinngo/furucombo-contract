@@ -46,7 +46,8 @@ require("@nomiclabs/hardhat-truffle5");
       accounts:{
         mnemonic: "dice shove sheriff police boss indoor hospital vivid tenant method game matter",
         path: "m/44'/60'/0'/0",
-        initialIndex: 0
+        initialIndex: 0,
+        accountsBalance: "10000000000000000000000"
       },
       hardfork: "berlin"
       
