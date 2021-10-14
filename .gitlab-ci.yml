@@ -245,12 +245,11 @@ test_15:
     - npm run test ${UNITTEST_FILES[15]}
   cache:
     <<: *global_cache
-# deploy:
-#   stage: deploy
-#   tags:
-#     - docker
-#   script:
-#     - ./node_modules/.bin/ganache-cli -p 8242 -a $DEPLOY_OWNER_PRIVKEY &
-#       #   - truffle migrate --network integration
-#   cache:
-#     <<: *global_cache
+deploy:
+  stage: deploy
+  tags:
+    - docker
+  script:
+    - npm run test-migration
+  cache:
+    <<: *global_cache

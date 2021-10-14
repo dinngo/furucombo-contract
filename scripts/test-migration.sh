@@ -11,46 +11,30 @@ cleanup() {
     fi
 }
 
-hardhat_port=8545
-
-hardhat_running() {
-    nc -z localhost "$hardhat_port"
-}
-
-
-# unit test to be executed
-tests="$@"
-echo "running tests:"
-echo "$tests"
-
 start_hardhat() {
     
-    npx hardhat node --fork $ETH_MAINNET_NODE  >/dev/null &
-    echo "deployment script will be executed"  
+    npx hardhat node --fork $ETH_MAINNET_NODE --port 8242 &
+    echo "deployment script will be executed" 
 
     hardhat_pid=$!
 }
 
 wait_hardhat_ready() {
 
-    while [ -z "$( lsof -i:8545 )" ]
+    while [ -z "$( lsof -i:8242 )" ]
     do 
         echo "wait hardhat network launching...might take some time if doing migration script."
         sleep 3
     done
 }
 
-if hardhat_running; then
-    echo "Using existing hardhat network instance"
-else
-    echo "Starting new hardhat network instance"
-    start_hardhat
-fi
+
+echo "Starting new hardhat network instance"
+start_hardhat  
+
 
 wait_hardhat_ready
 
 npx hardhat --version
 
-# Execute rest test files with suffix `.test.js`
-npx hardhat --network localhost test $tests
 
