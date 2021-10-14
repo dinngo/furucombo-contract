@@ -67,6 +67,7 @@ contract('GelatoLimitOrder', function([_, user]) {
 
     this.hGelatoLimitOrder = await HGelatoV2LimitOrder.new(
       GELATOV2_PINE,
+      GELATOV2_LIMIT_ORDER_MODULE,
       GELATOV2_ERC20_ORDER_ROUTER
     );
     await this.registry.register(

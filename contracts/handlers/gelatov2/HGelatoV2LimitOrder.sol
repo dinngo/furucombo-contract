@@ -12,10 +12,16 @@ contract HGelatoV2LimitOrder is HandlerBase {
 
     // prettier-ignore
     address public immutable GELATO_PINE;
+    address public immutable GELATO_LIMIT_ORDER_MODULE;
     address public immutable ERC20_ORDER_ROUTER;
 
-    constructor(address _gelatoPine, address _erc20OrderRouter) public {
+    constructor(
+        address _gelatoPine,
+        address _module,
+        address _erc20OrderRouter
+    ) public {
         GELATO_PINE = _gelatoPine;
+        GELATO_LIMIT_ORDER_MODULE = _module;
         ERC20_ORDER_ROUTER = _erc20OrderRouter;
     }
 
@@ -25,7 +31,7 @@ contract HGelatoV2LimitOrder is HandlerBase {
 
     function placeLimitOrder(
         uint256 value,
-        address module,
+        address module, // unused, just unify the interface
         address inToken,
         address payable owner,
         address witness,
@@ -43,7 +49,7 @@ contract HGelatoV2LimitOrder is HandlerBase {
             try
                 IGelatoPineCore(GELATO_PINE).depositEth{value: value}(
                     IGelatoPineCore(GELATO_PINE).encodeEthOrder(
-                        module,
+                        GELATO_LIMIT_ORDER_MODULE,
                         inToken,
                         payable(_getSender()),
                         witness,
@@ -61,7 +67,7 @@ contract HGelatoV2LimitOrder is HandlerBase {
             try
                 IERC20OrderRouter(ERC20_ORDER_ROUTER).depositToken(
                     value,
-                    module,
+                    GELATO_LIMIT_ORDER_MODULE,
                     inToken,
                     owner,
                     witness,
