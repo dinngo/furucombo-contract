@@ -17,7 +17,7 @@ module.exports = async hre => {
 
   await registry.register(
     hOneInchV3.address,
-    utils.hexlify(utils.formatBytes32String('HOneInchV3'))
+    utils.formatBytes32String('HOneInchV3')
   );
 };
 

@@ -17,7 +17,7 @@ module.exports = async hre => {
 
   await registry.register(
     hBalancer.address,
-    utils.hexlify(utils.formatBytes32String('HBalancer'))
+    utils.formatBytes32String('HBalancer')
   );
 };
 

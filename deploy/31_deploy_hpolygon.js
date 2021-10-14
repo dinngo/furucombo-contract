@@ -17,7 +17,7 @@ module.exports = async hre => {
 
   await registry.register(
     hPolygon.address,
-    utils.hexlify(utils.formatBytes32String('HPolygon'))
+    utils.formatBytes32String('HPolygon')
   );
 };
 

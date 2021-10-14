@@ -17,7 +17,7 @@ module.exports = async hre => {
 
   await registry.register(
     hCurveDao.address,
-    utils.hexlify(utils.formatBytes32String('HCurveDao'))
+    utils.formatBytes32String('HCurveDao')
   );
 };
 

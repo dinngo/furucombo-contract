@@ -17,7 +17,7 @@ module.exports = async hre => {
 
   await registry.register(
     hKyberNetwork.address,
-    utils.hexlify(utils.formatBytes32String('Kyber Network'))
+    utils.formatBytes32String('Kyber Network')
   );
 };
 

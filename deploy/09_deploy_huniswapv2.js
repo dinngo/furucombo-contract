@@ -17,7 +17,7 @@ module.exports = async hre => {
 
   await registry.register(
     hUniswapV2.address,
-    utils.hexlify(utils.formatBytes32String('HUniswapV2'))
+    utils.formatBytes32String('HUniswapV2')
   );
 };
 

@@ -20,7 +20,7 @@ module.exports = async hre => {
 
   await registry.register(
     hFurucomboStaking.address,
-    utils.hexlify(utils.formatBytes32String('HFurucomboStaking'))
+    utils.formatBytes32String('HFurucomboStaking')
   );
 };
 

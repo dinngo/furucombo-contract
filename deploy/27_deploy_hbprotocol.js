@@ -20,7 +20,7 @@ module.exports = async hre => {
 
   await registry.register(
     hBProtocol.address,
-    utils.hexlify(utils.formatBytes32String('HBProtocol'))
+    utils.formatBytes32String('HBProtocol')
   );
   if (
     (await dsRegistry.proxies.call(proxy.address)) ===

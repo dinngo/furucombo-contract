@@ -17,7 +17,7 @@ module.exports = async hre => {
 
   await registry.register(
     hComptroller.address,
-    utils.hexlify(utils.formatBytes32String('HComptroller'))
+    utils.formatBytes32String('HComptroller')
   );
 };
 

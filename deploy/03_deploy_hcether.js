@@ -17,7 +17,7 @@ module.exports = async hre => {
 
   await registry.register(
     hCEther.address,
-    utils.hexlify(utils.formatBytes32String('Compound Ether'))
+    utils.formatBytes32String('Compound Ether')
   );
 };
 

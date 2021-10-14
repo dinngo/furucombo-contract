@@ -21,7 +21,7 @@ module.exports = async hre => {
 
   await registry.register(
     hFurucomboRCOMBO.address,
-    utils.hexlify(utils.formatBytes32String('HFurucomboRCOMBO'))
+    utils.formatBytes32String('HFurucomboRCOMBO')
   );
 };
 

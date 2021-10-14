@@ -15,10 +15,7 @@ module.exports = async hre => {
   const registry = await hre.ethers.getContract('Registry', deployer);
   const hFunds = await hre.ethers.getContract('HFunds', deployer);
 
-  await registry.register(
-    hFunds.address,
-    utils.hexlify(utils.formatBytes32String('HFunds'))
-  );
+  await registry.register(hFunds.address, utils.formatBytes32String('HFunds'));
 };
 
 module.exports.tags = ['HFunds'];

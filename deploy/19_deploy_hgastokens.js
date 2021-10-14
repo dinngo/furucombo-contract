@@ -17,7 +17,7 @@ module.exports = async hre => {
 
   await registry.register(
     hGasTokens.address,
-    utils.hexlify(utils.formatBytes32String('HGasTokens'))
+    utils.formatBytes32String('HGasTokens')
   );
 };
 

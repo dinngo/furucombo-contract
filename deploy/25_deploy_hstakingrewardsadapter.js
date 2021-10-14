@@ -21,7 +21,7 @@ module.exports = async hre => {
 
   await registry.register(
     hStakingRewardsAdapter.address,
-    utils.hexlify(utils.formatBytes32String('HStakingRewardsAdapter'))
+    utils.formatBytes32String('HStakingRewardsAdapter')
   );
 };
 

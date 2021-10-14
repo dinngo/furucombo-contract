@@ -17,7 +17,7 @@ module.exports = async hre => {
 
   await registry.register(
     hYVault.address,
-    utils.hexlify(utils.formatBytes32String('HYVault'))
+    utils.formatBytes32String('HYVault')
   );
 };
 

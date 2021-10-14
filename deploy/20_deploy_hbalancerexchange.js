@@ -20,7 +20,7 @@ module.exports = async hre => {
 
   await registry.register(
     hBalancerExchange.address,
-    utils.hexlify(utils.formatBytes32String('HBalancerExchange'))
+    utils.formatBytes32String('HBalancerExchange')
   );
 };
 

@@ -23,7 +23,7 @@ module.exports = async hre => {
 
   await registry.register(
     hGelatoV2LimitOrder.address,
-    utils.hexlify(utils.formatBytes32String('HGelatoV2LimitOrder'))
+    utils.formatBytes32String('HGelatoV2LimitOrder')
   );
 };
 
