@@ -17,6 +17,7 @@ const utils = web3.utils;
 const { expect } = require('chai');
 
 const {
+  BLOCK_REWARD,
   DAI_TOKEN,
   DAI_PROVIDER,
   BAT_TOKEN,
@@ -31,6 +32,7 @@ const {
   evmSnapshot,
   profileGas,
   getHandlerReturn,
+  getCallData,
 } = require('./utils/utils');
 
 const HFunds = artifacts.require('HFunds');
@@ -757,6 +759,35 @@ contract('Funds', function([_, user, someone]) {
             value: ether('0.1'),
           })
         );
+      });
+    });
+
+    describe('ether to miner', function() {
+      before(async function() {
+        // send dummy tx to get miner address
+        const receipt = await send.ether(
+          ETH_PROVIDER_CONTRACT,
+          ETH_PROVIDER_CONTRACT,
+          0
+        );
+        const block = await web3.eth.getBlock(receipt.blockNumber);
+        this.balanceMiner = await tracker(block.miner);
+      });
+
+      it('normal', async function() {
+        const value = ether('1');
+        const to = this.hFunds.address;
+        const data = getCallData(HFunds, 'sendEtherToMiner', [value]);
+        const receipt = await this.proxy.execMock(to, data, {
+          from: user,
+          value: value,
+        });
+        // delta = ether tip + gas fee + block reward
+        expect(await this.balanceMiner.delta()).to.be.bignumber.eq(
+          value.add(new BN(receipt.receipt.gasUsed).add(ether(BLOCK_REWARD)))
+        );
+
+        profileGas(receipt);
       });
     });
   });
