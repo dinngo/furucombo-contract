@@ -16,6 +16,7 @@ const {
   GELATOV2_PINE,
   GELATOV2_LIMIT_ORDER_MODULE,
   GELATOV2_UNISWAPV2_HANDLER,
+  GELATOV2_ERC20_ORDER_ROUTER,
   DAI_TOKEN,
   DAI_PROVIDER,
   BAT_TOKEN,
@@ -66,7 +67,7 @@ contract('GelatoLimitOrder', function([_, user]) {
 
     this.hGelatoLimitOrder = await HGelatoV2LimitOrder.new(
       GELATOV2_PINE,
-      GELATOV2_LIMIT_ORDER_MODULE
+      GELATOV2_ERC20_ORDER_ROUTER
     );
     await this.registry.register(
       this.hGelatoLimitOrder.address,
@@ -351,7 +352,7 @@ contract('GelatoLimitOrder', function([_, user]) {
         user,
         witness,
         encodedData,
-        secret // witness private key, but unused, it can fill any bytes.
+        secret
       );
 
       await this.tokenA.transfer(this.proxy.address, sellAmount, {
@@ -461,7 +462,7 @@ contract('GelatoLimitOrder', function([_, user]) {
         user,
         witness,
         encodedData,
-        secret // witness private key, but unused, it can fill any bytes.
+        secret
       );
 
       await this.tokenA.transfer(
