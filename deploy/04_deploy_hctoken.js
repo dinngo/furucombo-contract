@@ -17,9 +17,9 @@ module.exports = async hre => {
 
   await registry.register(
     hCToken.address,
-    utils.hexlify(utils.formatBytes32String('Compound Token'))
+    utils.formatBytes32String('Compound Token')
   );
 };
 
-module.exports.tags = ['HCEther'];
+module.exports.tags = ['HCToken'];
 module.exports.dependencies = ['Registry'];

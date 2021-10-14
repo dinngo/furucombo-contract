@@ -12,7 +12,7 @@
     "test": "scripts/test.sh",
     "lint:solhint": "solhint \"contracts/**/*.sol\"",
     "lint:prettier": "scripts/prettier.sh",
-    "test-migration": "scripts/test-migration.sh"
+    "test-migration": "scripts/deploy.sh"
   },
   "repository": {
     "type": "git",

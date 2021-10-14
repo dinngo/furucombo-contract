@@ -17,13 +17,10 @@ module.exports = async hre => {
   const registry = await hre.ethers.getContract('Registry', deployer);
   const proxy = await hre.ethers.getContract('Proxy', deployer);
   const hMaker = await hre.ethers.getContract('HMaker', deployer);
-  await registry.register(
-    hMaker.address,
-    utils.hexlify(utils.formatBytes32String('HMaker'))
-  );
+  await registry.register(hMaker.address, utils.formatBytes32String('HMaker'));
   await dsRegistry.build(proxy.address);
   console.log('dsproxy: ' + (await dsRegistry.proxies(proxy.address)));
 };
 
 module.exports.tags = ['HMaker'];
-module.exports.dependencies = ['Registry'];
+module.exports.dependencies = ['Registry', 'Proxy'];

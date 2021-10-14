@@ -56,6 +56,7 @@ before_script:
         RUNNER_TEST_CNTS[$MINIDX]=`expr ${TestCases[$i]} + ${RUNNER_TEST_CNTS[$MINIDX]}`
         MIN=${RUNNER_TEST_CNTS[$MINIDX]}
     done
+
 stages:
   - build
   - test
@@ -245,11 +246,14 @@ test_15:
     - npm run test ${UNITTEST_FILES[15]}
   cache:
     <<: *global_cache
+
 deploy:
   stage: deploy
   tags:
     - docker
   script:
+    - apt-get update
+    - apt-get install lsof
     - npm run test-migration
   cache:
     <<: *global_cache

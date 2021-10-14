@@ -17,20 +17,15 @@ module.exports = async hre => {
   const registry = await hre.ethers.getContract('Registry', deployer);
   const hAaveProtocol = await hre.ethers.getContract('HAaveProtocol');
 
-  // console.log('----');
-  // console.log(utils.hexZeroPad(hAaveProtocol.address, 32));
-  // console.log(utils.zeroPad(hAaveProtocol.address, 32));
-  // console.log(utils.hexConcat([hAaveProtocol.address, '0x000000000000000000000000']));
-
   await registry.registerCaller(
     AAVE_LENDING_POOL_CORE,
     utils.hexConcat([hAaveProtocol.address, '0x000000000000000000000000'])
   );
   await registry.register(
     hAaveProtocol.address,
-    utils.hexlify(utils.formatBytes32String('Aave Protocol'))
+    utils.formatBytes32String('Aave Protocol')
   );
 };
 
-module.exports.tags = ['Proxy'];
+module.exports.tags = ['HAaveProtocol'];
 module.exports.dependencies = ['Registry'];

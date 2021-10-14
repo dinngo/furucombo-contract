@@ -1,8 +1,10 @@
 # Configure to exit script as soon as a command fails.
 set -o errexit
 
-# Configure the existing build directory.
+# delete the existing artifacts and cache directory.
 rm -rf artifacts
+
+rm -rf cache
 
 # Compile everything else.
 npm run compile
