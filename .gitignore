@@ -16,3 +16,4 @@ package-lock.json
 # hardhat build directory and cache
 artifacts/
 cache/
+deployments/

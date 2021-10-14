@@ -39,14 +39,13 @@ contract('YVault', function([_, user]) {
     );
 
     await hre.network.provider.request({
-      method: "hardhat_impersonateAccount",
+      method: 'hardhat_impersonateAccount',
       params: [CURVE_YCRV_PROVIDER],
     });
     await hre.network.provider.request({
-      method: "hardhat_impersonateAccount",
+      method: 'hardhat_impersonateAccount',
       params: [ALINK_PROVIDER],
     });
-
   });
 
   beforeEach(async function() {
@@ -252,7 +251,7 @@ contract('YVault', function([_, user]) {
       const amountDeposit = ether('1');
 
       await token.transfer(user, amountDeposit, {
-            from: ALINK_PROVIDER,
+        from: ALINK_PROVIDER,
       });
       await token.approve(vault.address, amountDeposit, {
         from: user,

@@ -83,19 +83,19 @@ contract('GelatoLimitOrder', function([_, user]) {
     this.tokenC = await IToken.at(tokenCAddress);
 
     await hre.network.provider.request({
-      method: "hardhat_impersonateAccount",
+      method: 'hardhat_impersonateAccount',
       params: [DAI_PROVIDER],
     });
     await hre.network.provider.request({
-      method: "hardhat_impersonateAccount",
+      method: 'hardhat_impersonateAccount',
       params: [WETH_PROVIDER],
     });
     await hre.network.provider.request({
-      method: "hardhat_impersonateAccount",
+      method: 'hardhat_impersonateAccount',
       params: [BAT_PROVIDER],
     });
     await hre.network.provider.request({
-      method: "hardhat_impersonateAccount",
+      method: 'hardhat_impersonateAccount',
       params: [GELATOV2_RELAYER],
     });
   });

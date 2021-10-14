@@ -1,5 +1,4 @@
-
-module.exports = async (hre) => {
+module.exports = async hre => {
   const { deployments } = hre;
   const { deploy } = deployments;
   const { deployer } = await hre.getNamedAccounts();
@@ -9,7 +8,6 @@ module.exports = async (hre) => {
     args: [],
     log: true,
   });
-
 };
 
 // module.exports.skip = async (hre) => {

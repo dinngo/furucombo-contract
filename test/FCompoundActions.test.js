@@ -55,9 +55,9 @@ contract('FCompoundActions', function([_, user]) {
     this.dsRegistry = await IDSProxyRegistry.at(MAKER_PROXY_REGISTRY);
 
     let dsProxyAddr = await this.dsRegistry.proxies.call(user);
-    if (dsProxyAddr == constants.ZERO_ADDRESS) 
-        await this.dsRegistry.build(user);
-        
+    if (dsProxyAddr == constants.ZERO_ADDRESS)
+      await this.dsRegistry.build(user);
+
     this.userProxy = await IDSProxy.at(
       await this.dsRegistry.proxies.call(user)
     );
@@ -68,10 +68,9 @@ contract('FCompoundActions', function([_, user]) {
     this.actionsMock = await ActionsMock.new();
 
     await hre.network.provider.request({
-      method: "hardhat_impersonateAccount",
+      method: 'hardhat_impersonateAccount',
       params: [DAI_PROVIDER],
     });
-
   });
 
   beforeEach(async function() {

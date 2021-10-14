@@ -52,9 +52,9 @@ const NON_UNOSWAP_PROTOCOLS = [
   'BLACKHOLESWAP',
   'ONE_INCH_LP',
   'PMM2',
-  //comment PMM3 because it will cause "LOP bad signature error" while 
+  //comment PMM3 because it will cause "LOP bad signature error" while
   //test running with hardhat. But it works well with truffle + ganache.
-  // 'PMM3', 
+  // 'PMM3',
   'KYBER_DMM',
   'BALANCER_V2',
   'UNISWAP_V3',
@@ -81,11 +81,11 @@ contract('OneInchV3 Swap', function([_, user]) {
     this.proxy = await Proxy.new(this.registry.address);
 
     await hre.network.provider.request({
-      method: "hardhat_impersonateAccount",
+      method: 'hardhat_impersonateAccount',
       params: [WETH_PROVIDER],
     });
     await hre.network.provider.request({
-      method: "hardhat_impersonateAccount",
+      method: 'hardhat_impersonateAccount',
       params: [DAI_PROVIDER],
     });
   });
@@ -293,12 +293,11 @@ contract('OneInchV3 Swap', function([_, user]) {
         // Verify token balance
         expect(tokenUserEnd).to.be.bignumber.gte(
           // sub 1 more percent to tolerate the slippage calculation difference with 1inch
-        tokenUser.add(mulPercent(quote, 100 - slippage - 1))
+          tokenUser.add(mulPercent(quote, 100 - slippage - 1))
         );
         expect(
           await this.token.balanceOf.call(this.proxy.address)
         ).to.be.bignumber.zero;
-
 
         // Verify ether balance
         expect(await balanceProxy.get()).to.be.bignumber.zero;
@@ -697,7 +696,7 @@ contract('OneInchV3 Swap', function([_, user]) {
         // Verify token1 balance
         expect(await this.token1.balanceOf.call(user)).to.be.bignumber.gte(
           // sub 1 more percent to tolerate the slippage calculation difference with 1inch
-        token1User.add(mulPercent(quote, 100 - slippage - 1))
+          token1User.add(mulPercent(quote, 100 - slippage - 1))
         );
         expect(
           await this.token1.balanceOf.call(this.proxy.address)
@@ -779,7 +778,7 @@ contract('OneInchV3 Swap', function([_, user]) {
         // Verify weth balance
         expect(await this.weth.balanceOf.call(user)).to.be.bignumber.gte(
           // sub 1 more percent to tolerate the slippage calculation difference with 1inch
-        wethUser.add(mulPercent(quote, 100 - slippage - 1))
+          wethUser.add(mulPercent(quote, 100 - slippage - 1))
         );
         expect(
           await this.weth.balanceOf.call(this.proxy.address)

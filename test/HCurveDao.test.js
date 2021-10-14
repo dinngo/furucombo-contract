@@ -62,11 +62,11 @@ contract('Curve DAO', function([_, user]) {
     this.proxy = await Proxy.new(this.registry.address);
 
     await hre.network.provider.request({
-      method: "hardhat_impersonateAccount",
+      method: 'hardhat_impersonateAccount',
       params: [CURVE_YCRV_PROVIDER],
     });
     await hre.network.provider.request({
-      method: "hardhat_impersonateAccount",
+      method: 'hardhat_impersonateAccount',
       params: [CURVE_TCRV_PROVIDER],
     });
   });

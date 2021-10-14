@@ -1,7 +1,7 @@
-const { ethers } = require("hardhat");
+const { ethers } = require('hardhat');
 const utils = ethers.utils;
 
-module.exports = async (hre) => {
+module.exports = async hre => {
   const { deployments } = hre;
   const { deploy } = deployments;
   const { deployer } = await hre.getNamedAccounts();
@@ -17,11 +17,9 @@ module.exports = async (hre) => {
 
   await registry.register(
     hComptroller.address,
-        utils.hexlify(utils.formatBytes32String('HComptroller'))
-      );
-  
+    utils.hexlify(utils.formatBytes32String('HComptroller'))
+  );
 };
 
-
 module.exports.tags = ['HComptroller'];
-module.exports.dependencies = ["Registry"];
+module.exports.dependencies = ['Registry'];

@@ -81,15 +81,15 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
     );
 
     await hre.network.provider.request({
-      method: "hardhat_impersonateAccount",
+      method: 'hardhat_impersonateAccount',
       params: [DAI_PROVIDER],
     });
     await hre.network.provider.request({
-      method: "hardhat_impersonateAccount",
+      method: 'hardhat_impersonateAccount',
       params: [KNC_PROVIDER],
     });
     await hre.network.provider.request({
-      method: "hardhat_impersonateAccount",
+      method: 'hardhat_impersonateAccount',
       params: [STAKING_REWARDS_ADAPTER_REGISTRY_OWNER],
     });
 

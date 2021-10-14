@@ -79,11 +79,11 @@ contract('Aave V2', function([_, user, someone]) {
     this.mockToken = await SimpleToken.new();
 
     await hre.network.provider.request({
-      method: "hardhat_impersonateAccount",
+      method: 'hardhat_impersonateAccount',
       params: [WETH_PROVIDER],
     });
     await hre.network.provider.request({
-      method: "hardhat_impersonateAccount",
+      method: 'hardhat_impersonateAccount',
       params: [DAI_PROVIDER],
     });
   });

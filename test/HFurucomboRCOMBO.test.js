@@ -39,11 +39,11 @@ contract('Furucombo rCOMBO', function([_, user]) {
     this.combo = await IToken.at(COMBO_TOKEN);
 
     await hre.network.provider.request({
-      method: "hardhat_impersonateAccount",
+      method: 'hardhat_impersonateAccount',
       params: [COMBO_PROVIDER],
     });
     await hre.network.provider.request({
-      method: "hardhat_impersonateAccount",
+      method: 'hardhat_impersonateAccount',
       params: [RCOMBO_PROVIDER],
     });
 

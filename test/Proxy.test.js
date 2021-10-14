@@ -295,7 +295,7 @@ contract('Proxy', function([_, deployer, user]) {
         from: user,
         value: ether('1'),
       });
-      
+
       expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
       expect(await balanceUser.delta()).to.be.bignumber.eq(
         ether('0')

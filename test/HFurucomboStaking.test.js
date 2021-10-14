@@ -54,7 +54,7 @@ contract('Furucombo', function([_, user, someone]) {
     this.token = await IToken.at(tokenAddress);
 
     await hre.network.provider.request({
-      method: "hardhat_impersonateAccount",
+      method: 'hardhat_impersonateAccount',
       params: [BALANCER_DAI_ETH_PROVIDER],
     });
   });

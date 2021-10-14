@@ -118,9 +118,9 @@ contract('Maker', function([_, user]) {
     await this.dsRegistry.build(this.proxy.address);
 
     let dsProxyAddr = await this.dsRegistry.proxies.call(user);
-    if (dsProxyAddr == constants.ZERO_ADDRESS) 
-        await this.dsRegistry.build(user);
-      
+    if (dsProxyAddr == constants.ZERO_ADDRESS)
+      await this.dsRegistry.build(user);
+
     this.dsProxy = await IDSProxy.at(
       await this.dsRegistry.proxies.call(this.proxy.address)
     );
@@ -130,10 +130,9 @@ contract('Maker', function([_, user]) {
     this.dai = await IToken.at(DAI_TOKEN);
 
     await hre.network.provider.request({
-      method: "hardhat_impersonateAccount",
+      method: 'hardhat_impersonateAccount',
       params: [DAI_PROVIDER],
     });
-
   });
 
   beforeEach(async function() {

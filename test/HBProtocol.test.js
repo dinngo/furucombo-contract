@@ -111,14 +111,14 @@ contract('BProtocol', function([_, user1, user2, someone]) {
     this.cdpManager = await IMakerManager.at(B_CDP_MANAGER);
     this.vat = await IMakerVat.at(MAKER_MCD_VAT);
     await this.dsRegistry.build(this.proxy.address);
-    
+
     let dsProxyAddr = await this.dsRegistry.proxies.call(user1);
-    if (dsProxyAddr == constants.ZERO_ADDRESS) 
-        await this.dsRegistry.build(user1);
+    if (dsProxyAddr == constants.ZERO_ADDRESS)
+      await this.dsRegistry.build(user1);
 
     dsProxyAddr = await this.dsRegistry.proxies.call(user2);
-    if (dsProxyAddr == constants.ZERO_ADDRESS) 
-        await this.dsRegistry.build(user2);
+    if (dsProxyAddr == constants.ZERO_ADDRESS)
+      await this.dsRegistry.build(user2);
 
     this.dsProxy = await IDSProxy.at(
       await this.dsRegistry.proxies.call(this.proxy.address)
@@ -132,14 +132,13 @@ contract('BProtocol', function([_, user1, user2, someone]) {
     this.dai = await IToken.at(DAI_TOKEN);
 
     await hre.network.provider.request({
-      method: "hardhat_impersonateAccount",
+      method: 'hardhat_impersonateAccount',
       params: [DAI_PROVIDER],
     });
     await hre.network.provider.request({
-      method: "hardhat_impersonateAccount",
+      method: 'hardhat_impersonateAccount',
       params: [BAT_PROVIDER],
     });
-
   });
 
   beforeEach(async function() {

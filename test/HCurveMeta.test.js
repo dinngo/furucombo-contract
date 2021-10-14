@@ -40,15 +40,15 @@ contract('Curve Meta', function([_, user]) {
     this.musdDeposit = await ICurveHandler.at(CURVE_MUSD_DEPOSIT);
 
     await hre.network.provider.request({
-      method: "hardhat_impersonateAccount",
+      method: 'hardhat_impersonateAccount',
       params: [USDT_PROVIDER],
     });
     await hre.network.provider.request({
-      method: "hardhat_impersonateAccount",
+      method: 'hardhat_impersonateAccount',
       params: [MUSD_PROVIDER],
     });
     await hre.network.provider.request({
-      method: "hardhat_impersonateAccount",
+      method: 'hardhat_impersonateAccount',
       params: [CURVE_MUSDCRV_PROVIDER],
     });
   });

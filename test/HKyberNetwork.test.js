@@ -57,7 +57,7 @@ contract('KyberNetwork Swap', function([_, user]) {
     this.swap = await IKyberNetworkProxy.at(KYBERNETWORK_PROXY);
 
     await hre.network.provider.request({
-      method: "hardhat_impersonateAccount",
+      method: 'hardhat_impersonateAccount',
       params: [DAI_PROVIDER],
     });
   });

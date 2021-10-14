@@ -100,8 +100,8 @@ contract('Aave flashloan', function([_, user]) {
     await this.dsRegistry.build(this.proxy.address);
 
     let dsProxyAddr = await this.dsRegistry.proxies.call(user);
-    if (dsProxyAddr == constants.ZERO_ADDRESS) 
-        await this.dsRegistry.build(user);
+    if (dsProxyAddr == constants.ZERO_ADDRESS)
+      await this.dsRegistry.build(user);
 
     this.dsProxy = await IDSProxy.at(
       await this.dsRegistry.proxies.call(this.proxy.address)

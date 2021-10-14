@@ -1,7 +1,7 @@
-const { ethers } = require("hardhat");
+const { ethers } = require('hardhat');
 const utils = ethers.utils;
 
-module.exports = async (hre) => {
+module.exports = async hre => {
   const { deployments } = hre;
   const { deploy } = deployments;
   const { deployer } = await hre.getNamedAccounts();
@@ -17,10 +17,9 @@ module.exports = async (hre) => {
 
   await registry.register(
     hPolygon.address,
-        utils.hexlify(utils.formatBytes32String('HPolygon'))
-      );
+    utils.hexlify(utils.formatBytes32String('HPolygon'))
+  );
 };
 
-
 module.exports.tags = ['HPolygon'];
-module.exports.dependencies = ["Registry"];
+module.exports.dependencies = ['Registry'];

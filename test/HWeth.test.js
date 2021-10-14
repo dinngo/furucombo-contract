@@ -34,12 +34,10 @@ contract('Weth', function([_, user]) {
     this.hWeth = await HWeth.new();
     await this.registry.register(this.hWeth.address, utils.asciiToHex('Weth'));
 
-
     await hre.network.provider.request({
-      method: "hardhat_impersonateAccount",
+      method: 'hardhat_impersonateAccount',
       params: [WETH_PROVIDER],
     });
-
   });
 
   beforeEach(async function() {

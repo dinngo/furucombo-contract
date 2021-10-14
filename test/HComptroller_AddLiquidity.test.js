@@ -140,7 +140,7 @@ contract('Claim Comp and add liquidity', function([
       ];
       const config = [ZERO_BYTES32, ZERO_BYTES32, ZERO_BYTES32];
 
-      console.log("comp bal before:");
+      console.log('comp bal before:');
       console.log(await this.compToken.balanceOf.call(user));
 
       const data = [
@@ -156,8 +156,7 @@ contract('Claim Comp and add liquidity', function([
         ),
       ];
 
-      
-      console.log("comp bal after:");
+      console.log('comp bal after:');
       console.log(await this.compToken.balanceOf.call(user));
 
       const receipt = await this.proxy.batchExec(to, config, data, {

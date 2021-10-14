@@ -41,18 +41,17 @@ contract('Curve Factory Meta', function([_, user]) {
     this.zap3Pool = await ICurveHandler.at(CURVE_FACTORY_ZAP_3POOL);
 
     await hre.network.provider.request({
-      method: "hardhat_impersonateAccount",
+      method: 'hardhat_impersonateAccount',
       params: [USDT_PROVIDER],
     });
     await hre.network.provider.request({
-      method: "hardhat_impersonateAccount",
+      method: 'hardhat_impersonateAccount',
       params: [TUSD_PROVIDER],
     });
     await hre.network.provider.request({
-      method: "hardhat_impersonateAccount",
+      method: 'hardhat_impersonateAccount',
       params: [CURVE_FACTORY_TUSD_PROVIDER],
     });
-
   });
 
   beforeEach(async function() {

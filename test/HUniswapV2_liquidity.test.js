@@ -65,11 +65,11 @@ contract('UniswapV2 Liquidity', function([_, user]) {
     this.router = await UniswapV2Router02.at(uniswapV2RouterAddress);
 
     await hre.network.provider.request({
-      method: "hardhat_impersonateAccount",
+      method: 'hardhat_impersonateAccount',
       params: [DAI_PROVIDER],
     });
     await hre.network.provider.request({
-      method: "hardhat_impersonateAccount",
+      method: 'hardhat_impersonateAccount',
       params: [BAT_PROVIDER],
     });
 

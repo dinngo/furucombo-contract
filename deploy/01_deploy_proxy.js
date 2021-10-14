@@ -1,5 +1,4 @@
-
-module.exports = async (hre) => {
+module.exports = async hre => {
   const { deployments } = hre;
   const { deploy } = deployments;
   const { deployer } = await hre.getNamedAccounts();
@@ -12,6 +11,5 @@ module.exports = async (hre) => {
   });
 };
 
-
 module.exports.tags = ['Proxy'];
-module.exports.dependencies = ["Registry"];
+module.exports.dependencies = ['Registry'];

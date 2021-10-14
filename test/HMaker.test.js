@@ -113,12 +113,12 @@ contract('Maker', function([_, user1, user2, someone]) {
     await this.dsRegistry.build(this.proxy.address);
 
     let dsProxyAddr = await this.dsRegistry.proxies.call(user1);
-    if (dsProxyAddr == constants.ZERO_ADDRESS)    
-        await this.dsRegistry.build(user1);
-    
+    if (dsProxyAddr == constants.ZERO_ADDRESS)
+      await this.dsRegistry.build(user1);
+
     dsProxyAddr = await this.dsRegistry.proxies.call(user2);
-    if (dsProxyAddr == constants.ZERO_ADDRESS)  
-        await this.dsRegistry.build(user2);
+    if (dsProxyAddr == constants.ZERO_ADDRESS)
+      await this.dsRegistry.build(user2);
 
     this.dsProxy = await IDSProxy.at(
       await this.dsRegistry.proxies.call(this.proxy.address)
@@ -131,13 +131,12 @@ contract('Maker', function([_, user1, user2, someone]) {
     );
     this.dai = await IToken.at(DAI_TOKEN);
 
-
     await hre.network.provider.request({
-      method: "hardhat_impersonateAccount",
+      method: 'hardhat_impersonateAccount',
       params: [BAT_PROVIDER],
     });
     await hre.network.provider.request({
-      method: "hardhat_impersonateAccount",
+      method: 'hardhat_impersonateAccount',
       params: [DAI_PROVIDER],
     });
   });
@@ -186,12 +185,12 @@ contract('Maker', function([_, user1, user2, someone]) {
             ilkEth,
             wadD
           );
-          
+
           const receipt = await this.proxy.execMock(to, data, {
             from: someone,
             value: value,
           });
-         
+
           const handlerReturn = utils.toBN(
             getHandlerReturn(receipt, ['uint256'])[0]
           );

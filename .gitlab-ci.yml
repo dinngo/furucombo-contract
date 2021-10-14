@@ -245,7 +245,6 @@ test_15:
     - npm run test ${UNITTEST_FILES[15]}
   cache:
     <<: *global_cache
-
 # deploy:
 #   stage: deploy
 #   tags:
