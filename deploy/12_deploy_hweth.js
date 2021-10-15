@@ -1,10 +1,8 @@
-const { ethers } = require('hardhat');
 const utils = ethers.utils;
 
-module.exports = async hre => {
-  const { deployments } = hre;
+module.exports = async ({ getNamedAccounts, deployments }) => {
   const { deploy } = deployments;
-  const { deployer } = await hre.getNamedAccounts();
+  const { deployer } = await getNamedAccounts();
 
   await deploy('HWeth', {
     from: deployer,

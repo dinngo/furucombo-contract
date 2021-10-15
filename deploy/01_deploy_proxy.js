@@ -1,7 +1,6 @@
-module.exports = async hre => {
-  const { deployments } = hre;
+module.exports = async ({ getNamedAccounts, deployments }) => {
   const { deploy } = deployments;
-  const { deployer } = await hre.getNamedAccounts();
+  const { deployer } = await getNamedAccounts();
 
   const registryAddr = (await hre.ethers.getContract('Registry')).address;
   await deploy('Proxy', {

@@ -13,7 +13,7 @@ cleanup() {
 
 start_hardhat() {
     
-    npx hardhat node --fork $ETH_MAINNET_NODE --port 8242 &
+    npx hardhat node --fork $ETH_MAINNET_NODE &
     echo "deployment script will be executed" 
 
     hardhat_pid=$!
@@ -21,7 +21,7 @@ start_hardhat() {
 
 wait_hardhat_ready() {
 
-    while [ -z "$( lsof -i:8242 )" ]
+    while [ -z "$( lsof -i:8545 )" ]
     do 
         echo "wait hardhat network launching...might take some time if doing migration script."
         sleep 3

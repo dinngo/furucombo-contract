@@ -2,10 +2,9 @@ const DSProxyRegistry = artifacts.require('IDSProxyRegistry');
 const utils = ethers.utils;
 const MAKER_PROXY_REGISTRY = '0x4678f0a6958e4d2bc4f1baf7bc52e8f3564f3fe4';
 
-module.exports = async hre => {
-  const { deployments } = hre;
+module.exports = async ({ getNamedAccounts, deployments }) => {
   const { deploy } = deployments;
-  const { deployer } = await hre.getNamedAccounts();
+  const { deployer } = await getNamedAccounts();
 
   await deploy('HMaker', {
     from: deployer,
@@ -18,7 +17,14 @@ module.exports = async hre => {
   const proxy = await hre.ethers.getContract('Proxy', deployer);
   const hMaker = await hre.ethers.getContract('HMaker', deployer);
   await registry.register(hMaker.address, utils.formatBytes32String('HMaker'));
-  await dsRegistry.build(proxy.address);
+
+  if (
+    (await dsRegistry.proxies.call(proxy.address)) ===
+    ethers.constants.AddressZero
+  ) {
+    await dsRegistry.build(proxy.address);
+  }
+
   console.log('dsproxy: ' + (await dsRegistry.proxies(proxy.address)));
 };
 

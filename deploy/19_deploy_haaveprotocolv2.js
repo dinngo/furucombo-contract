@@ -1,11 +1,9 @@
-const { ethers } = require('hardhat');
 const AAVE_LENDINGPOOL_V2 = '0x7d2768dE32b0b80b7a3454c06BdAc94A69DDc7A9';
 const utils = ethers.utils;
 
-module.exports = async hre => {
-  const { deployments } = hre;
+module.exports = async ({ getNamedAccounts, deployments }) => {
   const { deploy } = deployments;
-  const { deployer } = await hre.getNamedAccounts();
+  const { deployer } = await getNamedAccounts();
 
   await deploy('HAaveProtocolV2', {
     from: deployer,

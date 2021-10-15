@@ -2,10 +2,9 @@ const DSProxyRegistry = artifacts.require('IDSProxyRegistry');
 const utils = ethers.utils;
 const MAKER_PROXY_REGISTRY = '0x4678f0a6958e4d2bc4f1baf7bc52e8f3564f3fe4';
 
-module.exports = async hre => {
-  const { deployments } = hre;
+module.exports = async ({ getNamedAccounts, deployments }) => {
   const { deploy } = deployments;
-  const { deployer } = await hre.getNamedAccounts();
+  const { deployer } = await getNamedAccounts();
 
   await deploy('HBProtocol', {
     from: deployer,
@@ -24,9 +23,13 @@ module.exports = async hre => {
   );
   if (
     (await dsRegistry.proxies.call(proxy.address)) ===
-    '0x0000000000000000000000000000000000000000'
-  )
+    ethers.constants.AddressZero
+  ) {
     await dsRegistry.build(proxy.address);
+  }
 
   console.log('dsproxy: ' + (await dsRegistry.proxies.call(proxy.address)));
 };
+
+module.exports.tags = ['HBProtocol'];
+module.exports.dependencies = ['Registry', 'Proxy'];

@@ -17,13 +17,6 @@ hardhat_running() {
     nc -z localhost "$hardhat_port"
 }
 
-# if action=migration, will executed deployment script, act like truffle migration.
-
-# shift $2 to $1, $3 to $2, etc.
-# shift
-
-# unit test to be executed
-# tests="${@:2}"
 tests="$@"
 echo "running tests:"
 echo "$tests"
@@ -41,7 +34,7 @@ start_hardhat() {
 
 wait_hardhat_ready() {
 
-    while [ -z "$( lsof -i:8545 )" ]
+    while [ -z "$( lsof -i:$hardhat_port )" ]
     do 
         echo "wait hardhat network launching...might take some time if doing migration script."
         sleep 3
