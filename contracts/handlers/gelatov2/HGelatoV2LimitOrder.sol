@@ -4,17 +4,25 @@ pragma solidity 0.6.12;
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "../HandlerBase.sol";
 import "./IGelatoPineCore.sol";
+import "./IERC20OrderRouter.sol";
 
 contract HGelatoV2LimitOrder is HandlerBase {
     using SafeERC20 for IERC20;
     using SafeMath for uint256;
 
+    // prettier-ignore
     address public immutable GELATO_PINE;
     address public immutable GELATO_LIMIT_ORDER_MODULE;
+    address public immutable ERC20_ORDER_ROUTER;
 
-    constructor(address _gelatoPine, address _module) public {
+    constructor(
+        address _gelatoPine,
+        address _module,
+        address _erc20OrderRouter
+    ) public {
         GELATO_PINE = _gelatoPine;
         GELATO_LIMIT_ORDER_MODULE = _module;
+        ERC20_ORDER_ROUTER = _erc20OrderRouter;
     }
 
     function getContractName() public pure override returns (string memory) {
@@ -23,12 +31,12 @@ contract HGelatoV2LimitOrder is HandlerBase {
 
     function placeLimitOrder(
         uint256 value,
-        address module, // unused, only for gelato graph bot
+        address module, // unused, just unify the interface
         address inToken,
-        address payable owner, // unused, only for gelato graph bot
-        address _witness,
+        address payable owner,
+        address witness,
         bytes calldata limitOrderData,
-        bytes32 _secret
+        bytes32 secret
     ) external payable {
         // Transfer funds inside Furu Proxy => Will be done by a separate Handler
 
@@ -44,9 +52,9 @@ contract HGelatoV2LimitOrder is HandlerBase {
                         GELATO_LIMIT_ORDER_MODULE,
                         inToken,
                         payable(_getSender()),
-                        _witness,
+                        witness,
                         limitOrderData,
-                        _secret
+                        secret
                     )
                 )
             {} catch Error(string memory reason) {
@@ -55,16 +63,16 @@ contract HGelatoV2LimitOrder is HandlerBase {
                 _revertMsg("placeLimitOrder");
             }
         } else {
+            _tokenApprove(inToken, ERC20_ORDER_ROUTER, value);
             try
-                IERC20(inToken).transfer(
-                    IGelatoPineCore(GELATO_PINE).vaultOfOrder(
-                        GELATO_LIMIT_ORDER_MODULE,
-                        inToken,
-                        payable(_getSender()),
-                        _witness,
-                        limitOrderData
-                    ),
-                    value
+                IERC20OrderRouter(ERC20_ORDER_ROUTER).depositToken(
+                    value,
+                    GELATO_LIMIT_ORDER_MODULE,
+                    inToken,
+                    owner,
+                    witness,
+                    limitOrderData,
+                    secret
                 )
             {} catch Error(string memory reason) {
                 _revertMsg("placeLimitOrder", reason);

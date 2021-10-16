@@ -8,6 +8,10 @@ All notable changes to this project will be documented in this file.
 
 - Support sending ether to miner.
 
+### Changed
+
+- Refine gelato v2 limit order handler
+
 ## [1.9.0] - 2021-09-30
 
 ### Changed

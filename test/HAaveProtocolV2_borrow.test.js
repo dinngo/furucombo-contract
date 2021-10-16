@@ -173,7 +173,7 @@ contract('Aave V2', function([_, user, someone]) {
     });
 
     it('borrow weth', async function() {
-      const borrowAmount = ether('2');
+      const borrowAmount = ether('1');
       const to = this.hAaveV2.address;
       const data = abi.simpleEncode(
         'borrow(address,uint256,uint256)',
@@ -218,7 +218,7 @@ contract('Aave V2', function([_, user, someone]) {
     });
 
     it('borrow eth', async function() {
-      const borrowAmount = ether('2');
+      const borrowAmount = ether('1');
       const to = this.hAaveV2.address;
       const data = abi.simpleEncode(
         'borrowETH(uint256,uint256)',
@@ -449,7 +449,7 @@ contract('Aave V2', function([_, user, someone]) {
     });
 
     it('borrow weth', async function() {
-      const borrowAmount = ether('2');
+      const borrowAmount = ether('1');
       const to = this.hAaveV2.address;
       const data = abi.simpleEncode(
         'borrow(address,uint256,uint256)',
@@ -495,7 +495,7 @@ contract('Aave V2', function([_, user, someone]) {
     });
 
     it('borrow eth', async function() {
-      const borrowAmount = ether('2');
+      const borrowAmount = ether('1');
       const to = this.hAaveV2.address;
       const data = abi.simpleEncode(
         'borrowETH(uint256,uint256)',

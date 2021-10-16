@@ -17,10 +17,10 @@ const { ZERO_ADDRESS } = constants;
 const { expect } = require('chai');
 
 const {
-  BAT_TOKEN,
-  BAT_PROVIDER,
   DAI_TOKEN,
   DAI_PROVIDER,
+  LINK_TOKEN,
+  LINK_PROVIDER,
   MAKER_CDP_MANAGER,
   MAKER_PROXY_FACTORY,
   MAKER_PROXY_ACTIONS,
@@ -28,10 +28,7 @@ const {
   MAKER_MCD_JUG,
   MAKER_MCD_VAT,
   MAKER_MCD_JOIN_ETH_A,
-  MAKER_MCD_JOIN_BAT_A,
-  MAKER_MCD_JOIN_USDC_A,
-  MAKER_MCD_JOIN_WBTC_A,
-  MAKER_MCD_JOIN_KNC_A,
+  MAKER_MCD_JOIN_LINK_A,
   MAKER_MCD_JOIN_DAI,
 } = require('./utils/constants');
 const {
@@ -94,8 +91,12 @@ async function approveCdp(cdp, owner, user) {
 
 contract('Maker', function([_, user1, user2, someone]) {
   let id;
-  const tokenAddress = BAT_TOKEN;
-  const providerAddress = BAT_PROVIDER;
+  const tokenAddress = LINK_TOKEN;
+  const providerAddress = LINK_PROVIDER;
+  const makerMcdJoinETH = MAKER_MCD_JOIN_ETH_A;
+  const makerMcdJoinETHName = 'ETH-A';
+  const makerMcdJoinToken = MAKER_MCD_JOIN_LINK_A;
+  const makerMcdJoinTokenName = 'LINK-A';
 
   before(async function() {
     this.registry = await Registry.new();
@@ -150,7 +151,10 @@ contract('Maker', function([_, user1, user2, someone]) {
           expect(await this.dsRegistry.proxies.call(someone)).eq(ZERO_ADDRESS);
 
           const to = this.hMaker.address;
-          const ilkEth = utils.padRight(utils.asciiToHex('ETH-A'), 64);
+          const ilkEth = utils.padRight(
+            utils.asciiToHex(makerMcdJoinETHName),
+            64
+          );
           const [
             generateLimit,
             minCollateral,
@@ -160,7 +164,7 @@ contract('Maker', function([_, user1, user2, someone]) {
           const data = abi.simpleEncode(
             'openLockETHAndDraw(uint256,address,address,bytes32,uint256)',
             value,
-            MAKER_MCD_JOIN_ETH_A,
+            makerMcdJoinETH,
             MAKER_MCD_JOIN_DAI,
             ilkEth,
             wadD
@@ -200,7 +204,10 @@ contract('Maker', function([_, user1, user2, someone]) {
           expect(await this.dsRegistry.proxies.call(someone)).eq(ZERO_ADDRESS);
 
           const to = this.hMaker.address;
-          const ilkEth = utils.padRight(utils.asciiToHex('ETH-A'), 64);
+          const ilkEth = utils.padRight(
+            utils.asciiToHex(makerMcdJoinETHName),
+            64
+          );
           const [
             generateLimit,
             minCollateral,
@@ -210,7 +217,7 @@ contract('Maker', function([_, user1, user2, someone]) {
           const data = abi.simpleEncode(
             'openLockETHAndDraw(uint256,address,address,bytes32,uint256)',
             MAX_UINT256,
-            MAKER_MCD_JOIN_ETH_A,
+            makerMcdJoinETH,
             MAKER_MCD_JOIN_DAI,
             ilkEth,
             wadD
@@ -243,7 +250,10 @@ contract('Maker', function([_, user1, user2, someone]) {
 
         it('User has proxy', async function() {
           const to = this.hMaker.address;
-          const ilkEth = utils.padRight(utils.asciiToHex('ETH-A'), 64);
+          const ilkEth = utils.padRight(
+            utils.asciiToHex(makerMcdJoinETHName),
+            64
+          );
           const [
             generateLimit,
             minCollateral,
@@ -253,7 +263,7 @@ contract('Maker', function([_, user1, user2, someone]) {
           const data = abi.simpleEncode(
             'openLockETHAndDraw(uint256,address,address,bytes32,uint256)',
             value,
-            MAKER_MCD_JOIN_ETH_A,
+            makerMcdJoinETH,
             MAKER_MCD_JOIN_DAI,
             ilkEth,
             wadD
@@ -286,7 +296,10 @@ contract('Maker', function([_, user1, user2, someone]) {
         it('User has proxy with max amount', async function() {
           const to = this.hMaker.address;
           const value = ether('20');
-          const ilkEth = utils.padRight(utils.asciiToHex('ETH-A'), 64);
+          const ilkEth = utils.padRight(
+            utils.asciiToHex(makerMcdJoinETHName),
+            64
+          );
           const [
             generateLimit,
             minCollateral,
@@ -295,7 +308,7 @@ contract('Maker', function([_, user1, user2, someone]) {
           const data = abi.simpleEncode(
             'openLockETHAndDraw(uint256,address,address,bytes32,uint256)',
             MAX_UINT256,
-            MAKER_MCD_JOIN_ETH_A,
+            makerMcdJoinETH,
             MAKER_MCD_JOIN_DAI,
             ilkEth,
             wadD
@@ -328,9 +341,6 @@ contract('Maker', function([_, user1, user2, someone]) {
     });
 
     describe('Lock Token', function() {
-      const tokenAddress = BAT_TOKEN;
-      const providerAddress = BAT_PROVIDER;
-
       describe('Draw Dai', function() {
         it('User does not has proxy', async function() {
           const daiUser = await this.dai.balanceOf.call(someone);
@@ -341,7 +351,7 @@ contract('Maker', function([_, user1, user2, someone]) {
           expect(await this.dsRegistry.proxies.call(someone)).eq(ZERO_ADDRESS);
 
           const to = this.hMaker.address;
-          const ilkToken = utils.padRight(utils.asciiToHex('BAT-A'), 64);
+          const ilkToken = utils.padRight(utils.asciiToHex('LINK-A'), 64);
           const [
             generateLimit,
             minCollateral,
@@ -350,7 +360,7 @@ contract('Maker', function([_, user1, user2, someone]) {
           const wadC = minCollateral;
           const data = abi.simpleEncode(
             'openLockGemAndDraw(address,address,bytes32,uint256,uint256)',
-            MAKER_MCD_JOIN_BAT_A,
+            MAKER_MCD_JOIN_LINK_A,
             MAKER_MCD_JOIN_DAI,
             ilkToken,
             wadC,
@@ -388,7 +398,7 @@ contract('Maker', function([_, user1, user2, someone]) {
 
         it('User has proxy', async function() {
           const to = this.hMaker.address;
-          const ilkToken = utils.padRight(utils.asciiToHex('BAT-A'), 64);
+          const ilkToken = utils.padRight(utils.asciiToHex('LINK-A'), 64);
           const [
             generateLimit,
             minCollateral,
@@ -397,7 +407,7 @@ contract('Maker', function([_, user1, user2, someone]) {
           const wadD = generateLimit;
           const data = abi.simpleEncode(
             'openLockGemAndDraw(address,address,bytes32,uint256,uint256)',
-            MAKER_MCD_JOIN_BAT_A,
+            MAKER_MCD_JOIN_LINK_A,
             MAKER_MCD_JOIN_DAI,
             ilkToken,
             wadC,
@@ -445,13 +455,13 @@ contract('Maker', function([_, user1, user2, someone]) {
       const new1 = abi.simpleEncode(
         'open(address,bytes32,address)',
         MAKER_CDP_MANAGER,
-        utils.padRight(utils.asciiToHex('ETH-A'), 64),
+        utils.padRight(utils.asciiToHex(makerMcdJoinETHName), 64),
         this.user1Proxy.address
       );
       const new2 = abi.simpleEncode(
         'open(address,bytes32,address)',
         MAKER_CDP_MANAGER,
-        utils.padRight(utils.asciiToHex('BAT-A'), 64),
+        utils.padRight(utils.asciiToHex('LINK-A'), 64),
         this.user2Proxy.address
       );
       await this.user1Proxy.execute(MAKER_PROXY_ACTIONS, new1, { from: user1 });
@@ -476,7 +486,7 @@ contract('Maker', function([_, user1, user2, someone]) {
         const data = abi.simpleEncode(
           'safeLockETH(uint256,address,uint256)',
           value,
-          MAKER_MCD_JOIN_ETH_A,
+          makerMcdJoinETH,
           cdp
         );
         const receipt = await this.proxy.execMock(to, data, {
@@ -499,7 +509,7 @@ contract('Maker', function([_, user1, user2, someone]) {
         const data = abi.simpleEncode(
           'safeLockETH(uint256,address,uint256)',
           MAX_UINT256,
-          MAKER_MCD_JOIN_ETH_A,
+          makerMcdJoinETH,
           cdp
         );
         const receipt = await this.proxy.execMock(to, data, {
@@ -521,8 +531,6 @@ contract('Maker', function([_, user1, user2, someone]) {
     describe('Lock Token', function() {
       let balanceUser;
       let tokenUser;
-      const tokenAddress = BAT_TOKEN;
-      const providerAddress = BAT_PROVIDER;
 
       before(async function() {
         cdp = await this.cdpManager.last.call(this.user2Proxy.address);
@@ -541,15 +549,16 @@ contract('Maker', function([_, user1, user2, someone]) {
           generateLimit,
           minCollateral,
         ] = await getGenerateLimitAndMinCollateral(
-          utils.padRight(utils.asciiToHex('BAT-A'), 64)
+          utils.padRight(utils.asciiToHex('LINK-A'), 64)
         );
         const wad = generateLimit;
         const data = abi.simpleEncode(
           'safeLockGem(address,uint256,uint256)',
-          MAKER_MCD_JOIN_BAT_A,
+          MAKER_MCD_JOIN_LINK_A,
           cdp,
           wad
         );
+        console.log('wad', wad.toString());
         await this.token.transfer(this.proxy.address, wad, {
           from: providerAddress,
         });
@@ -570,15 +579,16 @@ contract('Maker', function([_, user1, user2, someone]) {
           generateLimit,
           minCollateral,
         ] = await getGenerateLimitAndMinCollateral(
-          utils.padRight(utils.asciiToHex('BAT-A'), 64)
+          utils.padRight(utils.asciiToHex('LINK-A'), 64)
         );
         const wad = generateLimit;
         const data = abi.simpleEncode(
           'safeLockGem(address,uint256,uint256)',
-          MAKER_MCD_JOIN_BAT_A,
+          MAKER_MCD_JOIN_LINK_A,
           cdp,
           MAX_UINT256
         );
+        console.log('wad', wad.toString());
         await this.token.transfer(this.proxy.address, wad, {
           from: providerAddress,
         });
@@ -609,9 +619,9 @@ contract('Maker', function([_, user1, user2, someone]) {
           'openLockETHAndDraw(address,address,address,address,bytes32,uint256)',
           MAKER_CDP_MANAGER,
           MAKER_MCD_JUG,
-          MAKER_MCD_JOIN_ETH_A,
+          makerMcdJoinETH,
           MAKER_MCD_JOIN_DAI,
-          utils.padRight(utils.asciiToHex('ETH-A'), 64),
+          utils.padRight(utils.asciiToHex(makerMcdJoinETHName), 64),
           ether('0')
         );
         await this.user1Proxy.execute(MAKER_PROXY_ACTIONS, new1, {
@@ -630,7 +640,7 @@ contract('Maker', function([_, user1, user2, someone]) {
         const wad = ether('1');
         const data = abi.simpleEncode(
           'freeETH(address,uint256,uint256)',
-          MAKER_MCD_JOIN_ETH_A,
+          makerMcdJoinETH,
           cdp,
           wad
         );
@@ -651,7 +661,7 @@ contract('Maker', function([_, user1, user2, someone]) {
         const wad = ether('1');
         const data = abi.simpleEncode(
           'freeETH(address,uint256,uint256)',
-          MAKER_MCD_JOIN_ETH_A,
+          makerMcdJoinETH,
           cdp,
           wad
         );
@@ -670,7 +680,7 @@ contract('Maker', function([_, user1, user2, someone]) {
         const wad = ether('1');
         const data = abi.simpleEncode(
           'freeETH(address,uint256,uint256)',
-          MAKER_MCD_JOIN_ETH_A,
+          makerMcdJoinETH,
           cdp,
           wad
         );
@@ -694,9 +704,9 @@ contract('Maker', function([_, user1, user2, someone]) {
           'openLockGemAndDraw(address,address,address,address,bytes32,uint256,uint256,bool)',
           MAKER_CDP_MANAGER,
           MAKER_MCD_JUG,
-          MAKER_MCD_JOIN_BAT_A,
+          MAKER_MCD_JOIN_LINK_A,
           MAKER_MCD_JOIN_DAI,
-          utils.padRight(utils.asciiToHex('BAT-A'), 64),
+          utils.padRight(utils.asciiToHex('LINK-A'), 64),
           tokenAmount,
           ether('0'),
           true
@@ -721,7 +731,7 @@ contract('Maker', function([_, user1, user2, someone]) {
         const wad = ether('100');
         const data = abi.simpleEncode(
           'freeGem(address,uint256,uint256)',
-          MAKER_MCD_JOIN_BAT_A,
+          MAKER_MCD_JOIN_LINK_A,
           cdp,
           wad
         );
@@ -740,7 +750,7 @@ contract('Maker', function([_, user1, user2, someone]) {
         const wad = ether('100');
         const data = abi.simpleEncode(
           'freeGem(address,uint256,uint256)',
-          MAKER_MCD_JOIN_BAT_A,
+          MAKER_MCD_JOIN_LINK_A,
           cdp,
           wad
         );
@@ -758,7 +768,7 @@ contract('Maker', function([_, user1, user2, someone]) {
         const wad = ether('100');
         const data = abi.simpleEncode(
           'freeGem(address,uint256,uint256)',
-          MAKER_MCD_JOIN_BAT_A,
+          MAKER_MCD_JOIN_LINK_A,
           cdp,
           wad
         );
@@ -784,9 +794,9 @@ contract('Maker', function([_, user1, user2, someone]) {
           'openLockETHAndDraw(address,address,address,address,bytes32,uint256)',
           MAKER_CDP_MANAGER,
           MAKER_MCD_JUG,
-          MAKER_MCD_JOIN_ETH_A,
+          makerMcdJoinETH,
           MAKER_MCD_JOIN_DAI,
-          utils.padRight(utils.asciiToHex('ETH-A'), 64),
+          utils.padRight(utils.asciiToHex(makerMcdJoinETHName), 64),
           ether('0')
         );
         await this.user1Proxy.execute(MAKER_PROXY_ACTIONS, new1, {
@@ -805,7 +815,7 @@ contract('Maker', function([_, user1, user2, someone]) {
           generateLimit,
           minCollateral,
         ] = await getGenerateLimitAndMinCollateral(
-          utils.padRight(utils.asciiToHex('ETH-A'), 64)
+          utils.padRight(utils.asciiToHex(makerMcdJoinETHName), 64)
         );
         const wad = generateLimit;
         const data = abi.simpleEncode(
@@ -830,7 +840,7 @@ contract('Maker', function([_, user1, user2, someone]) {
           generateLimit,
           minCollateral,
         ] = await getGenerateLimitAndMinCollateral(
-          utils.padRight(utils.asciiToHex('ETH-A'), 64)
+          utils.padRight(utils.asciiToHex(makerMcdJoinETHName), 64)
         );
         const wad = generateLimit;
         const data = abi.simpleEncode(
@@ -854,7 +864,7 @@ contract('Maker', function([_, user1, user2, someone]) {
           generateLimit,
           minCollateral,
         ] = await getGenerateLimitAndMinCollateral(
-          utils.padRight(utils.asciiToHex('ETH-A'), 64)
+          utils.padRight(utils.asciiToHex(makerMcdJoinETHName), 64)
         );
         const wad = generateLimit;
         const data = abi.simpleEncode(
@@ -882,16 +892,16 @@ contract('Maker', function([_, user1, user2, someone]) {
           generateLimit,
           minCollateral,
         ] = await getGenerateLimitAndMinCollateral(
-          utils.padRight(utils.asciiToHex('BAT-A'), 64)
+          utils.padRight(utils.asciiToHex('LINK-A'), 64)
         );
         const tokenAmount = minCollateral;
         const new2 = abi.simpleEncode(
           'openLockGemAndDraw(address,address,address,address,bytes32,uint256,uint256,bool)',
           MAKER_CDP_MANAGER,
           MAKER_MCD_JUG,
-          MAKER_MCD_JOIN_BAT_A,
+          MAKER_MCD_JOIN_LINK_A,
           MAKER_MCD_JOIN_DAI,
-          utils.padRight(utils.asciiToHex('BAT-A'), 64),
+          utils.padRight(utils.asciiToHex('LINK-A'), 64),
           tokenAmount,
           ether('0'),
           true
@@ -917,7 +927,7 @@ contract('Maker', function([_, user1, user2, someone]) {
           generateLimit,
           minCollateral,
         ] = await getGenerateLimitAndMinCollateral(
-          utils.padRight(utils.asciiToHex('ETH-A'), 64)
+          utils.padRight(utils.asciiToHex('LINK-A'), 64)
         );
         const wad = generateLimit;
         const data = abi.simpleEncode(
@@ -942,7 +952,7 @@ contract('Maker', function([_, user1, user2, someone]) {
           generateLimit,
           minCollateral,
         ] = await getGenerateLimitAndMinCollateral(
-          utils.padRight(utils.asciiToHex('ETH-A'), 64)
+          utils.padRight(utils.asciiToHex(makerMcdJoinETHName), 64)
         );
         const wad = generateLimit;
         const data = abi.simpleEncode(
@@ -966,7 +976,7 @@ contract('Maker', function([_, user1, user2, someone]) {
           generateLimit,
           minCollateral,
         ] = await getGenerateLimitAndMinCollateral(
-          utils.padRight(utils.asciiToHex('ETH-A'), 64)
+          utils.padRight(utils.asciiToHex(makerMcdJoinETHName), 64)
         );
         const wad = generateLimit;
         const data = abi.simpleEncode(
@@ -996,16 +1006,16 @@ contract('Maker', function([_, user1, user2, someone]) {
       beforeEach(async function() {
         const etherAmount = ether('10');
         [generateLimit, minCollateral] = await getGenerateLimitAndMinCollateral(
-          utils.padRight(utils.asciiToHex('ETH-A'), 64)
+          utils.padRight(utils.asciiToHex(makerMcdJoinETHName), 64)
         );
         const daiAmount = generateLimit.add(ether('10'));
         const new1 = abi.simpleEncode(
           'openLockETHAndDraw(address,address,address,address,bytes32,uint256)',
           MAKER_CDP_MANAGER,
           MAKER_MCD_JUG,
-          MAKER_MCD_JOIN_ETH_A,
+          makerMcdJoinETH,
           MAKER_MCD_JOIN_DAI,
-          utils.padRight(utils.asciiToHex('ETH-A'), 64),
+          utils.padRight(utils.asciiToHex(makerMcdJoinETHName), 64),
           daiAmount
         );
         await this.user1Proxy.execute(MAKER_PROXY_ACTIONS, new1, {
@@ -1091,7 +1101,7 @@ contract('Maker', function([_, user1, user2, someone]) {
           generateLimit,
           minCollateral,
         ] = await getGenerateLimitAndMinCollateral(
-          utils.padRight(utils.asciiToHex('BAT-A'), 64)
+          utils.padRight(utils.asciiToHex('LINK-A'), 64)
         );
         const tokenAmount = minCollateral;
         const daiAmount = generateLimit.add(ether('10'));
@@ -1099,9 +1109,9 @@ contract('Maker', function([_, user1, user2, someone]) {
           'openLockGemAndDraw(address,address,address,address,bytes32,uint256,uint256,bool)',
           MAKER_CDP_MANAGER,
           MAKER_MCD_JUG,
-          MAKER_MCD_JOIN_BAT_A,
+          MAKER_MCD_JOIN_LINK_A,
           MAKER_MCD_JOIN_DAI,
-          utils.padRight(utils.asciiToHex('BAT-A'), 64),
+          utils.padRight(utils.asciiToHex('LINK-A'), 64),
           tokenAmount,
           daiAmount,
           true
@@ -1161,7 +1171,7 @@ contract('Maker', function([_, user1, user2, someone]) {
           generateLimit,
           minCollateral,
         ] = await getGenerateLimitAndMinCollateral(
-          utils.padRight(utils.asciiToHex('ETH-A'), 64)
+          utils.padRight(utils.asciiToHex(makerMcdJoinETHName), 64)
         );
         await this.dai.transfer(
           this.proxy.address,
