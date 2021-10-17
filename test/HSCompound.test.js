@@ -68,7 +68,7 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
 
     this.dsRegistry = await IDSProxyRegistry.at(MAKER_PROXY_REGISTRY);
     // User build DSProxy
-    let dsProxyAddr = await this.dsRegistry.proxies.call(user);
+    const dsProxyAddr = await this.dsRegistry.proxies.call(user);
     if (dsProxyAddr == constants.ZERO_ADDRESS)
       await this.dsRegistry.build(user);
 

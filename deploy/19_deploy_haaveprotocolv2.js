@@ -11,11 +11,8 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     log: true,
   });
 
-  const registry = await hre.ethers.getContract('Registry', deployer);
-  const hAaveProtocolV2 = await hre.ethers.getContract(
-    'HAaveProtocolV2',
-    deployer
-  );
+  const registry = await ethers.getContract('Registry', deployer);
+  const hAaveProtocolV2 = await ethers.getContract('HAaveProtocolV2', deployer);
 
   await registry.register(
     hAaveProtocolV2.address,

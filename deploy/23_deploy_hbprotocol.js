@@ -13,9 +13,9 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
   });
 
   const dsRegistry = await DSProxyRegistry.at(MAKER_PROXY_REGISTRY);
-  const registry = await hre.ethers.getContract('Registry', deployer);
-  const proxy = await hre.ethers.getContract('Proxy', deployer);
-  const hBProtocol = await hre.ethers.getContract('HBProtocol', deployer);
+  const registry = await ethers.getContract('Registry', deployer);
+  const proxy = await ethers.getContract('Proxy', deployer);
+  const hBProtocol = await ethers.getContract('HBProtocol', deployer);
 
   await registry.register(
     hBProtocol.address,

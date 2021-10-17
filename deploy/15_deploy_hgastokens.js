@@ -10,8 +10,8 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     log: true,
   });
 
-  const registry = await hre.ethers.getContract('Registry', deployer);
-  const hGasTokens = await hre.ethers.getContract('HGasTokens', deployer);
+  const registry = await ethers.getContract('Registry', deployer);
+  const hGasTokens = await ethers.getContract('HGasTokens', deployer);
 
   await registry.register(
     hGasTokens.address,

@@ -11,8 +11,8 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     log: true,
   });
 
-  const registry = await hre.ethers.getContract('Registry', deployer);
-  const hAaveProtocol = await hre.ethers.getContract('HAaveProtocol');
+  const registry = await ethers.getContract('Registry', deployer);
+  const hAaveProtocol = await ethers.getContract('HAaveProtocol');
 
   await registry.registerCaller(
     AAVE_LENDING_POOL_CORE,

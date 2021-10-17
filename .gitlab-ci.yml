@@ -254,6 +254,6 @@ deploy:
   script:
     - apt-get update
     - apt-get install lsof
-    - npm run test-migration
+    - npm run deploy
   cache:
     <<: *global_cache

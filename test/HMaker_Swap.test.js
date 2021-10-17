@@ -117,7 +117,7 @@ contract('Maker', function([_, user]) {
     this.vat = await IMakerVat.at(MAKER_MCD_VAT);
     await this.dsRegistry.build(this.proxy.address);
 
-    let dsProxyAddr = await this.dsRegistry.proxies.call(user);
+    const dsProxyAddr = await this.dsRegistry.proxies.call(user);
     if (dsProxyAddr == constants.ZERO_ADDRESS)
       await this.dsRegistry.build(user);
 

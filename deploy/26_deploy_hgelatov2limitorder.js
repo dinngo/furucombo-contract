@@ -13,8 +13,8 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     log: true,
   });
 
-  const registry = await hre.ethers.getContract('Registry', deployer);
-  const hGelatoV2LimitOrder = await hre.ethers.getContract(
+  const registry = await ethers.getContract('Registry', deployer);
+  const hGelatoV2LimitOrder = await ethers.getContract(
     'HGelatoV2LimitOrder',
     deployer
   );
