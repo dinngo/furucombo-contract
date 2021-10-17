@@ -36,7 +36,6 @@ wait_hardhat_ready() {
 
     while [ -z "$( lsof -i:$hardhat_port )" ]
     do 
-        echo "wait hardhat network launching...might take some time if doing migration script."
         sleep 3
     done
 }
