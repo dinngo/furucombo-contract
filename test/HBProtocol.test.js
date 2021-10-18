@@ -137,7 +137,7 @@ contract('BProtocol', function([_, user1, user2, someone]) {
     });
     await hre.network.provider.request({
       method: 'hardhat_impersonateAccount',
-      params: [BAT_PROVIDER],
+      params: [LINK_PROVIDER],
     });
   });
 
@@ -358,7 +358,7 @@ contract('BProtocol', function([_, user1, user2, someone]) {
 
     describe('Lock Token', function() {
       describe('Draw Dai', function() {
-        it.skip('User does not has proxy', async function() {
+        it.only('User does not has proxy', async function() {
           const daiUser = await this.dai.balanceOf.call(someone);
 
           expect(await this.dsRegistry.proxies.call(this.proxy.address)).not.eq(
@@ -415,7 +415,7 @@ contract('BProtocol', function([_, user1, user2, someone]) {
           profileGas(receipt);
         });
 
-        it.skip('User has proxy', async function() {
+        it('User has proxy', async function() {
           const to = this.hMaker.address;
           const ilkToken = utils.padRight(
             utils.asciiToHex(makerMcdJoinTokenName),
@@ -939,7 +939,7 @@ contract('BProtocol', function([_, user1, user2, someone]) {
         [ilk, debt, lock] = await getCdpInfo(cdp);
       });
 
-      it.skip('normal', async function() {
+      it('normal', async function() {
         await approveCdp(cdp, user1, this.dsProxy.address);
         const to = this.hMaker.address;
         const [
@@ -1105,7 +1105,7 @@ contract('BProtocol', function([_, user1, user2, someone]) {
       });
     });
 
-    describe.skip('pay back to gem cdp', function() {
+    describe('pay back to gem cdp', function() {
       let cdp;
       let ilk;
       let debt;

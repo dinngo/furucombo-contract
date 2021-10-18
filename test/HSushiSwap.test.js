@@ -596,7 +596,7 @@ contract('SushiSwap Swap', function([_, user, someone]) {
 
         await expectRevert(
           this.proxy.execMock(to, data, { from: user }),
-          '1_HSushiSwap_swapTokensForExactETH: UniswapV2Router: EXCESSIVE_INPUT_AMOUNT'
+          'HSushiSwap_swapTokensForExactETH: UniswapV2Router: EXCESSIVE_INPUT_AMOUNT'
         );
       });
 

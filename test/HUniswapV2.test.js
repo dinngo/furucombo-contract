@@ -942,7 +942,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
         await this.proxy.updateTokenMock(this.token.address);
         await expectRevert(
           this.proxy.execMock(to, data, { from: user }),
-          '1_HUniswapV2_swapTokensForExactETH: UniswapV2Router: EXCESSIVE_INPUT_AMOUNT'
+          'HUniswapV2_swapTokensForExactETH: UniswapV2Router: EXCESSIVE_INPUT_AMOUNT'
         );
       });
       it('invalid path', async function() {
