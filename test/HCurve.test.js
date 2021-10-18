@@ -47,6 +47,7 @@ const {
   mulPercent,
   profileGas,
   getHandlerReturn,
+  expectEqWithinBps,
 } = require('./utils/utils');
 
 const Proxy = artifacts.require('ProxyMock');
@@ -1465,10 +1466,11 @@ contract('Curve', function([_, user]) {
         );
 
         // y pool --> yToken --> token. Estimate may not accurate, set 3% tolerance.
-        expect(await this.poolToken.balanceOf.call(user)).to.be.bignumber.lte(
-          answer.mul(new BN('103')).div(new BN('100'))
+        expectEqWithinBps(
+          await this.poolToken.balanceOf.call(user),
+          answer,
+          300
         );
-
         profileGas(receipt);
       });
       it('remove from pool to USDT by removeLiquidityOneCoinUnderlying', async function() {

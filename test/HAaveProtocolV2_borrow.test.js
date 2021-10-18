@@ -99,7 +99,7 @@ contract('Aave V2', function([_, user, someone]) {
   });
 
   describe('Borrow with Stable Rate', function() {
-    const depositAmount = ether('100000');
+    const depositAmount = ether('10000');
     const borrowTokenAddr = TUSD_TOKEN;
     const rateMode = AAVE_RATEMODE.STABLE;
     const debtTokenAddr = ATUSD_V2_DEBT_STABLE;
@@ -267,7 +267,7 @@ contract('Aave V2', function([_, user, someone]) {
     });
 
     it('should revert: borrow token over the collateral value', async function() {
-      const borrowAmount = ether('110000');
+      const borrowAmount = ether('20000');
       const to = this.hAaveV2.address;
       const data = abi.simpleEncode(
         'borrow(address,uint256,uint256)',
@@ -375,7 +375,7 @@ contract('Aave V2', function([_, user, someone]) {
   });
 
   describe('Borrow with Variable Rate', function() {
-    const depositAmount = ether('100000');
+    const depositAmount = ether('10000');
     const borrowTokenAddr = TUSD_TOKEN;
     const rateMode = AAVE_RATEMODE.VARIABLE;
     const debtTokenAddr = ATUSD_V2_DEBT_VARIABLE;
@@ -545,7 +545,7 @@ contract('Aave V2', function([_, user, someone]) {
     });
 
     it('should revert: borrow token over the collateral value', async function() {
-      const borrowAmount = ether('110000');
+      const borrowAmount = ether('20000');
       const to = this.hAaveV2.address;
       const data = abi.simpleEncode(
         'borrow(address,uint256,uint256)',

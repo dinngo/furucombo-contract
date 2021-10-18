@@ -358,7 +358,7 @@ contract('BProtocol', function([_, user1, user2, someone]) {
 
     describe('Lock Token', function() {
       describe('Draw Dai', function() {
-        it.only('User does not has proxy', async function() {
+        it('User does not has proxy', async function() {
           const daiUser = await this.dai.balanceOf.call(someone);
 
           expect(await this.dsRegistry.proxies.call(this.proxy.address)).not.eq(
