@@ -44,10 +44,14 @@ module.exports = {
           'dice shove sheriff police boss indoor hospital vivid tenant method game matter',
         path: "m/44'/60'/0'/0",
         initialIndex: 0,
-        accountsBalance: '10000000000000000000000', // 10000 ETH
       },
       hardfork: 'berlin',
     },
+    // Due to "evm_snapshot/evm_revert" JSON-RPC method used in tests
+    // we have to launch hardhat network at localhost:8545(like ganache)
+    // and use "--network localhost" parameter to connect to localhost:8545.
+    // some settings like gasPrice might be overrided if we configure it at networks "hardhat".
+    // So configure these parameters at networks "localhost".
     localhost: {
       gasPrice: 1,
       gas: 30000000,
