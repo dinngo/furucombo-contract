@@ -11,6 +11,12 @@ cleanup() {
     fi
 }
 
+hardhat_port=8545
+
+hardhat_running() {
+    nc -z localhost "$hardhat_port"
+}
+
 start_hardhat() {
     
     npx hardhat node --fork $ETH_MAINNET_NODE &
@@ -21,7 +27,7 @@ start_hardhat() {
 
 wait_hardhat_ready() {
 
-    while [ -z "$( lsof -i:8545 )" ]
+    while ! hardhat_running
     do 
         sleep 3
     done

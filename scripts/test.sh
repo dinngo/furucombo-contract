@@ -34,7 +34,7 @@ start_hardhat() {
 
 wait_hardhat_ready() {
 
-    while [ -z "$( lsof -i:$hardhat_port )" ]
+    while ! hardhat_running
     do 
         sleep 3
     done

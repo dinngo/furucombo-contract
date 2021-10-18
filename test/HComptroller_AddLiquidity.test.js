@@ -123,7 +123,6 @@ contract('Claim Comp and add liquidity', function([
         utils.asciiToHex('UniswapV2')
       );
       this.uniCompEth = await IToken.at(UNISWAPV2_ETH_COMP);
-      this.compToken = await IToken.at(COMP_TOKEN);
     });
 
     it('add liquidity', async function() {
