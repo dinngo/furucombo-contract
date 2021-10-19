@@ -3,12 +3,11 @@ const {
   BN,
   constants,
   ether,
-  expectEvent,
   expectRevert,
   time,
 } = require('@openzeppelin/test-helpers');
 const { tracker } = balance;
-const { ZERO_BYTES32, ZERO_ADDRESS } = constants;
+const { ZERO_BYTES32 } = constants;
 const { latest } = time;
 const abi = require('ethereumjs-abi');
 const util = require('ethereumjs-util');
@@ -17,11 +16,8 @@ const utils = web3.utils;
 const { expect } = require('chai');
 
 const {
-  ETH_PROVIDER,
   WETH_TOKEN,
-  WETH_PROVIDER,
   DAI_TOKEN,
-  DAI_PROVIDER,
   AAVEPROTOCOL_V2_PROVIDER,
   ADAI_V2,
   AWETH_V2_DEBT_STABLE,
@@ -31,8 +27,8 @@ const {
 const {
   evmRevert,
   evmSnapshot,
-  profileGas,
   errorCompare,
+  tokenProviderUniV2,
 } = require('./utils/utils');
 
 const Registry = artifacts.require('Registry');
@@ -81,26 +77,17 @@ contract('AaveV2 flashloan', function([_, user, someone]) {
       this.hAaveV2.address
     );
 
-    this.tokenAProvider = WETH_PROVIDER;
-    this.tokenBProvider = DAI_PROVIDER;
     this.faucet = await Faucet.new();
     this.tokenA = await IToken.at(WETH_TOKEN);
     this.tokenB = await IToken.at(DAI_TOKEN);
+    this.tokenAProvider = await tokenProviderUniV2(this.tokenA.address);
+    this.tokenBProvider = await tokenProviderUniV2(this.tokenB.address);
     this.aTokenB = await IToken.at(ADAI_V2);
     this.stableDebtTokenA = await IStableDebtToken.at(AWETH_V2_DEBT_STABLE);
     this.variableDebtTokenA = await IVariableDebtToken.at(
       AWETH_V2_DEBT_VARIABLE
     );
     this.mockToken = await SimpleToken.new();
-
-    await hre.network.provider.request({
-      method: 'hardhat_impersonateAccount',
-      params: [WETH_PROVIDER],
-    });
-    await hre.network.provider.request({
-      method: 'hardhat_impersonateAccount',
-      params: [DAI_PROVIDER],
-    });
   });
 
   beforeEach(async function() {

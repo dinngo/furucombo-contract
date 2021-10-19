@@ -3,20 +3,19 @@ const { expect } = require('chai');
 const abi = require('ethereumjs-abi');
 const utils = web3.utils;
 const {
-  MUSD_TOKEN,
+  USDN_TOKEN,
   USDT_TOKEN,
-  USDT_PROVIDER,
-  MUSD_PROVIDER,
-  CURVE_MUSD_SWAP,
-  CURVE_MUSD_DEPOSIT,
-  CURVE_MUSDCRV,
-  CURVE_MUSDCRV_PROVIDER,
+  CURVE_USDN_SWAP,
+  CURVE_USDN_DEPOSIT,
+  CURVE_USDNCRV,
 } = require('./utils/constants');
 const {
   evmRevert,
   evmSnapshot,
   mulPercent,
   profileGas,
+  tokenProviderUniV2,
+  tokenProviderCurveGauge,
 } = require('./utils/utils');
 
 const Proxy = artifacts.require('ProxyMock');
@@ -36,21 +35,8 @@ contract('Curve Meta', function([_, user]) {
       utils.asciiToHex('HCurve')
     );
     this.proxy = await Proxy.new(this.registry.address);
-    this.musdSwap = await ICurveHandler.at(CURVE_MUSD_SWAP);
-    this.musdDeposit = await ICurveHandler.at(CURVE_MUSD_DEPOSIT);
-
-    await hre.network.provider.request({
-      method: 'hardhat_impersonateAccount',
-      params: [USDT_PROVIDER],
-    });
-    await hre.network.provider.request({
-      method: 'hardhat_impersonateAccount',
-      params: [MUSD_PROVIDER],
-    });
-    await hre.network.provider.request({
-      method: 'hardhat_impersonateAccount',
-      params: [CURVE_MUSDCRV_PROVIDER],
-    });
+    this.usdnSwap = await ICurveHandler.at(CURVE_USDN_SWAP);
+    this.usdnDeposit = await ICurveHandler.at(CURVE_USDN_DEPOSIT);
   });
 
   beforeEach(async function() {
@@ -63,13 +49,15 @@ contract('Curve Meta', function([_, user]) {
 
   describe('Exchange underlying', function() {
     const token0Address = USDT_TOKEN;
-    const token1Address = MUSD_TOKEN;
-    const providerAddress = USDT_PROVIDER;
+    const token1Address = USDN_TOKEN;
 
     let token0User;
     let token1User;
+    let providerAddress;
 
     before(async function() {
+      providerAddress = await tokenProviderUniV2(token0Address);
+
       this.token0 = await IToken.at(token0Address);
       this.token1 = await IToken.at(token1Address);
     });
@@ -79,16 +67,16 @@ contract('Curve Meta', function([_, user]) {
       token1User = await this.token1.balanceOf.call(user);
     });
 
-    describe('musd meta pool', function() {
-      it('Exact input swap USDT to mUSD by exchangeUnderlying', async function() {
-        // 0: mUSD, 1: DAI, 2: USDC, 3: USDT
+    describe('usdn meta pool', function() {
+      it('Exact input swap USDT to USDN by exchangeUnderlying', async function() {
+        // 0: USDN, 1: DAI, 2: USDC, 3: USDT
         const value = new BN('1000000');
-        const answer = await this.musdSwap.methods[
+        const answer = await this.usdnSwap.methods[
           'get_dy_underlying(int128,int128,uint256)'
         ](3, 0, value);
         const data = abi.simpleEncode(
           'exchangeUnderlying(address,address,address,int128,int128,uint256,uint256)',
-          this.musdSwap.address,
+          this.usdnSwap.address,
           this.token0.address,
           this.token1.address,
           3,
@@ -128,17 +116,21 @@ contract('Curve Meta', function([_, user]) {
   });
 
   describe('Liquidity', function() {
-    const token0Address = MUSD_TOKEN;
+    const token0Address = USDN_TOKEN;
     const token1Address = USDT_TOKEN;
-    const provider0Address = MUSD_PROVIDER;
-    const provider1Address = USDT_PROVIDER;
-    const poolTokenAddress = CURVE_MUSDCRV;
-    const poolTokenProvider = CURVE_MUSDCRV_PROVIDER;
+    const poolTokenAddress = CURVE_USDNCRV;
 
     let token0User;
     let token1User;
+    let provider0Address;
+    let provider1Address;
+    let poolTokenProvider;
 
     before(async function() {
+      provider0Address = await tokenProviderUniV2(token0Address);
+      provider1Address = await tokenProviderUniV2(token1Address);
+      poolTokenProvider = await tokenProviderCurveGauge(poolTokenAddress);
+
       this.token0 = await IToken.at(token0Address);
       this.token1 = await IToken.at(token1Address);
       this.poolToken = await IToken.at(poolTokenAddress);
@@ -149,8 +141,8 @@ contract('Curve Meta', function([_, user]) {
       token1User = await this.token1.balanceOf.call(user);
     });
 
-    describe('musd meta pool', function() {
-      it('Add mUSD and USDT to pool by addLiquidity', async function() {
+    describe('usdn meta pool', function() {
+      it('Add USDN and USDT to pool by addLiquidity', async function() {
         const token0Amount = ether('1');
         const token1Amount = new BN('1000000');
         const tokens = [
@@ -162,7 +154,7 @@ contract('Curve Meta', function([_, user]) {
         const amounts = [token0Amount, 0, 0, token1Amount];
 
         // Get expected answer
-        const answer = await this.musdDeposit.methods[
+        const answer = await this.usdnDeposit.methods[
           'calc_token_amount(uint256[4],bool)'
         ](amounts, true);
 
@@ -178,7 +170,7 @@ contract('Curve Meta', function([_, user]) {
         const minMintAmount = mulPercent(answer, new BN('100').sub(slippage));
         const data = abi.simpleEncode(
           'addLiquidity(address,address,address[],uint256[],uint256)',
-          this.musdDeposit.address,
+          this.usdnDeposit.address,
           this.poolToken.address,
           tokens,
           amounts,
@@ -217,15 +209,13 @@ contract('Curve Meta', function([_, user]) {
         profileGas(receipt);
       });
 
-      it('Remove from pool to mUSD by removeLiquidityOneCoin', async function() {
+      it('Remove from pool to USDN by removeLiquidityOneCoin', async function() {
         const poolTokenUser = ether('1');
         const token0UserBefore = await this.token0.balanceOf.call(user);
-        const answer = await this.musdDeposit.methods[
+        const answer = await this.usdnDeposit.methods[
           'calc_withdraw_one_coin(uint256,int128)'
         ](poolTokenUser, 0);
 
-        // send some ether to poolTokenProvider as gas fee
-        await send.ether(_, poolTokenProvider, poolTokenUser);
         await this.poolToken.transfer(this.proxy.address, poolTokenUser, {
           from: poolTokenProvider,
         });
@@ -233,7 +223,7 @@ contract('Curve Meta', function([_, user]) {
         const minAmount = mulPercent(answer, new BN('100').sub(slippage));
         const data = abi.simpleEncode(
           'removeLiquidityOneCoin(address,address,address,uint256,int128,uint256)',
-          this.musdDeposit.address,
+          this.usdnDeposit.address,
           this.poolToken.address,
           this.token0.address,
           poolTokenUser,

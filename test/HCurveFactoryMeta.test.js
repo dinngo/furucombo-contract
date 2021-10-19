@@ -6,12 +6,9 @@ const abi = require('ethereumjs-abi');
 const utils = web3.utils;
 const {
   USDT_TOKEN,
-  USDT_PROVIDER,
   TUSD_TOKEN,
-  TUSD_PROVIDER,
   CURVE_FACTORY_ZAP_3POOL,
   CURVE_FACTORY_TUSD,
-  CURVE_FACTORY_TUSD_PROVIDER,
 } = require('./utils/constants');
 const {
   evmRevert,
@@ -19,6 +16,8 @@ const {
   mulPercent,
   profileGas,
   getHandlerReturn,
+  tokenProviderUniV2,
+  tokenProviderCurveGauge,
 } = require('./utils/utils');
 
 const Proxy = artifacts.require('ProxyMock');
@@ -39,19 +38,6 @@ contract('Curve Factory Meta', function([_, user]) {
     );
     this.proxy = await Proxy.new(this.registry.address);
     this.zap3Pool = await ICurveHandler.at(CURVE_FACTORY_ZAP_3POOL);
-
-    await hre.network.provider.request({
-      method: 'hardhat_impersonateAccount',
-      params: [USDT_PROVIDER],
-    });
-    await hre.network.provider.request({
-      method: 'hardhat_impersonateAccount',
-      params: [TUSD_PROVIDER],
-    });
-    await hre.network.provider.request({
-      method: 'hardhat_impersonateAccount',
-      params: [CURVE_FACTORY_TUSD_PROVIDER],
-    });
   });
 
   beforeEach(async function() {
@@ -66,15 +52,19 @@ contract('Curve Factory Meta', function([_, user]) {
     describe('factory tusd pool', function() {
       const token0Address = TUSD_TOKEN;
       const token1Address = USDT_TOKEN;
-      const provider0Address = TUSD_PROVIDER;
-      const provider1Address = USDT_PROVIDER;
       const poolTokenAddress = CURVE_FACTORY_TUSD;
-      const poolTokenProvider = CURVE_FACTORY_TUSD_PROVIDER;
 
       let token0, token1, poolToken;
       let balanceProxy, token0User, token1User, poolTokenUser;
+      let provider0Address;
+      let provider1Address;
+      let poolTokenProvider;
 
       before(async function() {
+        provider0Address = await tokenProviderUniV2(token0Address);
+        provider1Address = await tokenProviderUniV2(token1Address);
+        poolTokenProvider = await tokenProviderCurveGauge(poolTokenAddress);
+
         token0 = await IToken.at(token0Address);
         token1 = await IToken.at(token1Address);
         poolToken = await IToken.at(poolTokenAddress);

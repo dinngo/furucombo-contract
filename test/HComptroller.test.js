@@ -1,14 +1,6 @@
-const {
-  balance,
-  BN,
-  constants,
-  ether,
-  expectEvent,
-  expectRevert,
-  time,
-} = require('@openzeppelin/test-helpers');
+const { balance, ether, time } = require('@openzeppelin/test-helpers');
 const { tracker } = balance;
-const { duration, increase, latest } = time;
+const { duration, increase } = time;
 const abi = require('ethereumjs-abi');
 const utils = web3.utils;
 

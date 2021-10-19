@@ -1,42 +1,23 @@
-const {
-  balance,
-  BN,
-  constants,
-  ether,
-  expectEvent,
-  expectRevert,
-  time,
-} = require('@openzeppelin/test-helpers');
+const { balance, BN, constants, ether } = require('@openzeppelin/test-helpers');
 const { tracker } = balance;
 const { ZERO_BYTES32 } = constants;
-const { latest } = time;
 const abi = require('ethereumjs-abi');
 const utils = web3.utils;
-const { ZERO_ADDRESS } = constants;
 
 const { expect } = require('chai');
 
 const {
-  BAT_TOKEN,
-  BAT_PROVIDER,
   DAI_TOKEN,
-  DAI_PROVIDER,
-  DAI_UNISWAP,
   WETH_TOKEN,
   UNISWAPV2_ROUTER02,
   MAKER_CDP_MANAGER,
-  MAKER_PROXY_FACTORY,
   MAKER_PROXY_ACTIONS,
   MAKER_PROXY_REGISTRY,
-  MAKER_MCD_JUG,
   MAKER_MCD_VAT,
   MAKER_MCD_JOIN_ETH_A,
-  MAKER_MCD_JOIN_BAT_A,
-  MAKER_MCD_JOIN_USDC_A,
-  MAKER_MCD_JOIN_WBTC_A,
   MAKER_MCD_JOIN_DAI,
 } = require('./utils/constants');
-const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
+const { evmRevert, evmSnapshot, tokenProviderUniV2 } = require('./utils/utils');
 
 const HMaker = artifacts.require('HMaker');
 const HUniswapV2 = artifacts.require('HUniswapV2');
@@ -48,24 +29,6 @@ const IDSProxyRegistry = artifacts.require('IDSProxyRegistry');
 const IMakerManager = artifacts.require('IMakerManager');
 const IMakerVat = artifacts.require('IMakerVat');
 const IUniswapV2Router = artifacts.require('IUniswapV2Router02');
-
-const RAY = new BN('1000000000000000000000000000');
-const RAD = new BN('1000000000000000000000000000000000000000000000');
-// GenerateDaiLimit = ether('2000');
-
-async function getCdpInfo(cdp) {
-  const cdpManager = await IMakerManager.at(MAKER_CDP_MANAGER);
-  const vat = await IMakerVat.at(MAKER_MCD_VAT);
-  const urn = await cdpManager.urns.call(cdp);
-  const ilk = await cdpManager.ilks.call(cdp);
-  const conf = await vat.ilks.call(ilk);
-  const urnStats = await vat.urns.call(ilk, urn);
-  const ink = urnStats[0];
-  const art = urnStats[1];
-  const debt = art.mul(conf[1]);
-
-  return [ilk, debt, ink];
-}
 
 async function getGenerateLimitAndMinCollateral(ilk) {
   const vat = await IMakerVat.at(MAKER_MCD_VAT);
@@ -94,11 +57,12 @@ async function approveCdp(cdp, owner, user) {
 
 contract('Maker', function([_, user]) {
   let id;
-  let generateLimt;
   const tokenAddress = DAI_TOKEN;
-  const uniswapAddress = DAI_UNISWAP;
-  const providerAddress = DAI_PROVIDER;
+  let providerAddress;
+
   before(async function() {
+    providerAddress = await tokenProviderUniV2(tokenAddress);
+
     this.registry = await Registry.new();
     this.proxy = await Proxy.new(this.registry.address);
     this.token = await IToken.at(tokenAddress);
@@ -128,11 +92,6 @@ contract('Maker', function([_, user]) {
       await this.dsRegistry.proxies.call(user)
     );
     this.dai = await IToken.at(DAI_TOKEN);
-
-    await hre.network.provider.request({
-      method: 'hardhat_impersonateAccount',
-      params: [DAI_PROVIDER],
-    });
   });
 
   beforeEach(async function() {
@@ -144,17 +103,9 @@ contract('Maker', function([_, user]) {
   });
 
   describe('Open new cdp', function() {
-    let daiUser;
-
-    beforeEach(async function() {
-      daiUser = await this.dai.balanceOf.call(user);
-    });
-
     describe('Lock Ether', function() {
       describe('Draw Dai and swap', function() {
         let balanceUser;
-        let balanceProxy;
-        let tokenUser;
 
         before(async function() {
           this.token = await IToken.at(tokenAddress);

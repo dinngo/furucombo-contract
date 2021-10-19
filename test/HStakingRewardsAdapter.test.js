@@ -3,13 +3,12 @@ const {
   BN,
   constants,
   ether,
-  expectEvent,
   expectRevert,
   time,
   send,
 } = require('@openzeppelin/test-helpers');
 const { tracker } = balance;
-const { duration, increase, latest } = time;
+const { duration, increase } = time;
 const abi = require('ethereumjs-abi');
 const utils = web3.utils;
 
@@ -17,9 +16,7 @@ const { expect } = require('chai');
 
 const {
   DAI_TOKEN,
-  DAI_PROVIDER,
   KNC_TOKEN,
-  KNC_PROVIDER,
   STAKING_REWARDS_ADAPTER_REGISTRY,
   STAKING_REWARDS_ADAPTER_REGISTRY_OWNER,
 } = require('./utils/constants');
@@ -28,8 +25,8 @@ const {
   evmSnapshot,
   profileGas,
   getHandlerReturn,
+  tokenProviderUniV2,
 } = require('./utils/utils');
-const { getAdapterRegistryBytecodeBySolc } = require('./utils/getBytecode');
 
 const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('ProxyMock');
@@ -43,7 +40,6 @@ const StakingRewardsAdapterRegistry = artifacts.require(
   'StakingRewardsAdapterRegistry'
 );
 const IToken = artifacts.require('IERC20');
-const ISingletonFactory = artifacts.require('ISingletonFactory');
 
 contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
   let id;
@@ -51,11 +47,15 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
   /// st = stakingToken
   /// rt = rewardToken
   const stAddress = DAI_TOKEN;
-  const stProviderAddress = DAI_PROVIDER;
   const rtAddress = KNC_TOKEN;
-  const rtProviderAddress = KNC_PROVIDER;
+
+  let stProviderAddress;
+  let rtProviderAddress;
 
   before(async function() {
+    stProviderAddress = await tokenProviderUniV2(stAddress);
+    rtProviderAddress = await tokenProviderUniV2(rtAddress);
+
     this.registry = await Registry.new();
     this.proxy = await Proxy.new(this.registry.address);
     this.hAdapter = await HStakingRewardsAdapter.new();
@@ -78,15 +78,7 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
       0
     );
 
-    await hre.network.provider.request({
-      method: 'hardhat_impersonateAccount',
-      params: [DAI_PROVIDER],
-    });
-    await hre.network.provider.request({
-      method: 'hardhat_impersonateAccount',
-      params: [KNC_PROVIDER],
-    });
-    await hre.network.provider.request({
+    await network.provider.request({
       method: 'hardhat_impersonateAccount',
       params: [STAKING_REWARDS_ADAPTER_REGISTRY_OWNER],
     });

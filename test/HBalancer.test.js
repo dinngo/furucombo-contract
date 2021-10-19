@@ -3,13 +3,10 @@ const {
   BN,
   constants,
   ether,
-  expectEvent,
   expectRevert,
-  time,
 } = require('@openzeppelin/test-helpers');
 const { MAX_UINT256 } = constants;
 const { tracker } = balance;
-const { latest } = time;
 const abi = require('ethereumjs-abi');
 const utils = web3.utils;
 const { expect } = require('chai');
@@ -17,9 +14,6 @@ const {
   WETH_TOKEN,
   MKR_TOKEN,
   DAI_TOKEN,
-  WETH_PROVIDER,
-  DAI_PROVIDER,
-  MKR_PROVIDER,
   BALANCER_WETH_MKR_DAI,
   MAKER_PROXY_REGISTRY,
 } = require('./utils/constants');
@@ -28,6 +22,7 @@ const {
   evmSnapshot,
   profileGas,
   getHandlerReturn,
+  tokenProviderUniV2,
 } = require('./utils/utils');
 
 const HBalancer = artifacts.require('HBalancer');
@@ -42,9 +37,6 @@ contract('Balancer', function([_, user]) {
   const tokenAAddress = WETH_TOKEN;
   const tokenBAddress = MKR_TOKEN;
   const tokenCAddress = DAI_TOKEN;
-  const tokenAProviderAddress = WETH_PROVIDER;
-  const tokenBProviderAddress = MKR_PROVIDER;
-  const tokenCProviderAddress = DAI_PROVIDER;
   const balancerPoolAddress = BALANCER_WETH_MKR_DAI;
 
   let id;
@@ -52,8 +44,15 @@ contract('Balancer', function([_, user]) {
   let tokenBUserAmount;
   let tokenCUserAmount;
   let balanceProxy;
+  let tokenAProviderAddress;
+  let tokenBProviderAddress;
+  let tokenCProviderAddress;
 
   before(async function() {
+    tokenAProviderAddress = await tokenProviderUniV2(tokenAAddress);
+    tokenBProviderAddress = await tokenProviderUniV2(tokenBAddress);
+    tokenCProviderAddress = await tokenProviderUniV2(tokenCAddress);
+
     // Deploy proxy and handler
     this.registry = await Registry.new();
     this.proxy = await Proxy.new(this.registry.address);
@@ -76,19 +75,10 @@ contract('Balancer', function([_, user]) {
     this.tokenB = await IToken.at(tokenBAddress);
     this.tokenC = await IToken.at(tokenCAddress);
     this.balancerPoolToken = await IToken.at(balancerPoolAddress);
+  });
 
-    await hre.network.provider.request({
-      method: 'hardhat_impersonateAccount',
-      params: [WETH_PROVIDER],
-    });
-    await hre.network.provider.request({
-      method: 'hardhat_impersonateAccount',
-      params: [DAI_PROVIDER],
-    });
-    await hre.network.provider.request({
-      method: 'hardhat_impersonateAccount',
-      params: [MKR_PROVIDER],
-    });
+  beforeEach(async function() {
+    id = await evmSnapshot();
 
     await this.tokenA.transfer(user, ether('10'), {
       from: tokenAProviderAddress,
@@ -99,10 +89,7 @@ contract('Balancer', function([_, user]) {
     await this.tokenC.transfer(user, ether('1000'), {
       from: tokenCProviderAddress,
     });
-  });
 
-  beforeEach(async function() {
-    id = await evmSnapshot();
     balanceProxy = await tracker(this.proxy.address);
     tokenAUserAmount = await this.tokenA.balanceOf.call(user);
     tokenBUserAmount = await this.tokenB.balanceOf.call(user);

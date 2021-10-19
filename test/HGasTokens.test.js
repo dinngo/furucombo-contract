@@ -5,24 +5,18 @@ const { expect } = require('chai');
 const abi = require('ethereumjs-abi');
 const utils = web3.utils;
 const {
-  DAI_TOKEN,
-  DAI_PROVIDER,
   CHI_TOKEN,
-  CHI_PROVIDER,
   GST2_TOKEN,
-  GST2_PROVIDER,
-  MAKER_CDP_MANAGER,
   MAKER_PROXY_REGISTRY,
   MAKER_MCD_VAT,
   MAKER_MCD_JOIN_ETH_A,
   MAKER_MCD_JOIN_DAI,
 } = require('./utils/constants');
-const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
+const { evmRevert, evmSnapshot, tokenProviderUniV2 } = require('./utils/utils');
 
 const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('ProxyMock');
 const HGasTokens = artifacts.require('HGasTokens');
-const IGasTokens = artifacts.require('IGasTokens');
 const IDSProxyRegistry = artifacts.require('IDSProxyRegistry');
 const IToken = artifacts.require('IERC20');
 const HMaker = artifacts.require('HMaker');
@@ -40,9 +34,17 @@ async function getGenerateLimitAndMinCollateral(ilk) {
 }
 
 contract('GasTokens', function([_, user1, user2]) {
+  const token0Address = CHI_TOKEN;
+  const token1Address = GST2_TOKEN;
+
   let id;
+  let provider0Address;
+  let provider1Address;
 
   before(async function() {
+    provider0Address = await tokenProviderUniV2(token0Address);
+    provider1Address = await tokenProviderUniV2(token1Address);
+
     this.dsRegistry = await IDSProxyRegistry.at(MAKER_PROXY_REGISTRY);
     this.registry = await Registry.new();
     this.proxy = await Proxy.new(this.registry.address);
@@ -57,15 +59,6 @@ contract('GasTokens', function([_, user1, user2]) {
       this.hMaker.address,
       utils.asciiToHex('Maker')
     );
-
-    await hre.network.provider.request({
-      method: 'hardhat_impersonateAccount',
-      params: [CHI_PROVIDER],
-    });
-    await hre.network.provider.request({
-      method: 'hardhat_impersonateAccount',
-      params: [GST2_PROVIDER],
-    });
   });
 
   beforeEach(async function() {
@@ -78,14 +71,14 @@ contract('GasTokens', function([_, user1, user2]) {
 
   describe('Free gas tokens', function() {
     it('CHI token', async function() {
-      const token = await IToken.at(CHI_TOKEN);
+      const token = await IToken.at(token0Address);
       const holdings = new BN('100');
       await token.transfer(user1, holdings, {
-        from: CHI_PROVIDER,
+        from: provider0Address,
       });
       await token.approve(this.proxy.address, holdings, { from: user1 });
       await token.transfer(user2, holdings, {
-        from: CHI_PROVIDER,
+        from: provider0Address,
       });
       await token.approve(this.proxy.address, holdings, { from: user2 });
       // Create a combo including gas token cube and 1 dummy maker cube
@@ -164,14 +157,14 @@ contract('GasTokens', function([_, user1, user2]) {
     });
 
     it('GST2 token', async function() {
-      const token = await IToken.at(GST2_TOKEN);
+      const token = await IToken.at(token1Address);
       const holdings = new BN('100');
       await token.transfer(user1, holdings, {
-        from: GST2_PROVIDER,
+        from: provider1Address,
       });
       await token.approve(this.proxy.address, holdings, { from: user1 });
       await token.transfer(user2, holdings, {
-        from: GST2_PROVIDER,
+        from: provider1Address,
       });
       await token.approve(this.proxy.address, holdings, { from: user2 });
       // Create a combo including gas token cube and 1 dummy maker cube

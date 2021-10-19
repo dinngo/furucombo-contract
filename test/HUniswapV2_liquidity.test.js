@@ -3,8 +3,6 @@ const {
   BN,
   constants,
   ether,
-  expectEvent,
-  expectRevert,
   time,
 } = require('@openzeppelin/test-helpers');
 const { MAX_UINT256 } = constants;
@@ -16,9 +14,6 @@ const { expect } = require('chai');
 const {
   DAI_TOKEN,
   BAT_TOKEN,
-  DAI_PROVIDER,
-  BAT_PROVIDER,
-  ETH_PROVIDER,
   UNISWAPV2_ETH_DAI,
   UNISWAPV2_BAT_DAI,
   UNISWAPV2_ROUTER02,
@@ -28,6 +23,8 @@ const {
   evmSnapshot,
   profileGas,
   getHandlerReturn,
+  tokenProviderUniV2,
+  tokenProviderSushi,
 } = require('./utils/utils');
 
 const HUniswapV2 = artifacts.require('HUniswapV2');
@@ -40,17 +37,19 @@ contract('UniswapV2 Liquidity', function([_, user]) {
   let id;
   const tokenAAddress = DAI_TOKEN;
   const tokenBAddress = BAT_TOKEN;
-  const tokenAProviderAddress = DAI_PROVIDER;
-  const tokenBProviderAddress = BAT_PROVIDER;
   const uniswapV2ETHDAIAddress = UNISWAPV2_ETH_DAI;
   const uniswapV2BATDAIAddress = UNISWAPV2_BAT_DAI;
   const uniswapV2RouterAddress = UNISWAPV2_ROUTER02;
 
   let balanceUser;
-  let tokenUser;
   let uniTokenUserAmount;
+  let tokenAProviderAddress;
+  let tokenBProviderAddress;
 
   before(async function() {
+    tokenAProviderAddress = await tokenProviderSushi(tokenAAddress);
+    tokenBProviderAddress = await tokenProviderUniV2(tokenBAddress);
+
     this.registry = await Registry.new();
     this.proxy = await Proxy.new(this.registry.address);
     this.hUniswapV2 = await HUniswapV2.new();
@@ -63,15 +62,10 @@ contract('UniswapV2 Liquidity', function([_, user]) {
     this.uniTokenEth = await IToken.at(uniswapV2ETHDAIAddress);
     this.uniTokenToken = await IToken.at(uniswapV2BATDAIAddress);
     this.router = await UniswapV2Router02.at(uniswapV2RouterAddress);
+  });
 
-    await hre.network.provider.request({
-      method: 'hardhat_impersonateAccount',
-      params: [DAI_PROVIDER],
-    });
-    await hre.network.provider.request({
-      method: 'hardhat_impersonateAccount',
-      params: [BAT_PROVIDER],
-    });
+  beforeEach(async function() {
+    id = await evmSnapshot();
 
     await this.tokenA.transfer(user, ether('1000'), {
       from: tokenAProviderAddress,
@@ -79,10 +73,7 @@ contract('UniswapV2 Liquidity', function([_, user]) {
     await this.tokenB.transfer(user, ether('1000'), {
       from: tokenBProviderAddress,
     });
-  });
 
-  beforeEach(async function() {
-    id = await evmSnapshot();
     balanceUser = await tracker(user);
     balanceProxy = await tracker(this.proxy.address);
     tokenAUserAmount = await this.tokenA.balanceOf.call(user);

@@ -3,12 +3,10 @@ const {
   BN,
   constants,
   ether,
-  expectEvent,
   expectRevert,
   time,
 } = require('@openzeppelin/test-helpers');
 const { tracker } = balance;
-const { latest } = time;
 const { MAX_UINT256 } = constants;
 const abi = require('ethereumjs-abi');
 const utils = web3.utils;
@@ -19,7 +17,6 @@ const {
   CETHER,
   CDAI,
   DAI_TOKEN,
-  DAI_PROVIDER,
   COMPOUND_COMPTROLLER,
 } = require('./utils/constants');
 const {
@@ -27,6 +24,7 @@ const {
   evmSnapshot,
   profileGas,
   getHandlerReturn,
+  tokenProviderUniV2,
 } = require('./utils/utils');
 
 const HCEther = artifacts.require('HCEther');
@@ -38,12 +36,17 @@ const ICToken = artifacts.require('ICToken');
 const IComptroller = artifacts.require('IComptroller');
 
 contract('CEther', function([_, user]) {
+  const tokenAddress = DAI_TOKEN;
+
   let id;
   let balanceUser;
   let balanceProxy;
   let cEtherUser;
+  let providerAddress;
 
   before(async function() {
+    providerAddress = await tokenProviderUniV2(tokenAddress);
+
     this.registry = await Registry.new();
     this.hCEther = await HCEther.new();
     await this.registry.register(
@@ -52,11 +55,6 @@ contract('CEther', function([_, user]) {
     );
     this.cEther = await ICEther.at(CETHER);
     this.proxy = await Proxy.new(this.registry.address);
-
-    await hre.network.provider.request({
-      method: 'hardhat_impersonateAccount',
-      params: [DAI_PROVIDER],
-    });
   });
 
   beforeEach(async function() {
@@ -308,7 +306,7 @@ contract('CEther', function([_, user]) {
       this.dai = await IToken.at(DAI_TOKEN);
     });
     beforeEach(async function() {
-      await this.dai.transfer(user, ether('1000'), { from: DAI_PROVIDER });
+      await this.dai.transfer(user, ether('1000'), { from: providerAddress });
       await this.dai.approve(this.cDai.address, ether('1000'), { from: user });
       await this.cDai.mint(ether('1000'), { from: user });
       await this.cEther.borrow(ether('0.1'), { from: user });

@@ -1,7 +1,6 @@
 const {
   balance,
   BN,
-  constants,
   ether,
   expectRevert,
 } = require('@openzeppelin/test-helpers');
@@ -18,19 +17,17 @@ const {
   GELATOV2_UNISWAPV2_HANDLER,
   GELATOV2_ERC20_ORDER_ROUTER,
   DAI_TOKEN,
-  DAI_PROVIDER,
   BAT_TOKEN,
-  BAT_PROVIDER,
   WETH_TOKEN,
-  WETH_PROVIDER,
   ETH_TOKEN,
   UNISWAPV2_ROUTER02,
 } = require('./utils/constants');
 const {
   evmRevert,
   evmSnapshot,
-  profileGas,
   mulPercent,
+  etherProviderWeth,
+  tokenProviderSushi,
 } = require('./utils/utils');
 
 const { secret, witness } = getWitnessAndSecret();
@@ -49,13 +46,18 @@ contract('GelatoLimitOrder', function([_, user]) {
   let balanceProxy;
 
   const tokenAAddress = DAI_TOKEN;
-  const tokenAProviderAddress = DAI_PROVIDER;
   const tokenBAddress = WETH_TOKEN;
-  const tokenBProviderAddress = WETH_PROVIDER;
   const tokenCAddress = BAT_TOKEN;
-  const tokenCProviderAddress = BAT_PROVIDER;
+
+  let tokenAProviderAddress;
+  let tokenBProviderAddress;
+  let tokenCProviderAddress;
 
   before(async function() {
+    tokenAProviderAddress = await tokenProviderSushi(tokenAAddress);
+    tokenBProviderAddress = await etherProviderWeth();
+    tokenCProviderAddress = await tokenProviderSushi(tokenCAddress);
+
     this.registry = await Registry.new();
     this.proxy = await Proxy.new(this.registry.address);
 
@@ -82,19 +84,7 @@ contract('GelatoLimitOrder', function([_, user]) {
     this.tokenB = await IToken.at(tokenBAddress);
     this.tokenC = await IToken.at(tokenCAddress);
 
-    await hre.network.provider.request({
-      method: 'hardhat_impersonateAccount',
-      params: [DAI_PROVIDER],
-    });
-    await hre.network.provider.request({
-      method: 'hardhat_impersonateAccount',
-      params: [WETH_PROVIDER],
-    });
-    await hre.network.provider.request({
-      method: 'hardhat_impersonateAccount',
-      params: [BAT_PROVIDER],
-    });
-    await hre.network.provider.request({
+    await network.provider.request({
       method: 'hardhat_impersonateAccount',
       params: [GELATOV2_RELAYER],
     });

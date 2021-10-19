@@ -34,9 +34,7 @@ const { expect } = require('chai');
 const {
   ETH_TOKEN,
   DAI_TOKEN,
-  DAI_PROVIDER,
   WETH_TOKEN,
-  WETH_PROVIDER,
   BALANCER_EXCHANGE_PROXY,
 } = require('./utils/constants');
 const {
@@ -45,6 +43,7 @@ const {
   mulPercent,
   profileGas,
   getHandlerReturn,
+  tokenProviderUniV2,
 } = require('./utils/utils');
 
 const HBalancerExchange = artifacts.require('HBalancerExchange');
@@ -55,13 +54,17 @@ const IExchangeProxy = artifacts.require('IExchangeProxy');
 
 contract('BalancerExchange', function([_, user]) {
   const slippage = new BN('5');
-  let id;
   const token0 = DAI_TOKEN;
   const token1 = WETH_TOKEN;
-  const token0Provider = DAI_PROVIDER;
-  const token1Provider = WETH_PROVIDER;
+
+  let id;
+  let token0Provider;
+  let token1Provider;
 
   before(async function() {
+    token0Provider = await tokenProviderUniV2(token0);
+    token1Provider = await tokenProviderUniV2(token1);
+
     // Deploy proxy and handler
     this.registry = await Registry.new();
     this.proxy = await Proxy.new(this.registry.address);
@@ -73,15 +76,6 @@ contract('BalancerExchange', function([_, user]) {
     this.exchange = await IExchangeProxy.at(BALANCER_EXCHANGE_PROXY);
     this.token0 = await IToken.at(token0);
     this.token1 = await IToken.at(token1);
-
-    await hre.network.provider.request({
-      method: 'hardhat_impersonateAccount',
-      params: [WETH_PROVIDER],
-    });
-    await hre.network.provider.request({
-      method: 'hardhat_impersonateAccount',
-      params: [DAI_PROVIDER],
-    });
   });
 
   beforeEach(async function() {

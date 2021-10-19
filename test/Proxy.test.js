@@ -3,7 +3,6 @@ const {
   BN,
   constants,
   ether,
-  expectEvent,
   expectRevert,
 } = require('@openzeppelin/test-helpers');
 const { tracker } = balance;

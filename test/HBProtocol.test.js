@@ -3,13 +3,10 @@ const {
   BN,
   constants,
   ether,
-  expectEvent,
   expectRevert,
-  time,
 } = require('@openzeppelin/test-helpers');
 const { MAX_UINT256 } = constants;
 const { tracker } = balance;
-const { latest } = time;
 const abi = require('ethereumjs-abi');
 const utils = web3.utils;
 const { ZERO_ADDRESS } = constants;
@@ -18,11 +15,8 @@ const { expect } = require('chai');
 
 const {
   LINK_TOKEN,
-  LINK_PROVIDER,
   DAI_TOKEN,
-  DAI_PROVIDER,
   B_CDP_MANAGER,
-  MAKER_PROXY_FACTORY,
   B_PROXY_ACTIONS,
   MAKER_PROXY_REGISTRY,
   MAKER_MCD_JUG,
@@ -36,6 +30,7 @@ const {
   evmSnapshot,
   profileGas,
   getHandlerReturn,
+  tokenProviderUniV2,
 } = require('./utils/utils');
 
 const HMaker = artifacts.require('HBProtocol');
@@ -48,7 +43,6 @@ const IMakerManager = artifacts.require('IMakerManager');
 const IMakerVat = artifacts.require('IMakerVat');
 
 const RAY = new BN('1000000000000000000000000000');
-const RAD = new BN('1000000000000000000000000000000000000000000000');
 
 async function getGenerateLimitAndMinCollateral(ilk) {
   const vat = await IMakerVat.at(MAKER_MCD_VAT);
@@ -90,15 +84,20 @@ async function approveCdp(cdp, owner, user) {
 }
 
 contract('BProtocol', function([_, user1, user2, someone]) {
-  let id;
   const tokenAddress = LINK_TOKEN;
-  const providerAddress = LINK_PROVIDER;
   const makerMcdJoinETH = MAKER_MCD_JOIN_ETH_A;
   const makerMcdJoinETHName = 'ETH-A';
   const makerMcdJoinToken = MAKER_MCD_JOIN_LINK_A;
   const makerMcdJoinTokenName = 'LINK-A';
 
+  let id;
+  let providerAddress;
+  let daiProviderAddress;
+
   before(async function() {
+    providerAddress = await tokenProviderUniV2(tokenAddress);
+    daiProviderAddress = await tokenProviderUniV2(DAI_TOKEN);
+
     this.registry = await Registry.new();
     this.proxy = await Proxy.new(this.registry.address);
     this.token = await IToken.at(tokenAddress);
@@ -130,15 +129,6 @@ contract('BProtocol', function([_, user1, user2, someone]) {
       await this.dsRegistry.proxies.call(user2)
     );
     this.dai = await IToken.at(DAI_TOKEN);
-
-    await hre.network.provider.request({
-      method: 'hardhat_impersonateAccount',
-      params: [DAI_PROVIDER],
-    });
-    await hre.network.provider.request({
-      method: 'hardhat_impersonateAccount',
-      params: [LINK_PROVIDER],
-    });
   });
 
   beforeEach(async function() {
@@ -1080,7 +1070,7 @@ contract('BProtocol', function([_, user1, user2, someone]) {
           cdp
         );
         await this.dai.transfer(user1, ether('20'), {
-          from: DAI_PROVIDER,
+          from: daiProviderAddress,
         });
         daiUser = await this.dai.balanceOf.call(user1);
         await this.dai.transfer(
@@ -1181,7 +1171,7 @@ contract('BProtocol', function([_, user1, user2, someone]) {
           cdp
         );
         await this.dai.transfer(user1, ether('20'), {
-          from: DAI_PROVIDER,
+          from: daiProviderAddress,
         });
         daiUser = await this.dai.balanceOf.call(user1);
         const [

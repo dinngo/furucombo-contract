@@ -3,13 +3,10 @@ const {
   BN,
   constants,
   ether,
-  expectEvent,
   expectRevert,
-  time,
 } = require('@openzeppelin/test-helpers');
 const { MAX_UINT256 } = constants;
 const { tracker } = balance;
-const { latest } = time;
 const abi = require('ethereumjs-abi');
 const utils = web3.utils;
 
@@ -18,7 +15,6 @@ const { expect } = require('chai');
 const {
   BAT_TOKEN,
   DAI_TOKEN,
-  DAI_PROVIDER,
   KYBERNETWORK_PROXY,
 } = require('./utils/constants');
 const {
@@ -27,6 +23,7 @@ const {
   mulPercent,
   profileGas,
   getHandlerReturn,
+  tokenProviderYearn,
 } = require('./utils/utils');
 
 const HKyberNetwork = artifacts.require('HKyberNetwork');
@@ -39,13 +36,15 @@ contract('KyberNetwork Swap', function([_, user]) {
   const slippage = new BN('3');
   let id;
   const tokenAddress = DAI_TOKEN;
-  const providerAddress = DAI_PROVIDER;
 
   let balanceUser;
   let balanceProxy;
   let tokenUser;
+  let providerAddress;
 
   before(async function() {
+    providerAddress = await tokenProviderYearn(tokenAddress);
+
     this.registry = await Registry.new();
     this.proxy = await Proxy.new(this.registry.address);
     this.hKyberNetwork = await HKyberNetwork.new();
@@ -55,11 +54,6 @@ contract('KyberNetwork Swap', function([_, user]) {
     );
     this.token = await IToken.at(tokenAddress);
     this.swap = await IKyberNetworkProxy.at(KYBERNETWORK_PROXY);
-
-    await hre.network.provider.request({
-      method: 'hardhat_impersonateAccount',
-      params: [DAI_PROVIDER],
-    });
   });
 
   beforeEach(async function() {
