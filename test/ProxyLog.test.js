@@ -37,7 +37,7 @@ contract('ProxyLog', function([_, deployer, user]) {
     await evmRevert(id);
   });
 
-  describe.only('execute', function() {
+  describe('execute', function() {
     before(async function() {
       this.fooFactory = await FooFactory.new({ from: deployer });
       expect(this.fooFactory.address).to.be.eq(
@@ -112,7 +112,7 @@ contract('ProxyLog', function([_, deployer, user]) {
     });
   });
 
-  describe.only('dynamic parameter', function() {
+  describe('dynamic parameter', function() {
     before(async function() {
       this.foo = await Foo4.new();
       this.fooHandler = await Foo4Handler.new();
