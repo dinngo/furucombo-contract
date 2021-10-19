@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 - Support sending ether to miner.
+- Add event to log the handler execution.
 
 ### Changed
 

@@ -18,6 +18,17 @@ contract Proxy is IProxy, Storage, Config {
     using SafeERC20 for IERC20;
     using LibParam for bytes32;
 
+    event LogBegin(
+        address indexed handler,
+        bytes4 indexed selector,
+        bytes payload
+    );
+    event LogEnd(
+        address indexed handler,
+        bytes4 indexed selector,
+        bytes result
+    );
+
     modifier isNotBanned() {
         require(registry.bannedAgents(address(this)) == 0, "Banned");
         _;
@@ -117,14 +128,24 @@ contract Proxy is IProxy, Storage, Config {
             "Tos and configs length inconsistent"
         );
         for (uint256 i = 0; i < tos.length; i++) {
+            address to = tos[i];
             bytes32 config = configs[i];
+            bytes memory data = datas[i];
             // Check if the data contains dynamic parameter
             if (!config.isStatic()) {
                 // If so, trim the exectution data base on the configuration and stack content
-                _trim(datas[i], config, localStack, index);
+                _trim(data, config, localStack, index);
             }
+            // Emit the execution log before call
+            bytes4 selector = _getSelector(data);
+            emit LogBegin(to, selector, data);
+
             // Check if the output will be referenced afterwards
-            bytes memory result = _exec(tos[i], datas[i]);
+            bytes memory result = _exec(to, data);
+
+            // Emit the execution log after call
+            emit LogEnd(to, selector, result);
+
             if (config.isReferenced()) {
                 // If so, parse the output and place it into local stack
                 uint256 num = config.getReturnNum();
@@ -137,7 +158,7 @@ contract Proxy is IProxy, Storage, Config {
             }
 
             // Setup the process to be triggered in the post-process phase
-            _setPostProcess(tos[i]);
+            _setPostProcess(to);
         }
     }
 
@@ -313,5 +334,18 @@ contract Proxy is IProxy, Storage, Config {
     /// @notice Check if the caller is valid in registry.
     function _isValidCaller(address caller) internal view returns (bool) {
         return registry.isValidCaller(caller);
+    }
+
+    /// @notice Get payload function selector.
+    function _getSelector(bytes memory payload)
+        internal
+        pure
+        returns (bytes4 selector)
+    {
+        selector =
+            payload[0] |
+            (bytes4(payload[1]) >> 8) |
+            (bytes4(payload[2]) >> 16) |
+            (bytes4(payload[3]) >> 24);
     }
 }
