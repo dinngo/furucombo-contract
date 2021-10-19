@@ -1,6 +1,7 @@
 const utils = ethers.utils;
 
 module.exports = async ({ getNamedAccounts, deployments }) => {
+  /* archived
   const { deploy } = deployments;
   const { deployer } = await getNamedAccounts();
 
@@ -20,6 +21,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     hOneInchExchange.address,
     utils.formatBytes32String('HOneInchExchange')
   );
+*/
 };
 
 module.exports.tags = ['HOneInchExchange'];

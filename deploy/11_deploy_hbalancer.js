@@ -1,6 +1,7 @@
 const utils = ethers.utils;
 
 module.exports = async ({ getNamedAccounts, deployments }) => {
+  /* archived
   const { deploy } = deployments;
   const { deployer } = await getNamedAccounts();
 
@@ -17,6 +18,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     hBalancer.address,
     utils.formatBytes32String('HBalancer')
   );
+*/
 };
 
 module.exports.tags = ['HBalancer'];
