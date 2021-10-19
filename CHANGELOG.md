@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - Refine gelato v2 limit order handler
+- Migrate developing environment from Truffle to Hardhat.
 
 ## [1.9.0] - 2021-09-30
 

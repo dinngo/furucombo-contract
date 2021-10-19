@@ -52,7 +52,9 @@ const NON_UNOSWAP_PROTOCOLS = [
   'BLACKHOLESWAP',
   'ONE_INCH_LP',
   'PMM2',
-  'PMM3',
+  //comment PMM3 because it will cause "LOP bad signature error" while
+  //test running with hardhat. But it works well with truffle + ganache.
+  // 'PMM3',
   'KYBER_DMM',
   'BALANCER_V2',
   'UNISWAP_V3',
@@ -77,6 +79,15 @@ contract('OneInchV3 Swap', function([_, user]) {
       utils.asciiToHex('OneInchV3')
     );
     this.proxy = await Proxy.new(this.registry.address);
+
+    await hre.network.provider.request({
+      method: 'hardhat_impersonateAccount',
+      params: [WETH_PROVIDER],
+    });
+    await hre.network.provider.request({
+      method: 'hardhat_impersonateAccount',
+      params: [DAI_PROVIDER],
+    });
   });
 
   beforeEach(async function() {

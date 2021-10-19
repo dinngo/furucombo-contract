@@ -43,6 +43,19 @@ contract('Curve Crypto', function([_, user]) {
     this.proxy = await Proxy.new(this.registry.address);
     this.tricryptoSwap = await ICurveHandler.at(CURVE_TRICRYPTO_SWAP);
     this.tricryptoDeposit = await ICurveHandler.at(CURVE_TRICRYPTO_DEPOSIT);
+
+    await hre.network.provider.request({
+      method: 'hardhat_impersonateAccount',
+      params: [USDT_PROVIDER],
+    });
+    await hre.network.provider.request({
+      method: 'hardhat_impersonateAccount',
+      params: [WBTC_PROVIDER],
+    });
+    await hre.network.provider.request({
+      method: 'hardhat_impersonateAccount',
+      params: [CURVE_TRICRYPTOCRV_PROVIDER],
+    });
   });
 
   beforeEach(async function() {

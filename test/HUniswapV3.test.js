@@ -71,6 +71,11 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
     this.token = await IToken.at(tokenAddress);
     this.token2 = await IToken.at(token2Address);
     this.weth = await IToken.at(WETH_TOKEN);
+
+    await hre.network.provider.request({
+      method: 'hardhat_impersonateAccount',
+      params: [DAI_PROVIDER],
+    });
   });
 
   beforeEach(async function() {

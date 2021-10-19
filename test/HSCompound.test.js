@@ -24,8 +24,6 @@ const {
   CWBTC,
   CETHER,
   MAKER_PROXY_REGISTRY,
-  CREATE2_FACTORY,
-  FCOMPOUND_ACTIONS_SALT,
   FCOMPOUND_ACTIONS,
   COMPOUND_COMPTROLLER,
 } = require('./utils/constants');
@@ -65,17 +63,13 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
       this.hsCompound.address,
       utils.asciiToHex('HSCompound')
     );
-    // Use SingletonFactory to deploy FCompoundActions using CREATE2
-    this.singletonFactory = await ISingletonFactory.at(CREATE2_FACTORY);
-
-    await this.singletonFactory.deploy(
-      getFCompoundActionsBytecodeBySolc(),
-      FCOMPOUND_ACTIONS_SALT
-    );
 
     this.dsRegistry = await IDSProxyRegistry.at(MAKER_PROXY_REGISTRY);
     // User build DSProxy
-    await this.dsRegistry.build(user);
+    const dsProxyAddr = await this.dsRegistry.proxies.call(user);
+    if (dsProxyAddr == constants.ZERO_ADDRESS)
+      await this.dsRegistry.build(user);
+
     this.userProxy = await IDSProxy.at(
       await this.dsRegistry.proxies.call(user)
     );
@@ -94,6 +88,11 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
     this.cEther = await ICEther.at(CETHER);
     this.comp = await IToken.at(COMP_TOKEN);
     this.comptroller = await IComptroller.at(COMPOUND_COMPTROLLER);
+
+    await hre.network.provider.request({
+      method: 'hardhat_impersonateAccount',
+      params: [DAI_PROVIDER],
+    });
   });
 
   beforeEach(async function() {

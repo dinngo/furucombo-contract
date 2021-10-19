@@ -73,6 +73,15 @@ contract('BalancerExchange', function([_, user]) {
     this.exchange = await IExchangeProxy.at(BALANCER_EXCHANGE_PROXY);
     this.token0 = await IToken.at(token0);
     this.token1 = await IToken.at(token1);
+
+    await hre.network.provider.request({
+      method: 'hardhat_impersonateAccount',
+      params: [WETH_PROVIDER],
+    });
+    await hre.network.provider.request({
+      method: 'hardhat_impersonateAccount',
+      params: [DAI_PROVIDER],
+    });
   });
 
   beforeEach(async function() {

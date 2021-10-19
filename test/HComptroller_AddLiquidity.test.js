@@ -148,6 +148,7 @@ contract('Claim Comp and add liquidity', function([
           new BN('1')
         ),
       ];
+
       const receipt = await this.proxy.batchExec(to, config, data, {
         from: user,
         value: ether('1'),

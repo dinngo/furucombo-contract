@@ -60,6 +60,15 @@ contract('Curve DAO', function([_, user]) {
     this.gauge0 = await ILiquidityGauge.at(gauge0Address);
     this.gauge1 = await ILiquidityGauge.at(gauge1Address);
     this.proxy = await Proxy.new(this.registry.address);
+
+    await hre.network.provider.request({
+      method: 'hardhat_impersonateAccount',
+      params: [CURVE_YCRV_PROVIDER],
+    });
+    await hre.network.provider.request({
+      method: 'hardhat_impersonateAccount',
+      params: [CURVE_TCRV_PROVIDER],
+    });
   });
 
   beforeEach(async function() {

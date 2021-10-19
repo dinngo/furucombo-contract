@@ -54,6 +54,15 @@ contract('Polygon Token Bridge', function([_, user]) {
     this.lockerPosEther = await IPoSLocker.at(POLYGON_POS_PREDICATE_ETH);
     this.lockerPosErc20 = await IPoSLocker.at(POLYGON_POS_PREDICATE_ERC20);
     this.lockerPlasma = await IPlasmaLocker.at(POLYGON_PLASMA_DEPOSIT_MANAGER);
+
+    await hre.network.provider.request({
+      method: 'hardhat_impersonateAccount',
+      params: [DAI_PROVIDER],
+    });
+    await hre.network.provider.request({
+      method: 'hardhat_impersonateAccount',
+      params: [MATIC_PROVIDER],
+    });
   });
 
   beforeEach(async function() {

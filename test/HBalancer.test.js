@@ -76,6 +76,20 @@ contract('Balancer', function([_, user]) {
     this.tokenB = await IToken.at(tokenBAddress);
     this.tokenC = await IToken.at(tokenCAddress);
     this.balancerPoolToken = await IToken.at(balancerPoolAddress);
+
+    await hre.network.provider.request({
+      method: 'hardhat_impersonateAccount',
+      params: [WETH_PROVIDER],
+    });
+    await hre.network.provider.request({
+      method: 'hardhat_impersonateAccount',
+      params: [DAI_PROVIDER],
+    });
+    await hre.network.provider.request({
+      method: 'hardhat_impersonateAccount',
+      params: [MKR_PROVIDER],
+    });
+
     await this.tokenA.transfer(user, ether('10'), {
       from: tokenAProviderAddress,
     });

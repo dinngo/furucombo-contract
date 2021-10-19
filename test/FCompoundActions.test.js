@@ -23,8 +23,6 @@ const {
   CETHER,
   ETH_TOKEN,
   MAKER_PROXY_REGISTRY,
-  CREATE2_FACTORY,
-  FCOMPOUND_ACTIONS_SALT,
   FCOMPOUND_ACTIONS,
   COMPOUND_COMPTROLLER,
 } = require('./utils/constants');
@@ -52,14 +50,12 @@ contract('FCompoundActions', function([_, user]) {
   const providerAddress = DAI_PROVIDER;
 
   before(async function() {
-    // Use SingletonFactory to deploy FCompoundActions using CREATE2
-    this.singletonFactory = await ISingletonFactory.at(CREATE2_FACTORY);
-    await this.singletonFactory.deploy(
-      getFCompoundActionsBytecodeBySolc(),
-      FCOMPOUND_ACTIONS_SALT
-    );
     this.dsRegistry = await IDSProxyRegistry.at(MAKER_PROXY_REGISTRY);
-    await this.dsRegistry.build(user);
+
+    const dsProxyAddr = await this.dsRegistry.proxies.call(user);
+    if (dsProxyAddr == constants.ZERO_ADDRESS)
+      await this.dsRegistry.build(user);
+
     this.userProxy = await IDSProxy.at(
       await this.dsRegistry.proxies.call(user)
     );
@@ -68,6 +64,11 @@ contract('FCompoundActions', function([_, user]) {
     this.cEther = await ICEther.at(CETHER);
     this.comptroller = await IComptroller.at(COMPOUND_COMPTROLLER);
     this.actionsMock = await ActionsMock.new();
+
+    await hre.network.provider.request({
+      method: 'hardhat_impersonateAccount',
+      params: [DAI_PROVIDER],
+    });
   });
 
   beforeEach(async function() {

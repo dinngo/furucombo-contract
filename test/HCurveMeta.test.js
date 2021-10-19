@@ -1,4 +1,4 @@
-const { BN, ether, constants } = require('@openzeppelin/test-helpers');
+const { BN, ether, constants, send } = require('@openzeppelin/test-helpers');
 const { expect } = require('chai');
 const abi = require('ethereumjs-abi');
 const utils = web3.utils;
@@ -38,6 +38,19 @@ contract('Curve Meta', function([_, user]) {
     this.proxy = await Proxy.new(this.registry.address);
     this.musdSwap = await ICurveHandler.at(CURVE_MUSD_SWAP);
     this.musdDeposit = await ICurveHandler.at(CURVE_MUSD_DEPOSIT);
+
+    await hre.network.provider.request({
+      method: 'hardhat_impersonateAccount',
+      params: [USDT_PROVIDER],
+    });
+    await hre.network.provider.request({
+      method: 'hardhat_impersonateAccount',
+      params: [MUSD_PROVIDER],
+    });
+    await hre.network.provider.request({
+      method: 'hardhat_impersonateAccount',
+      params: [CURVE_MUSDCRV_PROVIDER],
+    });
   });
 
   beforeEach(async function() {
@@ -210,6 +223,9 @@ contract('Curve Meta', function([_, user]) {
         const answer = await this.musdDeposit.methods[
           'calc_withdraw_one_coin(uint256,int128)'
         ](poolTokenUser, 0);
+
+        // send some ether to poolTokenProvider as gas fee
+        await send.ether(_, poolTokenProvider, poolTokenUser);
         await this.poolToken.transfer(this.proxy.address, poolTokenUser, {
           from: poolTokenProvider,
         });

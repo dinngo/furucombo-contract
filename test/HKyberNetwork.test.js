@@ -55,6 +55,11 @@ contract('KyberNetwork Swap', function([_, user]) {
     );
     this.token = await IToken.at(tokenAddress);
     this.swap = await IKyberNetworkProxy.at(KYBERNETWORK_PROXY);
+
+    await hre.network.provider.request({
+      method: 'hardhat_impersonateAccount',
+      params: [DAI_PROVIDER],
+    });
   });
 
   beforeEach(async function() {

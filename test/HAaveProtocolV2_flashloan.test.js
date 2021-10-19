@@ -92,6 +92,15 @@ contract('AaveV2 flashloan', function([_, user, someone]) {
       AWETH_V2_DEBT_VARIABLE
     );
     this.mockToken = await SimpleToken.new();
+
+    await hre.network.provider.request({
+      method: 'hardhat_impersonateAccount',
+      params: [WETH_PROVIDER],
+    });
+    await hre.network.provider.request({
+      method: 'hardhat_impersonateAccount',
+      params: [DAI_PROVIDER],
+    });
   });
 
   beforeEach(async function() {

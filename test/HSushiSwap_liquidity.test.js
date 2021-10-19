@@ -63,6 +63,16 @@ contract('SushiSwap Liquidity', function([_, user]) {
     this.uniTokenToken = await IToken.at(sushiswapPoolBAddress);
     this.router = await UniswapV2Router02.at(sushiswapRouterAddress);
 
+    await hre.network.provider.request({
+      method: 'hardhat_impersonateAccount',
+      params: [SUSHI_PROVIDER],
+    });
+
+    await hre.network.provider.request({
+      method: 'hardhat_impersonateAccount',
+      params: [xSUSHI_PROVIDER],
+    });
+
     await this.tokenA.transfer(user, ether('1000'), {
       from: tokenAProviderAddress,
     });

@@ -37,6 +37,16 @@ contract('Furucombo rCOMBO', function([_, user]) {
     );
     this.rCOMBO = await IRCOMBO.at(RCOMBO_TOKEN);
     this.combo = await IToken.at(COMBO_TOKEN);
+
+    await hre.network.provider.request({
+      method: 'hardhat_impersonateAccount',
+      params: [COMBO_PROVIDER],
+    });
+    await hre.network.provider.request({
+      method: 'hardhat_impersonateAccount',
+      params: [RCOMBO_PROVIDER],
+    });
+
     await this.combo.transfer(this.rCOMBO.address, ether('100'), {
       from: COMBO_PROVIDER,
     });

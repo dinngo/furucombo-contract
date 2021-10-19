@@ -52,6 +52,11 @@ contract('Furucombo', function([_, user, someone]) {
     this.stakingRedeem = await MerkleRedeem.at(await this.staking.redeemable());
     this.merkleRedeem = await MerkleRedeem.new(this.rewardToken.address);
     this.token = await IToken.at(tokenAddress);
+
+    await hre.network.provider.request({
+      method: 'hardhat_impersonateAccount',
+      params: [BALANCER_DAI_ETH_PROVIDER],
+    });
   });
 
   beforeEach(async function() {
