@@ -1,6 +1,6 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.4;
 
-import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "../interface/IERC20Usdt.sol";
 
 import "../Config.sol";
@@ -8,6 +8,7 @@ import "../Storage.sol";
 
 abstract contract HandlerBase is Storage, Config {
     using SafeERC20 for IERC20;
+    using LibStack for bytes32[];
 
     function postProcess() external payable virtual {
         revert("Invalid post process");
@@ -83,7 +84,7 @@ abstract contract HandlerBase is Storage, Config {
         view
         returns (uint256)
     {
-        if (amount != uint256(-1)) {
+        if (amount != type(uint256).max) {
             return amount;
         }
 

@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.4;
 
 contract Foo4 {
     bytes32 public bValue;

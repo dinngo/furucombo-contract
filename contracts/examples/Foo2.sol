@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.4;
 
 import "./SimpleToken.sol";
 
@@ -7,7 +7,7 @@ contract Foo2 is SimpleToken {
     function bar() public payable returns (uint256 result) {
         uint256 amount = msg.value / 2;
         _mint(msg.sender, amount);
-        msg.sender.transfer(msg.value - amount);
+        payable(msg.sender).transfer(msg.value - amount);
         return amount;
     }
 }

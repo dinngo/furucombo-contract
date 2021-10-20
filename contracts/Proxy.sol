@@ -1,7 +1,6 @@
-pragma solidity ^0.6.0;
-pragma experimental ABIEncoderV2;
+pragma solidity ^0.8.4;
 
-import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "./interface/IProxy.sol";
 import "./interface/IRegistry.sol";
@@ -17,6 +16,7 @@ contract Proxy is IProxy, Storage, Config {
     using Address for address;
     using SafeERC20 for IERC20;
     using LibParam for bytes32;
+    using LibStack for bytes32[];
 
     event LogBegin(
         address indexed handler,
@@ -41,7 +41,7 @@ contract Proxy is IProxy, Storage, Config {
 
     IRegistry public immutable registry;
 
-    constructor(address _registry) public {
+    constructor(address _registry) {
         registry = IRegistry(_registry);
     }
 
@@ -319,7 +319,7 @@ contract Proxy is IProxy, Storage, Config {
 
         // Balance should also be returned to user
         uint256 amount = address(this).balance;
-        if (amount > 0) msg.sender.transfer(amount);
+        if (amount > 0) payable(msg.sender).transfer(amount);
 
         // Reset the msg.sender and cube counter
         _resetSender();

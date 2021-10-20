@@ -1,7 +1,7 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 /**
  * @title SimpleToken
@@ -17,7 +17,7 @@ contract SimpleToken is ERC20("SimpleToken", "SIM") {
     /**
      * @dev Constructor that gives msg.sender all of existing tokens.
      */
-    constructor() public {
+    constructor() {
         _mint(msg.sender, INITIAL_SUPPLY);
     }
 }

@@ -1,11 +1,11 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.4;
 import "./Foo.sol";
 
 contract FooFactory {
     mapping(uint256 => address) private _foos;
     uint256 private _nFoo;
 
-    constructor() public {
+    constructor() {
         _nFoo = 0;
         createFoo();
     }

@@ -1,9 +1,9 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.4;
 
 contract Foo3 {
     uint256 public num;
 
-    constructor() public {
+    constructor() {
         num = 10;
     }
 

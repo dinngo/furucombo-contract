@@ -54,7 +54,7 @@
   },
   "dependencies": {
     "@gelatonetwork/limit-orders-lib": "^0.6.0",
-    "@openzeppelin/contracts": "3.3.0",
+    "@openzeppelin/contracts": "4.3.2",
     "pify": "^5.0.0"
   },
   "husky": {

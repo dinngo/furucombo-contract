@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.4;
 
 interface IRegistry {
     function handlers(address) external view returns (bytes32);

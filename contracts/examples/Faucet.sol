@@ -1,7 +1,7 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.4;
 
-import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
-import "@openzeppelin/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 contract Faucet {
     using SafeERC20 for IERC20;
@@ -11,7 +11,7 @@ contract Faucet {
 
     function drain() external payable {
         uint256 give = msg.value.mul(2);
-        msg.sender.call.value(give)("");
+        payable(msg.sender).call{value: give}("");
     }
 
     function drainToken(address token, uint256 amount) external {
