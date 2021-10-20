@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+- Refine token provider for tests.
+
 ## [1.10.0] - 2021-10-20
 
 ### Added
