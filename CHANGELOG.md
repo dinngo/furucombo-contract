@@ -7,11 +7,16 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 - Support sending ether to miner.
+- Add event to log the handler execution.
 
 ### Changed
 
 - Refine gelato v2 limit order handler
 - Migrate developing environment from Truffle to Hardhat.
+- Archive Balancer v1 related handlers and tests.
+- Archive Aave v1 related handlers and tests.
+- Archive KyberNetwork related handlers and tests.
+- Archive 1inch v2 related handlers and tests.
 
 ## [1.9.0] - 2021-09-30
 

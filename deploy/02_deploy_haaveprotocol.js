@@ -2,6 +2,7 @@ const AAVE_LENDING_POOL_CORE = '0x398ec7346dcd622edc5ae82352f02be94c62d119';
 const utils = ethers.utils;
 
 module.exports = async ({ getNamedAccounts, deployments }) => {
+  /* archived
   const { deploy } = deployments;
   const { deployer } = await getNamedAccounts();
 
@@ -22,6 +23,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     hAaveProtocol.address,
     utils.formatBytes32String('Aave Protocol')
   );
+*/
 };
 
 module.exports.tags = ['HAaveProtocol'];

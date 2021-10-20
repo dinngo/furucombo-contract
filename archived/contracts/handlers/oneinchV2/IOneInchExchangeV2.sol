@@ -22,17 +22,11 @@ interface IOneInchExchangeV2 {
         IOneInchCaller caller,
         SwapDescription calldata desc,
         IOneInchCaller.CallDescription[] calldata calls
-    )
-    external
-    payable
-    returns (uint256 returnAmount);
+    ) external payable returns (uint256 returnAmount);
 
     function swap(
         IOneInchCaller caller,
         SwapDescription calldata desc,
         IOneInchCaller.CallDescription[] calldata calls
-    )
-        external
-        payable
-        returns (uint256 returnAmount);
+    ) external payable returns (uint256 returnAmount);
 }
