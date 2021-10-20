@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+## [1.10.0] - 2021-10-20
+
 ### Added
 
 - Support sending ether to miner.
