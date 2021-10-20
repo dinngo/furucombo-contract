@@ -32,7 +32,7 @@ const {
   profileGas,
   getHandlerReturn,
   mulPercent,
-  errorCompare,
+  expectEqWithinBps,
 } = require('./utils/utils');
 
 const HAaveV2 = artifacts.require('HAaveProtocolV2');
@@ -72,6 +72,15 @@ contract('Aave V2', function([_, user, someone]) {
     this.weth = await IToken.at(WETH_TOKEN);
     this.aweth = await IAToken.at(awethAddress);
     this.mockToken = await SimpleToken.new();
+
+    await hre.network.provider.request({
+      method: 'hardhat_impersonateAccount',
+      params: [DAI_PROVIDER],
+    });
+    await hre.network.provider.request({
+      method: 'hardhat_impersonateAccount',
+      params: [WETH_PROVIDER],
+    });
   });
 
   beforeEach(async function() {
@@ -97,7 +106,7 @@ contract('Aave V2', function([_, user, someone]) {
         });
         expect(await balanceProxy.get()).to.be.zero;
         expect(await this.aweth.balanceOf.call(this.proxy.address)).to.be.zero;
-        expect(await this.aweth.balanceOf.call(user)).to.be.bignumber.eq(value);
+        expectEqWithinBps(await this.aweth.balanceOf.call(user), value, 100);
         expect(await balanceUser.delta()).to.be.bignumber.eq(
           ether('0')
             .sub(value)
@@ -117,7 +126,7 @@ contract('Aave V2', function([_, user, someone]) {
         });
         expect(await balanceProxy.get()).to.be.zero;
         expect(await this.aweth.balanceOf.call(this.proxy.address)).to.be.zero;
-        expect(await this.aweth.balanceOf.call(user)).to.be.bignumber.eq(value);
+        expectEqWithinBps(await this.aweth.balanceOf.call(user), value, 100);
         expect(await balanceUser.delta()).to.be.bignumber.eq(
           ether('0')
             .sub(value)
@@ -148,9 +157,7 @@ contract('Aave V2', function([_, user, someone]) {
         });
         expect(await balanceProxy.get()).to.be.zero;
         expect(await this.aToken.balanceOf.call(this.proxy.address)).to.be.zero;
-        expect(await this.aToken.balanceOf.call(user)).to.be.bignumber.eq(
-          value
-        );
+        expectEqWithinBps(await this.aToken.balanceOf.call(user), value, 100);
         expect(await balanceUser.delta()).to.be.bignumber.eq(
           ether('0').sub(new BN(receipt.receipt.gasUsed))
         );
@@ -296,9 +303,8 @@ contract('Aave V2', function([_, user, someone]) {
         expect(aTokenUserAfter).to.be.bignumber.lt(
           depositAmount.add(interestMax).sub(handlerReturn)
         );
-        expect(await balanceUser.delta()).to.be.bignumber.eq(
-          value.sub(new BN(receipt.receipt.gasUsed))
-        );
+        expectEqWithinBps(await balanceUser.delta(), value, 100);
+
         profileGas(receipt);
       });
     });

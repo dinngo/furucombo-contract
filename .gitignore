@@ -12,3 +12,8 @@ package-lock.json
 
 # secrets
 .secret_beta
+
+# hardhat build directory and cache
+artifacts/
+cache/
+deployments/

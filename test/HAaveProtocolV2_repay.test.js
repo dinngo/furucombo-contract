@@ -70,6 +70,15 @@ contract('Aave V2', function([_, user, someone]) {
     this.token = await IToken.at(tokenAddress);
     this.aToken = await IAToken.at(aTokenAddress);
     this.mockToken = await SimpleToken.new();
+
+    await hre.network.provider.request({
+      method: 'hardhat_impersonateAccount',
+      params: [WETH_PROVIDER],
+    });
+    await hre.network.provider.request({
+      method: 'hardhat_impersonateAccount',
+      params: [DAI_PROVIDER],
+    });
   });
 
   beforeEach(async function() {
@@ -84,7 +93,7 @@ contract('Aave V2', function([_, user, someone]) {
 
   describe('Repay Stable Rate', function() {
     var depositAmount = ether('10000');
-    const borrowAmount = ether('2');
+    const borrowAmount = ether('1');
     const borrowTokenAddr = WETH_TOKEN;
     const borrowTokenProvider = WETH_PROVIDER;
     const rateMode = AAVE_RATEMODE.STABLE;
@@ -389,7 +398,7 @@ contract('Aave V2', function([_, user, someone]) {
 
   describe('Repay Variable Rate', function() {
     var depositAmount = ether('10000');
-    const borrowAmount = ether('2');
+    const borrowAmount = ether('1');
     const borrowTokenAddr = WETH_TOKEN;
     const borrowTokenProvider = WETH_PROVIDER;
     const rateMode = AAVE_RATEMODE.VARIABLE;

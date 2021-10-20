@@ -107,7 +107,9 @@ contract('Claim Comp and add liquidity', function([
     await evmRevert(id);
   });
 
-  describe('UniswapV2 Liquidity', function() {
+  // NOTE: Because COMP Hack event, compound stop to issue $COMP now.
+  // Remove `skip` when compound issue $COMP again.
+  describe.skip('UniswapV2 Liquidity', function() {
     const uniswapV2RouterAddress = UNISWAPV2_ROUTER02;
     before(async function() {
       this.hFunds = await HFunds.new();
@@ -146,6 +148,7 @@ contract('Claim Comp and add liquidity', function([
           new BN('1')
         ),
       ];
+
       const receipt = await this.proxy.batchExec(to, config, data, {
         from: user,
         value: ether('1'),

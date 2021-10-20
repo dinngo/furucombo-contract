@@ -37,6 +37,15 @@ contract('YVault', function([_, user]) {
       this.hYVault.address,
       utils.asciiToHex('HYVault')
     );
+
+    await hre.network.provider.request({
+      method: 'hardhat_impersonateAccount',
+      params: [CURVE_YCRV_PROVIDER],
+    });
+    await hre.network.provider.request({
+      method: 'hardhat_impersonateAccount',
+      params: [ALINK_PROVIDER],
+    });
   });
 
   beforeEach(async function() {
@@ -240,6 +249,7 @@ contract('YVault', function([_, user]) {
 
       // User deposits aLINK to get yaLINK
       const amountDeposit = ether('1');
+
       await token.transfer(user, amountDeposit, {
         from: ALINK_PROVIDER,
       });

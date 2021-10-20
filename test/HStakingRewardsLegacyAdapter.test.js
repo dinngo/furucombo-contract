@@ -20,8 +20,6 @@ const {
   SNX_PROVIDER,
   CURVE_SCRV,
   CURVE_SCRV_PROVIDER,
-  CREATE2_FACTORY,
-  STAKING_REWARDS_ADAPTER_REGISTRY_SALT,
   STAKING_REWARDS_ADAPTER_REGISTRY,
   STAKING_REWARDS_ADAPTER_REGISTRY_OWNER,
 } = require('./utils/constants');
@@ -82,12 +80,20 @@ contract('StakingRewardsLegacyAdapter - Handler', function([_, user, someone]) {
       0
     );
     this.adapter = await StakingRewardsAdapter.at(adapterAddr);
-    // Use SingletonFactory to deploy AdapterRegistry using CREATE2
-    this.singletonFactory = await ISingletonFactory.at(CREATE2_FACTORY);
-    await this.singletonFactory.deploy(
-      getAdapterRegistryBytecodeBySolc(),
-      STAKING_REWARDS_ADAPTER_REGISTRY_SALT
-    );
+
+    await hre.network.provider.request({
+      method: 'hardhat_impersonateAccount',
+      params: [SNX_PROVIDER],
+    });
+    await hre.network.provider.request({
+      method: 'hardhat_impersonateAccount',
+      params: [CURVE_SCRV_PROVIDER],
+    });
+    await hre.network.provider.request({
+      method: 'hardhat_impersonateAccount',
+      params: [STAKING_REWARDS_ADAPTER_REGISTRY_OWNER],
+    });
+
     this.adapterRegistry = await StakingRewardsAdapterRegistry.at(
       STAKING_REWARDS_ADAPTER_REGISTRY
     );

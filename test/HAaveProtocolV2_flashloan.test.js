@@ -37,7 +37,7 @@ const {
 
 const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('ProxyMock');
-const HAave = artifacts.require('HAaveProtocol');
+// const HAave = artifacts.require('HAaveProtocol'); archived
 const HAaveV2 = artifacts.require('HAaveProtocolV2');
 const HMock = artifacts.require('HMock');
 const Faucet = artifacts.require('Faucet');
@@ -57,11 +57,13 @@ contract('AaveV2 flashloan', function([_, user, someone]) {
     this.registry = await Registry.new();
     this.proxy = await Proxy.new(this.registry.address);
     // Register aave v1 handler
+    /* archived
     this.hAave = await HAave.new();
     await this.registry.register(
       this.hAave.address,
       utils.asciiToHex('Aave Protocol')
     );
+    */
     // Register aave v2 handler
     this.hAaveV2 = await HAaveV2.new();
     await this.registry.register(
@@ -92,6 +94,15 @@ contract('AaveV2 flashloan', function([_, user, someone]) {
       AWETH_V2_DEBT_VARIABLE
     );
     this.mockToken = await SimpleToken.new();
+
+    await hre.network.provider.request({
+      method: 'hardhat_impersonateAccount',
+      params: [WETH_PROVIDER],
+    });
+    await hre.network.provider.request({
+      method: 'hardhat_impersonateAccount',
+      params: [DAI_PROVIDER],
+    });
   });
 
   beforeEach(async function() {
@@ -618,7 +629,8 @@ contract('AaveV2 flashloan', function([_, user, someone]) {
       });
     });
 
-    it('deposit aaveV1 after flashloan', async function() {
+    // v1 archived
+    it.skip('deposit aaveV1 after flashloan', async function() {
       // Get flashloan params
       const value = ether('1');
       const depositValue = ether('0.5');

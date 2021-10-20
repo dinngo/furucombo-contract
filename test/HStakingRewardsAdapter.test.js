@@ -20,8 +20,6 @@ const {
   DAI_PROVIDER,
   KNC_TOKEN,
   KNC_PROVIDER,
-  CREATE2_FACTORY,
-  STAKING_REWARDS_ADAPTER_REGISTRY_SALT,
   STAKING_REWARDS_ADAPTER_REGISTRY,
   STAKING_REWARDS_ADAPTER_REGISTRY_OWNER,
 } = require('./utils/constants');
@@ -79,12 +77,20 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
       this.staking.address,
       0
     );
-    // Use SingletonFactory to deploy AdapterRegistry using CREATE2
-    this.singletonFactory = await ISingletonFactory.at(CREATE2_FACTORY);
-    await this.singletonFactory.deploy(
-      getAdapterRegistryBytecodeBySolc(),
-      STAKING_REWARDS_ADAPTER_REGISTRY_SALT
-    );
+
+    await hre.network.provider.request({
+      method: 'hardhat_impersonateAccount',
+      params: [DAI_PROVIDER],
+    });
+    await hre.network.provider.request({
+      method: 'hardhat_impersonateAccount',
+      params: [KNC_PROVIDER],
+    });
+    await hre.network.provider.request({
+      method: 'hardhat_impersonateAccount',
+      params: [STAKING_REWARDS_ADAPTER_REGISTRY_OWNER],
+    });
+
     this.adapter = await StakingRewardsAdapter.at(adapterAddr);
     this.adapterRegistry = await StakingRewardsAdapterRegistry.at(
       STAKING_REWARDS_ADAPTER_REGISTRY

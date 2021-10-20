@@ -57,6 +57,15 @@ contract('GasTokens', function([_, user1, user2]) {
       this.hMaker.address,
       utils.asciiToHex('Maker')
     );
+
+    await hre.network.provider.request({
+      method: 'hardhat_impersonateAccount',
+      params: [CHI_PROVIDER],
+    });
+    await hre.network.provider.request({
+      method: 'hardhat_impersonateAccount',
+      params: [GST2_PROVIDER],
+    });
   });
 
   beforeEach(async function() {

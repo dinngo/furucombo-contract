@@ -64,6 +64,15 @@ contract('UniswapV2 Liquidity', function([_, user]) {
     this.uniTokenToken = await IToken.at(uniswapV2BATDAIAddress);
     this.router = await UniswapV2Router02.at(uniswapV2RouterAddress);
 
+    await hre.network.provider.request({
+      method: 'hardhat_impersonateAccount',
+      params: [DAI_PROVIDER],
+    });
+    await hre.network.provider.request({
+      method: 'hardhat_impersonateAccount',
+      params: [BAT_PROVIDER],
+    });
+
     await this.tokenA.transfer(user, ether('1000'), {
       from: tokenAProviderAddress,
     });

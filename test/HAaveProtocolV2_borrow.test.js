@@ -77,6 +77,15 @@ contract('Aave V2', function([_, user, someone]) {
     this.aToken = await IAToken.at(aTokenAddress);
     this.weth = await IToken.at(WETH_TOKEN);
     this.mockToken = await SimpleToken.new();
+
+    await hre.network.provider.request({
+      method: 'hardhat_impersonateAccount',
+      params: [WETH_PROVIDER],
+    });
+    await hre.network.provider.request({
+      method: 'hardhat_impersonateAccount',
+      params: [DAI_PROVIDER],
+    });
   });
 
   beforeEach(async function() {
@@ -173,7 +182,7 @@ contract('Aave V2', function([_, user, someone]) {
     });
 
     it('borrow weth', async function() {
-      const borrowAmount = ether('2');
+      const borrowAmount = ether('1');
       const to = this.hAaveV2.address;
       const data = abi.simpleEncode(
         'borrow(address,uint256,uint256)',
@@ -218,7 +227,7 @@ contract('Aave V2', function([_, user, someone]) {
     });
 
     it('borrow eth', async function() {
-      const borrowAmount = ether('2');
+      const borrowAmount = ether('1');
       const to = this.hAaveV2.address;
       const data = abi.simpleEncode(
         'borrowETH(uint256,uint256)',
@@ -449,7 +458,7 @@ contract('Aave V2', function([_, user, someone]) {
     });
 
     it('borrow weth', async function() {
-      const borrowAmount = ether('2');
+      const borrowAmount = ether('1');
       const to = this.hAaveV2.address;
       const data = abi.simpleEncode(
         'borrow(address,uint256,uint256)',
@@ -495,7 +504,7 @@ contract('Aave V2', function([_, user, someone]) {
     });
 
     it('borrow eth', async function() {
-      const borrowAmount = ether('2');
+      const borrowAmount = ether('1');
       const to = this.hAaveV2.address;
       const data = abi.simpleEncode(
         'borrowETH(uint256,uint256)',
