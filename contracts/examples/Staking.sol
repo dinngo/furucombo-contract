@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 
 pragma solidity ^0.8.4;
-pragma experimental ABIEncoderV2;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
@@ -47,7 +46,7 @@ contract Staking is Ownable, Pausable, ReentrancyGuard {
     /**
      * @notice The redeem contract owner will be transferred to the deployer.
      */
-    constructor(address _stakingToken, address _rewardToken) public {
+    constructor(address _stakingToken, address _rewardToken) {
         stakingToken = IERC20(_stakingToken);
         redeemable = new MerkleRedeem(_rewardToken);
         redeemable.transferOwnership(msg.sender);

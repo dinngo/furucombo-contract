@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 pragma solidity ^0.8.4;
 import "./Foo2.sol";
 
@@ -5,7 +7,7 @@ contract Foo2Factory {
     mapping(uint256 => address) private _foos;
     uint256 private _nFoo;
 
-    constructor() public {
+    constructor() {
         _nFoo = 0;
         createFoo();
     }

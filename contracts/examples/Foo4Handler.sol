@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 pragma solidity ^0.8.4;
 
 import "./Foo4.sol";
@@ -29,10 +31,9 @@ contract Foo4Handler is HandlerBase {
 
     function bar2(
         address to,
-        bytes32 a,
         bytes32 b
     ) external payable returns (bytes32 ret) {
-        ret = Foo4(to).bar2(a, b);
+        ret = Foo4(to).bar2(b);
     }
 
     function barUint1(address to, uint256 a)

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 pragma solidity ^0.8.4;
 
 contract GasProfiler {
@@ -8,7 +10,7 @@ contract GasProfiler {
     event DeltaGas(bytes32 tag, int256 gas);
     event GetGas(bytes32 tag, uint256 gas);
 
-    constructor() public {
+    constructor() {
         _setBase();
     }
 
@@ -19,7 +21,7 @@ contract GasProfiler {
         }
     }
 
-    function _getBase() internal returns (uint256 base) {
+    function _getBase() internal view returns (uint256 base) {
         bytes32 slot = GAS_BASE;
         assembly {
             base := sub(sload(slot), 203)

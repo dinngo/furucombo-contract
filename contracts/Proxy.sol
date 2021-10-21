@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 pragma solidity 0.8.4;
 
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
@@ -307,8 +309,9 @@ contract Proxy is IProxy, Storage, Config {
             HandlerType handlerType = HandlerType(uint96(bytes12(top)));
             if (handlerType == HandlerType.Token) {
                 address addr = address(uint160(uint256(top)));
-                uint256 amount = IERC20(addr).balanceOf(address(this));
-                if (amount > 0) IERC20(addr).safeTransfer(msg.sender, amount);
+                uint256 tokenAmount = IERC20(addr).balanceOf(address(this));
+                if (tokenAmount > 0)
+                    IERC20(addr).safeTransfer(msg.sender, tokenAmount);
             } else if (handlerType == HandlerType.Custom) {
                 address addr = stack.getAddress();
                 _exec(addr, abi.encodeWithSelector(POSTPROCESS_SIG));
