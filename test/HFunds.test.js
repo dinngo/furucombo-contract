@@ -46,12 +46,13 @@ contract('Funds', function([_, user, someone]) {
 
   let provider0Address;
   let provider1Address;
+  let usdtProviderAddress;
   let ethProviderAddress;
 
   before(async function() {
     provider0Address = await tokenProviderUniV2(token0Address);
     provider1Address = await tokenProviderUniV2(token1Address);
-    providerUsdt = await tokenProviderUniV2(USDT_TOKEN);
+    usdtProviderAddress = await tokenProviderUniV2(USDT_TOKEN);
     ethProviderAddress = await etherProviderWeth();
 
     this.registry = await Registry.new();
@@ -242,7 +243,7 @@ contract('Funds', function([_, user, someone]) {
           value
         );
         await this.usdt.transfer(user, value[0], {
-          from: providerUsdt,
+          from: usdtProviderAddress,
         });
         await this.usdt.approve(this.proxy.address, value[0], { from: user });
 
@@ -366,7 +367,7 @@ contract('Funds', function([_, user, someone]) {
 
       it('USDT', async function() {
         const token = this.usdt.address;
-        const providerAddress = providerUsdt;
+        const providerAddress = usdtProviderAddress;
         const value = new BN('1000000');
         const receiver = someone;
         const to = this.hFunds.address;
@@ -573,7 +574,7 @@ contract('Funds', function([_, user, someone]) {
         );
 
         await this.token0.transfer(this.proxy.address, value[0], {
-          from: providerUsdt,
+          from: usdtProviderAddress,
         });
         await this.token1.transfer(this.proxy.address, value[1], {
           from: provider1Address,
