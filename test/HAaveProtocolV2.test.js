@@ -175,9 +175,7 @@ contract('Aave V2', function([_, user, someone]) {
         });
         expect(await balanceProxy.get()).to.be.zero;
         expect(await this.aToken.balanceOf.call(this.proxy.address)).to.be.zero;
-        expect(await this.aToken.balanceOf.call(user)).to.be.bignumber.eq(
-          value
-        );
+        expectEqWithinBps(await this.aToken.balanceOf.call(user), value, 100);
 
         expect(await balanceUser.delta()).to.be.bignumber.eq(
           ether('0').sub(new BN(receipt.receipt.gasUsed))
