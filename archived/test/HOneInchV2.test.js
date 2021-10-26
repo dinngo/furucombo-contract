@@ -1,29 +1,12 @@
-const {
-  balance,
-  BN,
-  constants,
-  ether,
-  expectEvent,
-  expectRevert,
-  time,
-} = require('@openzeppelin/test-helpers');
+const { balance, BN, ether } = require('@openzeppelin/test-helpers');
 const { tracker } = balance;
-const { MAX_UINT256 } = constants;
-const { latest } = time;
-const abi = require('ethereumjs-abi');
-const util = require('ethereumjs-util');
 const utils = web3.utils;
 const { expect } = require('chai');
 const {
   DAI_TOKEN,
-  DAI_PROVIDER,
   DAI_SYMBOL,
   USDC_TOKEN,
   USDC_SYMBOL,
-  ZRX_TOKEN,
-  ZRX_SYMBOL,
-  KNC_TOKEN,
-  KNC_SYMBOL,
 } = require('./utils/constants');
 const {
   evmRevert,
@@ -31,6 +14,7 @@ const {
   mulPercent,
   profileGas,
   getHandlerReturn,
+  tokenProviderUniV2,
 } = require('./utils/utils');
 const fetch = require('node-fetch');
 const queryString = require('query-string');
@@ -54,11 +38,6 @@ contract('OneInch Swap', function([_, user]) {
       utils.asciiToHex('OneInch V2')
     );
     this.proxy = await Proxy.new(this.registry.address);
-
-    await hre.network.provider.request({
-      method: 'hardhat_impersonateAccount',
-      params: [DAI_PROVIDER],
-    });
   });
 
   beforeEach(async function() {
@@ -192,14 +171,15 @@ contract('OneInch Swap', function([_, user]) {
 
   describe('Token to Ether', function() {
     const tokenAddress = DAI_TOKEN;
-    const tokenSymbol = DAI_SYMBOL;
-    const providerAddress = DAI_PROVIDER;
 
     let balanceUser;
     let balanceProxy;
     let tokenUser;
+    let providerAddress;
 
     before(async function() {
+      providerAddress = await tokenProviderUniV2(tokenAddress);
+
       this.token = await IToken.at(tokenAddress);
     });
 
@@ -272,15 +252,15 @@ contract('OneInch Swap', function([_, user]) {
 
   describe('Token to Token', function() {
     const token0Address = DAI_TOKEN;
-    const token0Symbol = DAI_SYMBOL;
     const token1Address = USDC_TOKEN;
-    const token1Symbol = USDC_SYMBOL;
-    const providerAddress = DAI_PROVIDER;
 
     let token0User;
     let token1User;
+    let providerAddress;
 
     before(async function() {
+      providerAddress = await tokenProviderUniV2(token0Address);
+
       this.token0 = await IToken.at(token0Address);
       this.token1 = await IToken.at(token1Address);
     });

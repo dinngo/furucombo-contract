@@ -3,13 +3,10 @@ const {
   BN,
   constants,
   ether,
-  expectEvent,
   expectRevert,
-  time,
 } = require('@openzeppelin/test-helpers');
 const { tracker } = balance;
 const { ZERO_BYTES32 } = constants;
-const { latest } = time;
 const abi = require('ethereumjs-abi');
 const util = require('ethereumjs-util');
 const utils = web3.utils;
@@ -18,12 +15,15 @@ const { expect } = require('chai');
 
 const {
   ETH_TOKEN,
-  ETH_PROVIDER,
   DAI_TOKEN,
-  DAI_PROVIDER,
   AAVEPROTOCOL_PROVIDER,
 } = require('./utils/constants');
-const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
+const {
+  evmRevert,
+  evmSnapshot,
+  etherProviderWeth,
+  tokenProviderUniV2,
+} = require('./utils/utils');
 
 const HAave = artifacts.require('HAaveProtocol');
 const HMock = artifacts.require('HMock');
@@ -35,11 +35,16 @@ const IProvider = artifacts.require('ILendingPoolAddressesProvider');
 const Faucet = artifacts.require('Faucet');
 
 contract('Aave flashloan', function([_, user]) {
+  const tokenAddress = DAI_TOKEN;
+
   let id;
   let balanceUser;
   let balanceProxy;
+  let providerAddress;
 
   before(async function() {
+    providerAddress = await tokenProviderUniV2(tokenAddress);
+
     this.registry = await Registry.new();
     this.proxy = await Proxy.new(this.registry.address);
     this.hAave = await HAave.new();
@@ -55,17 +60,9 @@ contract('Aave flashloan', function([_, user]) {
     await this.registry.registerCaller(lendingPoolAddress, this.hAave.address);
     this.faucet = await Faucet.new();
 
-    await hre.network.provider.request({
-      method: 'hardhat_impersonateAccount',
-      params: [ETH_PROVIDER],
-    });
-    await hre.network.provider.request({
-      method: 'hardhat_impersonateAccount',
-      params: [DAI_PROVIDER],
-    });
-
+    const etherProvider = await etherProviderWeth();
     await web3.eth.sendTransaction({
-      from: ETH_PROVIDER,
+      from: etherProvider,
       to: this.faucet.address,
       value: ether('1000'),
     });
@@ -116,13 +113,10 @@ contract('Aave flashloan', function([_, user]) {
   });
 
   describe('Token', function() {
-    const tokenAddress = DAI_TOKEN;
-    const tokenProvider = DAI_PROVIDER;
-
     before(async function() {
       this.token = await IToken.at(tokenAddress);
       await this.token.transfer(this.faucet.address, ether('1000'), {
-        from: tokenProvider,
+        from: providerAddress,
       });
     });
 
@@ -172,13 +166,10 @@ contract('Aave flashloan', function([_, user]) {
   });
 
   describe('Multiple', function() {
-    const tokenAddress = DAI_TOKEN;
-    const tokenProvider = DAI_PROVIDER;
-
     before(async function() {
       this.token = await IToken.at(tokenAddress);
       await this.token.transfer(this.faucet.address, ether('1000'), {
-        from: tokenProvider,
+        from: providerAddress,
       });
     });
 

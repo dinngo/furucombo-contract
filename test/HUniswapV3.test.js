@@ -3,38 +3,26 @@ const {
   BN,
   constants,
   ether,
-  expectEvent,
   expectRevert,
-  time,
 } = require('@openzeppelin/test-helpers');
 const { tracker } = balance;
 const { MAX_UINT256 } = constants;
-const { latest } = time;
-const abi = require('ethereumjs-abi');
 const utils = web3.utils;
 const { expect } = require('chai');
 const {
   DAI_TOKEN,
-  DAI_PROVIDER,
-  BAT_TOKEN,
   WETH_TOKEN,
   UNISWAPV3_ROUTER,
   UNISWAPV3_QUOTER,
-  HBTC_PROVIDER,
-  HBTC_TOKEN,
-  OMG_PROVIDER,
-  OMG_TOKEN,
   USDT_TOKEN,
-  USDT_PROVIDER,
 } = require('./utils/constants');
 const {
   evmRevert,
   evmSnapshot,
-  mulPercent,
   profileGas,
   getHandlerReturn,
-  getAbi,
   getCallData,
+  tokenProviderUniV2,
 } = require('./utils/utils');
 
 const HUniswapV3 = artifacts.require('HUniswapV3');
@@ -43,22 +31,22 @@ const Proxy = artifacts.require('ProxyMock');
 const IToken = artifacts.require('IERC20');
 const ISwapRouter = artifacts.require('ISwapRouter');
 const IQuoter = artifacts.require('IQuoter');
-const IUsdt = artifacts.require('IERC20Usdt');
 
 contract('UniswapV3 Swap', function([_, user, someone]) {
   let id;
-  const slippage = new BN('3');
   const tokenAddress = DAI_TOKEN;
   const token2Address = USDT_TOKEN;
-  const tokenProvider = DAI_PROVIDER;
 
   let balanceUser;
   let balanceProxy;
   let tokenUser;
   let token2User;
   let wethUser;
+  let tokenProvider;
 
   before(async function() {
+    tokenProvider = await tokenProviderUniV2(tokenAddress);
+
     this.registry = await Registry.new();
     this.hUniswapV3 = await HUniswapV3.new();
     await this.registry.register(
@@ -71,11 +59,6 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
     this.token = await IToken.at(tokenAddress);
     this.token2 = await IToken.at(token2Address);
     this.weth = await IToken.at(WETH_TOKEN);
-
-    await hre.network.provider.request({
-      method: 'hardhat_impersonateAccount',
-      params: [DAI_PROVIDER],
-    });
   });
 
   beforeEach(async function() {

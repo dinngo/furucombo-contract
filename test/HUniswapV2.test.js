@@ -3,28 +3,22 @@ const {
   BN,
   constants,
   ether,
-  expectEvent,
   expectRevert,
-  time,
 } = require('@openzeppelin/test-helpers');
 const { tracker } = balance;
 const { MAX_UINT256 } = constants;
-const { latest } = time;
 const abi = require('ethereumjs-abi');
 const utils = web3.utils;
 const { expect } = require('chai');
 const {
   DAI_TOKEN,
-  DAI_PROVIDER,
   BAT_TOKEN,
   WETH_TOKEN,
   UNISWAPV2_ROUTER02,
-  HBTC_PROVIDER,
   HBTC_TOKEN,
-  OMG_PROVIDER,
+  WBTC_TOKEN,
   OMG_TOKEN,
   USDT_TOKEN,
-  USDT_PROVIDER,
 } = require('./utils/constants');
 const {
   evmRevert,
@@ -32,6 +26,8 @@ const {
   mulPercent,
   profileGas,
   getHandlerReturn,
+  tokenProviderUniV2,
+  tokenProviderSushi,
 } = require('./utils/utils');
 
 const HUniswapV2 = artifacts.require('HUniswapV2');
@@ -45,7 +41,15 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
   let id;
   const slippage = new BN('3');
 
+  let hbtcProviderAddress;
+  let omgProviderAddress;
+  let usdtProviderAddress;
+
   before(async function() {
+    hbtcProviderAddress = await tokenProviderUniV2(HBTC_TOKEN, WBTC_TOKEN);
+    omgProviderAddress = await tokenProviderSushi(OMG_TOKEN);
+    usdtProviderAddress = await tokenProviderSushi(USDT_TOKEN);
+
     this.registry = await Registry.new();
     this.hUniswapV2 = await HUniswapV2.new();
     await this.registry.register(
@@ -54,23 +58,6 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
     );
     this.router = await IUniswapV2Router.at(UNISWAPV2_ROUTER02);
     this.proxy = await Proxy.new(this.registry.address);
-
-    await hre.network.provider.request({
-      method: 'hardhat_impersonateAccount',
-      params: [DAI_PROVIDER],
-    });
-    await hre.network.provider.request({
-      method: 'hardhat_impersonateAccount',
-      params: [HBTC_PROVIDER],
-    });
-    await hre.network.provider.request({
-      method: 'hardhat_impersonateAccount',
-      params: [OMG_PROVIDER],
-    });
-    await hre.network.provider.request({
-      method: 'hardhat_impersonateAccount',
-      params: [USDT_PROVIDER],
-    });
   });
 
   beforeEach(async function() {
@@ -363,13 +350,15 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
 
   describe('Token to Ether', function() {
     const tokenAddress = DAI_TOKEN;
-    const providerAddress = DAI_PROVIDER;
 
     let balanceUser;
     let balanceProxy;
     let tokenUser;
+    let providerAddress;
 
     before(async function() {
+      providerAddress = await tokenProviderSushi(tokenAddress);
+
       this.token = await IToken.at(tokenAddress);
       this.hbtc = await IToken.at(HBTC_TOKEN);
       this.omg = await IToken.at(OMG_TOKEN);
@@ -442,10 +431,10 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
           path
         );
         await this.hbtc.transfer(this.proxy.address, value, {
-          from: HBTC_PROVIDER,
+          from: hbtcProviderAddress,
         });
         await this.proxy.updateTokenMock(this.hbtc.address);
-        await this.hbtc.transfer(someone, value, { from: HBTC_PROVIDER });
+        await this.hbtc.transfer(someone, value, { from: hbtcProviderAddress });
         tokenUser = await this.hbtc.balanceOf.call(user);
         const receipt = await this.proxy.execMock(to, data, { from: user });
 
@@ -489,10 +478,10 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
           path
         );
         await this.omg.transfer(this.proxy.address, value, {
-          from: OMG_PROVIDER,
+          from: omgProviderAddress,
         });
         await this.proxy.updateTokenMock(this.omg.address);
-        await this.omg.transfer(someone, value, { from: OMG_PROVIDER });
+        await this.omg.transfer(someone, value, { from: omgProviderAddress });
         tokenUser = await this.omg.balanceOf.call(user);
         const receipt = await this.proxy.execMock(to, data, { from: user });
 
@@ -537,10 +526,10 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
         );
 
         await this.usdt.transfer(this.proxy.address, value, {
-          from: USDT_PROVIDER,
+          from: usdtProviderAddress,
         });
         await this.proxy.updateTokenMock(this.usdt.address);
-        await this.usdt.transfer(someone, value, { from: USDT_PROVIDER });
+        await this.usdt.transfer(someone, value, { from: usdtProviderAddress });
         tokenUser = await this.usdt.balanceOf.call(user);
         const receipt = await this.proxy.execMock(to, data, { from: user });
 
@@ -715,10 +704,10 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
           path
         );
         await this.hbtc.transfer(this.proxy.address, value, {
-          from: HBTC_PROVIDER,
+          from: hbtcProviderAddress,
         });
         await this.proxy.updateTokenMock(this.hbtc.address);
-        await this.hbtc.transfer(someone, value, { from: HBTC_PROVIDER });
+        await this.hbtc.transfer(someone, value, { from: hbtcProviderAddress });
         tokenUser = await this.hbtc.balanceOf.call(user);
         const receipt = await this.proxy.execMock(to, data, {
           from: user,
@@ -756,10 +745,10 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
           path
         );
         await this.omg.transfer(this.proxy.address, value, {
-          from: OMG_PROVIDER,
+          from: omgProviderAddress,
         });
         await this.proxy.updateTokenMock(this.omg.address);
-        await this.omg.transfer(someone, value, { from: OMG_PROVIDER });
+        await this.omg.transfer(someone, value, { from: omgProviderAddress });
         tokenUser = await this.omg.balanceOf.call(user);
         const receipt = await this.proxy.execMock(to, data, {
           from: user,
@@ -797,10 +786,10 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
           path
         );
         await this.usdt.transfer(this.proxy.address, value, {
-          from: USDT_PROVIDER,
+          from: usdtProviderAddress,
         });
         await this.proxy.updateTokenMock(this.usdt.address);
-        await this.usdt.transfer(someone, value, { from: USDT_PROVIDER });
+        await this.usdt.transfer(someone, value, { from: usdtProviderAddress });
         tokenUser = await this.usdt.balanceOf.call(user);
         const receipt = await this.proxy.execMock(to, data, {
           from: user,
@@ -837,10 +826,10 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
 
         // First swap to make allowance > 0
         await this.omg.transfer(this.proxy.address, value, {
-          from: OMG_PROVIDER,
+          from: omgProviderAddress,
         });
         await this.proxy.updateTokenMock(this.omg.address);
-        await this.omg.transfer(someone, value, { from: OMG_PROVIDER });
+        await this.omg.transfer(someone, value, { from: omgProviderAddress });
         await this.proxy.execMock(to, data1, {
           from: user,
         });
@@ -859,10 +848,10 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
           path
         );
         await this.omg.transfer(this.proxy.address, value, {
-          from: OMG_PROVIDER,
+          from: omgProviderAddress,
         });
         await this.proxy.updateTokenMock(this.omg.address);
-        await this.omg.transfer(someone, value, { from: OMG_PROVIDER });
+        await this.omg.transfer(someone, value, { from: omgProviderAddress });
         balanceUser.get();
         tokenUser = await this.omg.balanceOf.call(user);
         const receipt = await this.proxy.execMock(to, data2, {
@@ -971,12 +960,14 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
   describe('Token to Token', function() {
     const token0Address = DAI_TOKEN;
     const token1Address = BAT_TOKEN;
-    const providerAddress = DAI_PROVIDER;
 
     let token0User;
     let token1User;
+    let providerAddress;
 
     before(async function() {
+      providerAddress = await tokenProviderSushi(token0Address);
+
       this.token0 = await IToken.at(token0Address);
       this.token1 = await IToken.at(token1Address);
 
@@ -1044,11 +1035,11 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
           path
         );
         await this.hbtc.transfer(this.proxy.address, value, {
-          from: HBTC_PROVIDER,
+          from: hbtcProviderAddress,
         });
         await this.proxy.updateTokenMock(this.hbtc.address);
         await this.hbtc.transfer(someone, value, {
-          from: HBTC_PROVIDER,
+          from: hbtcProviderAddress,
         });
         token0User = await this.hbtc.balanceOf.call(user);
         const receipt = await this.proxy.execMock(to, data, { from: user });
@@ -1085,11 +1076,11 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
           path
         );
         await this.omg.transfer(this.proxy.address, value, {
-          from: OMG_PROVIDER,
+          from: omgProviderAddress,
         });
         await this.proxy.updateTokenMock(this.omg.address);
         await this.omg.transfer(someone, value, {
-          from: OMG_PROVIDER,
+          from: omgProviderAddress,
         });
         token0User = await this.omg.balanceOf.call(user);
         const receipt = await this.proxy.execMock(to, data, { from: user });
@@ -1126,11 +1117,11 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
           path
         );
         await this.usdt.transfer(this.proxy.address, value, {
-          from: USDT_PROVIDER,
+          from: usdtProviderAddress,
         });
         await this.proxy.updateTokenMock(this.usdt.address);
         await this.usdt.transfer(someone, value, {
-          from: USDT_PROVIDER,
+          from: usdtProviderAddress,
         });
         token0User = await this.usdt.balanceOf.call(user);
         const receipt = await this.proxy.execMock(to, data, { from: user });
@@ -1300,11 +1291,11 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
           path
         );
         await this.hbtc.transfer(this.proxy.address, value, {
-          from: HBTC_PROVIDER,
+          from: hbtcProviderAddress,
         });
         await this.proxy.updateTokenMock(this.hbtc.address);
         await this.hbtc.transfer(someone, value, {
-          from: HBTC_PROVIDER,
+          from: hbtcProviderAddress,
         });
         token0User = await this.hbtc.balanceOf.call(user);
         const receipt = await this.proxy.execMock(to, data, {
@@ -1346,11 +1337,11 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
           path
         );
         await this.omg.transfer(this.proxy.address, value, {
-          from: OMG_PROVIDER,
+          from: omgProviderAddress,
         });
         await this.proxy.updateTokenMock(this.omg.address);
         await this.omg.transfer(someone, value, {
-          from: OMG_PROVIDER,
+          from: omgProviderAddress,
         });
         token0User = await this.omg.balanceOf.call(user);
         const receipt = await this.proxy.execMock(to, data, {
@@ -1392,11 +1383,11 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
           path
         );
         await this.usdt.transfer(this.proxy.address, value, {
-          from: USDT_PROVIDER,
+          from: usdtProviderAddress,
         });
         await this.proxy.updateTokenMock(this.usdt.address);
         await this.usdt.transfer(someone, value, {
-          from: USDT_PROVIDER,
+          from: usdtProviderAddress,
         });
         token0User = await this.usdt.balanceOf.call(user);
         const receipt = await this.proxy.execMock(to, data, {
@@ -1437,11 +1428,11 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
           path
         );
         await this.omg.transfer(this.proxy.address, value, {
-          from: OMG_PROVIDER,
+          from: omgProviderAddress,
         });
         await this.proxy.updateTokenMock(this.omg.address);
         await this.omg.transfer(someone, value, {
-          from: OMG_PROVIDER,
+          from: omgProviderAddress,
         });
         await this.proxy.execMock(to, data1, {
           from: user,
@@ -1461,11 +1452,11 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
           path
         );
         await this.omg.transfer(this.proxy.address, value, {
-          from: OMG_PROVIDER,
+          from: omgProviderAddress,
         });
         await this.proxy.updateTokenMock(this.omg.address);
         await this.omg.transfer(someone, value, {
-          from: OMG_PROVIDER,
+          from: omgProviderAddress,
         });
         token0User = await this.omg.balanceOf.call(user);
         const receipt = await this.proxy.execMock(to, data2, {

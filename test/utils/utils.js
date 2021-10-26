@@ -1,6 +1,15 @@
-const { BN, ether } = require('@openzeppelin/test-helpers');
+const { BN, ether, ZERO_ADDRESS } = require('@openzeppelin/test-helpers');
 const fetch = require('node-fetch');
-const { ETH_PROVIDER, RecordHandlerResultSig } = require('./constants');
+// const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+const {
+  UNISWAPV2_FACTORY,
+  SUSHISWAP_FACTORY,
+  CURVE_ADDRESS_PROVIDER,
+  YEARN_CONTROLLER,
+  WETH_TOKEN,
+  USDC_TOKEN,
+  RecordHandlerResultSig,
+} = require('./constants');
 
 const { expect } = require('chai');
 
@@ -129,6 +138,99 @@ function expectEqWithinBps(actual, expected, bps = 1) {
   expect(actual).to.be.bignumber.gte(lower);
 }
 
+async function etherProviderWeth() {
+  // Impersonate weth
+  await network.provider.send('hardhat_impersonateAccount', [WETH_TOKEN]);
+
+  return WETH_TOKEN;
+}
+
+async function tokenProviderUniV2(
+  token0 = USDC_TOKEN,
+  token1 = WETH_TOKEN,
+  factoryAddress = UNISWAPV2_FACTORY
+) {
+  if (token0 === WETH_TOKEN) {
+    token1 = USDC_TOKEN;
+  }
+  return _tokenProviderUniLike(token0, token1, factoryAddress);
+}
+
+async function tokenProviderSushi(
+  token0 = USDC_TOKEN,
+  token1 = WETH_TOKEN,
+  factoryAddress = SUSHISWAP_FACTORY
+) {
+  if (token0 === WETH_TOKEN) {
+    token1 = USDC_TOKEN;
+  }
+  return _tokenProviderUniLike(token0, token1, factoryAddress);
+}
+
+async function _tokenProviderUniLike(token0, token1, factoryAddress) {
+  const IUniswapV2Factory = artifacts.require('IUniswapV2Factory');
+  const factory = await IUniswapV2Factory.at(factoryAddress);
+  const pair = await factory.getPair.call(token0, token1);
+  _impersonateAndInjectEther(pair);
+
+  return pair;
+}
+
+async function tokenProviderCurveGauge(lpToken) {
+  // Get curve registry
+  const addressProvider = await ethers.getContractAt(
+    ['function get_registry() view returns (address)'],
+    CURVE_ADDRESS_PROVIDER
+  );
+  const registryAddress = await addressProvider.get_registry();
+
+  // Get curve gauge
+  const registry = await ethers.getContractAt(
+    [
+      'function get_pool_from_lp_token(address) view returns (address)',
+      'function get_gauges(address) view returns (address[10], int128[10])',
+    ],
+    registryAddress
+  );
+  const poolAddress = await registry.get_pool_from_lp_token(lpToken);
+  const gauges = await registry.get_gauges(poolAddress);
+
+  // Return non-zero gauge
+  let gauge;
+  for (let element of gauges[0]) {
+    if (element != ZERO_ADDRESS) {
+      gauge = element;
+      break;
+    }
+  }
+  _impersonateAndInjectEther(gauge);
+
+  return gauge;
+}
+
+async function tokenProviderYearn(token) {
+  // Get yearn vault
+  const controller = await ethers.getContractAt(
+    ['function vaults(address) view returns (address)'],
+    YEARN_CONTROLLER
+  );
+  const vault = await controller.vaults(token);
+  _impersonateAndInjectEther(vault);
+
+  return vault;
+}
+
+async function _impersonateAndInjectEther(address) {
+  // Impersonate pair
+  await network.provider.send('hardhat_impersonateAccount', [address]);
+
+  // Inject 1 ether
+  await network.provider.send('hardhat_setBalance', [
+    address,
+    '0xde0b6b3a7640000',
+  ]);
+}
+
 module.exports = {
   profileGas,
   evmSnapshot,
@@ -144,4 +246,9 @@ module.exports = {
   decodeOutputData,
   getFuncSig,
   expectEqWithinBps,
+  etherProviderWeth,
+  tokenProviderUniV2,
+  tokenProviderSushi,
+  tokenProviderCurveGauge,
+  tokenProviderYearn,
 };

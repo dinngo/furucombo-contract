@@ -1,21 +1,17 @@
-const {
-  balance,
-  BN,
-  constants,
-  ether,
-  expectEvent,
-  expectRevert,
-  time,
-} = require('@openzeppelin/test-helpers');
+const { balance, BN, ether } = require('@openzeppelin/test-helpers');
 const { tracker } = balance;
-const { latest } = time;
 const abi = require('ethereumjs-abi');
 const utils = web3.utils;
 
 const { expect } = require('chai');
 
-const { WETH_TOKEN, WETH_PROVIDER } = require('./utils/constants');
-const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
+const { WETH_TOKEN } = require('./utils/constants');
+const {
+  evmRevert,
+  evmSnapshot,
+  profileGas,
+  tokenProviderUniV2,
+} = require('./utils/utils');
 
 const HWeth = artifacts.require('HWeth');
 const Registry = artifacts.require('Registry');
@@ -24,20 +20,18 @@ const IToken = artifacts.require('IERC20');
 
 contract('Weth', function([_, user]) {
   const tokenAddress = WETH_TOKEN;
-  const tokenProviderAddress = WETH_PROVIDER;
+
   let id;
+  let tokenProviderAddress;
 
   before(async function() {
+    tokenProviderAddress = await tokenProviderUniV2(tokenAddress);
+
     this.token = await IToken.at(tokenAddress);
     this.registry = await Registry.new();
     this.proxy = await Proxy.new(this.registry.address);
     this.hWeth = await HWeth.new();
     await this.registry.register(this.hWeth.address, utils.asciiToHex('Weth'));
-
-    await hre.network.provider.request({
-      method: 'hardhat_impersonateAccount',
-      params: [WETH_PROVIDER],
-    });
   });
 
   beforeEach(async function() {

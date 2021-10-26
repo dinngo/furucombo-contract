@@ -5,12 +5,10 @@ const {
   ether,
   expectEvent,
   expectRevert,
-  time,
   send,
 } = require('@openzeppelin/test-helpers');
 const { ZERO_ADDRESS, MAX_UINT256 } = constants;
 const { tracker } = balance;
-const { latest } = time;
 const abi = require('ethereumjs-abi');
 const utils = web3.utils;
 
@@ -19,12 +17,8 @@ const { expect } = require('chai');
 const {
   BLOCK_REWARD,
   DAI_TOKEN,
-  DAI_PROVIDER,
   BAT_TOKEN,
-  BAT_PROVIDER,
   USDT_TOKEN,
-  USDT_PROVIDER,
-  ETH_PROVIDER_CONTRACT,
   NATIVE_TOKEN,
 } = require('./utils/constants');
 const {
@@ -33,6 +27,8 @@ const {
   profileGas,
   getHandlerReturn,
   getCallData,
+  etherProviderWeth,
+  tokenProviderUniV2,
 } = require('./utils/utils');
 
 const HFunds = artifacts.require('HFunds');
@@ -45,10 +41,20 @@ contract('Funds', function([_, user, someone]) {
   let id;
   let balanceUser;
   let balanceProxy;
-  const tokenAddresses = [DAI_TOKEN, BAT_TOKEN];
-  const providerAddresses = [DAI_PROVIDER, BAT_PROVIDER];
+  const token0Address = DAI_TOKEN;
+  const token1Address = BAT_TOKEN;
+
+  let provider0Address;
+  let provider1Address;
+  let usdtProviderAddress;
+  let ethProviderAddress;
 
   before(async function() {
+    provider0Address = await tokenProviderUniV2(token0Address);
+    provider1Address = await tokenProviderUniV2(token1Address);
+    usdtProviderAddress = await tokenProviderUniV2(USDT_TOKEN);
+    ethProviderAddress = await etherProviderWeth();
+
     this.registry = await Registry.new();
     this.proxy = await Proxy.new(this.registry.address);
     this.hFunds = await HFunds.new();
@@ -56,23 +62,6 @@ contract('Funds', function([_, user, someone]) {
       this.hFunds.address,
       utils.asciiToHex('Funds')
     );
-
-    await hre.network.provider.request({
-      method: 'hardhat_impersonateAccount',
-      params: [DAI_PROVIDER],
-    });
-    await hre.network.provider.request({
-      method: 'hardhat_impersonateAccount',
-      params: [BAT_PROVIDER],
-    });
-    await hre.network.provider.request({
-      method: 'hardhat_impersonateAccount',
-      params: [USDT_PROVIDER],
-    });
-    await hre.network.provider.request({
-      method: 'hardhat_impersonateAccount',
-      params: [ETH_PROVIDER_CONTRACT],
-    });
   });
 
   beforeEach(async function() {
@@ -85,8 +74,8 @@ contract('Funds', function([_, user, someone]) {
 
   describe('update tokens', function() {
     before(async function() {
-      this.token0 = await IToken.at(tokenAddresses[0]);
-      this.token1 = await IToken.at(tokenAddresses[1]);
+      this.token0 = await IToken.at(token0Address);
+      this.token1 = await IToken.at(token1Address);
       balanceUser = await tracker(user);
       balanceProxy = await tracker(this.proxy.address);
     });
@@ -97,10 +86,10 @@ contract('Funds', function([_, user, someone]) {
       const to = this.hFunds.address;
       const data = abi.simpleEncode('updateTokens(address[])', token);
       await this.token0.transfer(this.proxy.address, value[0], {
-        from: providerAddresses[0],
+        from: provider0Address,
       });
       await this.token1.transfer(this.proxy.address, value[1], {
-        from: providerAddresses[1],
+        from: provider1Address,
       });
 
       const receipt = await this.proxy.execMock(to, data, {
@@ -134,10 +123,10 @@ contract('Funds', function([_, user, someone]) {
       const data = abi.simpleEncode('updateTokens(address[])', token);
       // Transfer tokens to proxy first
       await this.token0.transfer(this.proxy.address, value[0], {
-        from: providerAddresses[0],
+        from: provider0Address,
       });
       // Proxy does not allow transfer ether from EOA so we use provider contract
-      await send.ether(ETH_PROVIDER_CONTRACT, this.proxy.address, value[1]);
+      await send.ether(ethProviderAddress, this.proxy.address, value[1]);
       await balanceUser.get();
 
       const receipt = await this.proxy.execMock(to, data, {
@@ -172,10 +161,10 @@ contract('Funds', function([_, user, someone]) {
       const data = abi.simpleEncode('updateTokens(address[])', token);
       // Transfer tokens to proxy first
       await this.token0.transfer(this.proxy.address, value[0], {
-        from: providerAddresses[0],
+        from: provider0Address,
       });
       // Proxy does not allow transfer ether from EOA so we use provider contract
-      await send.ether(ETH_PROVIDER_CONTRACT, this.proxy.address, value[1]);
+      await send.ether(ethProviderAddress, this.proxy.address, value[1]);
       await balanceUser.get();
 
       const receipt = await this.proxy.execMock(to, data, {
@@ -206,7 +195,7 @@ contract('Funds', function([_, user, someone]) {
   describe('inject', function() {
     describe('single token', function() {
       before(async function() {
-        this.token0 = await IToken.at(tokenAddresses[0]);
+        this.token0 = await IToken.at(token0Address);
         this.usdt = await IUsdt.at(USDT_TOKEN);
       });
 
@@ -220,7 +209,7 @@ contract('Funds', function([_, user, someone]) {
           value
         );
         await this.token0.transfer(user, value[0], {
-          from: providerAddresses[0],
+          from: provider0Address,
         });
         await this.token0.approve(this.proxy.address, value[0], { from: user });
 
@@ -254,7 +243,7 @@ contract('Funds', function([_, user, someone]) {
           value
         );
         await this.usdt.transfer(user, value[0], {
-          from: USDT_PROVIDER,
+          from: usdtProviderAddress,
         });
         await this.usdt.approve(this.proxy.address, value[0], { from: user });
 
@@ -281,8 +270,8 @@ contract('Funds', function([_, user, someone]) {
 
     describe('multiple tokens', function() {
       before(async function() {
-        this.token0 = await IToken.at(tokenAddresses[0]);
-        this.token1 = await IToken.at(tokenAddresses[1]);
+        this.token0 = await IToken.at(token0Address);
+        this.token1 = await IToken.at(token1Address);
       });
 
       it('normal', async function() {
@@ -295,11 +284,11 @@ contract('Funds', function([_, user, someone]) {
           value
         );
         await this.token0.transfer(user, value[0], {
-          from: providerAddresses[0],
+          from: provider0Address,
         });
         await this.token0.approve(this.proxy.address, value[0], { from: user });
         await this.token1.transfer(user, value[1], {
-          from: providerAddresses[1],
+          from: provider1Address,
         });
         await this.token1.approve(this.proxy.address, value[1], { from: user });
 
@@ -339,14 +328,14 @@ contract('Funds', function([_, user, someone]) {
 
   describe('send', function() {
     before(async function() {
-      this.token = await IToken.at(tokenAddresses[0]);
+      this.token = await IToken.at(token0Address);
       this.usdt = await IUsdt.at(USDT_TOKEN);
     });
 
     describe('token', function() {
       it('normal', async function() {
         const token = this.token.address;
-        const providerAddress = providerAddresses[0];
+        const providerAddress = provider0Address;
         const value = ether('100');
         const receiver = someone;
         const to = this.hFunds.address;
@@ -378,7 +367,7 @@ contract('Funds', function([_, user, someone]) {
 
       it('USDT', async function() {
         const token = this.usdt.address;
-        const providerAddress = USDT_PROVIDER;
+        const providerAddress = usdtProviderAddress;
         const value = new BN('1000000');
         const receiver = someone;
         const to = this.hFunds.address;
@@ -411,7 +400,7 @@ contract('Funds', function([_, user, someone]) {
 
       it('maximum', async function() {
         const token = this.token.address;
-        const providerAddress = providerAddresses[0];
+        const providerAddress = provider0Address;
         const value = ether('10');
         const receiver = someone;
         const to = this.hFunds.address;
@@ -443,7 +432,7 @@ contract('Funds', function([_, user, someone]) {
 
       it('send 0 token', async function() {
         const token = this.token.address;
-        const providerAddress = providerAddresses[0];
+        const providerAddress = provider0Address;
         const value = ether('0');
         const receiver = someone;
         const to = this.hFunds.address;
@@ -480,7 +469,7 @@ contract('Funds', function([_, user, someone]) {
 
       it('insufficient token', async function() {
         const token = this.token.address;
-        const providerAddress = providerAddresses[0];
+        const providerAddress = provider0Address;
         const value = ether('100');
         const receiver = someone;
         const to = this.hFunds.address;
@@ -569,7 +558,7 @@ contract('Funds', function([_, user, someone]) {
     describe('multiple tokens', function() {
       before(async function() {
         this.token0 = this.usdt;
-        this.token1 = await IToken.at(tokenAddresses[1]);
+        this.token1 = await IToken.at(token1Address);
       });
 
       it('multiple tokens', async function() {
@@ -585,10 +574,10 @@ contract('Funds', function([_, user, someone]) {
         );
 
         await this.token0.transfer(this.proxy.address, value[0], {
-          from: USDT_PROVIDER,
+          from: usdtProviderAddress,
         });
         await this.token1.transfer(this.proxy.address, value[1], {
-          from: providerAddresses[1],
+          from: provider1Address,
         });
 
         await this.proxy.updateTokenMock(this.token0.address);
@@ -638,7 +627,7 @@ contract('Funds', function([_, user, someone]) {
         );
 
         await this.token1.transfer(this.proxy.address, value[1], {
-          from: providerAddresses[1],
+          from: provider1Address,
         });
 
         await this.proxy.updateTokenMock(this.token1.address);
@@ -678,7 +667,7 @@ contract('Funds', function([_, user, someone]) {
         );
 
         await this.token1.transfer(this.proxy.address, value[1], {
-          from: providerAddresses[1],
+          from: provider1Address,
         });
 
         await this.proxy.updateTokenMock(this.token1.address);
@@ -718,7 +707,7 @@ contract('Funds', function([_, user, someone]) {
         );
 
         await this.token1.transfer(this.proxy.address, value[1], {
-          from: providerAddresses[1],
+          from: provider1Address,
         });
 
         await this.proxy.updateTokenMock(this.token1.address);
@@ -762,7 +751,7 @@ contract('Funds', function([_, user, someone]) {
         );
 
         await this.token1.transfer(this.proxy.address, value[1], {
-          from: providerAddresses[1],
+          from: provider1Address,
         });
 
         await this.proxy.updateTokenMock(this.token1.address);
@@ -783,8 +772,8 @@ contract('Funds', function([_, user, someone]) {
       before(async function() {
         // send dummy tx to get miner address
         const receipt = await send.ether(
-          ETH_PROVIDER_CONTRACT,
-          ETH_PROVIDER_CONTRACT,
+          ethProviderAddress,
+          ethProviderAddress,
           0
         );
         const block = await web3.eth.getBlock(receipt.blockNumber);
@@ -811,14 +800,14 @@ contract('Funds', function([_, user, someone]) {
 
   describe('get balance', function() {
     before(async function() {
-      this.token = await IToken.at(tokenAddresses[0]);
+      this.token = await IToken.at(token0Address);
       this.usdt = await IUsdt.at(USDT_TOKEN);
     });
     describe('Ether', async function() {
       it('normal', async function() {
         const token = constants.ZERO_ADDRESS;
         const value = ether('1');
-        const providerAddress = providerAddresses[0];
+        const providerAddress = provider0Address;
         const to = this.hFunds.address;
         const data = abi.simpleEncode(
           'getBalance(address):(uint256)',
@@ -843,7 +832,7 @@ contract('Funds', function([_, user, someone]) {
         it('normal', async function() {
           const token = this.token.address;
           const value = ether('1');
-          const providerAddress = providerAddresses[0];
+          const providerAddress = provider0Address;
           const to = this.hFunds.address;
           const data = abi.simpleEncode('getBalance(address):(uint256)', token);
           await this.token.transfer(this.proxy.address, value, {
@@ -868,8 +857,8 @@ contract('Funds', function([_, user, someone]) {
 
   describe('check slippage', function() {
     before(async function() {
-      this.token0 = await IToken.at(tokenAddresses[0]);
-      this.token1 = await IToken.at(tokenAddresses[1]);
+      this.token0 = await IToken.at(token0Address);
+      this.token1 = await IToken.at(token1Address);
     });
 
     it('normal', async function() {
@@ -883,11 +872,11 @@ contract('Funds', function([_, user, someone]) {
       );
 
       await this.token0.transfer(this.proxy.address, value[0], {
-        from: providerAddresses[0],
+        from: provider0Address,
       });
 
       await this.token1.transfer(this.proxy.address, value[1], {
-        from: providerAddresses[1],
+        from: provider1Address,
       });
 
       const receipt = await this.proxy.execMock(to, data, {
@@ -909,11 +898,11 @@ contract('Funds', function([_, user, someone]) {
       );
 
       await this.token0.transfer(this.proxy.address, value[0], {
-        from: providerAddresses[0],
+        from: provider0Address,
       });
 
       await this.token1.transfer(this.proxy.address, value[1], {
-        from: providerAddresses[1],
+        from: provider1Address,
       });
       revertValue = ether('1');
 
@@ -938,11 +927,11 @@ contract('Funds', function([_, user, someone]) {
 
       revertValue = ether('1');
       await this.token0.transfer(this.proxy.address, revertValue, {
-        from: providerAddresses[0],
+        from: provider0Address,
       });
 
       await this.token1.transfer(this.proxy.address, value[1], {
-        from: providerAddresses[1],
+        from: provider1Address,
       });
 
       await expectRevert(

@@ -3,21 +3,15 @@ const {
   BN,
   constants,
   ether,
-  expectEvent,
   expectRevert,
-  time,
   send,
 } = require('@openzeppelin/test-helpers');
-const { tracker } = balance;
-const { duration, increase, latest } = time;
 const abi = require('ethereumjs-abi');
-const utils = web3.utils;
 
 const { expect } = require('chai');
 
 const {
   DAI_TOKEN,
-  DAI_PROVIDER,
   CDAI,
   CWBTC,
   CETHER,
@@ -29,14 +23,12 @@ const {
 const {
   evmRevert,
   evmSnapshot,
-  profileGas,
   mulPercent,
+  tokenProviderUniV2,
 } = require('./utils/utils');
-const { getFCompoundActionsBytecodeBySolc } = require('./utils/getBytecode');
 
 const IDSProxyRegistry = artifacts.require('IDSProxyRegistry');
 const IDSProxy = artifacts.require('IDSProxy');
-const ISingletonFactory = artifacts.require('ISingletonFactory');
 const IComptroller = artifacts.require('IComptroller');
 const ICEther = artifacts.require('ICEther');
 const ICToken = artifacts.require('ICToken');
@@ -44,12 +36,15 @@ const IToken = artifacts.require('IERC20');
 const ActionsMock = artifacts.require('ActionsMock');
 
 contract('FCompoundActions', function([_, user]) {
-  let id;
   const tokenAddress = DAI_TOKEN;
   const cTokenAddress = CDAI;
-  const providerAddress = DAI_PROVIDER;
+
+  let id;
+  let providerAddress;
 
   before(async function() {
+    providerAddress = await tokenProviderUniV2(tokenAddress);
+
     this.dsRegistry = await IDSProxyRegistry.at(MAKER_PROXY_REGISTRY);
 
     const dsProxyAddr = await this.dsRegistry.proxies.call(user);
@@ -64,11 +59,6 @@ contract('FCompoundActions', function([_, user]) {
     this.cEther = await ICEther.at(CETHER);
     this.comptroller = await IComptroller.at(COMPOUND_COMPTROLLER);
     this.actionsMock = await ActionsMock.new();
-
-    await hre.network.provider.request({
-      method: 'hardhat_impersonateAccount',
-      params: [DAI_PROVIDER],
-    });
   });
 
   beforeEach(async function() {

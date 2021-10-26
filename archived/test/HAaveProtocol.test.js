@@ -3,24 +3,18 @@ const {
   BN,
   constants,
   ether,
-  expectEvent,
   expectRevert,
-  time,
 } = require('@openzeppelin/test-helpers');
 const { MAX_UINT256 } = constants;
 const { tracker } = balance;
-const { latest } = time;
 const abi = require('ethereumjs-abi');
-const util = require('ethereumjs-util');
 const utils = web3.utils;
 
 const { expect } = require('chai');
 
 const {
   ETH_TOKEN,
-  ETH_PROVIDER,
   DAI_TOKEN,
-  DAI_PROVIDER,
   AAVEPROTOCOL_PROVIDER,
   AETHER,
   ADAI,
@@ -30,6 +24,7 @@ const {
   evmSnapshot,
   profileGas,
   getHandlerReturn,
+  tokenProviderUniV2,
 } = require('./utils/utils');
 
 const HAave = artifacts.require('HAaveProtocol');
@@ -43,15 +38,14 @@ const IProvider = artifacts.require('ILendingPoolAddressesProvider');
 contract('Aave', function([_, user]) {
   const aTokenAddress = ADAI;
   const tokenAddress = DAI_TOKEN;
-  const providerAddress = DAI_PROVIDER;
 
   let id;
   let balanceUser;
-  let balanceProxy;
-  let aEtherUser;
-  let aTokenUser;
+  let providerAddress;
 
   before(async function() {
+    providerAddress = await tokenProviderUniV2(tokenAddress);
+
     this.registry = await Registry.new();
     this.proxy = await Proxy.new(this.registry.address);
     this.hAave = await HAave.new();
@@ -67,11 +61,6 @@ contract('Aave', function([_, user]) {
     this.aEther = await IAToken.at(AETHER);
     this.token = await IToken.at(tokenAddress);
     this.aToken = await IAToken.at(aTokenAddress);
-
-    await hre.network.provider.request({
-      method: 'hardhat_impersonateAccount',
-      params: [DAI_PROVIDER],
-    });
   });
 
   beforeEach(async function() {

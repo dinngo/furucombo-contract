@@ -1,22 +1,17 @@
 const {
   balance,
   BN,
-  constants,
   ether,
   expectEvent,
-  expectRevert,
 } = require('@openzeppelin/test-helpers');
 const { tracker } = balance;
-const abi = require('ethereumjs-abi');
 const utils = web3.utils;
 
 const { expect } = require('chai');
 
 const {
   DAI_TOKEN,
-  DAI_PROVIDER,
   MATIC_TOKEN,
-  MATIC_PROVIDER,
   POLYGON_POS_PREDICATE_ERC20,
   POLYGON_POS_PREDICATE_ETH,
   POLYGON_PLASMA_DEPOSIT_MANAGER,
@@ -26,6 +21,7 @@ const {
   evmSnapshot,
   profileGas,
   getCallData,
+  tokenProviderUniV2,
 } = require('./utils/utils');
 const { MAX_UINT256 } = require('@openzeppelin/test-helpers/src/constants');
 
@@ -38,10 +34,15 @@ const IPlasmaLocker = artifacts.require('IDepositManager');
 
 contract('Polygon Token Bridge', function([_, user]) {
   const tokenAddress = DAI_TOKEN;
-  const providerAddress = DAI_PROVIDER;
+
   let id;
+  let providerAddress;
+  let maticProviderAddress;
 
   before(async function() {
+    providerAddress = await tokenProviderUniV2(tokenAddress);
+    maticProviderAddress = await tokenProviderUniV2(MATIC_TOKEN);
+
     this.registry = await Registry.new();
     this.proxy = await Proxy.new(this.registry.address);
     this.hPolygon = await HPolygon.new();
@@ -54,15 +55,6 @@ contract('Polygon Token Bridge', function([_, user]) {
     this.lockerPosEther = await IPoSLocker.at(POLYGON_POS_PREDICATE_ETH);
     this.lockerPosErc20 = await IPoSLocker.at(POLYGON_POS_PREDICATE_ERC20);
     this.lockerPlasma = await IPlasmaLocker.at(POLYGON_PLASMA_DEPOSIT_MANAGER);
-
-    await hre.network.provider.request({
-      method: 'hardhat_impersonateAccount',
-      params: [DAI_PROVIDER],
-    });
-    await hre.network.provider.request({
-      method: 'hardhat_impersonateAccount',
-      params: [MATIC_PROVIDER],
-    });
   });
 
   beforeEach(async function() {
@@ -314,7 +306,7 @@ contract('Polygon Token Bridge', function([_, user]) {
 
         // Send tokens to proxy
         await this.matic.transfer(this.proxy.address, value, {
-          from: MATIC_PROVIDER,
+          from: maticProviderAddress,
         });
         await this.proxy.updateTokenMock(this.matic.address);
 
@@ -372,7 +364,7 @@ contract('Polygon Token Bridge', function([_, user]) {
 
         // Send tokens to proxy
         await this.matic.transfer(this.proxy.address, value, {
-          from: MATIC_PROVIDER,
+          from: maticProviderAddress,
         });
         await this.proxy.updateTokenMock(this.matic.address);
 

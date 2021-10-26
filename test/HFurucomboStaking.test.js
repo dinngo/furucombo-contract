@@ -5,26 +5,28 @@ const {
   ether,
   expectEvent,
   expectRevert,
-  time,
 } = require('@openzeppelin/test-helpers');
 const { MAX_UINT256 } = constants;
 const { tracker } = balance;
-const { latest } = time;
 const abi = require('ethereumjs-abi');
 const utils = web3.utils;
 
 const { expect } = require('chai');
 
 const {
-  BALANCER_DAI_ETH,
-  BALANCER_DAI_ETH_PROVIDER,
+  DAI_TOKEN,
   COMBO_TOTAL_SUPPLY,
   COMBO_CLAIM_USER,
   COMBO_CLAIM_AMOUNT,
   COMBO_CLAIM_MERKLE_ROOT,
   COMBO_CLAIM_MERKLE_PROOFS,
 } = require('./utils/constants');
-const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
+const {
+  evmRevert,
+  evmSnapshot,
+  profileGas,
+  tokenProviderUniV2,
+} = require('./utils/utils');
 
 const HFurucombo = artifacts.require('HFurucomboStaking');
 const Registry = artifacts.require('Registry');
@@ -35,10 +37,12 @@ const Staking = artifacts.require('Staking');
 const MerkleRedeem = artifacts.require('MerkleRedeem');
 
 contract('Furucombo', function([_, user, someone]) {
-  const tokenAddress = BALANCER_DAI_ETH;
-  const providerAddress = BALANCER_DAI_ETH_PROVIDER;
+  const tokenAddress = DAI_TOKEN;
+  let providerAddress;
 
   before(async function() {
+    providerAddress = await tokenProviderUniV2(tokenAddress);
+
     this.registry = await Registry.new();
     this.proxy = await Proxy.new(this.registry.address);
     this.hFurucombo = await HFurucombo.new();
@@ -52,11 +56,6 @@ contract('Furucombo', function([_, user, someone]) {
     this.stakingRedeem = await MerkleRedeem.at(await this.staking.redeemable());
     this.merkleRedeem = await MerkleRedeem.new(this.rewardToken.address);
     this.token = await IToken.at(tokenAddress);
-
-    await hre.network.provider.request({
-      method: 'hardhat_impersonateAccount',
-      params: [BALANCER_DAI_ETH_PROVIDER],
-    });
   });
 
   beforeEach(async function() {
@@ -177,7 +176,7 @@ contract('Furucombo', function([_, user, someone]) {
           from: user,
           value: ether('0.1'),
         }),
-        'ERR_INSUFFICIENT_BAL'
+        'Dai/insufficient-balance'
       );
     });
 

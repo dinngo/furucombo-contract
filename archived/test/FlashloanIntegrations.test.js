@@ -3,8 +3,6 @@ const {
   BN,
   constants,
   ether,
-  expectEvent,
-  expectRevert,
   time,
 } = require('@openzeppelin/test-helpers');
 const { tracker } = balance;
@@ -17,12 +15,10 @@ const utils = web3.utils;
 const { expect } = require('chai');
 
 const {
-  ETH_PROVIDER,
   ETH_TOKEN,
   WETH_TOKEN,
   DAI_TOKEN,
   DAI_UNISWAP,
-  BAT_TOKEN,
   AAVEPROTOCOL_PROVIDER,
   UNISWAPV2_ROUTER02,
 } = require('./utils/constants');
@@ -54,7 +50,6 @@ contract('Aave flashloan', function([_, user]) {
     await this.registry.register(this.hMock.address, utils.asciiToHex('Mock'));
     this.provider = await IProvider.at(AAVEPROTOCOL_PROVIDER);
     const lendingPoolAddress = await this.provider.getLendingPool.call();
-    const lendingPoolCoreAddress = await this.provider.getLendingPoolCore.call();
     this.lendingPool = await ILendingPool.at(lendingPoolAddress);
     await this.registry.registerCaller(lendingPoolAddress, this.hAave.address);
   });
@@ -70,7 +65,6 @@ contract('Aave flashloan', function([_, user]) {
 
   describe('Swap and Add liquidity', function() {
     const tokenAddress = DAI_TOKEN;
-    const uniswapAddress = DAI_UNISWAP;
 
     before(async function() {
       this.hUniswap = await HUniswapV2.new();

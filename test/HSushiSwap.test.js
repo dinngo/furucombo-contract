@@ -3,19 +3,15 @@ const {
   BN,
   constants,
   ether,
-  expectEvent,
   expectRevert,
-  time,
 } = require('@openzeppelin/test-helpers');
 const { tracker } = balance;
 const { MAX_UINT256 } = constants;
-const { latest } = time;
 const abi = require('ethereumjs-abi');
 const utils = web3.utils;
 const { expect } = require('chai');
 const {
   DAI_TOKEN,
-  DAI_PROVIDER,
   SUSHI_TOKEN,
   WETH_TOKEN,
   SUSHISWAP_ROUTER,
@@ -26,6 +22,7 @@ const {
   mulPercent,
   profileGas,
   getHandlerReturn,
+  tokenProviderUniV2,
 } = require('./utils/utils');
 
 const HSushiSwap = artifacts.require('HSushiSwap');
@@ -47,11 +44,6 @@ contract('SushiSwap Swap', function([_, user, someone]) {
     );
     this.router = await IUniswapV2Router.at(SUSHISWAP_ROUTER);
     this.proxy = await Proxy.new(this.registry.address);
-
-    await hre.network.provider.request({
-      method: 'hardhat_impersonateAccount',
-      params: [DAI_PROVIDER],
-    });
   });
 
   beforeEach(async function() {
@@ -344,13 +336,15 @@ contract('SushiSwap Swap', function([_, user, someone]) {
 
   describe('Token to Ether', function() {
     const tokenAddress = DAI_TOKEN;
-    const providerAddress = DAI_PROVIDER;
 
     let balanceUser;
     let balanceProxy;
     let tokenUser;
+    let providerAddress;
 
     before(async function() {
+      providerAddress = await tokenProviderUniV2(tokenAddress);
+
       this.token = await IToken.at(tokenAddress);
     });
 
@@ -627,12 +621,14 @@ contract('SushiSwap Swap', function([_, user, someone]) {
   describe('Token to Token', function() {
     const token0Address = DAI_TOKEN;
     const token1Address = SUSHI_TOKEN;
-    const providerAddress = DAI_PROVIDER;
 
     let token0User;
     let token1User;
+    let providerAddress;
 
     before(async function() {
+      providerAddress = await tokenProviderUniV2(token0Address);
+
       this.token0 = await IToken.at(token0Address);
       this.token1 = await IToken.at(token1Address);
     });

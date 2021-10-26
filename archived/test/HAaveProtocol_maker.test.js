@@ -1,15 +1,6 @@
-const {
-  balance,
-  BN,
-  constants,
-  ether,
-  expectEvent,
-  expectRevert,
-  time,
-} = require('@openzeppelin/test-helpers');
+const { balance, BN, constants, ether } = require('@openzeppelin/test-helpers');
 const { tracker } = balance;
 const { ZERO_BYTES32 } = constants;
-const { latest } = time;
 const abi = require('ethereumjs-abi');
 const util = require('ethereumjs-util');
 const utils = web3.utils;
@@ -18,12 +9,9 @@ const { expect } = require('chai');
 
 const {
   ETH_TOKEN,
-  ETH_PROVIDER,
   DAI_TOKEN,
-  DAI_PROVIDER,
   AAVEPROTOCOL_PROVIDER,
   MAKER_CDP_MANAGER,
-  MAKER_PROXY_FACTORY,
   MAKER_PROXY_ACTIONS,
   MAKER_PROXY_REGISTRY,
   MAKER_MCD_JUG,
@@ -44,9 +32,6 @@ const IDSProxy = artifacts.require('IDSProxy');
 const IDSProxyRegistry = artifacts.require('IDSProxyRegistry');
 const IMakerManager = artifacts.require('IMakerManager');
 const IMakerVat = artifacts.require('IMakerVat');
-
-const RAY = new BN('1000000000000000000000000000');
-const RAD = new BN('1000000000000000000000000000000000000000000000');
 
 async function getCdpInfo(cdp) {
   const cdpManager = await IMakerManager.at(MAKER_CDP_MANAGER);
@@ -76,7 +61,7 @@ async function approveCdp(cdp, owner, user) {
   await proxy.execute(MAKER_PROXY_ACTIONS, data, { from: owner });
 }
 
-contract('Aave flashloan', function([_, user]) {
+contract('Aave flashloan maker', function([_, user]) {
   let id;
   let balanceUser;
   let balanceProxy;

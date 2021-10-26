@@ -6,18 +6,15 @@ const abi = require('ethereumjs-abi');
 const utils = web3.utils;
 const {
   CURVE_YCRV,
-  CURVE_YCRV_PROVIDER,
   YEARN_YCRV_VAULT,
   YEARN_YWETH_VAULT,
-  ALINK,
-  ALINK_PROVIDER,
-  YEARN_ALINK_VAULT,
 } = require('./utils/constants');
 const {
   evmRevert,
   evmSnapshot,
   profileGas,
   getHandlerReturn,
+  tokenProviderCurveGauge,
 } = require('./utils/utils');
 
 const Registry = artifacts.require('Registry');
@@ -28,8 +25,11 @@ const IToken = artifacts.require('IERC20');
 
 contract('YVault', function([_, user]) {
   let id;
+  let yCrvProviderAddress;
 
   before(async function() {
+    yCrvProviderAddress = await tokenProviderCurveGauge(CURVE_YCRV);
+
     this.registry = await Registry.new();
     this.proxy = await Proxy.new(this.registry.address);
     this.hYVault = await HYVault.new();
@@ -37,15 +37,6 @@ contract('YVault', function([_, user]) {
       this.hYVault.address,
       utils.asciiToHex('HYVault')
     );
-
-    await hre.network.provider.request({
-      method: 'hardhat_impersonateAccount',
-      params: [CURVE_YCRV_PROVIDER],
-    });
-    await hre.network.provider.request({
-      method: 'hardhat_impersonateAccount',
-      params: [ALINK_PROVIDER],
-    });
   });
 
   beforeEach(async function() {
@@ -67,7 +58,7 @@ contract('YVault', function([_, user]) {
         amount
       );
       await token.transfer(this.proxy.address, amount, {
-        from: CURVE_YCRV_PROVIDER,
+        from: yCrvProviderAddress,
       });
       await this.proxy.updateTokenMock(token.address);
       const ratio = await vault.getPricePerFullShare.call();
@@ -112,7 +103,7 @@ contract('YVault', function([_, user]) {
         MAX_UINT256
       );
       await token.transfer(this.proxy.address, amount, {
-        from: CURVE_YCRV_PROVIDER,
+        from: yCrvProviderAddress,
       });
       await this.proxy.updateTokenMock(token.address);
       const ratio = await vault.getPricePerFullShare.call();
@@ -243,133 +234,6 @@ contract('YVault', function([_, user]) {
   });
 
   describe('Withdraw', function() {
-    it('aLINK delegated vault', async function() {
-      const vault = await IYVault.at(YEARN_ALINK_VAULT);
-      const token = await IToken.at(ALINK);
-
-      // User deposits aLINK to get yaLINK
-      const amountDeposit = ether('1');
-
-      await token.transfer(user, amountDeposit, {
-        from: ALINK_PROVIDER,
-      });
-      await token.approve(vault.address, amountDeposit, {
-        from: user,
-      });
-      await vault.deposit(amountDeposit, {
-        from: user,
-      });
-
-      // User withdraws aLINK by yaLINK
-      const amount = await vault.balanceOf.call(user);
-      const data = abi.simpleEncode(
-        'withdraw(address,uint256)',
-        vault.address,
-        amount
-      );
-      await vault.transfer(this.proxy.address, amount, {
-        from: user,
-      });
-      await this.proxy.updateTokenMock(vault.address);
-      const tokenUser = await token.balanceOf.call(user);
-      const ratio = await vault.getPricePerFullShare.call();
-      const receipt = await this.proxy.execMock(this.hYVault.address, data, {
-        from: user,
-        value: ether('0.1'),
-      });
-
-      // Get handler return result
-      const handlerReturn = utils.toBN(
-        getHandlerReturn(receipt, ['uint256'])[0]
-      );
-      const tokenUserEnd = await token.balanceOf.call(user);
-      expect(handlerReturn).to.be.bignumber.eq(tokenUserEnd.sub(tokenUser));
-
-      // Check proxy balance
-      expect(await vault.balanceOf.call(this.proxy.address)).to.be.zero;
-      expect(await token.balanceOf.call(this.proxy.address)).to.be.zero;
-
-      // Check user vault balance
-      expect(await vault.balanceOf.call(user)).to.be.zero;
-
-      // Check user token balance <= 100.1% expected result
-      expect(tokenUserEnd).to.be.bignumber.gte(
-        amount.mul(ratio).div(ether('1'))
-      );
-      expect(tokenUserEnd).to.be.bignumber.lte(
-        amount
-          .mul(ratio)
-          .div(ether('1'))
-          .mul(new BN('1001'))
-          .div(new BN('1000'))
-      );
-
-      profileGas(receipt);
-    });
-
-    it('aLINK delegated vault with max amount', async function() {
-      const vault = await IYVault.at(YEARN_ALINK_VAULT);
-      const token = await IToken.at(ALINK);
-
-      // User deposits aLINK to get yaLINK
-      const amountDeposit = ether('1');
-      await token.transfer(user, amountDeposit, {
-        from: ALINK_PROVIDER,
-      });
-      await token.approve(vault.address, amountDeposit, {
-        from: user,
-      });
-      await vault.deposit(amountDeposit, {
-        from: user,
-      });
-
-      // User withdraws aLINK by yaLINK
-      const amount = await vault.balanceOf.call(user);
-      const data = abi.simpleEncode(
-        'withdraw(address,uint256)',
-        vault.address,
-        MAX_UINT256
-      );
-      await vault.transfer(this.proxy.address, amount, {
-        from: user,
-      });
-      await this.proxy.updateTokenMock(vault.address);
-      const tokenUser = await token.balanceOf.call(user);
-      const ratio = await vault.getPricePerFullShare.call();
-      const receipt = await this.proxy.execMock(this.hYVault.address, data, {
-        from: user,
-        value: ether('0.1'),
-      });
-
-      // Get handler return result
-      const handlerReturn = utils.toBN(
-        getHandlerReturn(receipt, ['uint256'])[0]
-      );
-      const tokenUserEnd = await token.balanceOf.call(user);
-      expect(handlerReturn).to.be.bignumber.eq(tokenUserEnd.sub(tokenUser));
-
-      // Check proxy balance
-      expect(await vault.balanceOf.call(this.proxy.address)).to.be.zero;
-      expect(await token.balanceOf.call(this.proxy.address)).to.be.zero;
-
-      // Check user vault balance
-      expect(await vault.balanceOf.call(user)).to.be.zero;
-
-      // Check user token balance <= 100.1% expected result
-      expect(tokenUserEnd).to.be.bignumber.gte(
-        amount.mul(ratio).div(ether('1'))
-      );
-      expect(tokenUserEnd).to.be.bignumber.lte(
-        amount
-          .mul(ratio)
-          .div(ether('1'))
-          .mul(new BN('1001'))
-          .div(new BN('1000'))
-      );
-
-      profileGas(receipt);
-    });
-
     it('yWETH vault', async function() {
       const vault = await IYVault.at(YEARN_YWETH_VAULT);
 

@@ -7,13 +7,7 @@ const {
 const { tracker } = balance;
 const utils = web3.utils;
 const { expect } = require('chai');
-const {
-  DAI_TOKEN,
-  DAI_PROVIDER,
-  USDC_TOKEN,
-  WETH_TOKEN,
-  WETH_PROVIDER,
-} = require('./utils/constants');
+const { DAI_TOKEN, USDC_TOKEN, WETH_TOKEN } = require('./utils/constants');
 const {
   evmRevert,
   evmSnapshot,
@@ -22,6 +16,7 @@ const {
   getHandlerReturn,
   getFuncSig,
   getCallData,
+  tokenProviderYearn,
 } = require('./utils/utils');
 const fetch = require('node-fetch');
 const queryString = require('query-string');
@@ -79,15 +74,6 @@ contract('OneInchV3 Swap', function([_, user]) {
       utils.asciiToHex('OneInchV3')
     );
     this.proxy = await Proxy.new(this.registry.address);
-
-    await hre.network.provider.request({
-      method: 'hardhat_impersonateAccount',
-      params: [WETH_PROVIDER],
-    });
-    await hre.network.provider.request({
-      method: 'hardhat_impersonateAccount',
-      params: [DAI_PROVIDER],
-    });
   });
 
   beforeEach(async function() {
@@ -357,13 +343,15 @@ contract('OneInchV3 Swap', function([_, user]) {
 
   describe('Token to Ether', function() {
     const tokenAddress = DAI_TOKEN;
-    const providerAddress = DAI_PROVIDER;
 
     let balanceUser;
     let balanceProxy;
     let tokenUser;
+    let providerAddress;
 
     before(async function() {
+      providerAddress = await tokenProviderYearn(tokenAddress);
+
       this.token = await IToken.at(tokenAddress);
     });
 
@@ -528,8 +516,6 @@ contract('OneInchV3 Swap', function([_, user]) {
   describe('Token to Token', function() {
     const token0Address = DAI_TOKEN;
     const token1Address = USDC_TOKEN;
-    const providerAddress = DAI_PROVIDER;
-    const wethProviderAddress = WETH_PROVIDER;
 
     let balanceUser;
     let balanceProxy;
@@ -537,8 +523,11 @@ contract('OneInchV3 Swap', function([_, user]) {
     let token1User;
     let wethUser;
     let wethProxy;
+    let providerAddress;
 
     before(async function() {
+      providerAddress = await tokenProviderYearn(token0Address);
+
       this.token0 = await IToken.at(token0Address);
       this.token1 = await IToken.at(token1Address);
       this.weth = await IToken.at(WETH_TOKEN);

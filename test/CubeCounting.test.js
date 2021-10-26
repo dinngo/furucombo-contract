@@ -3,7 +3,6 @@ const {
   BN,
   constants,
   ether,
-  expectEvent,
   expectRevert,
   time,
 } = require('@openzeppelin/test-helpers');
@@ -13,16 +12,13 @@ const { latest } = time;
 const abi = require('ethereumjs-abi');
 const utils = web3.utils;
 
-const { expect } = require('chai');
-
 const {
   DAI_TOKEN,
   WETH_TOKEN,
-  DAI_UNISWAP,
   UNISWAPV2_ROUTER02,
   CDAI,
 } = require('./utils/constants');
-const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
+const { evmRevert, evmSnapshot } = require('./utils/utils');
 
 const HUniswapV2 = artifacts.require('HUniswapV2');
 const HCToken = artifacts.require('HCToken');
@@ -38,8 +34,6 @@ contract('CubeCounting', function([_, user]) {
   const tokenAddress = DAI_TOKEN;
 
   let id;
-  let balanceUser;
-  let balanceProxy;
 
   before(async function() {
     this.registry = await Registry.new();
@@ -57,8 +51,6 @@ contract('CubeCounting', function([_, user]) {
   });
 
   describe('Uniswap Swap', function() {
-    const uniswapAddress = DAI_UNISWAP;
-
     before(async function() {
       this.hUniswap = await HUniswapV2.new();
       await this.registry.register(

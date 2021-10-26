@@ -12,13 +12,13 @@ const utils = web3.utils;
 
 const { expect } = require('chai');
 
+const { COMBO_TOKEN, RCOMBO_TOKEN } = require('./utils/constants');
 const {
-  COMBO_TOKEN,
-  COMBO_PROVIDER,
-  RCOMBO_TOKEN,
-  RCOMBO_PROVIDER,
-} = require('./utils/constants');
-const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
+  evmRevert,
+  evmSnapshot,
+  profileGas,
+  tokenProviderUniV2,
+} = require('./utils/utils');
 
 const HFurucomboRCOMBO = artifacts.require('HFurucomboRCOMBO');
 const Registry = artifacts.require('Registry');
@@ -27,6 +27,9 @@ const IToken = artifacts.require('IERC20');
 const IRCOMBO = artifacts.require('IRCOMBO');
 
 contract('Furucombo rCOMBO', function([_, user]) {
+  let comboProviderAddress;
+  let rCOMBOProviderAddress;
+
   before(async function() {
     this.registry = await Registry.new();
     this.proxy = await Proxy.new(this.registry.address);
@@ -38,22 +41,19 @@ contract('Furucombo rCOMBO', function([_, user]) {
     this.rCOMBO = await IRCOMBO.at(RCOMBO_TOKEN);
     this.combo = await IToken.at(COMBO_TOKEN);
 
-    await hre.network.provider.request({
-      method: 'hardhat_impersonateAccount',
-      params: [COMBO_PROVIDER],
-    });
-    await hre.network.provider.request({
-      method: 'hardhat_impersonateAccount',
-      params: [RCOMBO_PROVIDER],
-    });
-
-    await this.combo.transfer(this.rCOMBO.address, ether('100'), {
-      from: COMBO_PROVIDER,
-    });
+    comboProviderAddress = await tokenProviderUniV2(this.combo.address);
+    rCOMBOProviderAddress = await tokenProviderUniV2(
+      this.rCOMBO.address,
+      this.combo.address
+    );
   });
 
   beforeEach(async function() {
     id = await evmSnapshot();
+
+    await this.combo.transfer(this.rCOMBO.address, ether('100'), {
+      from: comboProviderAddress,
+    });
   });
 
   afterEach(async function() {
@@ -73,7 +73,7 @@ contract('Furucombo rCOMBO', function([_, user]) {
 
       // Send rCOMBO to proxy
       await this.rCOMBO.transfer(this.proxy.address, amount, {
-        from: RCOMBO_PROVIDER,
+        from: rCOMBOProviderAddress,
       });
       await this.proxy.updateTokenMock(this.rCOMBO.address);
 
@@ -102,7 +102,7 @@ contract('Furucombo rCOMBO', function([_, user]) {
 
       // Send rCOMBO to proxy
       await this.rCOMBO.transfer(this.proxy.address, amount, {
-        from: RCOMBO_PROVIDER,
+        from: rCOMBOProviderAddress,
       });
       await this.proxy.updateTokenMock(this.rCOMBO.address);
 
@@ -144,7 +144,7 @@ contract('Furucombo rCOMBO', function([_, user]) {
       // User provides rCOMBO
       var amount = ether('10');
       await this.rCOMBO.transfer(user, amount, {
-        from: RCOMBO_PROVIDER,
+        from: rCOMBOProviderAddress,
       });
       await this.rCOMBO.approve(this.rCOMBO.address, amount, {
         from: user,

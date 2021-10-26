@@ -3,13 +3,11 @@ const {
   BN,
   constants,
   ether,
-  expectEvent,
   expectRevert,
   time,
   send,
 } = require('@openzeppelin/test-helpers');
-const { tracker } = balance;
-const { duration, increase, latest } = time;
+const { duration, increase } = time;
 const abi = require('ethereumjs-abi');
 const utils = web3.utils;
 
@@ -19,7 +17,6 @@ const {
   ETH_TOKEN,
   COMP_TOKEN,
   DAI_TOKEN,
-  DAI_PROVIDER,
   CDAI,
   CWBTC,
   CETHER,
@@ -34,8 +31,8 @@ const {
   mulPercent,
   cUnit,
   getHandlerReturn,
+  tokenProviderUniV2,
 } = require('./utils/utils');
-const { getFCompoundActionsBytecodeBySolc } = require('./utils/getBytecode');
 
 const HSCompound = artifacts.require('HSCompound');
 const Registry = artifacts.require('Registry');
@@ -43,7 +40,6 @@ const Proxy = artifacts.require('ProxyMock');
 const DSGuardFactory = artifacts.require('DSGuardFactory');
 const IDSProxyRegistry = artifacts.require('IDSProxyRegistry');
 const IDSProxy = artifacts.require('IDSProxy');
-const ISingletonFactory = artifacts.require('ISingletonFactory');
 const IComptroller = artifacts.require('IComptroller');
 const ICEther = artifacts.require('ICEther');
 const ICToken = artifacts.require('ICToken');
@@ -53,9 +49,12 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
   let id;
   const tokenAddress = DAI_TOKEN;
   const cTokenAddress = CDAI;
-  const providerAddress = DAI_PROVIDER;
+
+  let providerAddress;
 
   before(async function() {
+    providerAddress = await tokenProviderUniV2(tokenAddress);
+
     this.registry = await Registry.new();
     this.proxy = await Proxy.new(this.registry.address);
     this.hsCompound = await HSCompound.new();
@@ -88,11 +87,6 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
     this.cEther = await ICEther.at(CETHER);
     this.comp = await IToken.at(COMP_TOKEN);
     this.comptroller = await IComptroller.at(COMPOUND_COMPTROLLER);
-
-    await hre.network.provider.request({
-      method: 'hardhat_impersonateAccount',
-      params: [DAI_PROVIDER],
-    });
   });
 
   beforeEach(async function() {

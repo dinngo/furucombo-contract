@@ -1,15 +1,13 @@
 const {
   balance,
   BN,
-  constants,
   ether,
-  expectEvent,
   expectRevert,
   time,
   send,
 } = require('@openzeppelin/test-helpers');
 const { tracker } = balance;
-const { duration, increase, latest } = time;
+const { duration, increase } = time;
 const abi = require('ethereumjs-abi');
 const utils = web3.utils;
 
@@ -17,9 +15,7 @@ const { expect } = require('chai');
 
 const {
   SNX_TOKEN,
-  SNX_PROVIDER,
   CURVE_SCRV,
-  CURVE_SCRV_PROVIDER,
   STAKING_REWARDS_ADAPTER_REGISTRY,
   STAKING_REWARDS_ADAPTER_REGISTRY_OWNER,
 } = require('./utils/constants');
@@ -28,8 +24,9 @@ const {
   evmSnapshot,
   profileGas,
   getHandlerReturn,
+  tokenProviderUniV2,
+  tokenProviderYearn,
 } = require('./utils/utils');
-const { getAdapterRegistryBytecodeBySolc } = require('./utils/getBytecode');
 
 const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('ProxyMock');
@@ -54,11 +51,15 @@ contract('StakingRewardsLegacyAdapter - Handler', function([_, user, someone]) {
   /// st = stakingToken
   /// rt = rewardToken
   const stAddress = CURVE_SCRV;
-  const stProviderAddress = CURVE_SCRV_PROVIDER;
   const rtAddress = SNX_TOKEN;
-  const rtProviderAddress = SNX_PROVIDER;
+
+  let stProviderAddress;
+  let rtProviderAddress;
 
   before(async function() {
+    stProviderAddress = await tokenProviderYearn(stAddress);
+    rtProviderAddress = await tokenProviderUniV2(rtAddress);
+
     this.registry = await Registry.new();
     this.proxy = await Proxy.new(this.registry.address);
     this.hAdapter = await HStakingRewardsAdapter.new();
@@ -81,15 +82,7 @@ contract('StakingRewardsLegacyAdapter - Handler', function([_, user, someone]) {
     );
     this.adapter = await StakingRewardsAdapter.at(adapterAddr);
 
-    await hre.network.provider.request({
-      method: 'hardhat_impersonateAccount',
-      params: [SNX_PROVIDER],
-    });
-    await hre.network.provider.request({
-      method: 'hardhat_impersonateAccount',
-      params: [CURVE_SCRV_PROVIDER],
-    });
-    await hre.network.provider.request({
+    await network.provider.request({
       method: 'hardhat_impersonateAccount',
       params: [STAKING_REWARDS_ADAPTER_REGISTRY_OWNER],
     });

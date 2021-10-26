@@ -1,5 +1,4 @@
 const {
-  BN,
   ether,
   expectRevert,
   time,
@@ -13,10 +12,8 @@ const { increase, duration } = time;
 const {
   CRV_TOKEN,
   CURVE_YCRV,
-  CURVE_YCRV_PROVIDER,
   CURVE_YCRV_GAUGE,
   CURVE_TCRV,
-  CURVE_TCRV_PROVIDER,
   CURVE_TCRV_GAUGE,
   CURVE_MINTER,
 } = require('./utils/constants');
@@ -25,6 +22,7 @@ const {
   evmSnapshot,
   profileGas,
   getHandlerReturn,
+  tokenProviderCurveGauge,
 } = require('./utils/utils');
 
 const Proxy = artifacts.require('ProxyMock');
@@ -39,14 +37,18 @@ contract('Curve DAO', function([_, user]) {
   // Wait for the gaude to be ready
   const token0Address = CURVE_YCRV;
   const token1Address = CURVE_TCRV;
-  const token0Provider = CURVE_YCRV_PROVIDER;
-  const token1Provider = CURVE_TCRV_PROVIDER;
   const gauge0Address = CURVE_YCRV_GAUGE;
   const gauge1Address = CURVE_TCRV_GAUGE;
   const gauge0Amount = ether('0.1');
   const gauge1Amount = ether('0.1');
 
+  let token0Provider;
+  let token1Provider;
+
   before(async function() {
+    token0Provider = await tokenProviderCurveGauge(token0Address);
+    token1Provider = await tokenProviderCurveGauge(token1Address);
+
     this.minter = await IMinter.at(CURVE_MINTER);
     this.registry = await Registry.new();
     this.hCurveDao = await HCurveDao.new();
@@ -60,15 +62,6 @@ contract('Curve DAO', function([_, user]) {
     this.gauge0 = await ILiquidityGauge.at(gauge0Address);
     this.gauge1 = await ILiquidityGauge.at(gauge1Address);
     this.proxy = await Proxy.new(this.registry.address);
-
-    await hre.network.provider.request({
-      method: 'hardhat_impersonateAccount',
-      params: [CURVE_YCRV_PROVIDER],
-    });
-    await hre.network.provider.request({
-      method: 'hardhat_impersonateAccount',
-      params: [CURVE_TCRV_PROVIDER],
-    });
   });
 
   beforeEach(async function() {

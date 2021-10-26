@@ -3,13 +3,11 @@ const {
   BN,
   constants,
   ether,
-  expectEvent,
-  expectRevert,
   time,
 } = require('@openzeppelin/test-helpers');
 const { tracker } = balance;
 const { ZERO_BYTES32 } = constants;
-const { duration, increase, latest } = time;
+const { duration, increase } = time;
 const abi = require('ethereumjs-abi');
 const utils = web3.utils;
 
@@ -33,37 +31,6 @@ const Proxy = artifacts.require('ProxyMock');
 const IToken = artifacts.require('IERC20');
 const ICEther = artifacts.require('ICEther');
 const IComptroller = artifacts.require('IComptroller');
-
-async function getEstimatedComp(account) {
-  const data = web3.eth.abi.encodeFunctionCall(
-    {
-      constant: false,
-      inputs: [
-        { name: 'comp', type: 'address' },
-        {
-          name: 'comptroller',
-          type: 'address',
-        },
-        { name: 'account', type: 'address' },
-      ],
-      name: 'getCompBalanceMetadataExt',
-      payable: false,
-      stateMutability: 'nonpayable',
-      type: 'function',
-    },
-    [COMP_TOKEN, COMPOUND_COMPTROLLER, account]
-  );
-  const result = await web3.eth.call({
-    from: account,
-    to: COMPOUND_LENS,
-    data: data,
-  });
-  const d = web3.eth.abi.decodeParameters(
-    ['uint256', 'uint256', 'address', 'uint256'],
-    result
-  );
-  return d['3'];
-}
 
 contract('Claim Comp and add liquidity', function([
   _,

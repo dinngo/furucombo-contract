@@ -8,13 +8,10 @@ const utils = web3.utils;
 const {
   ETH_TOKEN,
   USDT_TOKEN,
-  USDT_PROVIDER,
   WBTC_TOKEN,
-  WBTC_PROVIDER,
   CURVE_TRICRYPTO_SWAP,
   CURVE_TRICRYPTO_DEPOSIT,
   CURVE_TRICRYPTOCRV,
-  CURVE_TRICRYPTOCRV_PROVIDER,
 } = require('./utils/constants');
 const {
   evmRevert,
@@ -22,6 +19,8 @@ const {
   mulPercent,
   profileGas,
   getHandlerReturn,
+  tokenProviderUniV2,
+  tokenProviderCurveGauge,
 } = require('./utils/utils');
 
 const Proxy = artifacts.require('ProxyMock');
@@ -43,19 +42,6 @@ contract('Curve Crypto', function([_, user]) {
     this.proxy = await Proxy.new(this.registry.address);
     this.tricryptoSwap = await ICurveHandler.at(CURVE_TRICRYPTO_SWAP);
     this.tricryptoDeposit = await ICurveHandler.at(CURVE_TRICRYPTO_DEPOSIT);
-
-    await hre.network.provider.request({
-      method: 'hardhat_impersonateAccount',
-      params: [USDT_PROVIDER],
-    });
-    await hre.network.provider.request({
-      method: 'hardhat_impersonateAccount',
-      params: [WBTC_PROVIDER],
-    });
-    await hre.network.provider.request({
-      method: 'hardhat_impersonateAccount',
-      params: [CURVE_TRICRYPTOCRV_PROVIDER],
-    });
   });
 
   beforeEach(async function() {
@@ -70,12 +56,14 @@ contract('Curve Crypto', function([_, user]) {
     describe('tricrypto pool', function() {
       const token0Address = USDT_TOKEN;
       const token1Address = WBTC_TOKEN;
-      const provider0Address = USDT_PROVIDER;
 
       let token0, token1;
       let balanceUser, balanceProxy, token0User, token1User;
+      let provider0Address;
 
       before(async function() {
+        provider0Address = await tokenProviderUniV2(token0Address);
+
         token0 = await IToken.at(token0Address);
         token1 = await IToken.at(token1Address);
       });
@@ -207,15 +195,19 @@ contract('Curve Crypto', function([_, user]) {
     describe('tricrypto pool', function() {
       const token0Address = USDT_TOKEN;
       const token1Address = WBTC_TOKEN;
-      const provider0Address = USDT_PROVIDER;
-      const provider1Address = WBTC_PROVIDER;
       const poolTokenAddress = CURVE_TRICRYPTOCRV;
-      const poolTokenProvider = CURVE_TRICRYPTOCRV_PROVIDER;
 
       let token0, token1, poolToken;
       let balanceUser, balanceProxy, token0User, token1User, poolTokenUser;
+      let provider0Address;
+      let provider1Address;
+      let poolTokenProvider;
 
       before(async function() {
+        provider0Address = await tokenProviderUniV2(token0Address);
+        provider1Address = await tokenProviderUniV2(token1Address);
+        poolTokenProvider = await tokenProviderCurveGauge(poolTokenAddress);
+
         token0 = await IToken.at(token0Address);
         token1 = await IToken.at(token1Address);
         poolToken = await IToken.at(poolTokenAddress);
