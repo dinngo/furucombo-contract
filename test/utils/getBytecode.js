@@ -2,7 +2,6 @@ const solc = require('solc');
 
 const SafeERC20 = artifacts.require('SafeERC20');
 const IERC20 = artifacts.require('IERC20');
-const SafeMath = artifacts.require('SafeMath');
 const Address = artifacts.require('Address');
 const Ownable = artifacts.require('Ownable');
 const Context = artifacts.require('Context');
@@ -93,10 +92,6 @@ function findImports(path) {
   else if (path === '@openzeppelin/contracts/token/ERC20/IERC20.sol')
     return {
       contents: IERC20.source,
-    };
-  else if (path === '@openzeppelin/contracts/math/SafeMath.sol')
-    return {
-      contents: SafeMath.source,
     };
   else if (path === '@openzeppelin/contracts/utils/Address.sol')
     return {
