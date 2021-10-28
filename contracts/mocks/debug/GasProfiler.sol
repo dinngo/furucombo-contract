@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.4;
+pragma solidity ^0.8.0;
 
 contract GasProfiler {
     // keccak256 hash of "gas.profiler.base"

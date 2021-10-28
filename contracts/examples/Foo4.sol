@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.4;
+pragma solidity ^0.8.0;
 
 contract Foo4 {
     bytes32 public bValue;
@@ -21,7 +21,7 @@ contract Foo4 {
         return bValue;
     }
 
-    function bar2(bytes32 b) external returns (bytes32) {
+    function bar2(bytes32, bytes32 b) external returns (bytes32) {
         bValue = b;
         return bValue;
     }

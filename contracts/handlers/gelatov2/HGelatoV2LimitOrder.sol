@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.8.4;
+pragma solidity 0.8.9;
 
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "../HandlerBase.sol";
@@ -31,7 +31,7 @@ contract HGelatoV2LimitOrder is HandlerBase {
 
     function placeLimitOrder(
         uint256 value,
-        address module, // unused, just unify the interface
+        address, //module, unused parameter, just unify the interface
         address inToken,
         address payable owner,
         address witness,

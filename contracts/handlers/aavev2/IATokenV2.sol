@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.4;
+pragma solidity ^0.8.0;
 
 interface IATokenV2 {
     function totalSupply() external view returns (uint256 supply);
