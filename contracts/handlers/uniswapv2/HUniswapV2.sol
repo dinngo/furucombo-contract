@@ -241,7 +241,7 @@ contract HUniswapV2 is HandlerBase {
         // Get uniswapV2 router
         IUniswapV2Router02 router = IUniswapV2Router02(UNISWAPV2_ROUTER);
 
-        // if amount == uint256(-1) return balance of Proxy
+        // if amount == type(uint256).max return balance of Proxy
         value = _getBalance(address(0), value);
 
         try
@@ -307,7 +307,7 @@ contract HUniswapV2 is HandlerBase {
         // Get uniswapV2 router
         IUniswapV2Router02 router = IUniswapV2Router02(UNISWAPV2_ROUTER);
 
-        // if amount == uint256(-1) return balance of Proxy
+        // if amount == type(uint256).max return balance of Proxy
         amountInMax = _getBalance(tokenIn, amountInMax);
 
         // Approve token
@@ -379,7 +379,7 @@ contract HUniswapV2 is HandlerBase {
         // Get uniswapV2 router
         IUniswapV2Router02 router = IUniswapV2Router02(UNISWAPV2_ROUTER);
 
-        // if amount == uint256(-1) return balance of Proxy
+        // if amount == type(uint256).max return balance of Proxy
         amountInMax = _getBalance(tokenIn, amountInMax);
 
         // Approve token

@@ -172,7 +172,7 @@ contract HUniswapV3 is HandlerBase {
         params.tokenOut = tokenOut;
         params.fee = fee;
         params.amountOut = amountOut;
-        // if amount == uint256(-1) return balance of Proxy
+        // if amount == type(uint256).max return balance of Proxy
         params.amountInMaximum = _getBalance(address(0), amountInMaximum);
         params.sqrtPriceLimitX96 = sqrtPriceLimitX96;
 
@@ -195,7 +195,7 @@ contract HUniswapV3 is HandlerBase {
         params.tokenOut = address(WETH);
         params.fee = fee;
         params.amountOut = amountOut;
-        // if amount == uint256(-1) return balance of Proxy
+        // if amount == type(uint256).max return balance of Proxy
         params.amountInMaximum = _getBalance(tokenIn, amountInMaximum);
         params.sqrtPriceLimitX96 = sqrtPriceLimitX96;
 
@@ -219,7 +219,7 @@ contract HUniswapV3 is HandlerBase {
         params.tokenOut = tokenOut;
         params.fee = fee;
         params.amountOut = amountOut;
-        // if amount == uint256(-1) return balance of Proxy
+        // if amount == type(uint256).max return balance of Proxy
         params.amountInMaximum = _getBalance(tokenIn, amountInMaximum);
         params.sqrtPriceLimitX96 = sqrtPriceLimitX96;
 
@@ -270,7 +270,7 @@ contract HUniswapV3 is HandlerBase {
         ISwapRouter.ExactOutputParams memory params;
         params.path = path;
         params.amountOut = amountOut;
-        // if amount == uint256(-1) return balance of Proxy
+        // if amount == type(uint256).max return balance of Proxy
         params.amountInMaximum = _getBalance(tokenIn, amountInMaximum);
 
         // Approve token
@@ -293,7 +293,7 @@ contract HUniswapV3 is HandlerBase {
         ISwapRouter.ExactOutputParams memory params;
         params.path = path;
         params.amountOut = amountOut;
-        // if amount == uint256(-1) return balance of Proxy
+        // if amount == type(uint256).max return balance of Proxy
         params.amountInMaximum = _getBalance(tokenIn, amountInMaximum);
 
         // Approve token

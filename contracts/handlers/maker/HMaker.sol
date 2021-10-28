@@ -60,7 +60,7 @@ contract HMaker is HandlerBase {
         uint256 wadD
     ) external payable returns (uint256 cdp) {
         IDSProxy proxy = IDSProxy(_getProxy(address(this)));
-        // if amount == uint256(-1) return balance of Proxy
+        // if amount == type(uint256).max return balance of Proxy
         value = _getBalance(address(0), value);
 
         try
@@ -101,7 +101,7 @@ contract HMaker is HandlerBase {
         IDSProxy proxy = IDSProxy(_getProxy(address(this)));
         address token = IMakerGemJoin(gemJoin).gem();
 
-        // if amount == uint256(-1) return balance of Proxy
+        // if amount == type(uint256).max return balance of Proxy
         wadC = _getBalance(token, wadC);
 
         IERC20(token).safeApprove(address(proxy), wadC);
@@ -143,7 +143,7 @@ contract HMaker is HandlerBase {
     ) external payable {
         IDSProxy proxy = IDSProxy(_getProxy(address(this)));
         address owner = _getProxy(_getSender());
-        // if amount == uint256(-1) return balance of Proxy
+        // if amount == type(uint256).max return balance of Proxy
         value = _getBalance(address(0), value);
 
         try
@@ -173,7 +173,7 @@ contract HMaker is HandlerBase {
         IDSProxy proxy = IDSProxy(_getProxy(address(this)));
         address owner = _getProxy(_getSender());
         address token = IMakerGemJoin(gemJoin).gem();
-        // if amount == uint256(-1) return balance of Proxy
+        // if amount == type(uint256).max return balance of Proxy
         wad = _getBalance(token, wad);
         IERC20(token).safeApprove(address(proxy), wad);
         try

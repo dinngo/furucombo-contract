@@ -23,7 +23,7 @@ contract HCEther is HandlerBase {
         // Get cether balance of proxy before mint
         uint256 beforeCEtherAmount = compound.balanceOf(address(this));
 
-        // if amount == uint256(-1) return balance of Proxy
+        // if amount == type(uint256).max return balance of Proxy
         value = _getBalance(address(0), value);
 
         // Execute mint
@@ -48,7 +48,7 @@ contract HCEther is HandlerBase {
         // Approve cether
         ICEther compound = ICEther(CETHER);
 
-        // if amount == uint256(-1) return balance of Proxy
+        // if amount == type(uint256).max return balance of Proxy
         redeemTokens = _getBalance(CETHER, redeemTokens);
         IERC20(CETHER).safeApprove(CETHER, redeemTokens);
 

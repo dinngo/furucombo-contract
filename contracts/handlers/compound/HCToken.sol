@@ -25,7 +25,7 @@ contract HCToken is HandlerBase {
         uint256 beforeCTokenAmount = compound.balanceOf(address(this));
 
         address token = _getToken(cToken);
-        // if amount == uint256(-1) return balance of Proxy
+        // if amount == type(uint256).max return balance of Proxy
         mintAmount = _getBalance(token, mintAmount);
         IERC20(token).safeApprove(cToken, mintAmount);
         try compound.mint(mintAmount) returns (uint256 errorCode) {
@@ -59,7 +59,7 @@ contract HCToken is HandlerBase {
         uint256 beforeTokenAmount = IERC20(token).balanceOf(address(this));
 
         ICToken compound = ICToken(cToken);
-        // if amount == uint256(-1) return balance of Proxy
+        // if amount == type(uint256).max return balance of Proxy
         redeemTokens = _getBalance(cToken, redeemTokens);
         IERC20(cToken).safeApprove(cToken, redeemTokens);
         try compound.redeem(redeemTokens) returns (uint256 errorCode) {

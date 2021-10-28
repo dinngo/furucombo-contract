@@ -75,7 +75,7 @@ contract HCurveDao is HandlerBase {
         address token = gauge.lp_token();
         address user = _getSender();
 
-        // if amount == uint256(-1) return balance of Proxy
+        // if amount == type(uint256).max return balance of Proxy
         _value = _getBalance(token, _value);
         _tokenApprove(token, gaugeAddress, _value);
 

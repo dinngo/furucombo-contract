@@ -41,7 +41,7 @@ contract HGelatoV2LimitOrder is HandlerBase {
         // Transfer funds inside Furu Proxy => Will be done by a separate Handler
 
         // Get value to be transferred
-        // if amount == uint256(-1) return balance of Proxy
+        // if amount == type(uint256).max return balance of Proxy
         value = _getBalance(inToken, value);
 
         // Check if Order is sending ETH or ERC20s
