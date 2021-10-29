@@ -8,7 +8,7 @@ import "./IWETH9.sol";
 
 contract HWeth is HandlerBase {
     // prettier-ignore
-    address payable public constant WETH = payable(address(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2));
+    address public constant WETH = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
 
     function getContractName() public pure override returns (string memory) {
         return "HWeth";

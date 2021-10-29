@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.0;
+pragma solidity 0.8.9;
 
 import "./Foo4.sol";
 import "../handlers/HandlerBase.sol";

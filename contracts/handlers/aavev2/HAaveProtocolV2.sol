@@ -17,9 +17,9 @@ contract HAaveProtocolV2 is HandlerBase, IFlashLoanReceiver {
     // prettier-ignore
     address public constant PROVIDER = 0xB53C1a33016B2DC2fF3653530bfF1848a515c8c5;
     // prettier-ignore
-    address payable public constant WETH = payable(address(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2));
+    address public constant WETH = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
     // prettier-ignore
-    address payable public constant ETHER = payable(address(0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE));
+    address public constant ETHER = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
     uint16 public constant REFERRAL_CODE = 56;
 
     function getContractName() public pure override returns (string memory) {

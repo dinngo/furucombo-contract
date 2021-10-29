@@ -316,7 +316,7 @@ contract HUniswapV3 is HandlerBase {
     function _exactInputSingle(
         uint256 value,
         ISwapRouter.ExactInputSingleParams memory params
-    ) internal returns (uint256 amount) {
+    ) internal returns (uint256) {
         params.deadline = block.timestamp;
         params.recipient = address(this);
 
@@ -334,7 +334,7 @@ contract HUniswapV3 is HandlerBase {
     function _exactInput(
         uint256 value,
         ISwapRouter.ExactInputParams memory params
-    ) internal returns (uint256 amount) {
+    ) internal returns (uint256) {
         params.deadline = block.timestamp;
         params.recipient = address(this);
 
@@ -352,7 +352,7 @@ contract HUniswapV3 is HandlerBase {
     function _exactOutputSingle(
         uint256 value,
         ISwapRouter.ExactOutputSingleParams memory params
-    ) internal returns (uint256 amount) {
+    ) internal returns (uint256) {
         params.deadline = block.timestamp;
         params.recipient = address(this);
 
@@ -370,7 +370,7 @@ contract HUniswapV3 is HandlerBase {
     function _exactOutput(
         uint256 value,
         ISwapRouter.ExactOutputParams memory params
-    ) internal returns (uint256 amount) {
+    ) internal returns (uint256) {
         params.deadline = block.timestamp;
         params.recipient = address(this);
 

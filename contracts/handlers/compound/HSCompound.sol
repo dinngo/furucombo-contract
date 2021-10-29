@@ -235,7 +235,7 @@ contract HSCompound is HandlerBase {
         uint256 amount
     ) internal {
         if (token == ETH_ADDRESS) {
-            address payable dsProxyPayable = payable(address(uint160(dsProxy)));
+            address payable dsProxyPayable = payable(dsProxy);
             dsProxyPayable.transfer(amount);
         } else {
             IERC20(token).safeTransfer(dsProxy, amount);

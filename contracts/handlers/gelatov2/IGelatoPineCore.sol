@@ -4,7 +4,6 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 interface IGelatoPineCore {
-
     /**
      * @notice Get the calldata needed to create a token to token/ETH order
      * @dev Returns the input data that the user needs to use to create the order
