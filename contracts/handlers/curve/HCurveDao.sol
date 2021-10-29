@@ -23,8 +23,11 @@ contract HCurveDao is HandlerBase {
         IMinter minter = IMinter(CURVE_MINTER);
         address user = _getSender();
         uint256 beforeCRVBalance = IERC20(CRV_TOKEN).balanceOf(user);
-        if (minter.allowed_to_mint_for(address(this), user) == false)
-            _revertMsg("mint", "not allowed to mint");
+        _requireMsg(
+            minter.allowed_to_mint_for(address(this), user),
+            "mint",
+            "not allowed to mint"
+        );
 
         try minter.mint_for(gaugeAddr, user) {} catch Error(
             string memory reason
@@ -47,8 +50,11 @@ contract HCurveDao is HandlerBase {
         IMinter minter = IMinter(CURVE_MINTER);
         address user = _getSender();
         uint256 beforeCRVBalance = IERC20(CRV_TOKEN).balanceOf(user);
-        if (minter.allowed_to_mint_for(address(this), user) == false)
-            _revertMsg("mintMany", "not allowed to mint");
+        _requireMsg(
+            minter.allowed_to_mint_for(address(this), user),
+            "mintMany",
+            "not allowed to mint"
+        );
 
         for (uint256 i = 0; i < gaugeAddrs.length; i++) {
             try minter.mint_for(gaugeAddrs[i], user) {} catch Error(

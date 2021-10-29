@@ -204,8 +204,7 @@ contract HSushiSwap is HandlerBase {
         uint256 amountOutMin,
         address[] calldata path
     ) external payable returns (uint256 amount) {
-        if (path.length < 2)
-            _revertMsg("swapExactETHForTokens", "invalid path");
+        _requireMsg(path.length >= 2, "swapExactETHForTokens", "invalid path");
         address tokenOut = path[path.length - 1];
 
         // Get uniswapV2 router
@@ -234,8 +233,7 @@ contract HSushiSwap is HandlerBase {
         uint256 amountOut,
         address[] calldata path
     ) external payable returns (uint256 amount) {
-        if (path.length < 2)
-            _revertMsg("swapETHForExactTokens", "invalid path");
+        _requireMsg(path.length >= 2, "swapETHForExactTokens", "invalid path");
         address tokenOut = path[path.length - 1];
 
         // Get uniswapV2 router
@@ -267,8 +265,7 @@ contract HSushiSwap is HandlerBase {
         uint256 amountOutMin,
         address[] calldata path
     ) external payable returns (uint256 amount) {
-        if (path.length < 2)
-            _revertMsg("swapExactTokensForETH", "invalid path");
+        _requireMsg(path.length >= 2, "swapExactTokensForETH", "invalid path");
         address tokenIn = path[0];
 
         // Get uniswapV2 router
@@ -300,8 +297,7 @@ contract HSushiSwap is HandlerBase {
         uint256 amountInMax,
         address[] calldata path
     ) external payable returns (uint256 amount) {
-        if (path.length < 2)
-            _revertMsg("swapTokensForExactETH", "invalid path");
+        _requireMsg(path.length >= 2, "swapTokensForExactETH", "invalid path");
         address tokenIn = path[0];
 
         // Get uniswapV2 router
@@ -335,8 +331,11 @@ contract HSushiSwap is HandlerBase {
         uint256 amountOutMin,
         address[] calldata path
     ) external payable returns (uint256 amount) {
-        if (path.length < 2)
-            _revertMsg("swapExactTokensForTokens", "invalid path");
+        _requireMsg(
+            path.length >= 2,
+            "swapExactTokensForTokens",
+            "invalid path"
+        );
         address tokenIn = path[0];
         address tokenOut = path[path.length - 1];
 
@@ -371,8 +370,11 @@ contract HSushiSwap is HandlerBase {
         uint256 amountInMax,
         address[] calldata path
     ) external payable returns (uint256 amount) {
-        if (path.length < 2)
-            _revertMsg("swapTokensForExactTokens", "invalid path");
+        _requireMsg(
+            path.length >= 2,
+            "swapTokensForExactTokens",
+            "invalid path"
+        );
         address tokenIn = path[0];
         address tokenOut = path[path.length - 1];
 

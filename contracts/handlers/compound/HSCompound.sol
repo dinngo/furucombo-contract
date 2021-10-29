@@ -29,8 +29,11 @@ contract HSCompound is HandlerBase {
 
     modifier isDSProxyOwner(address dsProxy) {
         address sender = _getSender();
-        if (IDSProxy(dsProxy).owner() != sender)
-            _revertMsg("General", "Not owner of the DSProxy");
+        _requireMsg(
+            IDSProxy(dsProxy).owner() == sender,
+            "General",
+            "Not owner of the DSProxy"
+        );
         _;
     }
 

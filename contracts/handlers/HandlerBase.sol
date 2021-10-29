@@ -64,6 +64,14 @@ abstract contract HandlerBase is Storage, Config {
         _revertMsg(functionName, "Unspecified");
     }
 
+    function _requireMsg(
+        bool condition,
+        string memory functionName,
+        string memory reason
+    ) internal view {
+        if (!condition) _revertMsg(functionName, reason);
+    }
+
     function _uint2String(uint256 n) internal pure returns (string memory) {
         if (n == 0) {
             return "0";

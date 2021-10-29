@@ -14,9 +14,7 @@ contract HStakingRewardsAdapter is HandlerBase {
     IStakingRewardsAdapterRegistry constant public registry = IStakingRewardsAdapterRegistry(0xCa591346A311A372a20ed69e08bBE5107979e243);
 
     modifier whenAdapterIsValid(address adapter) {
-        if (!registry.isValid(adapter)) {
-            _revertMsg("General", "Invalid adapter");
-        }
+        _requireMsg(registry.isValid(adapter), "General", "Invalid adapter");
         _;
     }
 

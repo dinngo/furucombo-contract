@@ -79,9 +79,11 @@ contract HOneInchV3 is HandlerBase {
         // Check, dstToken balance should be increased
         uint256 dstTokenBalanceAfter =
             _getBalance(address(dstToken), type(uint256).max);
-        if (dstTokenBalanceAfter - dstTokenBalanceBefore != returnAmount) {
-            _revertMsg("unoswap", "Invalid output token amount");
-        }
+        _requireMsg(
+            dstTokenBalanceAfter - dstTokenBalanceBefore == returnAmount,
+            "unoswap",
+            "Invalid output token amount"
+        );
 
         // Update involved token
         if (_isNotNativeToken(address(dstToken))) {
