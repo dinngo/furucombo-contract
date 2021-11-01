@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Configure to exit script as soon as a command fails.
 set -o errexit
 
