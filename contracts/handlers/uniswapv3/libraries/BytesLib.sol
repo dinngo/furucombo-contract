@@ -1,4 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
+
+// This file is from https://github.com/GNSPS/solidity-bytes-utils/blob/master/contracts/BytesLib.sol
+// if we have to upgrade solidity version or need others BytesLib function, maybe check this URL.
 /*
  * @title Solidity Bytes Arrays Utils
  * @author Gonçalo Sá <goncalo.sa@consensys.net>
