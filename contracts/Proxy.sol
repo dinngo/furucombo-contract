@@ -43,7 +43,7 @@ contract Proxy is IProxy, Storage, Config {
 
     IRegistry public immutable registry;
 
-    constructor(address _registry) {
+    constructor(address _registry) public {
         registry = IRegistry(_registry);
     }
 
