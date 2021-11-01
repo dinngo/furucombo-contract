@@ -11,7 +11,7 @@ rm -rf cache
 # Compile everything else.
 npm run compile
 
-./check_warning.sh
+./checkwarning.sh
 result=$?
 
 if [ $result -ne 0 ]; then
