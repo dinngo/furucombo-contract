@@ -177,10 +177,10 @@ contract('BalancerExchange', function([_, user]) {
   //         expect(handlerReturn).to.be.bignumber.eq(
   //           await this.token0.balanceOf.call(user)
   //         );
-  //         expect(await balanceProxy.get()).to.be.zero;
+  //         expect(await balanceProxy.get()).to.be.bignumber.zero;
   //         expect(
   //           await this.token0.balanceOf.call(this.proxy.address)
-  //         ).to.be.zero;
+  //         ).to.be.bignumber.zero;
   //         expect(await balanceUser.delta()).to.be.bignumber.eq(
   //           ether('0')
   //             .sub(amount)
@@ -237,10 +237,10 @@ contract('BalancerExchange', function([_, user]) {
   //         expect(handlerReturn).to.be.bignumber.eq(
   //           await this.token0.balanceOf.call(user)
   //         );
-  //         expect(await balanceProxy.get()).to.be.zero;
+  //         expect(await balanceProxy.get()).to.be.bignumber.zero;
   //         expect(
   //           await this.token0.balanceOf.call(this.proxy.address)
-  //         ).to.be.zero;
+  //         ).to.be.bignumber.zero;
   //         expect(await balanceUser.delta()).to.be.bignumber.eq(
   //           ether('0')
   //             .sub(amount)
@@ -299,11 +299,11 @@ contract('BalancerExchange', function([_, user]) {
   //         );
   //         expect(handlerReturn).to.be.bignumber.eq(totalReturnWei);
 
-  //         expect(await balanceProxy.get()).to.be.zero;
+  //         expect(await balanceProxy.get()).to.be.bignumber.zero;
   //         expect(
   //           await this.token0.balanceOf.call(this.proxy.address)
-  //         ).to.be.zero;
-  //         expect(await this.token0.balanceOf.call(user)).to.be.zero;
+  //         ).to.be.bignumber.zero;
+  //         expect(await this.token0.balanceOf.call(user)).to.be.bignumber.zero;
   //         expect(await balanceUser.delta()).to.be.bignumber.eq(
   //           totalReturnWei.sub(new BN(receipt.receipt.gasUsed))
   //         );
@@ -355,11 +355,11 @@ contract('BalancerExchange', function([_, user]) {
   //         );
   //         expect(handlerReturn).to.be.bignumber.eq(totalReturnWei);
 
-  //         expect(await balanceProxy.get()).to.be.zero;
+  //         expect(await balanceProxy.get()).to.be.bignumber.zero;
   //         expect(
   //           await this.token0.balanceOf.call(this.proxy.address)
-  //         ).to.be.zero;
-  //         expect(await this.token0.balanceOf.call(user)).to.be.zero;
+  //         ).to.be.bignumber.zero;
+  //         expect(await this.token0.balanceOf.call(user)).to.be.bignumber.zero;
   //         expect(await balanceUser.delta()).to.be.bignumber.eq(
   //           totalReturnWei.sub(new BN(receipt.receipt.gasUsed))
   //         );
@@ -414,14 +414,14 @@ contract('BalancerExchange', function([_, user]) {
   //           await this.token1.balanceOf.call(user)
   //         );
 
-  //         expect(await balanceProxy.get()).to.be.zero;
+  //         expect(await balanceProxy.get()).to.be.bignumber.zero;
   //         expect(
   //           await this.token0.balanceOf.call(this.proxy.address)
-  //         ).to.be.zero;
+  //         ).to.be.bignumber.zero;
   //         expect(
   //           await this.token1.balanceOf.call(this.proxy.address)
-  //         ).to.be.zero;
-  //         expect(await this.token0.balanceOf.call(user)).to.be.zero;
+  //         ).to.be.bignumber.zero;
+  //         expect(await this.token0.balanceOf.call(user)).to.be.bignumber.zero;
   //         expect(await this.token1.balanceOf.call(user)).to.be.bignumber.eq(
   //           totalReturnWei
   //         );
@@ -474,14 +474,14 @@ contract('BalancerExchange', function([_, user]) {
   //           await this.token1.balanceOf.call(user)
   //         );
 
-  //         expect(await balanceProxy.get()).to.be.zero;
+  //         expect(await balanceProxy.get()).to.be.bignumber.zero;
   //         expect(
   //           await this.token0.balanceOf.call(this.proxy.address)
-  //         ).to.be.zero;
+  //         ).to.be.bignumber.zero;
   //         expect(
   //           await this.token1.balanceOf.call(this.proxy.address)
-  //         ).to.be.zero;
-  //         expect(await this.token0.balanceOf.call(user)).to.be.zero;
+  //         ).to.be.bignumber.zero;
+  //         expect(await this.token0.balanceOf.call(user)).to.be.bignumber.zero;
   //         expect(await this.token1.balanceOf.call(user)).to.be.bignumber.eq(
   //           totalReturnWei
   //         );
@@ -537,10 +537,10 @@ contract('BalancerExchange', function([_, user]) {
   //         );
   //         expect(handlerReturn).to.be.bignumber.eq(totalReturnWei);
 
-  //         expect(await balanceProxy.get()).to.be.zero;
+  //         expect(await balanceProxy.get()).to.be.bignumber.zero;
   //         expect(
   //           await this.token0.balanceOf.call(this.proxy.address)
-  //         ).to.be.zero;
+  //         ).to.be.bignumber.zero;
   //         expect(await balanceUser.delta()).to.be.bignumber.eq(
   //           ether('0')
   //             .sub(totalReturnWei)
@@ -595,10 +595,10 @@ contract('BalancerExchange', function([_, user]) {
   //         );
   //         expect(handlerReturn).to.be.bignumber.eq(totalReturnWei);
 
-  //         expect(await balanceProxy.get()).to.be.zero;
+  //         expect(await balanceProxy.get()).to.be.bignumber.zero;
   //         expect(
   //           await this.token0.balanceOf.call(this.proxy.address)
-  //         ).to.be.zero;
+  //         ).to.be.bignumber.zero;
   //         expect(await balanceUser.delta()).to.be.bignumber.eq(
   //           ether('0')
   //             .sub(totalReturnWei)
@@ -656,10 +656,10 @@ contract('BalancerExchange', function([_, user]) {
   //         );
   //         expect(handlerReturn).to.be.bignumber.eq(totalReturnWei);
 
-  //         expect(await balanceProxy.get()).to.be.zero;
+  //         expect(await balanceProxy.get()).to.be.bignumber.zero;
   //         expect(
   //           await this.token0.balanceOf.call(this.proxy.address)
-  //         ).to.be.zero;
+  //         ).to.be.bignumber.zero;
   //         expect(await this.token0.balanceOf.call(user)).to.be.bignumber.eq(
   //           maxAmount.sub(totalReturnWei)
   //         );
@@ -713,10 +713,10 @@ contract('BalancerExchange', function([_, user]) {
   //         );
   //         expect(handlerReturn).to.be.bignumber.eq(totalReturnWei);
 
-  //         expect(await balanceProxy.get()).to.be.zero;
+  //         expect(await balanceProxy.get()).to.be.bignumber.zero;
   //         expect(
   //           await this.token0.balanceOf.call(this.proxy.address)
-  //         ).to.be.zero;
+  //         ).to.be.bignumber.zero;
   //         expect(await this.token0.balanceOf.call(user)).to.be.bignumber.eq(
   //           maxAmount.sub(totalReturnWei)
   //         );
@@ -771,13 +771,13 @@ contract('BalancerExchange', function([_, user]) {
   //         );
   //         expect(handlerReturn).to.be.bignumber.eq(totalReturnWei);
 
-  //         expect(await balanceProxy.get()).to.be.zero;
+  //         expect(await balanceProxy.get()).to.be.bignumber.zero;
   //         expect(
   //           await this.token0.balanceOf.call(this.proxy.address)
-  //         ).to.be.zero;
+  //         ).to.be.bignumber.zero;
   //         expect(
   //           await this.token1.balanceOf.call(this.proxy.address)
-  //         ).to.be.zero;
+  //         ).to.be.bignumber.zero;
   //         expect(await this.token0.balanceOf.call(user)).to.be.bignumber.eq(
   //           maxAmount.sub(totalReturnWei)
   //         );
@@ -830,13 +830,13 @@ contract('BalancerExchange', function([_, user]) {
   //         );
   //         expect(handlerReturn).to.be.bignumber.eq(totalReturnWei);
 
-  //         expect(await balanceProxy.get()).to.be.zero;
+  //         expect(await balanceProxy.get()).to.be.bignumber.zero;
   //         expect(
   //           await this.token0.balanceOf.call(this.proxy.address)
-  //         ).to.be.zero;
+  //         ).to.be.bignumber.zero;
   //         expect(
   //           await this.token1.balanceOf.call(this.proxy.address)
-  //         ).to.be.zero;
+  //         ).to.be.bignumber.zero;
   //         expect(await this.token0.balanceOf.call(user)).to.be.bignumber.eq(
   //           maxAmount.sub(totalReturnWei)
   //         );

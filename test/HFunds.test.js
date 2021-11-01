@@ -100,14 +100,14 @@ contract('Funds', function([_, user, someone]) {
       const handlerReturn = getHandlerReturn(receipt, ['uint256[]'])[0];
       // Verify token0
       expect(handlerReturn[0]).to.be.bignumber.eq(value[0]);
-      expect(await this.token0.balanceOf.call(this.proxy.address)).to.be.zero;
+      expect(await this.token0.balanceOf.call(this.proxy.address)).to.be.bignumber.zero;
       expect(await this.token0.balanceOf.call(user)).to.be.bignumber.eq(
         value[0]
       );
 
       // Verify token1
       expect(handlerReturn[1]).to.be.bignumber.eq(value[1]);
-      expect(await this.token1.balanceOf.call(this.proxy.address)).to.be.zero;
+      expect(await this.token1.balanceOf.call(this.proxy.address)).to.be.bignumber.zero;
       expect(await this.token1.balanceOf.call(user)).to.be.bignumber.eq(
         value[1]
       );
@@ -137,14 +137,14 @@ contract('Funds', function([_, user, someone]) {
       const handlerReturn = getHandlerReturn(receipt, ['uint256[]'])[0];
       // Verify token0
       expect(handlerReturn[0]).to.be.bignumber.eq(value[0]);
-      expect(await this.token0.balanceOf.call(this.proxy.address)).to.be.zero;
+      expect(await this.token0.balanceOf.call(this.proxy.address)).to.be.bignumber.zero;
       expect(await this.token0.balanceOf.call(user)).to.be.bignumber.eq(
         value[0]
       );
 
       // Verify ether
       expect(handlerReturn[1]).to.be.bignumber.eq(value[1].add(msgValue)); // handlerReturn should include msg.value
-      expect(await balanceProxy.get()).to.be.zero;
+      expect(await balanceProxy.get()).to.be.bignumber.zero;
       // user balance will not include msg.value because it is provided by user itself
       expect(await balanceUser.delta()).to.be.bignumber.eq(
         value[1].sub(new BN(receipt.receipt.gasUsed))
@@ -175,14 +175,14 @@ contract('Funds', function([_, user, someone]) {
       const handlerReturn = getHandlerReturn(receipt, ['uint256[]'])[0];
       // Verify token0
       expect(handlerReturn[0]).to.be.bignumber.eq(value[0]);
-      expect(await this.token0.balanceOf.call(this.proxy.address)).to.be.zero;
+      expect(await this.token0.balanceOf.call(this.proxy.address)).to.be.bignumber.zero;
       expect(await this.token0.balanceOf.call(user)).to.be.bignumber.eq(
         value[0]
       );
 
       // Verify ether
       expect(handlerReturn[1]).to.be.bignumber.eq(value[1].add(msgValue)); // handlerReturn should include msg.value
-      expect(await balanceProxy.get()).to.be.zero;
+      expect(await balanceProxy.get()).to.be.bignumber.zero;
       // user balance will not include msg.value because it is provided by user itself
       expect(await balanceUser.delta()).to.be.bignumber.eq(
         value[1].sub(new BN(receipt.receipt.gasUsed))

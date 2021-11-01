@@ -164,16 +164,16 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
       expect(earnedUser).to.be.bignumber.gt(ether('0'));
       expect(earnedAdapter).to.be.bignumber.gt(ether('0'));
       // Verify proxy not unexpectedlly earn any reward
-      expect(earnedProxy).to.be.zero;
+      expect(earnedProxy).to.be.bignumber.zero;
 
       // Verify user gets whole share of adapter
       expect(earnedUser).to.be.bignumber.eq(earnedAdapter);
 
       // Check proxy balance
-      expect(await this.st.balanceOf(this.proxy.address)).to.be.zero;
-      expect(await balance.current(this.proxy.address)).to.be.zero;
+      expect(await this.st.balanceOf(this.proxy.address)).to.be.bignumber.zero;
+      expect(await balance.current(this.proxy.address)).to.be.bignumber.zero;
       // Check user balance
-      expect(await this.st.balanceOf(user)).to.be.zero;
+      expect(await this.st.balanceOf(user)).to.be.bignumber.zero;
       expect(await balanceUser.delta()).to.be.bignumber.eq(
         ether('0').sub(new BN(receipt.receipt.gasUsed))
       );
@@ -222,20 +222,20 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
       expect(earnedUser).to.be.bignumber.gt(ether('0'));
       expect(earnedAdapter).to.be.bignumber.gt(ether('0'));
       // Verify proxy not unexpectedlly earn any reward
-      expect(earnedProxy).to.be.zero;
-      expect(earnedSomeone).to.be.zero;
+      expect(earnedProxy).to.be.bignumber.zero;
+      expect(earnedSomeone).to.be.bignumber.zero;
 
       // Verify user gets whole share of adapter
       expect(earnedUser).to.be.bignumber.eq(earnedAdapter);
 
       // Check proxy balance
-      expect(await this.st.balanceOf(this.proxy.address)).to.be.zero;
-      expect(await balance.current(this.proxy.address)).to.be.zero;
+      expect(await this.st.balanceOf(this.proxy.address)).to.be.bignumber.zero;
+      expect(await balance.current(this.proxy.address)).to.be.bignumber.zero;
       // Check user balance
-      expect(await this.st.balanceOf(user)).to.be.zero;
-      expect(await balanceUser.delta()).to.be.zero;
+      expect(await this.st.balanceOf(user)).to.be.bignumber.zero;
+      expect(await balanceUser.delta()).to.be.bignumber.zero;
       // Check someone balance
-      expect(await this.st.balanceOf(someone)).to.be.zero;
+      expect(await this.st.balanceOf(someone)).to.be.bignumber.zero;
       profileGas(receipt);
     });
 
@@ -338,8 +338,8 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
       const stBalanceUserAfter = await this.st.balanceOf.call(user);
 
       // Check proxy balance
-      expect(await this.st.balanceOf(this.proxy.address)).to.be.zero;
-      expect(await balance.current(this.proxy.address)).to.be.zero;
+      expect(await this.st.balanceOf(this.proxy.address)).to.be.bignumber.zero;
+      expect(await balance.current(this.proxy.address)).to.be.bignumber.zero;
       // Verify user staked amount has decreased
       expect(stakingUserAfter.sub(stakingUser)).to.be.bignumber.eq(
         ether('0').sub(sValue)
@@ -477,9 +477,9 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
       const rtBalanceUserAfter = await this.rt.balanceOf.call(user);
 
       // Check proxy balance
-      expect(await this.st.balanceOf(this.proxy.address)).to.be.zero;
-      expect(await this.rt.balanceOf(this.proxy.address)).to.be.zero;
-      expect(await balance.current(this.proxy.address)).to.be.zero;
+      expect(await this.st.balanceOf(this.proxy.address)).to.be.bignumber.zero;
+      expect(await this.rt.balanceOf(this.proxy.address)).to.be.bignumber.zero;
+      expect(await balance.current(this.proxy.address)).to.be.bignumber.zero;
       // Verify user staked amount has decreased
       expect(stakingUserAfter.sub(stakingUser)).to.be.bignumber.eq(
         ether('0').sub(sValue)
@@ -616,13 +616,13 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
       const rtBalanceUserAfter = await this.rt.balanceOf.call(user);
 
       // Check proxy balance
-      expect(await this.st.balanceOf(this.proxy.address)).to.be.zero;
-      expect(await this.rt.balanceOf(this.proxy.address)).to.be.zero;
-      expect(await balance.current(this.proxy.address)).to.be.zero;
+      expect(await this.st.balanceOf(this.proxy.address)).to.be.bignumber.zero;
+      expect(await this.rt.balanceOf(this.proxy.address)).to.be.bignumber.zero;
+      expect(await balance.current(this.proxy.address)).to.be.bignumber.zero;
       // Verify user staked amount does not changed
       expect(stakingUserAfter).to.be.bignumber.eq(sValue);
       // Verify user not being unstaked unexpectedlly and get the staking token
-      expect(stBalanceUserAfter).to.be.zero;
+      expect(stBalanceUserAfter).to.be.bignumber.zero;
       // Verify user get the reward he earned
       expect(rtBalanceUserAfter).to.be.bignumber.gte(earnedUser);
       expect(rtBalanceUserAfter).to.be.bignumber.lte(getBuffer(earnedUser));

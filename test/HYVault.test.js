@@ -76,8 +76,12 @@ contract('YVault', function([_, user]) {
       );
 
       // Check proxy balance
-      expect(await vault.balanceOf.call(this.proxy.address)).to.be.zero;
-      expect(await token.balanceOf.call(this.proxy.address)).to.be.zero;
+      expect(
+        await vault.balanceOf.call(this.proxy.address)
+      ).to.be.bignumber.zero;
+      expect(
+        await token.balanceOf.call(this.proxy.address)
+      ).to.be.bignumber.zero;
 
       // Check user vault balance >= 99.9% expected result
       expect(await vault.balanceOf.call(user)).to.be.bignumber.lte(
@@ -121,8 +125,12 @@ contract('YVault', function([_, user]) {
       );
 
       // Check proxy balance
-      expect(await vault.balanceOf.call(this.proxy.address)).to.be.zero;
-      expect(await token.balanceOf.call(this.proxy.address)).to.be.zero;
+      expect(
+        await vault.balanceOf.call(this.proxy.address)
+      ).to.be.bignumber.zero;
+      expect(
+        await token.balanceOf.call(this.proxy.address)
+      ).to.be.bignumber.zero;
 
       // Check user vault balance >= 99.9% expected result
       expect(await vault.balanceOf.call(user)).to.be.bignumber.lte(
@@ -162,8 +170,10 @@ contract('YVault', function([_, user]) {
       );
 
       // Check proxy balance
-      expect(await vault.balanceOf.call(this.proxy.address)).to.be.zero;
-      expect(await balance.current(this.proxy.address)).to.be.zero;
+      expect(
+        await vault.balanceOf.call(this.proxy.address)
+      ).to.be.bignumber.zero;
+      expect(await balance.current(this.proxy.address)).to.be.bignumber.zero;
 
       // Check user vault balance >= 99.9% expected result
       expect(await vault.balanceOf.call(user)).to.be.bignumber.lte(
@@ -209,8 +219,10 @@ contract('YVault', function([_, user]) {
       );
 
       // Check proxy balance
-      expect(await vault.balanceOf.call(this.proxy.address)).to.be.zero;
-      expect(await balance.current(this.proxy.address)).to.be.zero;
+      expect(
+        await vault.balanceOf.call(this.proxy.address)
+      ).to.be.bignumber.zero;
+      expect(await balance.current(this.proxy.address)).to.be.bignumber.zero;
 
       // Check user vault balance >= 99.9% expected result
       expect(await vault.balanceOf.call(user)).to.be.bignumber.lte(
@@ -272,11 +284,13 @@ contract('YVault', function([_, user]) {
       );
 
       // Check proxy balance
-      expect(await vault.balanceOf.call(this.proxy.address)).to.be.zero;
-      expect(await balance.current(this.proxy.address)).to.be.zero;
+      expect(
+        await vault.balanceOf.call(this.proxy.address)
+      ).to.be.bignumber.zero;
+      expect(await balance.current(this.proxy.address)).to.be.bignumber.zero;
 
       // Check user vault balance
-      expect(await vault.balanceOf.call(user)).to.be.zero;
+      expect(await vault.balanceOf.call(user)).to.be.bignumber.zero;
 
       // Check user eth balance <= 100.1% expected result
       expect(delta).to.be.bignumber.gte(
@@ -335,11 +349,13 @@ contract('YVault', function([_, user]) {
       );
 
       // Check proxy balance
-      expect(await vault.balanceOf.call(this.proxy.address)).to.be.zero;
-      expect(await balance.current(this.proxy.address)).to.be.zero;
+      expect(
+        await vault.balanceOf.call(this.proxy.address)
+      ).to.be.bignumber.zero;
+      expect(await balance.current(this.proxy.address)).to.be.bignumber.zero;
 
       // Check user vault balance
-      expect(await vault.balanceOf.call(user)).to.be.zero;
+      expect(await vault.balanceOf.call(user)).to.be.bignumber.zero;
 
       // Check user eth balance <= 100.1% expected result
       expect(delta).to.be.bignumber.gte(

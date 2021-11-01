@@ -8,6 +8,10 @@ All notable changes to this project will be documented in this file.
 
 - Refine token provider for tests.
 
+### Fixed
+
+- Fix bignumber zero checks.
+
 ## [1.10.0] - 2021-10-20
 
 ### Added

@@ -137,7 +137,7 @@ contract('GelatoLimitOrder', function([_, user]) {
         from: user,
         value: sellAmount,
       });
-      expect(await balanceProxy.delta()).to.be.zero;
+      expect(await balanceProxy.delta()).to.be.bignumber.zero;
       expect(await balanceUser.delta()).to.be.bignumber.eq(
         ether('0')
           .sub(sellAmount)
@@ -287,7 +287,7 @@ contract('GelatoLimitOrder', function([_, user]) {
         from: user,
         value: sellAmount,
       });
-      expect(await balanceProxy.delta()).to.be.zero;
+      expect(await balanceProxy.delta()).to.be.bignumber.zero;
       expect(await balanceUser.delta()).to.be.bignumber.eq(
         ether('0')
           .sub(sellAmount)
@@ -374,7 +374,7 @@ contract('GelatoLimitOrder', function([_, user]) {
         from: user,
         value: ether('1'),
       });
-      expect(await balanceProxy.delta()).to.be.zero;
+      expect(await balanceProxy.delta()).to.be.bignumber.zero;
       expect(await balanceUser.delta()).to.be.bignumber.eq(
         ether('0').sub(new BN(receipt.receipt.gasUsed))
       );
@@ -533,7 +533,7 @@ contract('GelatoLimitOrder', function([_, user]) {
         from: user,
         value: ether('1'),
       });
-      expect(await balanceProxy.delta()).to.be.zero;
+      expect(await balanceProxy.delta()).to.be.bignumber.zero;
       expect(await balanceUser.delta()).to.be.bignumber.eq(
         ether('0').sub(new BN(receipt.receipt.gasUsed))
       );
@@ -621,7 +621,7 @@ contract('GelatoLimitOrder', function([_, user]) {
         from: user,
         value: ether('1'),
       });
-      expect(await balanceProxy.delta()).to.be.zero;
+      expect(await balanceProxy.delta()).to.be.bignumber.zero;
       expect(await balanceUser.delta()).to.be.bignumber.eq(
         ether('0').sub(new BN(receipt.receipt.gasUsed))
       );
@@ -736,7 +736,7 @@ contract('GelatoLimitOrder', function([_, user]) {
         from: user,
         value: ether('1'),
       });
-      expect(await balanceProxy.delta()).to.be.zero;
+      expect(await balanceProxy.delta()).to.be.bignumber.zero;
       expect(await balanceUser.delta()).to.be.bignumber.eq(
         ether('0').sub(new BN(receipt.receipt.gasUsed))
       );
@@ -817,7 +817,7 @@ contract('GelatoLimitOrder', function([_, user]) {
           from: user,
           value: sellAmount,
         });
-        expect(await balanceProxy.delta()).to.be.zero;
+        expect(await balanceProxy.delta()).to.be.bignumber.zero;
         expect(await balanceUser.delta()).to.be.bignumber.eq(
           ether('0')
             .sub(sellAmount)
@@ -940,7 +940,7 @@ contract('GelatoLimitOrder', function([_, user]) {
           from: user,
           value: ether('1'),
         });
-        expect(await balanceProxy.delta()).to.be.zero;
+        expect(await balanceProxy.delta()).to.be.bignumber.zero;
         expect(await balanceUser.delta()).to.be.bignumber.eq(
           ether('0').sub(new BN(receipt.receipt.gasUsed))
         );
@@ -1059,7 +1059,7 @@ contract('GelatoLimitOrder', function([_, user]) {
           from: user,
           value: ether('1'),
         });
-        expect(await balanceProxy.delta()).to.be.zero;
+        expect(await balanceProxy.delta()).to.be.bignumber.zero;
         expect(await balanceUser.delta()).to.be.bignumber.eq(
           ether('0').sub(new BN(receipt.receipt.gasUsed))
         );

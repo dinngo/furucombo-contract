@@ -187,8 +187,8 @@ contract('AaveV2 flashloan', function([_, user, someone]) {
       });
 
       const fee = _getFlashloanFee(value);
-      expect(await balanceProxy.get()).to.be.zero;
-      expect(await this.tokenA.balanceOf.call(this.proxy.address)).to.be.zero;
+      expect(await balanceProxy.get()).to.be.bignumber.zero;
+      expect(await this.tokenA.balanceOf.call(this.proxy.address)).to.be.bignumber.zero;
       expect(await this.tokenA.balanceOf.call(user)).to.be.bignumber.eq(
         tokenAUser.add(value).sub(fee)
       );
@@ -227,8 +227,8 @@ contract('AaveV2 flashloan', function([_, user, someone]) {
         value: ether('0.1'),
       });
 
-      expect(await balanceProxy.get()).to.be.zero;
-      expect(await this.tokenA.balanceOf.call(this.proxy.address)).to.be.zero;
+      expect(await balanceProxy.get()).to.be.bignumber.zero;
+      expect(await this.tokenA.balanceOf.call(this.proxy.address)).to.be.bignumber.zero;
       expect(await this.tokenA.balanceOf.call(user)).to.be.bignumber.eq(
         tokenAUser.add(value).add(value)
       );
@@ -276,8 +276,8 @@ contract('AaveV2 flashloan', function([_, user, someone]) {
         value: ether('0.1'),
       });
 
-      expect(await balanceProxy.get()).to.be.zero;
-      expect(await this.tokenA.balanceOf.call(this.proxy.address)).to.be.zero;
+      expect(await balanceProxy.get()).to.be.bignumber.zero;
+      expect(await this.tokenA.balanceOf.call(this.proxy.address)).to.be.bignumber.zero;
       expect(await this.tokenA.balanceOf.call(user)).to.be.bignumber.eq(
         tokenAUser.add(value).add(value)
       );
@@ -312,9 +312,9 @@ contract('AaveV2 flashloan', function([_, user, someone]) {
         value: ether('0.1'),
       });
 
-      expect(await balanceProxy.get()).to.be.zero;
-      expect(await this.tokenA.balanceOf.call(this.proxy.address)).to.be.zero;
-      expect(await this.tokenB.balanceOf.call(this.proxy.address)).to.be.zero;
+      expect(await balanceProxy.get()).to.be.bignumber.zero;
+      expect(await this.tokenA.balanceOf.call(this.proxy.address)).to.be.bignumber.zero;
+      expect(await this.tokenB.balanceOf.call(this.proxy.address)).to.be.bignumber.zero;
 
       const fee = _getFlashloanFee(value);
       expect(await this.tokenA.balanceOf.call(user)).to.be.bignumber.eq(
@@ -520,9 +520,9 @@ contract('AaveV2 flashloan', function([_, user, someone]) {
         value: ether('0.1'),
       });
 
-      expect(await balanceProxy.get()).to.be.zero;
-      expect(await this.tokenA.balanceOf.call(this.proxy.address)).to.be.zero;
-      expect(await this.tokenB.balanceOf.call(this.proxy.address)).to.be.zero;
+      expect(await balanceProxy.get()).to.be.bignumber.zero;
+      expect(await this.tokenA.balanceOf.call(this.proxy.address)).to.be.bignumber.zero;
+      expect(await this.tokenB.balanceOf.call(this.proxy.address)).to.be.bignumber.zero;
 
       const fee = value
         .mul(new BN('9'))
@@ -583,9 +583,9 @@ contract('AaveV2 flashloan', function([_, user, someone]) {
         value: ether('0.1'),
       });
 
-      expect(await balanceProxy.get()).to.be.zero;
-      expect(await this.tokenA.balanceOf.call(this.proxy.address)).to.be.zero;
-      expect(await this.tokenB.balanceOf.call(this.proxy.address)).to.be.zero;
+      expect(await balanceProxy.get()).to.be.bignumber.zero;
+      expect(await this.tokenA.balanceOf.call(this.proxy.address)).to.be.bignumber.zero;
+      expect(await this.tokenB.balanceOf.call(this.proxy.address)).to.be.bignumber.zero;
 
       const fee = value
         .mul(new BN('9'))
@@ -662,9 +662,9 @@ contract('AaveV2 flashloan', function([_, user, someone]) {
         value: ether('0.1'),
       });
 
-      expect(await balanceProxy.get()).to.be.zero;
-      expect(await this.tokenA.balanceOf.call(this.proxy.address)).to.be.zero;
-      expect(await this.tokenB.balanceOf.call(this.proxy.address)).to.be.zero;
+      expect(await balanceProxy.get()).to.be.bignumber.zero;
+      expect(await this.tokenA.balanceOf.call(this.proxy.address)).to.be.bignumber.zero;
+      expect(await this.tokenB.balanceOf.call(this.proxy.address)).to.be.bignumber.zero;
 
       const fee = _getFlashloanFee(value);
       expect(await this.tokenA.balanceOf.call(user)).to.be.bignumber.eq(
@@ -723,9 +723,9 @@ contract('AaveV2 flashloan', function([_, user, someone]) {
         value: ether('0.1'),
       });
 
-      expect(await balanceProxy.get()).to.be.zero;
-      expect(await this.tokenA.balanceOf.call(this.proxy.address)).to.be.zero;
-      expect(await this.tokenB.balanceOf.call(this.proxy.address)).to.be.zero;
+      expect(await balanceProxy.get()).to.be.bignumber.zero;
+      expect(await this.tokenA.balanceOf.call(this.proxy.address)).to.be.bignumber.zero;
+      expect(await this.tokenB.balanceOf.call(this.proxy.address)).to.be.bignumber.zero;
 
       const fee = _getFlashloanFee(value);
       expect(await this.tokenA.balanceOf.call(user)).to.be.bignumber.eq(

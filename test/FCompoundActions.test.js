@@ -422,7 +422,7 @@ contract('FCompoundActions', function([_, user]) {
             .sub(mulPercent(borrowBalanceBefore, 101))
             .sub(new BN(receipt.receipt.gasUsed))
         );
-        expect(borrowBalanceAfter).to.be.zero;
+        expect(borrowBalanceAfter).to.be.bignumber.zero;
       });
     });
 
@@ -470,7 +470,7 @@ contract('FCompoundActions', function([_, user]) {
         });
         expect(
           await this.token.balanceOf.call(this.userProxy.address)
-        ).to.be.zero;
+        ).to.be.bignumber.zero;
       });
 
       it('repay token partial', async function() {
@@ -571,7 +571,7 @@ contract('FCompoundActions', function([_, user]) {
         expect(tokenUserAfter).to.be.bignumber.gte(
           tokenUserBefore.sub(mulPercent(borrowBalanceBefore, 101))
         );
-        expect(borrowBalanceAfter).to.be.zero;
+        expect(borrowBalanceAfter).to.be.bignumber.zero;
       });
 
       it('repay token whole - dsproxy pre approve partial token', async function() {
@@ -643,14 +643,14 @@ contract('FCompoundActions', function([_, user]) {
         expect(tokenUserAfter).to.be.bignumber.gte(
           tokenUserBefore.sub(mulPercent(borrowBalanceBefore, 101))
         );
-        expect(borrowBalanceAfter).to.be.zero;
+        expect(borrowBalanceAfter).to.be.bignumber.zero;
         // verify no token allowance left in this case
         expect(
           await this.token.allowance(
             this.userProxy.address,
             this.cToken.address
           )
-        ).to.be.zero;
+        ).to.be.bignumber.zero;
       });
     });
   });
