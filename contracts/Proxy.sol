@@ -1,7 +1,8 @@
-pragma solidity ^0.6.0;
-pragma experimental ABIEncoderV2;
+// SPDX-License-Identifier: MIT
 
-import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
+pragma solidity 0.8.9;
+
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "./interface/IProxy.sol";
 import "./interface/IRegistry.sol";
@@ -17,6 +18,7 @@ contract Proxy is IProxy, Storage, Config {
     using Address for address;
     using SafeERC20 for IERC20;
     using LibParam for bytes32;
+    using LibStack for bytes32[];
 
     event LogBegin(
         address indexed handler,
@@ -41,7 +43,7 @@ contract Proxy is IProxy, Storage, Config {
 
     IRegistry public immutable registry;
 
-    constructor(address _registry) public {
+    constructor(address _registry) {
         registry = IRegistry(_registry);
     }
 
@@ -307,8 +309,9 @@ contract Proxy is IProxy, Storage, Config {
             HandlerType handlerType = HandlerType(uint96(bytes12(top)));
             if (handlerType == HandlerType.Token) {
                 address addr = address(uint160(uint256(top)));
-                uint256 amount = IERC20(addr).balanceOf(address(this));
-                if (amount > 0) IERC20(addr).safeTransfer(msg.sender, amount);
+                uint256 tokenAmount = IERC20(addr).balanceOf(address(this));
+                if (tokenAmount > 0)
+                    IERC20(addr).safeTransfer(msg.sender, tokenAmount);
             } else if (handlerType == HandlerType.Custom) {
                 address addr = stack.getAddress();
                 _exec(addr, abi.encodeWithSelector(POSTPROCESS_SIG));
@@ -319,7 +322,7 @@ contract Proxy is IProxy, Storage, Config {
 
         // Balance should also be returned to user
         uint256 amount = address(this).balance;
-        if (amount > 0) msg.sender.transfer(amount);
+        if (amount > 0) payable(msg.sender).transfer(amount);
 
         // Reset the msg.sender and cube counter
         _resetSender();

@@ -1,12 +1,10 @@
-pragma solidity >=0.6.0;
+// SPDX-License-Identifier: MIT
 
-import "@openzeppelin/contracts/math/SafeMath.sol";
+pragma solidity ^0.8.0;
 
 import "../IUniswapV2Pair.sol";
 
 library UniswapV2Library {
-    using SafeMath for uint256;
-
     // returns sorted token addresses, used to handle return values from pairs sorted in this order
     function sortTokens(address tokenA, address tokenB)
         internal
@@ -29,13 +27,15 @@ library UniswapV2Library {
         (address token0, address token1) = sortTokens(tokenA, tokenB);
 
         pair = address(
-            uint256(
-                keccak256(
-                    abi.encodePacked(
-                        hex"ff",
-                        factory,
-                        keccak256(abi.encodePacked(token0, token1)),
-                        hex"96e8ac4277198ff8b6f785478aa9a39f403cb768dd02cbee326c3e7da348845f" // init code hash
+            uint160(
+                uint256(
+                    keccak256(
+                        abi.encodePacked(
+                            hex"ff",
+                            factory,
+                            keccak256(abi.encodePacked(token0, token1)),
+                            hex"96e8ac4277198ff8b6f785478aa9a39f403cb768dd02cbee326c3e7da348845f" // init code hash
+                        )
                     )
                 )
             )
@@ -67,7 +67,7 @@ library UniswapV2Library {
             reserveA > 0 && reserveB > 0,
             "UniswapV2Library: INSUFFICIENT_LIQUIDITY"
         );
-        amountB = amountA.mul(reserveB) / reserveA;
+        amountB = (amountA * reserveB) / reserveA;
     }
 
     // given an input amount of an asset and pair reserves, returns the maximum output amount of the other asset
@@ -81,9 +81,9 @@ library UniswapV2Library {
             reserveIn > 0 && reserveOut > 0,
             "UniswapV2Library: INSUFFICIENT_LIQUIDITY"
         );
-        uint256 amountInWithFee = amountIn.mul(997);
-        uint256 numerator = amountInWithFee.mul(reserveOut);
-        uint256 denominator = reserveIn.mul(1000).add(amountInWithFee);
+        uint256 amountInWithFee = amountIn * 997;
+        uint256 numerator = amountInWithFee * reserveOut;
+        uint256 denominator = (reserveIn * 1000) + amountInWithFee;
         amountOut = numerator / denominator;
     }
 
@@ -98,9 +98,9 @@ library UniswapV2Library {
             reserveIn > 0 && reserveOut > 0,
             "UniswapV2Library: INSUFFICIENT_LIQUIDITY"
         );
-        uint256 numerator = reserveIn.mul(amountOut).mul(1000);
-        uint256 denominator = reserveOut.sub(amountOut).mul(997);
-        amountIn = (numerator / denominator).add(1);
+        uint256 numerator = reserveIn * amountOut * 1000;
+        uint256 denominator = (reserveOut - amountOut) * 997;
+        amountIn = (numerator / denominator) + 1;
     }
 
     // performs chained getAmountOut calculations on any number of pairs

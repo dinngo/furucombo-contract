@@ -1,7 +1,8 @@
-pragma solidity ^0.6.0;
+// SPDX-License-Identifier: MIT
 
-import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
-import "@openzeppelin/contracts/math/SafeMath.sol";
+pragma solidity 0.8.9;
+
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import "../HandlerBase.sol";
 import "./libraries/UniswapV2Library.sol";
@@ -9,7 +10,6 @@ import "./IUniswapV2Router02.sol";
 
 contract HUniswapV2 is HandlerBase {
     using SafeERC20 for IERC20;
-    using SafeMath for uint256;
 
     // prettier-ignore
     address public constant UNISWAPV2_ROUTER = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D;
@@ -49,7 +49,7 @@ contract HUniswapV2 is HandlerBase {
                 amountTokenMin,
                 amountETHMin,
                 address(this),
-                now + 1
+                block.timestamp
             )
         returns (uint256 ret1, uint256 ret2, uint256 ret3) {
             amountToken = ret1;
@@ -102,7 +102,7 @@ contract HUniswapV2 is HandlerBase {
                 amountAMin,
                 amountBMin,
                 address(this),
-                now + 1
+                block.timestamp
             )
         returns (uint256 ret1, uint256 ret2, uint256 ret3) {
             amountA = ret1;
@@ -143,7 +143,7 @@ contract HUniswapV2 is HandlerBase {
                 amountTokenMin,
                 amountETHMin,
                 address(this),
-                now + 1
+                block.timestamp
             )
         returns (uint256 ret1, uint256 ret2) {
             amountToken = ret1;
@@ -183,7 +183,7 @@ contract HUniswapV2 is HandlerBase {
                 amountAMin,
                 amountBMin,
                 address(this),
-                now + 1
+                block.timestamp
             )
         returns (uint256 ret1, uint256 ret2) {
             amountA = ret1;
@@ -216,7 +216,7 @@ contract HUniswapV2 is HandlerBase {
                 amountOutMin,
                 path,
                 address(this),
-                now + 1
+                block.timestamp
             )
         returns (uint256[] memory amounts) {
             amount = amounts[amounts.length - 1];
@@ -241,7 +241,7 @@ contract HUniswapV2 is HandlerBase {
         // Get uniswapV2 router
         IUniswapV2Router02 router = IUniswapV2Router02(UNISWAPV2_ROUTER);
 
-        // if amount == uint256(-1) return balance of Proxy
+        // if amount == type(uint256).max return balance of Proxy
         value = _getBalance(address(0), value);
 
         try
@@ -249,7 +249,7 @@ contract HUniswapV2 is HandlerBase {
                 amountOut,
                 path,
                 address(this),
-                now + 1
+                block.timestamp
             )
         returns (uint256[] memory amounts) {
             amount = amounts[0];
@@ -284,7 +284,7 @@ contract HUniswapV2 is HandlerBase {
                 amountOutMin,
                 path,
                 address(this),
-                now + 1
+                block.timestamp
             )
         returns (uint256[] memory amounts) {
             amount = amounts[amounts.length - 1];
@@ -307,7 +307,7 @@ contract HUniswapV2 is HandlerBase {
         // Get uniswapV2 router
         IUniswapV2Router02 router = IUniswapV2Router02(UNISWAPV2_ROUTER);
 
-        // if amount == uint256(-1) return balance of Proxy
+        // if amount == type(uint256).max return balance of Proxy
         amountInMax = _getBalance(tokenIn, amountInMax);
 
         // Approve token
@@ -319,7 +319,7 @@ contract HUniswapV2 is HandlerBase {
                 amountInMax,
                 path,
                 address(this),
-                now + 1
+                block.timestamp
             )
         returns (uint256[] memory amounts) {
             amount = amounts[0];
@@ -353,7 +353,7 @@ contract HUniswapV2 is HandlerBase {
                 amountOutMin,
                 path,
                 address(this),
-                now + 1
+                block.timestamp
             )
         returns (uint256[] memory amounts) {
             amount = amounts[amounts.length - 1];
@@ -379,7 +379,7 @@ contract HUniswapV2 is HandlerBase {
         // Get uniswapV2 router
         IUniswapV2Router02 router = IUniswapV2Router02(UNISWAPV2_ROUTER);
 
-        // if amount == uint256(-1) return balance of Proxy
+        // if amount == type(uint256).max return balance of Proxy
         amountInMax = _getBalance(tokenIn, amountInMax);
 
         // Approve token
@@ -391,7 +391,7 @@ contract HUniswapV2 is HandlerBase {
                 amountInMax,
                 path,
                 address(this),
-                now + 1
+                block.timestamp
             )
         returns (uint256[] memory amounts) {
             amount = amounts[0];

@@ -1,11 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0
 
-pragma solidity 0.6.12;
-import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
+pragma solidity ^0.8.0;
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 interface IGelatoPineCore {
-    using SafeERC20 for IERC20;
-
     /**
      * @notice Get the calldata needed to create a token to token/ETH order
      * @dev Returns the input data that the user needs to use to create the order

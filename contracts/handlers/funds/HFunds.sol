@@ -1,6 +1,8 @@
-pragma solidity ^0.6.0;
+// SPDX-License-Identifier: MIT
 
-import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
+pragma solidity 0.8.9;
+
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import "../HandlerBase.sol";
 
@@ -26,7 +28,7 @@ contract HFunds is HandlerBase {
                 // Update involved token
                 _updateToken(token);
             }
-            balances[i] = _getBalance(token, uint256(-1));
+            balances[i] = _getBalance(token, type(uint256).max);
         }
         return balances;
     }
@@ -140,6 +142,6 @@ contract HFunds is HandlerBase {
     }
 
     function getBalance(address token) external payable returns (uint256) {
-        return _getBalance(token, uint256(-1));
+        return _getBalance(token, type(uint256).max);
     }
 }

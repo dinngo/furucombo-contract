@@ -25,6 +25,7 @@ const {
   profileGas,
   getHandlerReturn,
   tokenProviderUniV2,
+  expectEqWithinBps,
 } = require('./utils/utils');
 
 const HAaveV2 = artifacts.require('HAaveProtocolV2');
@@ -424,8 +425,10 @@ contract('Aave V2', function([_, user]) {
       expect(await this.borrowToken.balanceOf.call(user)).to.be.bignumber.eq(
         borrowAmount
       );
-      expect(await this.debtToken.balanceOf.call(user)).to.be.bignumber.eq(
-        borrowAmount
+      expectEqWithinBps(
+        await this.debtToken.balanceOf.call(user),
+        borrowAmount,
+        10
       );
     });
 

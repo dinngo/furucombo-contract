@@ -1,12 +1,15 @@
-pragma solidity ^0.6.0;
-pragma experimental ABIEncoderV2;
+// SPDX-License-Identifier: MIT
+
+pragma solidity 0.8.9;
 
 import "../Proxy.sol";
 import "./debug/GasProfiler.sol";
 import "./debug/IHandlerEvents.sol";
 
 contract ProxyMock is Proxy, GasProfiler, IHandlerEvents {
-    constructor(address registry) public Proxy(registry) {}
+    using LibStack for bytes32[];
+
+    constructor(address registry) Proxy(registry) {}
 
     event RecordHandlerResult(bytes value);
 

@@ -1,14 +1,14 @@
-pragma solidity ^0.6.0;
+// SPDX-License-Identifier: MIT
 
-import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
-import "@openzeppelin/contracts/math/SafeMath.sol";
+pragma solidity 0.8.9;
+
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "../HandlerBase.sol";
 import "../../staking/IStakingRewardsAdapter.sol";
 import "../../staking/IStakingRewardsAdapterRegistry.sol";
 
 contract HStakingRewardsAdapter is HandlerBase {
     using SafeERC20 for IERC20;
-    using SafeMath for uint256;
 
     // prettier-ignore
     IStakingRewardsAdapterRegistry constant public registry = IStakingRewardsAdapterRegistry(0xCa591346A311A372a20ed69e08bBE5107979e243);
@@ -110,12 +110,12 @@ contract HStakingRewardsAdapter is HandlerBase {
         _updateToken(address(rewardsToken));
 
         // Calculate return amounts
-        withdrawAmount = stakingToken.balanceOf(address(this)).sub(
-            stakingTokenBalance
-        );
-        rewardsAmount = rewardsToken.balanceOf(address(this)).sub(
-            rewardsTokenBalance
-        );
+        withdrawAmount =
+            stakingToken.balanceOf(address(this)) -
+            stakingTokenBalance;
+        rewardsAmount =
+            rewardsToken.balanceOf(address(this)) -
+            rewardsTokenBalance;
     }
 
     // Only getReward for msg.sender
@@ -140,8 +140,8 @@ contract HStakingRewardsAdapter is HandlerBase {
         _updateToken(address(rewardsToken));
 
         // Calculate return amount
-        rewardsAmount = rewardsToken.balanceOf(address(this)).sub(
-            rewardsTokenBalance
-        );
+        rewardsAmount =
+            rewardsToken.balanceOf(address(this)) -
+            rewardsTokenBalance;
     }
 }

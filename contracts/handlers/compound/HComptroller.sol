@@ -1,13 +1,13 @@
-pragma solidity ^0.6.0;
+// SPDX-License-Identifier: MIT
+
+pragma solidity 0.8.9;
 
 import "../HandlerBase.sol";
 import "./IComptroller.sol";
-import "@openzeppelin/contracts/math/SafeMath.sol";
-import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 contract HComptroller is HandlerBase {
     using SafeERC20 for IERC20;
-    using SafeMath for uint256;
 
     // prettier-ignore
     address public constant COMPTROLLER = 0x3d9819210A31b4961b30EF54bE2aeD79B9c9Cd3B;
@@ -29,7 +29,7 @@ contract HComptroller is HandlerBase {
         }
         uint256 afterCompBalance = IERC20(comp).balanceOf(sender);
 
-        return afterCompBalance.sub(beforeCompBalance);
+        return afterCompBalance - beforeCompBalance;
     }
 
     function claimComp(address holder) external payable returns (uint256) {
@@ -44,6 +44,6 @@ contract HComptroller is HandlerBase {
         }
         uint256 afterCompBalance = IERC20(comp).balanceOf(holder);
 
-        return afterCompBalance.sub(beforeCompBalance);
+        return afterCompBalance - beforeCompBalance;
     }
 }

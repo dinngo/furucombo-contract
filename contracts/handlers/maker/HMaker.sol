@@ -1,13 +1,16 @@
-pragma solidity ^0.6.0;
+// SPDX-License-Identifier: MIT
+
+pragma solidity 0.8.9;
 
 import "./IDSProxy.sol";
 import "./IMaker.sol";
 import "../HandlerBase.sol";
 
-import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 contract HMaker is HandlerBase {
     using SafeERC20 for IERC20;
+    using LibStack for bytes32[];
 
     // prettier-ignore
     address public constant PROXY_REGISTRY = 0x4678f0a6958e4D2Bc4F1BAF7Bc52E8F3564f3fE4;
@@ -57,11 +60,11 @@ contract HMaker is HandlerBase {
         uint256 wadD
     ) external payable returns (uint256 cdp) {
         IDSProxy proxy = IDSProxy(_getProxy(address(this)));
-        // if amount == uint256(-1) return balance of Proxy
+        // if amount == type(uint256).max return balance of Proxy
         value = _getBalance(address(0), value);
 
         try
-            proxy.execute.value(value)(
+            proxy.execute{value: value}(
                 getProxyActions(),
                 abi.encodeWithSelector(
                     // selector of "openLockETHAndDraw(address,address,address,address,bytes32,uint256)"
@@ -98,7 +101,7 @@ contract HMaker is HandlerBase {
         IDSProxy proxy = IDSProxy(_getProxy(address(this)));
         address token = IMakerGemJoin(gemJoin).gem();
 
-        // if amount == uint256(-1) return balance of Proxy
+        // if amount == type(uint256).max return balance of Proxy
         wadC = _getBalance(token, wadC);
 
         IERC20(token).safeApprove(address(proxy), wadC);
@@ -140,11 +143,11 @@ contract HMaker is HandlerBase {
     ) external payable {
         IDSProxy proxy = IDSProxy(_getProxy(address(this)));
         address owner = _getProxy(_getSender());
-        // if amount == uint256(-1) return balance of Proxy
+        // if amount == type(uint256).max return balance of Proxy
         value = _getBalance(address(0), value);
 
         try
-            proxy.execute.value(value)(
+            proxy.execute{value: value}(
                 getProxyActions(),
                 abi.encodeWithSelector(
                     // selector of "safeLockETH(address,address,uint256,address)"
@@ -170,7 +173,7 @@ contract HMaker is HandlerBase {
         IDSProxy proxy = IDSProxy(_getProxy(address(this)));
         address owner = _getProxy(_getSender());
         address token = IMakerGemJoin(gemJoin).gem();
-        // if amount == uint256(-1) return balance of Proxy
+        // if amount == type(uint256).max return balance of Proxy
         wad = _getBalance(token, wad);
         IERC20(token).safeApprove(address(proxy), wad);
         try
@@ -310,7 +313,7 @@ contract HMaker is HandlerBase {
 
     function wipeAll(address daiJoin, uint256 cdp) external payable {
         IDSProxy proxy = IDSProxy(_getProxy(address(this)));
-        IERC20(DAI_TOKEN).safeApprove(address(proxy), uint256(-1));
+        IERC20(DAI_TOKEN).safeApprove(address(proxy), type(uint256).max);
         try
             proxy.execute(
                 getProxyActions(),
@@ -342,7 +345,7 @@ contract HMaker is HandlerBase {
         } else revert("Invalid post process");
     }
 
-    function _getProxy(address user) internal returns (address) {
+    function _getProxy(address user) internal view returns (address) {
         return IDSProxyRegistry(PROXY_REGISTRY).proxies(user);
     }
 

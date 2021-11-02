@@ -1,9 +1,10 @@
+// SPDX-License-Identifier: MIT
 /// This is inspired by and based on CompoundBasicProxy.sol by DeFi Saver
 /// reference: https://etherscan.io/address/0x336b3919a10ced553c75db18cd285335b8e8ed38#code
 
-pragma solidity 0.6.12;
+pragma solidity 0.8.9;
 
-import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import "./IComptroller.sol";
 import "./ICToken.sol";
@@ -17,7 +18,6 @@ contract FCompoundActions {
     // prettier-ignore
     address public constant COMPTROLLER_ADDR = 0x3d9819210A31b4961b30EF54bE2aeD79B9c9Cd3B;
 
-    using SafeMath for uint256;
     using SafeERC20 for IERC20;
 
     /// @notice User deposits tokens to the DSProxy
@@ -33,7 +33,7 @@ contract FCompoundActions {
     /// @param _amount Amount of tokens to be withdrawn
     function withdraw(address _tokenAddr, uint256 _amount) public {
         if (_tokenAddr == ETH_ADDR) {
-            msg.sender.transfer(_amount);
+            payable(msg.sender).transfer(_amount);
         } else {
             IERC20(_tokenAddr).safeTransfer(msg.sender, _amount);
         }
@@ -65,7 +65,7 @@ contract FCompoundActions {
             ICEther(_cTokenAddr).repayBorrow{value: _amount}();
             // send back the extra eth
             if (ethReceived > _amount) {
-                msg.sender.transfer(ethReceived.sub(_amount));
+                payable(msg.sender).transfer(ethReceived - _amount);
             }
         } else {
             IERC20 token = IERC20(ICToken(_cTokenAddr).underlying());
@@ -77,7 +77,7 @@ contract FCompoundActions {
                 ICToken(_cTokenAddr).repayBorrow(_amount) == 0,
                 "FCompoundActions: repay token failed"
             );
-            if (msg.value > 0) msg.sender.transfer(msg.value);
+            if (msg.value > 0) payable(msg.sender).transfer(msg.value);
         }
     }
 

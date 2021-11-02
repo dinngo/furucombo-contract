@@ -1,4 +1,6 @@
-pragma solidity ^0.6.0;
+// SPDX-License-Identifier: MIT
+
+pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
@@ -26,5 +28,5 @@ interface IStakingRewardsAdapter {
     function getRewardFor(address account) external;
     function exitFor(address account) external;
 
-    function setApproval(address agent, bool approval) external returns (bool);
+    function setApproval(address agent, bool approval) external;
 }

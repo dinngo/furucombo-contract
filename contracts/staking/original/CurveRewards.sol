@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  *Submitted for verification at Etherscan.io on 2020-04-22
  */
@@ -38,11 +39,10 @@
 */
 
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/math/Math.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts/utils/math/Math.sol";
 
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
 abstract contract IRewardDistributionRecipient is Ownable {
     address rewardDistribution;
@@ -67,10 +67,9 @@ abstract contract IRewardDistributionRecipient is Ownable {
 
 // File: contracts/CurveRewards.sol
 
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
 contract LPTokenWrapper {
-    using SafeMath for uint256;
     using SafeERC20 for IERC20;
 
     IERC20 public uni = IERC20(0xC25a3A3b969415c80451098fa907EC722572917F);
@@ -87,20 +86,22 @@ contract LPTokenWrapper {
     }
 
     function stake(uint256 amount) public virtual {
-        _totalSupply = _totalSupply.add(amount);
-        _balances[msg.sender] = _balances[msg.sender].add(amount);
+        _totalSupply = _totalSupply + amount;
+        _balances[msg.sender] = _balances[msg.sender] + amount;
         uni.safeTransferFrom(msg.sender, address(this), amount);
     }
 
     function withdraw(uint256 amount) public virtual {
-        _totalSupply = _totalSupply.sub(amount);
-        _balances[msg.sender] = _balances[msg.sender].sub(amount);
+        _totalSupply = _totalSupply - amount;
+        _balances[msg.sender] = _balances[msg.sender] - amount;
         uni.safeTransfer(msg.sender, amount);
     }
 }
 
 contract CurveRewards is LPTokenWrapper, IRewardDistributionRecipient {
+    using SafeERC20 for IERC20;
     IERC20 public snx = IERC20(0xC011a73ee8576Fb46F5E1c5751cA3B9Fe0af2a6F);
+
     uint256 public constant DURATION = 7 days;
 
     uint256 public periodFinish = 0;
@@ -134,21 +135,17 @@ contract CurveRewards is LPTokenWrapper, IRewardDistributionRecipient {
             return rewardPerTokenStored;
         }
         return
-            rewardPerTokenStored.add(
-                lastTimeRewardApplicable()
-                    .sub(lastUpdateTime)
-                    .mul(rewardRate)
-                    .mul(1e18)
-                    .div(totalSupply())
-            );
+            rewardPerTokenStored +
+            (((lastTimeRewardApplicable() - lastUpdateTime) *
+                rewardRate *
+                1e18) / totalSupply());
     }
 
     function earned(address account) public view returns (uint256) {
         return
-            balanceOf(account)
-                .mul(rewardPerToken().sub(userRewardPerTokenPaid[account]))
-                .div(1e18)
-                .add(rewards[account]);
+            ((balanceOf(account) *
+                (rewardPerToken() - userRewardPerTokenPaid[account])) / 1e18) +
+            rewards[account];
     }
 
     // stake visibility is public as overriding LPTokenWrapper's stake() function
@@ -185,14 +182,14 @@ contract CurveRewards is LPTokenWrapper, IRewardDistributionRecipient {
         updateReward(address(0))
     {
         if (block.timestamp >= periodFinish) {
-            rewardRate = reward.div(DURATION);
+            rewardRate = reward / DURATION;
         } else {
-            uint256 remaining = periodFinish.sub(block.timestamp);
-            uint256 leftover = remaining.mul(rewardRate);
-            rewardRate = reward.add(leftover).div(DURATION);
+            uint256 remaining = periodFinish - block.timestamp;
+            uint256 leftover = remaining * rewardRate;
+            rewardRate = (reward + leftover) / DURATION;
         }
         lastUpdateTime = block.timestamp;
-        periodFinish = block.timestamp.add(DURATION);
+        periodFinish = block.timestamp + DURATION;
         emit RewardAdded(reward);
     }
 }

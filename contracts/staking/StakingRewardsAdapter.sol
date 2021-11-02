@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 // File: @openzeppelin/contracts/access/Roles.sol
 
 /**
@@ -49,7 +51,7 @@ contract PauserRole is Context {
 
     Roles.Role private _pausers;
 
-    constructor() internal {
+    constructor() {
         _addPauser(_msgSender());
     }
 
@@ -112,7 +114,7 @@ contract Pausable is Context, PauserRole {
      * @dev Initializes the contract in unpaused state. Assigns the Pauser role
      * to the deployer.
      */
-    constructor() internal {
+    constructor() {
         _paused = false;
     }
 
@@ -158,12 +160,11 @@ contract Pausable is Context, PauserRole {
 
 // File: contracts/staking/StakingRewardsAdapter.sol
 
-pragma solidity ^0.6.0;
+pragma solidity 0.8.9;
 
-import "@openzeppelin/contracts/GSN/Context.sol";
-import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/utils/Context.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 import "./IStakingRewards.sol";
 import "./IStakingRewardsAdapter.sol";
@@ -173,7 +174,6 @@ contract StakingRewardsAdapter is
     ReentrancyGuard,
     Pausable
 {
-    using SafeMath for uint256;
     using SafeERC20 for IERC20;
 
     /* ========== STATE VARIABLES ========== */
@@ -197,7 +197,7 @@ contract StakingRewardsAdapter is
         address _stakingContract,
         address _stakingToken,
         address _rewardsToken
-    ) public {
+    ) {
         stakingContract = IStakingRewards(_stakingContract);
         if (_stakingToken == address(0) && _rewardsToken == address(0)) {
             stakingToken = stakingContract.stakingToken();
@@ -233,10 +233,9 @@ contract StakingRewardsAdapter is
 
     function earned(address account) public view override returns (uint256) {
         return
-            _balances[account]
-                .mul(rewardPerToken().sub(userRewardPerTokenPaid[account]))
-                .div(1e18)
-                .add(rewards[account]);
+            ((_balances[account] *
+                (rewardPerToken() - userRewardPerTokenPaid[account])) / 1e18) +
+            rewards[account];
     }
 
     function getRewardForDuration() external view override returns (uint256) {
@@ -278,11 +277,7 @@ contract StakingRewardsAdapter is
 
     /* ========== APPROVAL ========== */
 
-    function setApproval(address agent, bool approval)
-        external
-        override
-        returns (bool)
-    {
+    function setApproval(address agent, bool approval) external override {
         require(
             agent != address(0),
             "StakingRewardsAdapter: approve to the zero address"
@@ -367,8 +362,8 @@ contract StakingRewardsAdapter is
 
     function _stakeInternal(address account, uint256 amount) internal {
         require(amount > 0, "StakingRewardsAdapter: cannot stake 0");
-        _totalSupply = _totalSupply.add(amount);
-        _balances[account] = _balances[account].add(amount);
+        _totalSupply = _totalSupply + amount;
+        _balances[account] = _balances[account] + amount;
         stakingToken.safeTransferFrom(msg.sender, address(this), amount);
         stakingToken.safeApprove(address(stakingContract), amount);
         stakingContract.stake(amount);
@@ -378,8 +373,8 @@ contract StakingRewardsAdapter is
 
     function _withdrawInternal(address account, uint256 amount) internal {
         require(amount > 0, "StakingRewardsAdapter: cannot withdraw 0");
-        _totalSupply = _totalSupply.sub(amount);
-        _balances[account] = _balances[account].sub(amount);
+        _totalSupply = _totalSupply - amount;
+        _balances[account] = _balances[account] - amount;
         stakingContract.withdraw(amount);
         stakingToken.safeTransfer(msg.sender, amount);
         emit Withdrawn(msg.sender, account, amount);

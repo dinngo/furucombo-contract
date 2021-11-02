@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.6.0;
+pragma solidity 0.8.9;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 
@@ -16,7 +16,7 @@ contract StakingRewardsAdapterRegistry is Ownable {
      * owner will be the factory if we do not transfer.
      * Ref: https://eips.ethereum.org/EIPS/eip-2470
      */
-    constructor() public {
+    constructor() {
         transferOwnership(tx.origin);
     }
 

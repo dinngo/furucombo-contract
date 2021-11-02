@@ -1,6 +1,8 @@
-pragma solidity ^0.6.0;
+// SPDX-License-Identifier: MIT
 
-import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
+pragma solidity 0.8.9;
+
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import "../HandlerBase.sol";
 import "../maker/IDSProxy.sol";
@@ -55,13 +57,13 @@ contract HSCompound is HandlerBase {
         address cTokenBorrow,
         uint256 cAmountIn,
         uint256 uBorrowAmount,
-        bool enterMarket
+        bool needEnterMarket
     ) external payable isDSProxyOwner(dsProxy) {
         if (cAmountIn > 0) {
             _deposit(dsProxy, cTokenIn, cAmountIn);
         }
 
-        if (enterMarket) {
+        if (needEnterMarket) {
             _enterMarket(dsProxy, cTokenIn);
         }
 
@@ -233,7 +235,7 @@ contract HSCompound is HandlerBase {
         uint256 amount
     ) internal {
         if (token == ETH_ADDRESS) {
-            address payable dsProxyPayable = address(uint160(dsProxy));
+            address payable dsProxyPayable = payable(dsProxy);
             dsProxyPayable.transfer(amount);
         } else {
             IERC20(token).safeTransfer(dsProxy, amount);

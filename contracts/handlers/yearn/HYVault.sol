@@ -1,13 +1,13 @@
-pragma solidity ^0.6.0;
+// SPDX-License-Identifier: MIT
 
-import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
-import "@openzeppelin/contracts/math/SafeMath.sol";
+pragma solidity 0.8.9;
+
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "../HandlerBase.sol";
 import "./IYVault.sol";
 
 contract HYVault is HandlerBase {
     using SafeERC20 for IERC20;
-    using SafeMath for uint256;
 
     function getContractName() public pure override returns (string memory) {
         return "HYVault";
@@ -23,7 +23,7 @@ contract HYVault is HandlerBase {
             IERC20(address(yVault)).balanceOf(address(this));
 
         address token = yVault.token();
-        // if amount == uint256(-1) return balance of Proxy
+        // if amount == type(uint256).max return balance of Proxy
         _amount = _getBalance(token, _amount);
         IERC20(token).safeApprove(address(yVault), _amount);
         try yVault.deposit(_amount) {} catch Error(string memory reason) {
@@ -37,7 +37,7 @@ contract HYVault is HandlerBase {
             IERC20(address(yVault)).balanceOf(address(this));
 
         _updateToken(address(yVault));
-        return afterYTokenBalance.sub(beforeYTokenBalance);
+        return afterYTokenBalance - beforeYTokenBalance;
     }
 
     function depositETH(uint256 value, address vault)
@@ -48,7 +48,7 @@ contract HYVault is HandlerBase {
         IYVault yVault = IYVault(vault);
         uint256 beforeYTokenBalance =
             IERC20(address(yVault)).balanceOf(address(this));
-        // if amount == uint256(-1) return balance of Proxy
+        // if amount == type(uint256).max return balance of Proxy
         value = _getBalance(address(0), value);
         try yVault.depositETH{value: value}() {} catch Error(
             string memory reason
@@ -61,7 +61,7 @@ contract HYVault is HandlerBase {
             IERC20(address(yVault)).balanceOf(address(this));
 
         _updateToken(address(yVault));
-        return afterYTokenBalance.sub(beforeYTokenBalance);
+        return afterYTokenBalance - beforeYTokenBalance;
     }
 
     function withdraw(address vault, uint256 _shares)
@@ -72,7 +72,7 @@ contract HYVault is HandlerBase {
         IYVault yVault = IYVault(vault);
         address token = yVault.token();
         uint256 beforeTokenBalance = IERC20(token).balanceOf(address(this));
-        // if amount == uint256(-1) return balance of Proxy
+        // if amount == type(uint256).max return balance of Proxy
         _shares = _getBalance(vault, _shares);
 
         try yVault.withdraw(_shares) {} catch Error(string memory reason) {
@@ -83,7 +83,7 @@ contract HYVault is HandlerBase {
         uint256 afterTokenBalance = IERC20(token).balanceOf(address(this));
 
         _updateToken(token);
-        return afterTokenBalance.sub(beforeTokenBalance);
+        return afterTokenBalance - beforeTokenBalance;
     }
 
     function withdrawETH(address vault, uint256 _shares)
@@ -93,7 +93,7 @@ contract HYVault is HandlerBase {
     {
         uint256 beforeETHBalance = address(this).balance;
         IYVault yVault = IYVault(vault);
-        // if amount == uint256(-1) return balance of Proxy
+        // if amount == type(uint256).max return balance of Proxy
         _shares = _getBalance(vault, _shares);
         try yVault.withdrawETH(_shares) {} catch Error(string memory reason) {
             _revertMsg("withdrawETH", reason);
@@ -101,6 +101,6 @@ contract HYVault is HandlerBase {
             _revertMsg("withdrawETH");
         }
         uint256 afterETHBalance = address(this).balance;
-        return afterETHBalance.sub(beforeETHBalance);
+        return afterETHBalance - beforeETHBalance;
     }
 }

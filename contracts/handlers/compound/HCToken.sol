@@ -1,14 +1,13 @@
-pragma solidity ^0.6.0;
+// SPDX-License-Identifier: MIT
 
-import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
-import "@openzeppelin/contracts/math/SafeMath.sol";
+pragma solidity 0.8.9;
 
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "../HandlerBase.sol";
 import "./ICToken.sol";
 
 contract HCToken is HandlerBase {
     using SafeERC20 for IERC20;
-    using SafeMath for uint256;
 
     function getContractName() public pure override returns (string memory) {
         return "HCToken";
@@ -24,7 +23,7 @@ contract HCToken is HandlerBase {
         uint256 beforeCTokenAmount = compound.balanceOf(address(this));
 
         address token = _getToken(cToken);
-        // if amount == uint256(-1) return balance of Proxy
+        // if amount == type(uint256).max return balance of Proxy
         mintAmount = _getBalance(token, mintAmount);
         IERC20(token).safeApprove(cToken, mintAmount);
         try compound.mint(mintAmount) returns (uint256 errorCode) {
@@ -45,7 +44,7 @@ contract HCToken is HandlerBase {
 
         // Update involved token
         _updateToken(cToken);
-        return (afterCTokenAmount.sub(beforeCTokenAmount));
+        return afterCTokenAmount - beforeCTokenAmount;
     }
 
     function redeem(address cToken, uint256 redeemTokens)
@@ -58,7 +57,7 @@ contract HCToken is HandlerBase {
         uint256 beforeTokenAmount = IERC20(token).balanceOf(address(this));
 
         ICToken compound = ICToken(cToken);
-        // if amount == uint256(-1) return balance of Proxy
+        // if amount == type(uint256).max return balance of Proxy
         redeemTokens = _getBalance(cToken, redeemTokens);
         IERC20(cToken).safeApprove(cToken, redeemTokens);
         try compound.redeem(redeemTokens) returns (uint256 errorCode) {
@@ -79,7 +78,7 @@ contract HCToken is HandlerBase {
 
         // Update involved token
         _updateToken(token);
-        return (afterTokenAmount.sub(beforeTokenAmount));
+        return afterTokenAmount - beforeTokenAmount;
     }
 
     function redeemUnderlying(address cToken, uint256 redeemAmount)
@@ -116,7 +115,7 @@ contract HCToken is HandlerBase {
         // Update involved token
         address token = _getToken(cToken);
         _updateToken(token);
-        return (beforeCTokenAmount.sub(afterCTokenAmount));
+        return beforeCTokenAmount - afterCTokenAmount;
     }
 
     function repayBorrowBehalf(

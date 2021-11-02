@@ -1,8 +1,8 @@
-pragma solidity ^0.6.0;
-pragma experimental ABIEncoderV2;
+// SPDX-License-Identifier: MIT
 
-import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
-import "@openzeppelin/contracts/math/SafeMath.sol";
+pragma solidity 0.8.9;
+
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import "../HandlerBase.sol";
 import "../weth/IWETH9.sol";
@@ -11,7 +11,6 @@ import "./libraries/BytesLib.sol";
 
 contract HUniswapV3 is HandlerBase {
     using SafeERC20 for IERC20;
-    using SafeMath for uint256;
     using BytesLib for bytes;
 
     // prettier-ignore
@@ -173,7 +172,7 @@ contract HUniswapV3 is HandlerBase {
         params.tokenOut = tokenOut;
         params.fee = fee;
         params.amountOut = amountOut;
-        // if amount == uint256(-1) return balance of Proxy
+        // if amount == type(uint256).max return balance of Proxy
         params.amountInMaximum = _getBalance(address(0), amountInMaximum);
         params.sqrtPriceLimitX96 = sqrtPriceLimitX96;
 
@@ -196,7 +195,7 @@ contract HUniswapV3 is HandlerBase {
         params.tokenOut = address(WETH);
         params.fee = fee;
         params.amountOut = amountOut;
-        // if amount == uint256(-1) return balance of Proxy
+        // if amount == type(uint256).max return balance of Proxy
         params.amountInMaximum = _getBalance(tokenIn, amountInMaximum);
         params.sqrtPriceLimitX96 = sqrtPriceLimitX96;
 
@@ -220,7 +219,7 @@ contract HUniswapV3 is HandlerBase {
         params.tokenOut = tokenOut;
         params.fee = fee;
         params.amountOut = amountOut;
-        // if amount == uint256(-1) return balance of Proxy
+        // if amount == type(uint256).max return balance of Proxy
         params.amountInMaximum = _getBalance(tokenIn, amountInMaximum);
         params.sqrtPriceLimitX96 = sqrtPriceLimitX96;
 
@@ -271,7 +270,7 @@ contract HUniswapV3 is HandlerBase {
         ISwapRouter.ExactOutputParams memory params;
         params.path = path;
         params.amountOut = amountOut;
-        // if amount == uint256(-1) return balance of Proxy
+        // if amount == type(uint256).max return balance of Proxy
         params.amountInMaximum = _getBalance(tokenIn, amountInMaximum);
 
         // Approve token
@@ -294,7 +293,7 @@ contract HUniswapV3 is HandlerBase {
         ISwapRouter.ExactOutputParams memory params;
         params.path = path;
         params.amountOut = amountOut;
-        // if amount == uint256(-1) return balance of Proxy
+        // if amount == type(uint256).max return balance of Proxy
         params.amountInMaximum = _getBalance(tokenIn, amountInMaximum);
 
         // Approve token
@@ -318,7 +317,7 @@ contract HUniswapV3 is HandlerBase {
         uint256 value,
         ISwapRouter.ExactInputSingleParams memory params
     ) internal returns (uint256) {
-        params.deadline = now;
+        params.deadline = block.timestamp;
         params.recipient = address(this);
 
         try ROUTER.exactInputSingle{value: value}(params) returns (
@@ -336,7 +335,7 @@ contract HUniswapV3 is HandlerBase {
         uint256 value,
         ISwapRouter.ExactInputParams memory params
     ) internal returns (uint256) {
-        params.deadline = now;
+        params.deadline = block.timestamp;
         params.recipient = address(this);
 
         try ROUTER.exactInput{value: value}(params) returns (
@@ -354,7 +353,7 @@ contract HUniswapV3 is HandlerBase {
         uint256 value,
         ISwapRouter.ExactOutputSingleParams memory params
     ) internal returns (uint256) {
-        params.deadline = now;
+        params.deadline = block.timestamp;
         params.recipient = address(this);
 
         try ROUTER.exactOutputSingle{value: value}(params) returns (
@@ -372,7 +371,7 @@ contract HUniswapV3 is HandlerBase {
         uint256 value,
         ISwapRouter.ExactOutputParams memory params
     ) internal returns (uint256) {
-        params.deadline = now;
+        params.deadline = block.timestamp;
         params.recipient = address(this);
 
         try ROUTER.exactOutput{value: value}(params) returns (

@@ -1,4 +1,6 @@
-pragma solidity ^0.6.0;
+// SPDX-License-Identifier: MIT
+
+pragma solidity ^0.8.0;
 
 library LibParam {
     bytes32 private constant STATIC_MASK =
@@ -47,15 +49,15 @@ library LibParam {
             refs[i] = uint256(conf & REFS_MASK);
             conf = conf >> 8;
         }
-        uint256 i = 0;
+        uint256 locCount = 0;
         for (uint256 k = 0; k < PARAMS_SIZE_LIMIT; k++) {
             if (conf & PARAMS_MASK != 0) {
-                require(i < n, "Location count exceeds ref count");
-                params[i] = k * 32 + 4;
-                i++;
+                require(locCount < n, "Location count exceeds ref count");
+                params[locCount] = k * 32 + 4;
+                locCount++;
             }
             conf = conf >> 1;
         }
-        require(i == n, "Location count less than ref count");
+        require(locCount == n, "Location count less than ref count");
     }
 }

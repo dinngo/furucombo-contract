@@ -8,6 +8,7 @@
   },
   "scripts": {
     "build": "scripts/build.sh",
+    "check": "scripts/check.sh",
     "compile": "npx hardhat compile",
     "test": "scripts/test.sh",
     "lint:solhint": "solhint \"contracts/**/*.sol\"",
@@ -37,7 +38,7 @@
     "ethereumjs-util": "^6.2.0",
     "ethers": "^5.4.7",
     "ganache-cli": "6.11.0",
-    "hardhat": "^2.6.5",
+    "hardhat": "^2.6.7",
     "hardhat-deploy": "^0.9.0",
     "hardhat-deploy-ethers": "^0.3.0-beta.10",
     "husky": "^4.2.5",
@@ -54,7 +55,7 @@
   },
   "dependencies": {
     "@gelatonetwork/limit-orders-lib": "^0.6.0",
-    "@openzeppelin/contracts": "3.3.0",
+    "@openzeppelin/contracts": "4.3.2",
     "pify": "^5.0.0"
   },
   "husky": {
