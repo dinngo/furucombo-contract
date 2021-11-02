@@ -68,6 +68,7 @@ build:
     - docker
   script:
     - npm run build
+    - npm run check
   cache:
     <<: *global_cache
 

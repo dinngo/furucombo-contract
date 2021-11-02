@@ -8,6 +8,7 @@
   },
   "scripts": {
     "build": "scripts/build.sh",
+    "check": "scripts/check.sh",
     "compile": "npx hardhat compile",
     "test": "scripts/test.sh",
     "lint:solhint": "solhint \"contracts/**/*.sol\"",
