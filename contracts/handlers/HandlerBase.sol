@@ -12,6 +12,9 @@ abstract contract HandlerBase is Storage, Config {
     using SafeERC20 for IERC20;
     using LibStack for bytes32[];
 
+    address public constant NATIVE_TOKEN_ADDRESS =
+        0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
+
     function postProcess() external payable virtual {
         revert("Invalid post process");
         /* Implementation template
@@ -97,10 +100,7 @@ abstract contract HandlerBase is Storage, Config {
         }
 
         // ETH case
-        if (
-            token == address(0) ||
-            token == address(0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE)
-        ) {
+        if (token == address(0) || token == NATIVE_TOKEN_ADDRESS) {
             return address(this).balance;
         }
         // ERC20 token case

@@ -17,8 +17,6 @@ contract HPolygon is HandlerBase {
     address public constant POS_PREDICATE_ERC20 = 0x40ec5B33f54e0E8A33A975908C5BA1c14e5BbbDf;
     // prettier-ignore
     address public constant MATIC_ADDRESS = 0x7D1AfA7B718fb893dB30A3aBc0Cfc608AaCfeBB0;
-    // prettier-ignore
-    address public constant NATIVE_TOKEN_ADDRESS = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
     event PolygonBridged(
         address indexed sender,

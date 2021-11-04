@@ -10,9 +10,6 @@ import "./IERC20OrderRouter.sol";
 contract HGelatoV2LimitOrder is HandlerBase {
     using SafeERC20 for IERC20;
 
-    address public constant NATIVE_TOKEN_ADDRESS =
-        0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
-
     // prettier-ignore
     address public immutable GELATO_PINE;
     address public immutable GELATO_LIMIT_ORDER_MODULE;

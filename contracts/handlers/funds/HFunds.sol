@@ -9,9 +9,6 @@ import "../HandlerBase.sol";
 contract HFunds is HandlerBase {
     using SafeERC20 for IERC20;
 
-    // prettier-ignore
-    address public constant NATIVE_TOKEN_ADDRESS = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
-
     function getContractName() public pure override returns (string memory) {
         return "HFunds";
     }

@@ -13,9 +13,6 @@ contract HCurve is HandlerBase {
         return "HCurve";
     }
 
-    // prettier-ignore
-    address public constant NATIVE_TOKEN_ADDRESS = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
-
     /// @notice Curve exchange
     function exchange(
         address handler,
