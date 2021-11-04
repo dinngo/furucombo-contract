@@ -17,7 +17,7 @@ contract HSCompound is HandlerBase {
     // prettier-ignore
     address public constant COMPTROLLER = 0x3d9819210A31b4961b30EF54bE2aeD79B9c9Cd3B;
     // prettier-ignore
-    address public constant ETH_ADDRESS = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
+    address public constant NATIVE_TOKEN_ADDRESS = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
     // prettier-ignore
     address public constant CETH_ADDRESS = 0x4Ddc2D193948926D02f9B1fE9e1daa0718270ED5;
     // prettier-ignore
@@ -51,7 +51,7 @@ contract HSCompound is HandlerBase {
         uint256 amount
     ) external payable isDSProxyOwner(dsProxy) {
         _withdraw(dsProxy, token, amount);
-        if (token != ETH_ADDRESS) _updateToken(token);
+        if (token != NATIVE_TOKEN_ADDRESS) _updateToken(token);
     }
 
     function borrow(
@@ -73,7 +73,7 @@ contract HSCompound is HandlerBase {
         if (uBorrowAmount > 0) {
             address underlying;
             if (cTokenBorrow == CETH_ADDRESS) {
-                underlying = ETH_ADDRESS;
+                underlying = NATIVE_TOKEN_ADDRESS;
             } else {
                 underlying = _getToken(cTokenBorrow);
             }
@@ -97,7 +97,7 @@ contract HSCompound is HandlerBase {
             _withdraw(dsProxy, underlying, uBorrowAmount);
 
             // Update borrowed token
-            if (underlying != ETH_ADDRESS) _updateToken(underlying);
+            if (underlying != NATIVE_TOKEN_ADDRESS) _updateToken(underlying);
         }
     }
 
@@ -237,7 +237,7 @@ contract HSCompound is HandlerBase {
         address token,
         uint256 amount
     ) internal {
-        if (token == ETH_ADDRESS) {
+        if (token == NATIVE_TOKEN_ADDRESS) {
             address payable dsProxyPayable = payable(dsProxy);
             dsProxyPayable.transfer(amount);
         } else {

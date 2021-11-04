@@ -2,7 +2,7 @@ const ether = require('@openzeppelin/test-helpers/src/ether');
 
 module.exports = {
   BLOCK_REWARD: '2', // ether
-  ETH_ADDRESS: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
+  NATIVE_TOKEN_ADDRESS: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
   CETHER: '0x4Ddc2D193948926D02f9B1fE9e1daa0718270ED5',
   AETHER: '0x3a3A65aAb0dd2A17E3F1947bA16138cd37d08c04',
   /* DAI */

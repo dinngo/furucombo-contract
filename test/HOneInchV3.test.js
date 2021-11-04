@@ -11,7 +11,7 @@ const {
   DAI_TOKEN,
   USDC_TOKEN,
   WETH_TOKEN,
-  ETH_ADDRESS,
+  NATIVE_TOKEN_ADDRESS,
 } = require('./utils/constants');
 const {
   evmRevert,
@@ -115,7 +115,7 @@ contract('OneInchV3 Swap', function([_, user]) {
         const swapReq = queryString.stringifyUrl({
           url: URL_1INCH_SWAP,
           query: {
-            fromTokenAddress: ETH_ADDRESS,
+            fromTokenAddress: NATIVE_TOKEN_ADDRESS,
             toTokenAddress: tokenAddress,
             amount: value,
             slippage: slippage,
@@ -176,7 +176,7 @@ contract('OneInchV3 Swap', function([_, user]) {
         const swapReq = queryString.stringifyUrl({
           url: URL_1INCH_SWAP,
           query: {
-            fromTokenAddress: ETH_ADDRESS,
+            fromTokenAddress: NATIVE_TOKEN_ADDRESS,
             toTokenAddress: tokenAddress,
             amount: value,
             slippage: slippage,
@@ -239,7 +239,7 @@ contract('OneInchV3 Swap', function([_, user]) {
         const swapReq = queryString.stringifyUrl({
           url: URL_1INCH_SWAP,
           query: {
-            fromTokenAddress: ETH_ADDRESS,
+            fromTokenAddress: NATIVE_TOKEN_ADDRESS,
             toTokenAddress: tokenAddress,
             amount: value,
             slippage: slippage,
@@ -262,7 +262,7 @@ contract('OneInchV3 Swap', function([_, user]) {
 
         // Prepare handler data
         const data = getCallData(HOneInch, 'unoswap', [
-          ETH_ADDRESS,
+          NATIVE_TOKEN_ADDRESS,
           value,
           tokenAddress,
           swapData.tx.data,
@@ -308,7 +308,7 @@ contract('OneInchV3 Swap', function([_, user]) {
         const swapReq = queryString.stringifyUrl({
           url: URL_1INCH_SWAP,
           query: {
-            fromTokenAddress: ETH_ADDRESS,
+            fromTokenAddress: NATIVE_TOKEN_ADDRESS,
             toTokenAddress: tokenAddress,
             amount: value,
             slippage: slippage,
@@ -331,7 +331,7 @@ contract('OneInchV3 Swap', function([_, user]) {
 
         // Prepare handler data
         const data = getCallData(HOneInch, 'unoswap', [
-          ETH_ADDRESS,
+          NATIVE_TOKEN_ADDRESS,
           value.sub(new BN(1000)),
           tokenAddress,
           swapData.tx.data,
@@ -376,7 +376,7 @@ contract('OneInchV3 Swap', function([_, user]) {
           url: URL_1INCH_SWAP,
           query: {
             fromTokenAddress: tokenAddress,
-            toTokenAddress: ETH_ADDRESS,
+            toTokenAddress: NATIVE_TOKEN_ADDRESS,
             amount: value,
             slippage: slippage,
             disableEstimate: true,
@@ -447,7 +447,7 @@ contract('OneInchV3 Swap', function([_, user]) {
           url: URL_1INCH_SWAP,
           query: {
             fromTokenAddress: tokenAddress,
-            toTokenAddress: ETH_ADDRESS,
+            toTokenAddress: NATIVE_TOKEN_ADDRESS,
             amount: value,
             slippage: slippage,
             disableEstimate: true,
@@ -477,7 +477,7 @@ contract('OneInchV3 Swap', function([_, user]) {
         const data = getCallData(HOneInch, 'unoswap', [
           tokenAddress,
           value,
-          ETH_ADDRESS,
+          NATIVE_TOKEN_ADDRESS,
           swapData.tx.data,
         ]);
 
@@ -910,7 +910,7 @@ contract('OneInchV3 Swap', function([_, user]) {
         const data = getCallData(HOneInch, 'unoswap', [
           token0Address,
           value,
-          ETH_ADDRESS,
+          NATIVE_TOKEN_ADDRESS,
           swapData.tx.data,
         ]);
 
@@ -1006,7 +1006,7 @@ contract('OneInchV3 Swap', function([_, user]) {
 
         // Prepare handler data
         const data = getCallData(HOneInch, 'unoswap', [
-          ETH_ADDRESS,
+          NATIVE_TOKEN_ADDRESS,
           value,
           token1Address,
           swapData.tx.data,

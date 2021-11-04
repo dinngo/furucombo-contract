@@ -10,7 +10,7 @@ import "./IERC20OrderRouter.sol";
 contract HGelatoV2LimitOrder is HandlerBase {
     using SafeERC20 for IERC20;
 
-    address public constant ETH_ADDRESS =
+    address public constant NATIVE_TOKEN_ADDRESS =
         0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
     // prettier-ignore
@@ -48,7 +48,7 @@ contract HGelatoV2LimitOrder is HandlerBase {
         value = _getBalance(inToken, value);
 
         // Check if Order is sending ETH or ERC20s
-        if (inToken == ETH_ADDRESS) {
+        if (inToken == NATIVE_TOKEN_ADDRESS) {
             try
                 IGelatoPineCore(GELATO_PINE).depositEth{value: value}(
                     IGelatoPineCore(GELATO_PINE).encodeEthOrder(

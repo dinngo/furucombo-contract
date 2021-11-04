@@ -18,7 +18,7 @@ contract HPolygon is HandlerBase {
     // prettier-ignore
     address public constant MATIC_ADDRESS = 0x7D1AfA7B718fb893dB30A3aBc0Cfc608AaCfeBB0;
     // prettier-ignore
-    address public constant ETH_ADDRESS = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
+    address public constant NATIVE_TOKEN_ADDRESS = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
     event PolygonBridged(
         address indexed sender,
@@ -43,7 +43,7 @@ contract HPolygon is HandlerBase {
             _revertMsg("depositEther");
         }
 
-        emit PolygonBridged(user, ETH_ADDRESS, value);
+        emit PolygonBridged(user, NATIVE_TOKEN_ADDRESS, value);
     }
 
     function depositERC20(address token, uint256 amount) external payable {
