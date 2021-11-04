@@ -12,7 +12,7 @@ import "./ICEther.sol";
 
 contract FCompoundActions {
     // prettier-ignore
-    address public constant ETH_ADDR = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
+    address public constant ETH_ADDRESS = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
     // prettier-ignore
     address public constant CETH_ADDR = 0x4Ddc2D193948926D02f9B1fE9e1daa0718270ED5;
     // prettier-ignore
@@ -32,7 +32,7 @@ contract FCompoundActions {
     /// @param _tokenAddr The address of the token to be withdrawn
     /// @param _amount Amount of tokens to be withdrawn
     function withdraw(address _tokenAddr, uint256 _amount) public {
-        if (_tokenAddr == ETH_ADDR) {
+        if (_tokenAddr == ETH_ADDRESS) {
             payable(msg.sender).transfer(_amount);
         } else {
             IERC20(_tokenAddr).safeTransfer(msg.sender, _amount);

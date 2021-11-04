@@ -7,7 +7,12 @@ const {
 const { tracker } = balance;
 const utils = web3.utils;
 const { expect } = require('chai');
-const { DAI_TOKEN, USDC_TOKEN, WETH_TOKEN } = require('./utils/constants');
+const {
+  DAI_TOKEN,
+  USDC_TOKEN,
+  WETH_TOKEN,
+  ETH_ADDRESS,
+} = require('./utils/constants');
 const {
   evmRevert,
   evmSnapshot,
@@ -110,7 +115,7 @@ contract('OneInchV3 Swap', function([_, user]) {
         const swapReq = queryString.stringifyUrl({
           url: URL_1INCH_SWAP,
           query: {
-            fromTokenAddress: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
+            fromTokenAddress: ETH_ADDRESS,
             toTokenAddress: tokenAddress,
             amount: value,
             slippage: slippage,
@@ -171,7 +176,7 @@ contract('OneInchV3 Swap', function([_, user]) {
         const swapReq = queryString.stringifyUrl({
           url: URL_1INCH_SWAP,
           query: {
-            fromTokenAddress: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
+            fromTokenAddress: ETH_ADDRESS,
             toTokenAddress: tokenAddress,
             amount: value,
             slippage: slippage,
@@ -234,7 +239,7 @@ contract('OneInchV3 Swap', function([_, user]) {
         const swapReq = queryString.stringifyUrl({
           url: URL_1INCH_SWAP,
           query: {
-            fromTokenAddress: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
+            fromTokenAddress: ETH_ADDRESS,
             toTokenAddress: tokenAddress,
             amount: value,
             slippage: slippage,
@@ -257,7 +262,7 @@ contract('OneInchV3 Swap', function([_, user]) {
 
         // Prepare handler data
         const data = getCallData(HOneInch, 'unoswap', [
-          '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
+          ETH_ADDRESS,
           value,
           tokenAddress,
           swapData.tx.data,
@@ -303,7 +308,7 @@ contract('OneInchV3 Swap', function([_, user]) {
         const swapReq = queryString.stringifyUrl({
           url: URL_1INCH_SWAP,
           query: {
-            fromTokenAddress: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
+            fromTokenAddress: ETH_ADDRESS,
             toTokenAddress: tokenAddress,
             amount: value,
             slippage: slippage,
@@ -326,7 +331,7 @@ contract('OneInchV3 Swap', function([_, user]) {
 
         // Prepare handler data
         const data = getCallData(HOneInch, 'unoswap', [
-          '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
+          ETH_ADDRESS,
           value.sub(new BN(1000)),
           tokenAddress,
           swapData.tx.data,
@@ -371,7 +376,7 @@ contract('OneInchV3 Swap', function([_, user]) {
           url: URL_1INCH_SWAP,
           query: {
             fromTokenAddress: tokenAddress,
-            toTokenAddress: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
+            toTokenAddress: ETH_ADDRESS,
             amount: value,
             slippage: slippage,
             disableEstimate: true,
@@ -442,7 +447,7 @@ contract('OneInchV3 Swap', function([_, user]) {
           url: URL_1INCH_SWAP,
           query: {
             fromTokenAddress: tokenAddress,
-            toTokenAddress: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
+            toTokenAddress: ETH_ADDRESS,
             amount: value,
             slippage: slippage,
             disableEstimate: true,
@@ -472,7 +477,7 @@ contract('OneInchV3 Swap', function([_, user]) {
         const data = getCallData(HOneInch, 'unoswap', [
           tokenAddress,
           value,
-          '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
+          ETH_ADDRESS,
           swapData.tx.data,
         ]);
 
@@ -905,7 +910,7 @@ contract('OneInchV3 Swap', function([_, user]) {
         const data = getCallData(HOneInch, 'unoswap', [
           token0Address,
           value,
-          '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
+          ETH_ADDRESS,
           swapData.tx.data,
         ]);
 
@@ -1001,7 +1006,7 @@ contract('OneInchV3 Swap', function([_, user]) {
 
         // Prepare handler data
         const data = getCallData(HOneInch, 'unoswap', [
-          '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
+          ETH_ADDRESS,
           value,
           token1Address,
           swapData.tx.data,
