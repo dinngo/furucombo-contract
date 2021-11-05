@@ -101,8 +101,11 @@ contract HUniswapV3 is HandlerBase {
         address tokenIn = _getFirstToken(path);
         address tokenOut = _getLastToken(path);
         // Input token must be WETH
-        if (tokenIn != address(WETH))
-            _revertMsg("exactInputFromEther", "Input not WETH");
+        _requireMsg(
+            tokenIn == address(WETH),
+            "exactInputFromEther",
+            "Input not WETH"
+        );
         // Build params for router call
         ISwapRouter.ExactInputParams memory params;
         params.path = path;
@@ -123,8 +126,11 @@ contract HUniswapV3 is HandlerBase {
         address tokenIn = _getFirstToken(path);
         address tokenOut = _getLastToken(path);
         // Output token must be WETH
-        if (tokenOut != address(WETH))
-            _revertMsg("exactInputToEther", "Output not WETH");
+        _requireMsg(
+            tokenOut == address(WETH),
+            "exactInputToEther",
+            "Output not WETH"
+        );
         // Build params for router call
         ISwapRouter.ExactInputParams memory params;
         params.path = path;
@@ -240,8 +246,11 @@ contract HUniswapV3 is HandlerBase {
         address tokenIn = _getLastToken(path);
         address tokenOut = _getFirstToken(path);
         // Input token must be WETH
-        if (tokenIn != address(WETH))
-            _revertMsg("exactOutputFromEther", "Input not WETH");
+        _requireMsg(
+            tokenIn == address(WETH),
+            "exactOutputFromEther",
+            "Input not WETH"
+        );
         // Build params for router call
         ISwapRouter.ExactOutputParams memory params;
         params.path = path;
@@ -264,8 +273,11 @@ contract HUniswapV3 is HandlerBase {
         address tokenIn = _getLastToken(path);
         address tokenOut = _getFirstToken(path);
         // Out token must be WETH
-        if (tokenOut != address(WETH))
-            _revertMsg("exactOutputToEther", "Output not WETH");
+        _requireMsg(
+            tokenOut == address(WETH),
+            "exactOutputToEther",
+            "Output not WETH"
+        );
         // Build params for router call
         ISwapRouter.ExactOutputParams memory params;
         params.path = path;
@@ -308,8 +320,7 @@ contract HUniswapV3 is HandlerBase {
     }
 
     function _getLastToken(bytes memory path) internal view returns (address) {
-        if (path.length < PATH_SIZE)
-            _revertMsg("General", "Path size too small");
+        _requireMsg(path.length >= PATH_SIZE, "General", "Path size too small");
         return path.toAddress(path.length - ADDRESS_SIZE);
     }
 

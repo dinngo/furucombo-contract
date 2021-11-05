@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - Refine token provider for tests.
+- Replace if-revertMsg with requireMsg.
 
 ### Fixed
 

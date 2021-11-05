@@ -23,10 +23,12 @@ contract HMaker is HandlerBase {
         IMakerManager manager = IMakerManager(getCdpManager());
         address owner = manager.owns(cdp);
         address sender = _getSender();
-        if (
-            IDSProxyRegistry(PROXY_REGISTRY).proxies(sender) != owner &&
-            manager.cdpCan(owner, cdp, sender) != 1
-        ) _revertMsg("General", "Unauthorized sender of cdp");
+        _requireMsg(
+            IDSProxyRegistry(PROXY_REGISTRY).proxies(sender) == owner ||
+                manager.cdpCan(owner, cdp, sender) == 1,
+            "General",
+            "Unauthorized sender of cdp"
+        );
         _;
     }
 

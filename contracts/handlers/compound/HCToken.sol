@@ -27,11 +27,11 @@ contract HCToken is HandlerBase {
         mintAmount = _getBalance(token, mintAmount);
         IERC20(token).safeApprove(cToken, mintAmount);
         try compound.mint(mintAmount) returns (uint256 errorCode) {
-            if (errorCode != 0)
-                _revertMsg(
-                    "mint",
-                    string(abi.encodePacked("error ", _uint2String(errorCode)))
-                );
+            _requireMsg(
+                errorCode == 0,
+                "mint",
+                string(abi.encodePacked("error ", _uint2String(errorCode)))
+            );
         } catch Error(string memory reason) {
             _revertMsg("mint", reason);
         } catch {
@@ -61,11 +61,11 @@ contract HCToken is HandlerBase {
         redeemTokens = _getBalance(cToken, redeemTokens);
         IERC20(cToken).safeApprove(cToken, redeemTokens);
         try compound.redeem(redeemTokens) returns (uint256 errorCode) {
-            if (errorCode != 0)
-                _revertMsg(
-                    "redeem",
-                    string(abi.encodePacked("error ", _uint2String(errorCode)))
-                );
+            _requireMsg(
+                errorCode == 0,
+                "redeem",
+                string(abi.encodePacked("error ", _uint2String(errorCode)))
+            );
         } catch Error(string memory reason) {
             _revertMsg("redeem", reason);
         } catch {
@@ -97,11 +97,11 @@ contract HCToken is HandlerBase {
         try compound.redeemUnderlying(redeemAmount) returns (
             uint256 errorCode
         ) {
-            if (errorCode != 0)
-                _revertMsg(
-                    "redeemUnderlying",
-                    string(abi.encodePacked("error ", _uint2String(errorCode)))
-                );
+            _requireMsg(
+                errorCode == 0,
+                "redeemUnderlying",
+                string(abi.encodePacked("error ", _uint2String(errorCode)))
+            );
         } catch Error(string memory reason) {
             _revertMsg("redeemUnderlying", reason);
         } catch {
@@ -134,11 +134,11 @@ contract HCToken is HandlerBase {
         try compound.repayBorrowBehalf(borrower, debt) returns (
             uint256 errorCode
         ) {
-            if (errorCode != 0)
-                _revertMsg(
-                    "repayBorrowBehalf",
-                    string(abi.encodePacked("error ", _uint2String(errorCode)))
-                );
+            _requireMsg(
+                errorCode == 0,
+                "repayBorrowBehalf",
+                string(abi.encodePacked("error ", _uint2String(errorCode)))
+            );
         } catch Error(string memory reason) {
             _revertMsg("repayBorrowBehalf", reason);
         } catch {

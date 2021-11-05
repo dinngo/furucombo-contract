@@ -52,11 +52,11 @@ contract HCEther is HandlerBase {
 
         // Execute redeem
         try compound.redeem(redeemTokens) returns (uint256 errorCode) {
-            if (errorCode != 0)
-                _revertMsg(
-                    "redeem",
-                    string(abi.encodePacked("error ", _uint2String(errorCode)))
-                );
+            _requireMsg(
+                errorCode == 0,
+                "redeem",
+                string(abi.encodePacked("error ", _uint2String(errorCode)))
+            );
         } catch Error(string memory reason) {
             _revertMsg("redeem", reason);
         } catch {
@@ -87,11 +87,11 @@ contract HCEther is HandlerBase {
         try compound.redeemUnderlying(redeemAmount) returns (
             uint256 errorCode
         ) {
-            if (errorCode != 0)
-                _revertMsg(
-                    "redeemUnderlying",
-                    string(abi.encodePacked("error ", _uint2String(errorCode)))
-                );
+            _requireMsg(
+                errorCode == 0,
+                "redeemUnderlying",
+                string(abi.encodePacked("error ", _uint2String(errorCode)))
+            );
         } catch Error(string memory reason) {
             _revertMsg("redeemUnderlying", reason);
         } catch {
