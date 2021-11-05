@@ -319,7 +319,7 @@ contract HUniswapV3 is HandlerBase {
         return path.toAddress(0);
     }
 
-    function _getLastToken(bytes memory path) internal view returns (address) {
+    function _getLastToken(bytes memory path) internal pure returns (address) {
         _requireMsg(path.length >= PATH_SIZE, "General", "Path size too small");
         return path.toAddress(path.length - ADDRESS_SIZE);
     }

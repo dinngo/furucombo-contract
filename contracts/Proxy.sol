@@ -245,7 +245,6 @@ contract Proxy is IProxy, Storage, Config {
         returns (bytes memory result)
     {
         require(_isValidHandler(_to), "Invalid handler");
-        _addCubeCounter();
         assembly {
             let succeeded := delegatecall(
                 sub(gas(), 5000),
@@ -293,7 +292,7 @@ contract Proxy is IProxy, Storage, Config {
     }
 
     /// @notice The pre-process phase.
-    function _preProcess() internal virtual isStackEmpty isCubeCounterZero {
+    function _preProcess() internal virtual isStackEmpty {
         // Set the sender.
         _setSender();
     }
@@ -324,9 +323,8 @@ contract Proxy is IProxy, Storage, Config {
         uint256 amount = address(this).balance;
         if (amount > 0) payable(msg.sender).transfer(amount);
 
-        // Reset the msg.sender and cube counter
+        // Reset the msg.sender
         _resetSender();
-        _resetCubeCounter();
     }
 
     /// @notice Check if the handler is valid in registry.

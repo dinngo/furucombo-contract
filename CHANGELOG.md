@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 
 - Refine token provider for tests.
 - Replace if-revertMsg with requireMsg.
+- Remove cube counter.
 
 ### Fixed
 

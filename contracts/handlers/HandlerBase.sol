@@ -43,13 +43,11 @@ abstract contract HandlerBase is Storage, Config {
 
     function _revertMsg(string memory functionName, string memory reason)
         internal
-        view
+        pure
     {
         revert(
             string(
                 abi.encodePacked(
-                    _uint2String(_getCubeCounter()),
-                    "_",
                     getContractName(),
                     "_",
                     functionName,
@@ -60,7 +58,7 @@ abstract contract HandlerBase is Storage, Config {
         );
     }
 
-    function _revertMsg(string memory functionName) internal view {
+    function _revertMsg(string memory functionName) internal pure {
         _revertMsg(functionName, "Unspecified");
     }
 
@@ -68,7 +66,7 @@ abstract contract HandlerBase is Storage, Config {
         bool condition,
         string memory functionName,
         string memory reason
-    ) internal view {
+    ) internal pure {
         if (!condition) _revertMsg(functionName, reason);
     }
 
