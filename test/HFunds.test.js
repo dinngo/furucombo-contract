@@ -19,7 +19,7 @@ const {
   DAI_TOKEN,
   BAT_TOKEN,
   USDT_TOKEN,
-  NATIVE_TOKEN,
+  NATIVE_TOKEN_ADDRESS,
 } = require('./utils/constants');
 const {
   evmRevert,
@@ -100,14 +100,18 @@ contract('Funds', function([_, user, someone]) {
       const handlerReturn = getHandlerReturn(receipt, ['uint256[]'])[0];
       // Verify token0
       expect(handlerReturn[0]).to.be.bignumber.eq(value[0]);
-      expect(await this.token0.balanceOf.call(this.proxy.address)).to.be.bignumber.zero;
+      expect(
+        await this.token0.balanceOf.call(this.proxy.address)
+      ).to.be.bignumber.zero;
       expect(await this.token0.balanceOf.call(user)).to.be.bignumber.eq(
         value[0]
       );
 
       // Verify token1
       expect(handlerReturn[1]).to.be.bignumber.eq(value[1]);
-      expect(await this.token1.balanceOf.call(this.proxy.address)).to.be.bignumber.zero;
+      expect(
+        await this.token1.balanceOf.call(this.proxy.address)
+      ).to.be.bignumber.zero;
       expect(await this.token1.balanceOf.call(user)).to.be.bignumber.eq(
         value[1]
       );
@@ -137,7 +141,9 @@ contract('Funds', function([_, user, someone]) {
       const handlerReturn = getHandlerReturn(receipt, ['uint256[]'])[0];
       // Verify token0
       expect(handlerReturn[0]).to.be.bignumber.eq(value[0]);
-      expect(await this.token0.balanceOf.call(this.proxy.address)).to.be.bignumber.zero;
+      expect(
+        await this.token0.balanceOf.call(this.proxy.address)
+      ).to.be.bignumber.zero;
       expect(await this.token0.balanceOf.call(user)).to.be.bignumber.eq(
         value[0]
       );
@@ -154,7 +160,7 @@ contract('Funds', function([_, user, someone]) {
     });
 
     it('native token - 0xEEEE', async function() {
-      const token = [this.token0.address, NATIVE_TOKEN];
+      const token = [this.token0.address, NATIVE_TOKEN_ADDRESS];
       const msgValue = ether('0.1');
       const value = [ether('200'), ether('1')];
       const to = this.hFunds.address;
@@ -175,7 +181,9 @@ contract('Funds', function([_, user, someone]) {
       const handlerReturn = getHandlerReturn(receipt, ['uint256[]'])[0];
       // Verify token0
       expect(handlerReturn[0]).to.be.bignumber.eq(value[0]);
-      expect(await this.token0.balanceOf.call(this.proxy.address)).to.be.bignumber.zero;
+      expect(
+        await this.token0.balanceOf.call(this.proxy.address)
+      ).to.be.bignumber.zero;
       expect(await this.token0.balanceOf.call(user)).to.be.bignumber.eq(
         value[0]
       );
