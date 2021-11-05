@@ -11,7 +11,7 @@ All notable changes to this project will be documented in this file.
 - Remove cube counter.
 - Upgrade solidity version to 0.8.9.
 - Replace all uint256(-1) with type(uint256).max.
-- Unify 0xEeee...eE naming.
+- Unify 0xEeee...eE naming to NATIVE_TOKEN_ADDRESS.
 
 ### Fixed
 
