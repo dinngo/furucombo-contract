@@ -9,8 +9,6 @@ import "./IAggregationRouterV3.sol";
 contract HOneInchV3 is HandlerBase {
     // prettier-ignore
     address private constant _ONEINCH_SPENDER = 0x11111112542D85B3EF69AE05771c2dCCff4fAa26;
-    // prettier-ignore
-    address private constant _ETH_ADDRESS = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
     function getContractName() public pure override returns (string memory) {
         return "HOneInchV3";
@@ -117,6 +115,6 @@ contract HOneInchV3 is HandlerBase {
     }
 
     function _isNotNativeToken(address token) internal pure returns (bool) {
-        return (token != address(0) && token != _ETH_ADDRESS);
+        return (token != address(0) && token != NATIVE_TOKEN_ADDRESS);
     }
 }
