@@ -128,7 +128,7 @@ contract HSCompound is HandlerBase {
             } else {
                 // Approve repay token to DSProxy
                 address underlying = _getToken(cTokenRepay);
-                IERC20(underlying).safeApprove(dsProxy, uRepayAmount);
+                _tokenApprove(underlying, dsProxy, uRepayAmount);
                 // Execute token repay
                 try
                     IDSProxy(dsProxy).execute(
@@ -145,7 +145,6 @@ contract HSCompound is HandlerBase {
                 } catch {
                     _revertMsg("repayBorrow");
                 }
-                IERC20(underlying).safeApprove(dsProxy, 0);
             }
         }
 
