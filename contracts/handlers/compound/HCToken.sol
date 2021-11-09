@@ -25,7 +25,7 @@ contract HCToken is HandlerBase {
         address token = _getToken(cToken);
         // if amount == type(uint256).max return balance of Proxy
         mintAmount = _getBalance(token, mintAmount);
-        IERC20(token).safeApprove(cToken, mintAmount);
+        _tokenApprove(token, cToken, mintAmount);
         try compound.mint(mintAmount) returns (uint256 errorCode) {
             _requireMsg(
                 errorCode == 0,
@@ -37,7 +37,6 @@ contract HCToken is HandlerBase {
         } catch {
             _revertMsg("mint");
         }
-        IERC20(token).safeApprove(cToken, 0);
 
         // Get ctoken balance of proxy after mint
         uint256 afterCTokenAmount = compound.balanceOf(address(this));
@@ -59,7 +58,6 @@ contract HCToken is HandlerBase {
         ICToken compound = ICToken(cToken);
         // if amount == type(uint256).max return balance of Proxy
         redeemTokens = _getBalance(cToken, redeemTokens);
-        IERC20(cToken).safeApprove(cToken, redeemTokens);
         try compound.redeem(redeemTokens) returns (uint256 errorCode) {
             _requireMsg(
                 errorCode == 0,
@@ -71,7 +69,6 @@ contract HCToken is HandlerBase {
         } catch {
             _revertMsg("redeem");
         }
-        IERC20(cToken).safeApprove(cToken, 0);
 
         // Get token balance of proxy after redeem
         uint256 afterTokenAmount = IERC20(token).balanceOf(address(this));
@@ -90,10 +87,6 @@ contract HCToken is HandlerBase {
         ICToken compound = ICToken(cToken);
         uint256 beforeCTokenAmount = compound.balanceOf(address(this));
 
-        IERC20(cToken).safeApprove(
-            cToken,
-            0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-        );
         try compound.redeemUnderlying(redeemAmount) returns (
             uint256 errorCode
         ) {
@@ -107,7 +100,6 @@ contract HCToken is HandlerBase {
         } catch {
             _revertMsg("redeemUnderlying");
         }
-        IERC20(cToken).safeApprove(cToken, 0);
 
         // Get ctoken balance of proxy after redeem
         uint256 afterCTokenAmount = compound.balanceOf(address(this));
@@ -130,7 +122,7 @@ contract HCToken is HandlerBase {
         if (repayAmount < debt) {
             debt = repayAmount;
         }
-        IERC20(token).safeApprove(cToken, debt);
+        _tokenApprove(token, cToken, debt);
         try compound.repayBorrowBehalf(borrower, debt) returns (
             uint256 errorCode
         ) {
@@ -145,7 +137,6 @@ contract HCToken is HandlerBase {
             _revertMsg("repayBorrowBehalf");
         }
         uint256 debtEnd = compound.borrowBalanceCurrent(borrower);
-        IERC20(token).safeApprove(cToken, 0);
         return debtEnd;
     }
 

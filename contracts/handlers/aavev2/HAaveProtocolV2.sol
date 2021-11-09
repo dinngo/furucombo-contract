@@ -133,7 +133,6 @@ contract HAaveProtocolV2 is HandlerBase, IFlashLoanReceiver {
 
         // approve lending pool zero
         for (uint256 i = 0; i < assets.length; i++) {
-            IERC20(assets[i]).safeApprove(pool, 0);
             if (modes[i] != 0) _updateToken(assets[i]);
         }
     }
@@ -166,7 +165,7 @@ contract HAaveProtocolV2 is HandlerBase, IFlashLoanReceiver {
             ILendingPoolAddressesProviderV2(PROVIDER).getLendingPool();
         for (uint256 i = 0; i < assets.length; i++) {
             uint256 amountOwing = amounts[i] + premiums[i];
-            IERC20(assets[i]).safeApprove(pool, amountOwing);
+            _tokenApprove(assets[i], pool, amountOwing);
         }
         return true;
     }
@@ -175,7 +174,7 @@ contract HAaveProtocolV2 is HandlerBase, IFlashLoanReceiver {
 
     function _deposit(address asset, uint256 amount) internal {
         (address pool, address aToken) = _getLendingPoolAndAToken(asset);
-        IERC20(asset).safeApprove(pool, amount);
+        _tokenApprove(asset, pool, amount);
 
         try
             ILendingPoolV2(pool).deposit(
@@ -190,7 +189,6 @@ contract HAaveProtocolV2 is HandlerBase, IFlashLoanReceiver {
             _revertMsg("deposit");
         }
 
-        IERC20(asset).safeApprove(pool, 0);
         _updateToken(aToken);
     }
 
@@ -220,7 +218,7 @@ contract HAaveProtocolV2 is HandlerBase, IFlashLoanReceiver {
     ) internal returns (uint256 remainDebt) {
         address pool =
             ILendingPoolAddressesProviderV2(PROVIDER).getLendingPool();
-        IERC20(asset).safeApprove(pool, amount);
+        _tokenApprove(asset, pool, amount);
 
         try
             ILendingPoolV2(pool).repay(asset, amount, rateMode, onBehalfOf)
@@ -229,8 +227,6 @@ contract HAaveProtocolV2 is HandlerBase, IFlashLoanReceiver {
         } catch {
             _revertMsg("repay");
         }
-
-        IERC20(asset).safeApprove(pool, 0);
 
         DataTypes.ReserveData memory reserve =
             ILendingPoolV2(pool).getReserveData(asset);

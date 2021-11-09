@@ -686,7 +686,7 @@ contract HCurve is HandlerBase {
         // Some curve non-underlying pools like 3pool won't consume pool token
         // allowance since pool token was issued by the pool that don't need to
         // call transferFrom(). So set approval to 0 here.
-        IERC20(pool).safeApprove(handler, 0);
+        _tokenApprove(pool, handler, 0);
         uint256 balance = _getBalance(tokenI, type(uint256).max);
         _requireMsg(
             balance > balanceBefore,
