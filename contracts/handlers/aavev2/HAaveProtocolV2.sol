@@ -19,7 +19,6 @@ contract HAaveProtocolV2 is HandlerBase, IFlashLoanReceiver {
     // prettier-ignore
     address public constant WETH = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
     // prettier-ignore
-    address public constant ETHER = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
     uint16 public constant REFERRAL_CODE = 56;
 
     function getContractName() public pure override returns (string memory) {
@@ -32,7 +31,7 @@ contract HAaveProtocolV2 is HandlerBase, IFlashLoanReceiver {
     }
 
     function depositETH(uint256 amount) external payable {
-        amount = _getBalance(ETHER, amount);
+        amount = _getBalance(NATIVE_TOKEN_ADDRESS, amount);
         IWETH9(WETH).deposit{value: amount}();
         _deposit(WETH, amount);
 

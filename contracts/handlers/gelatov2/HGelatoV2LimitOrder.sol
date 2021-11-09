@@ -45,7 +45,7 @@ contract HGelatoV2LimitOrder is HandlerBase {
         value = _getBalance(inToken, value);
 
         // Check if Order is sending ETH or ERC20s
-        if (inToken == address(0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE)) {
+        if (inToken == NATIVE_TOKEN_ADDRESS) {
             try
                 IGelatoPineCore(GELATO_PINE).depositEth{value: value}(
                     IGelatoPineCore(GELATO_PINE).encodeEthOrder(

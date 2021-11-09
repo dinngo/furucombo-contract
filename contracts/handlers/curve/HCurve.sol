@@ -13,9 +13,6 @@ contract HCurve is HandlerBase {
         return "HCurve";
     }
 
-    // prettier-ignore
-    address public constant ETH_ADDRESS = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
-
     /// @notice Curve exchange
     function exchange(
         address handler,
@@ -175,7 +172,7 @@ contract HCurve is HandlerBase {
 
         // Approve erc20 token or set eth amount
         uint256 ethAmount;
-        if (tokenI != ETH_ADDRESS) {
+        if (tokenI != NATIVE_TOKEN_ADDRESS) {
             _tokenApprove(tokenI, handler, amount);
         } else {
             ethAmount = amount;
@@ -195,7 +192,7 @@ contract HCurve is HandlerBase {
             "after <= before"
         );
 
-        if (tokenJ != ETH_ADDRESS) _updateToken(tokenJ);
+        if (tokenJ != NATIVE_TOKEN_ADDRESS) _updateToken(tokenJ);
 
         return balance - balanceBefore;
     }
@@ -502,7 +499,7 @@ contract HCurve is HandlerBase {
         for (uint256 i = 0; i < amounts.length; i++) {
             if (amounts[i] == 0) continue;
             amounts[i] = _getBalance(tokens[i], amounts[i]);
-            if (tokens[i] == ETH_ADDRESS) {
+            if (tokens[i] == NATIVE_TOKEN_ADDRESS) {
                 ethAmount = amounts[i];
                 continue;
             }
@@ -698,7 +695,7 @@ contract HCurve is HandlerBase {
         );
 
         // Update post process
-        if (tokenI != ETH_ADDRESS) _updateToken(tokenI);
+        if (tokenI != NATIVE_TOKEN_ADDRESS) _updateToken(tokenI);
 
         return balance - balanceBefore;
     }

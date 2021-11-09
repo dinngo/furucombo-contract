@@ -15,7 +15,7 @@ const {
   CDAI,
   CWBTC,
   CETHER,
-  ETH_TOKEN,
+  NATIVE_TOKEN_ADDRESS,
   MAKER_PROXY_REGISTRY,
   FCOMPOUND_ACTIONS,
   COMPOUND_COMPTROLLER,
@@ -104,7 +104,7 @@ contract('FCompoundActions', function([_, user]) {
       const amount = ether('1');
       const data = abi.simpleEncode(
         'withdraw(address,uint256)',
-        ETH_TOKEN,
+        NATIVE_TOKEN_ADDRESS,
         amount
       );
       await send.ether(_, this.userProxy.address, amount);

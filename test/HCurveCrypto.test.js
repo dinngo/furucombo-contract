@@ -6,7 +6,7 @@ const { expect } = require('chai');
 const abi = require('ethereumjs-abi');
 const utils = web3.utils;
 const {
-  ETH_TOKEN,
+  NATIVE_TOKEN_ADDRESS,
   USDT_TOKEN,
   WBTC_TOKEN,
   CURVE_TRICRYPTO_SWAP,
@@ -81,8 +81,12 @@ contract('Curve Crypto', function([_, user]) {
 
         // Check proxy
         expect(await balanceProxy.get()).to.be.bignumber.zero;
-        expect(await token0.balanceOf.call(this.proxy.address)).to.be.bignumber.zero;
-        expect(await token1.balanceOf.call(this.proxy.address)).to.be.bignumber.zero;
+        expect(
+          await token0.balanceOf.call(this.proxy.address)
+        ).to.be.bignumber.zero;
+        expect(
+          await token1.balanceOf.call(this.proxy.address)
+        ).to.be.bignumber.zero;
 
         profileGas(receipt);
       });
@@ -132,7 +136,7 @@ contract('Curve Crypto', function([_, user]) {
           'exchangeUint256Ether(address,address,address,uint256,uint256,uint256,uint256)',
           this.tricryptoSwap.address,
           token0.address,
-          ETH_TOKEN,
+          NATIVE_TOKEN_ADDRESS,
           0,
           2,
           value,
@@ -165,7 +169,7 @@ contract('Curve Crypto', function([_, user]) {
         const data = abi.simpleEncode(
           'exchangeUint256Ether(address,address,address,uint256,uint256,uint256,uint256)',
           this.tricryptoSwap.address,
-          ETH_TOKEN,
+          NATIVE_TOKEN_ADDRESS,
           token1.address,
           2,
           1,
@@ -228,9 +232,15 @@ contract('Curve Crypto', function([_, user]) {
 
         // Check proxy
         expect(await balanceProxy.get()).to.be.bignumber.zero;
-        expect(await token0.balanceOf.call(this.proxy.address)).to.be.bignumber.zero;
-        expect(await token1.balanceOf.call(this.proxy.address)).to.be.bignumber.zero;
-        expect(await poolToken.balanceOf.call(this.proxy.address)).to.be.bignumber.zero;
+        expect(
+          await token0.balanceOf.call(this.proxy.address)
+        ).to.be.bignumber.zero;
+        expect(
+          await token1.balanceOf.call(this.proxy.address)
+        ).to.be.bignumber.zero;
+        expect(
+          await poolToken.balanceOf.call(this.proxy.address)
+        ).to.be.bignumber.zero;
 
         profileGas(receipt);
       });
@@ -239,7 +249,7 @@ contract('Curve Crypto', function([_, user]) {
         const token0Amount = new BN('1000000000'); // 1e9
         const token1Amount = new BN('10000000'); // 1e7
         const value = ether('1');
-        const tokens = [token0.address, token1.address, ETH_TOKEN];
+        const tokens = [token0.address, token1.address, NATIVE_TOKEN_ADDRESS];
         const amounts = [token0Amount, token1Amount, value];
 
         // Get expected answer
@@ -292,7 +302,7 @@ contract('Curve Crypto', function([_, user]) {
         const token0Amount = new BN('1000000000'); // 1e9
         const token1Amount = new BN('10000000'); // 1e7
         const value = ether('1');
-        const tokens = [token0.address, token1.address, ETH_TOKEN];
+        const tokens = [token0.address, token1.address, NATIVE_TOKEN_ADDRESS];
         const amounts = [token0Amount, token1Amount, value];
 
         // Get expected answer
@@ -386,7 +396,7 @@ contract('Curve Crypto', function([_, user]) {
           'removeLiquidityOneCoinUint256(address,address,address,uint256,uint256,uint256)',
           this.tricryptoDeposit.address,
           poolToken.address,
-          ETH_TOKEN,
+          NATIVE_TOKEN_ADDRESS,
           amount,
           2,
           minAmount
