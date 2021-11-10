@@ -84,9 +84,15 @@ contract('Curve Factory Meta', function([_, user]) {
 
         // Check proxy
         expect(await balanceProxy.get()).to.be.bignumber.zero;
-        expect(await token0.balanceOf.call(this.proxy.address)).to.be.bignumber.zero;
-        expect(await token1.balanceOf.call(this.proxy.address)).to.be.bignumber.zero;
-        expect(await poolToken.balanceOf.call(this.proxy.address)).to.be.bignumber.zero;
+        expect(
+          await token0.balanceOf.call(this.proxy.address)
+        ).to.be.bignumber.zero;
+        expect(
+          await token1.balanceOf.call(this.proxy.address)
+        ).to.be.bignumber.zero;
+        expect(
+          await poolToken.balanceOf.call(this.proxy.address)
+        ).to.be.bignumber.zero;
 
         profileGas(receipt);
       });
