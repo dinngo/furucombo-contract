@@ -308,7 +308,9 @@ contract('Registry', function([_, contract1, contract2, someone]) {
     });
 
     it('normal', async function() {
-      expect(await this.registry.bannedAgents.call(someone)).to.be.bignumber.zero;
+      expect(
+        await this.registry.bannedAgents.call(someone)
+      ).to.be.bignumber.zero;
       const receipt = await this.registry.ban(someone);
       expectEvent(receipt, 'Banned', { agent: someone });
       expect(await this.registry.bannedAgents.call(someone)).to.be.not.zero;
@@ -338,7 +340,9 @@ contract('Registry', function([_, contract1, contract2, someone]) {
       expect(await this.registry.bannedAgents.call(someone)).to.be.not.zero;
       const receipt = await this.registry.unban(someone);
       expectEvent(receipt, 'Unbanned', { agent: someone });
-      expect(await this.registry.bannedAgents.call(someone)).to.be.bignumber.zero;
+      expect(
+        await this.registry.bannedAgents.call(someone)
+      ).to.be.bignumber.zero;
     });
 
     it('non owner', async function() {

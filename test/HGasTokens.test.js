@@ -138,7 +138,9 @@ contract('GasTokens', function([_, user1, user2]) {
       });
       const gasUsed = new BN(receipt.receipt.gasUsed);
       // Check proxy token balance
-      expect(await token.balanceOf.call(this.proxy.address)).to.be.bignumber.zero;
+      expect(
+        await token.balanceOf.call(this.proxy.address)
+      ).to.be.bignumber.zero;
 
       // Check user eth balance
       expect(await balanceUser2.delta()).to.be.bignumber.eq(
@@ -224,7 +226,9 @@ contract('GasTokens', function([_, user1, user2]) {
       });
       const gasUsed = new BN(receipt.receipt.gasUsed);
       // Check proxy token balance
-      expect(await token.balanceOf.call(this.proxy.address)).to.be.bignumber.zero;
+      expect(
+        await token.balanceOf.call(this.proxy.address)
+      ).to.be.bignumber.zero;
 
       // Check user eth balance
       expect(await balanceUser2.delta()).to.be.bignumber.eq(

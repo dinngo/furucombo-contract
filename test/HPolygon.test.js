@@ -214,7 +214,9 @@ contract('Polygon Token Bridge', function([_, user]) {
           await this.token.balanceOf.call(POLYGON_POS_PREDICATE_ERC20)
         ).to.be.bignumber.eq(tokenBridgeAmount.add(value));
         // Verify Proxy balance
-        expect(await this.token.balanceOf.call(this.proxy.address)).to.be.bignumber.zero;
+        expect(
+          await this.token.balanceOf.call(this.proxy.address)
+        ).to.be.bignumber.zero;
         expect(await balanceProxy.get()).to.be.bignumber.zero;
         // Verify User balance
         expect(await this.token.balanceOf.call(user)).to.be.bignumber.zero;
@@ -273,7 +275,9 @@ contract('Polygon Token Bridge', function([_, user]) {
           await this.token.balanceOf.call(POLYGON_POS_PREDICATE_ERC20)
         ).to.be.bignumber.eq(tokenBridgeAmount.add(value));
         // Verify Proxy balance
-        expect(await this.token.balanceOf.call(this.proxy.address)).to.be.bignumber.zero;
+        expect(
+          await this.token.balanceOf.call(this.proxy.address)
+        ).to.be.bignumber.zero;
         expect(await balanceProxy.get()).to.be.bignumber.zero;
         // Verify User balance
         expect(await this.token.balanceOf.call(user)).to.be.bignumber.zero;
@@ -342,7 +346,9 @@ contract('Polygon Token Bridge', function([_, user]) {
           await this.matic.balanceOf.call(POLYGON_PLASMA_DEPOSIT_MANAGER)
         ).to.be.bignumber.eq(maticBridgeAmount.add(value));
         // Verify Proxy balance
-        expect(await this.matic.balanceOf.call(this.proxy.address)).to.be.bignumber.zero;
+        expect(
+          await this.matic.balanceOf.call(this.proxy.address)
+        ).to.be.bignumber.zero;
         expect(await balanceProxy.get()).to.be.bignumber.zero;
         // Verify User balance
         expect(await this.matic.balanceOf.call(user)).to.be.bignumber.zero;
@@ -400,7 +406,9 @@ contract('Polygon Token Bridge', function([_, user]) {
           await this.matic.balanceOf.call(POLYGON_PLASMA_DEPOSIT_MANAGER)
         ).to.be.bignumber.eq(maticBridgeAmount.add(value));
         // Verify Proxy balance
-        expect(await this.matic.balanceOf.call(this.proxy.address)).to.be.bignumber.zero;
+        expect(
+          await this.matic.balanceOf.call(this.proxy.address)
+        ).to.be.bignumber.zero;
         expect(await balanceProxy.get()).to.be.bignumber.zero;
         // Verify User balance
         expect(await this.matic.balanceOf.call(user)).to.be.bignumber.zero;

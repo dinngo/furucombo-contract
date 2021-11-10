@@ -840,7 +840,9 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
           cWithdrawAmount
         );
         const ethUserBefore = await balance.current(user);
-        const ethUserProxyBefore = await balance.current(this.userProxy.address);
+        const ethUserProxyBefore = await balance.current(
+          this.userProxy.address
+        );
         const borrowBalanceBefore = await this.cEther.borrowBalanceCurrent.call(
           this.userProxy.address
         );
