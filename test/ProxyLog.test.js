@@ -38,7 +38,7 @@ contract('ProxyLog', function([_, deployer, user]) {
   });
 
   describe('execute', function() {
-    before(async function() {
+    beforeEach(async function() {
       this.fooFactory = await FooFactory.new({ from: deployer });
       expect(this.fooFactory.address).to.be.eq(
         '0xFdd454EA7BF7ca88C1B7a824c3FB0951Fb8a1318'

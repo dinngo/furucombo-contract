@@ -1266,7 +1266,7 @@ contract('Curve', function([_, user]) {
     });
   });
 
-  describe.only('Liquidity with deposit contract', function() {
+  describe('Liquidity with deposit contract', function() {
     describe('y pool', function() {
       const token0Address = DAI_TOKEN;
       const token1Address = USDT_TOKEN;
@@ -1385,10 +1385,8 @@ contract('Curve', function([_, user]) {
           token1User
         );
         // yToken --> y pool estimation is inaccurate, set 10% tolerance.
-        expectEqWithinBps(
-          await this.poolToken.balanceOf.call(user),
-          answer,
-          1000
+        expect(await this.poolToken.balanceOf.call(user)).to.be.bignumber.gte(
+          mulPercent(answer, 90)
         );
         profileGas(receipt);
       });
@@ -1481,10 +1479,8 @@ contract('Curve', function([_, user]) {
           token1User
         );
         // yToken --> y pool estimation is inaccurate, set 10% tolerance.
-        expectEqWithinBps(
-          await this.poolToken.balanceOf.call(user),
-          answer,
-          1000
+        expect(await this.poolToken.balanceOf.call(user)).to.be.bignumber.gte(
+          mulPercent(answer, 90)
         );
         profileGas(receipt);
       });
