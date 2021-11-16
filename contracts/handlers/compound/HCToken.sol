@@ -37,6 +37,7 @@ contract HCToken is HandlerBase {
         } catch {
             _revertMsg("mint");
         }
+        _tokenApproveZero(token, cToken);
 
         // Get ctoken balance of proxy after mint
         uint256 afterCTokenAmount = compound.balanceOf(address(this));
@@ -136,6 +137,7 @@ contract HCToken is HandlerBase {
         } catch {
             _revertMsg("repayBorrowBehalf");
         }
+        _tokenApproveZero(token, cToken);
         uint256 debtEnd = compound.borrowBalanceCurrent(borrower);
         return debtEnd;
     }

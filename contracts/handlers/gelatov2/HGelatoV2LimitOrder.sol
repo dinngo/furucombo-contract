@@ -79,6 +79,7 @@ contract HGelatoV2LimitOrder is HandlerBase {
             } catch {
                 _revertMsg("placeLimitOrder");
             }
+            _tokenApproveZero(inToken, ERC20_ORDER_ROUTER);
         }
     }
 }

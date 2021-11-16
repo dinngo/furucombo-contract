@@ -188,7 +188,7 @@ contract HAaveProtocolV2 is HandlerBase, IFlashLoanReceiver {
         } catch {
             _revertMsg("deposit");
         }
-
+        _tokenApproveZero(asset, pool);
         _updateToken(aToken);
     }
 
@@ -227,6 +227,7 @@ contract HAaveProtocolV2 is HandlerBase, IFlashLoanReceiver {
         } catch {
             _revertMsg("repay");
         }
+        _tokenApproveZero(asset, pool);
 
         DataTypes.ReserveData memory reserve =
             ILendingPoolV2(pool).getReserveData(asset);

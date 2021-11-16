@@ -23,6 +23,7 @@ contract HFurucomboStaking is HandlerBase {
 
         _tokenApprove(stakeToken, pool, amount);
         staking.stakeFor(_getSender(), amount);
+        _tokenApproveZero(stakeToken, pool);
     }
 
     function unstake(address pool, uint256 amount) external payable {

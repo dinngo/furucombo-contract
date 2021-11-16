@@ -31,6 +31,7 @@ contract HYVault is HandlerBase {
         } catch {
             _revertMsg("deposit");
         }
+        _tokenApproveZero(token, address(yVault));
 
         uint256 afterYTokenBalance =
             IERC20(address(yVault)).balanceOf(address(this));

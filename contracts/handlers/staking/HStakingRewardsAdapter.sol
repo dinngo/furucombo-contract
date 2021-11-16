@@ -40,6 +40,7 @@ contract HStakingRewardsAdapter is HandlerBase {
         } catch {
             _revertMsg("stake");
         }
+        _tokenApproveZero(address(token), address(adapter));
     }
 
     // Stake for account
@@ -60,6 +61,7 @@ contract HStakingRewardsAdapter is HandlerBase {
         } catch {
             _revertMsg("stakeFor");
         }
+        _tokenApproveZero(address(token), address(adapter));
     }
 
     // Only withdraw for msg.sender

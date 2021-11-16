@@ -90,5 +90,6 @@ contract HCurveDao is HandlerBase {
         } catch {
             _revertMsg("deposit");
         }
+        _tokenApproveZero(token, gaugeAddress);
     }
 }

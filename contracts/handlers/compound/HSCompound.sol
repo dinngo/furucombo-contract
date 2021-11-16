@@ -145,6 +145,7 @@ contract HSCompound is HandlerBase {
                 } catch {
                     _revertMsg("repayBorrow");
                 }
+                _tokenApproveZero(underlying, dsProxy);
             }
         }
 

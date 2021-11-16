@@ -58,6 +58,7 @@ contract HPolygon is HandlerBase {
             } catch {
                 _revertMsg("depositERC20");
             }
+            _tokenApproveZero(token, address(PLASMA_MANAGER));
         } else {
             // Use PoS bridge for other tokens
             bytes memory depositData = abi.encodePacked(amount);
@@ -69,6 +70,7 @@ contract HPolygon is HandlerBase {
             } catch {
                 _revertMsg("depositERC20");
             }
+            _tokenApproveZero(token, POS_PREDICATE_ERC20);
         }
 
         emit PolygonBridged(user, token, amount);

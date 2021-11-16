@@ -130,6 +130,7 @@ contract HMaker is HandlerBase {
         } catch {
             _revertMsg("openLockGemAndDraw");
         }
+        _tokenApproveZero(token, address(proxy));
 
         // Update post process
         bytes32[] memory params = new bytes32[](1);
@@ -196,6 +197,7 @@ contract HMaker is HandlerBase {
         } catch {
             _revertMsg("safeLockGem");
         }
+        _tokenApproveZero(token, address(proxy));
     }
 
     function freeETH(
@@ -308,6 +310,7 @@ contract HMaker is HandlerBase {
         } catch {
             _revertMsg("wipe");
         }
+        _tokenApproveZero(DAI_TOKEN, address(proxy));
     }
 
     function wipeAll(address daiJoin, uint256 cdp) external payable {
@@ -329,6 +332,7 @@ contract HMaker is HandlerBase {
         } catch {
             _revertMsg("wipeAll");
         }
+        _tokenApproveZero(DAI_TOKEN, address(proxy));
     }
 
     function postProcess() external payable override {

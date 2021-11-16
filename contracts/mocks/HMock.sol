@@ -29,6 +29,7 @@ contract HMock is HandlerBase {
     ) external payable {
         _tokenApprove(token, target, amount);
         IFaucet(target).drainToken(token, amount);
+        _tokenApproveZero(token, target);
         _updateToken(token);
     }
 
@@ -40,6 +41,7 @@ contract HMock is HandlerBase {
         for (uint256 i = 0; i < targets.length; i++) {
             _tokenApprove(tokens[i], targets[i], amounts[i]);
             IFaucet(targets[i]).drainToken(tokens[i], amounts[i]);
+            _tokenApproveZero(tokens[i], targets[i]);
             _updateToken(tokens[i]);
         }
     }
