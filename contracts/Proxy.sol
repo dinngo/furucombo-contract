@@ -282,11 +282,11 @@ contract Proxy is IProxy, Storage, Config {
         if (stack.length == 0) {
             return;
         } else if (
-            stack.peek() == bytes32(bytes12(uint96(HandlerType.Custom)))
+            stack.peek(1) == bytes32(bytes12(uint96(HandlerType.Custom))) &&
+            bytes4(stack.peek(2)) != 0x00000000
         ) {
             stack.pop();
-            // Check if the handler is already set.
-            if (bytes4(stack.peek()) != 0x00000000) stack.setAddress(_to);
+            stack.setAddress(_to);
             stack.setHandlerType(HandlerType.Custom);
         }
     }
