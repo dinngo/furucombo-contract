@@ -119,9 +119,9 @@ abstract contract HandlerBase is Storage, Config {
     }
 
     function _tokenApproveZero(address token, address spender) internal {
-        if (IERC20(token).allowance(address(this), spender) > 0) {
-            try IERC20(token).approve(spender, 0) {} catch {
-                IERC20(token).approve(spender, 1);
+        if (IERC20Usdt(token).allowance(address(this), spender) > 0) {
+            try IERC20Usdt(token).approve(spender, 0) {} catch {
+                IERC20Usdt(token).approve(spender, 1);
             }
         }
     }

@@ -133,6 +133,7 @@ contract HAaveProtocolV2 is HandlerBase, IFlashLoanReceiver {
 
         // approve lending pool zero
         for (uint256 i = 0; i < assets.length; i++) {
+            _tokenApproveZero(assets[i], pool);
             if (modes[i] != 0) _updateToken(assets[i]);
         }
     }

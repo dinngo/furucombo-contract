@@ -844,9 +844,6 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
         await this.proxy.execMock(to, data1, {
           from: user,
         });
-        expect(
-          await this.omg.allowance.call(this.proxy.address, UNISWAPV2_ROUTER02)
-        ).to.be.bignumber.gt(ether('0'));
 
         // Second swap in allowance > 0
         const result = await this.router.getAmountsIn.call(buyAmt, path, {
@@ -1448,9 +1445,6 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
         await this.proxy.execMock(to, data1, {
           from: user,
         });
-        expect(
-          await this.omg.allowance.call(this.proxy.address, UNISWAPV2_ROUTER02)
-        ).to.be.bignumber.gt(new BN(0));
 
         // Second Swap
         const result = await this.router.getAmountsIn.call(buyAmt, path, {

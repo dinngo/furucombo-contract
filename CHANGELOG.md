@@ -13,7 +13,7 @@ All notable changes to this project will be documented in this file.
 - Replace all uint256(-1) with type(uint256).max.
 - Unify 0xEeee...eE naming to NATIVE_TOKEN_ADDRESS.
 - Replace safeApprove with \_tokenApprove.
-- Remove "approve action" in some function.
+- Set token allowance to zero after each \_tokenApprove
 
 ### Fixed
 

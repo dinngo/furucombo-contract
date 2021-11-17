@@ -314,7 +314,6 @@ contract HUniswapV2 is HandlerBase {
 
         // Approve token
         _tokenApprove(tokenIn, UNISWAPV2_ROUTER, amountInMax);
-
         try
             router.swapTokensForExactETH(
                 amountOut,

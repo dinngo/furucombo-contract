@@ -367,6 +367,7 @@ contract StakingRewardsAdapter is
         stakingToken.safeTransferFrom(msg.sender, address(this), amount);
         stakingToken.safeApprove(address(stakingContract), amount);
         stakingContract.stake(amount);
+        stakingToken.safeApprove(address(stakingContract), 0);
         emit Staked(msg.sender, account, amount);
     }
 
