@@ -293,7 +293,8 @@ contract HCurve is HandlerBase {
             _revertMsg("addLiquidity", "invalid amount[] size");
         }
 
-        return _addLiquidityAfter(handler, pool, tokens, balanceBefore);
+        return
+            _addLiquidityAfter(handler, pool, tokens, amounts, balanceBefore);
     }
 
     /// @notice Curve add liquidity with underlying true flag
@@ -393,7 +394,8 @@ contract HCurve is HandlerBase {
             _revertMsg("addLiquidityUnderlying", "invalid amount[] size");
         }
 
-        return _addLiquidityAfter(handler, pool, tokens, balanceBefore);
+        return
+            _addLiquidityAfter(handler, pool, tokens, amounts, balanceBefore);
     }
 
     /// @notice Curve add liquidity with factory zap
@@ -480,7 +482,8 @@ contract HCurve is HandlerBase {
             _revertMsg("addLiquidityFactoryZap", "invalid amount[] size");
         }
 
-        return _addLiquidityAfter(handler, pool, tokens, balanceBefore);
+        return
+            _addLiquidityAfter(handler, pool, tokens, amounts, balanceBefore);
     }
 
     function _addLiquidityBefore(
@@ -517,6 +520,7 @@ contract HCurve is HandlerBase {
         address handler,
         address pool,
         address[] memory tokens,
+        uint256[] memory amounts,
         uint256 balanceBefore
     ) internal returns (uint256) {
         uint256 balance = IERC20(pool).balanceOf(address(this));
@@ -526,8 +530,9 @@ contract HCurve is HandlerBase {
             "after <= before"
         );
 
-        for (uint256 i = 0; i < tokens.length; i++) {
-            if (tokens[i] != NATIVE_TOKEN_ADDRESS && tokens[i] != address(0))
+        for (uint256 i = 0; i < amounts.length; i++) {
+            if (amounts[i] == 0) continue;
+            if (tokens[i] != NATIVE_TOKEN_ADDRESS)
                 _tokenApproveZero(tokens[i], handler);
         }
 
