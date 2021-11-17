@@ -527,7 +527,7 @@ contract HCurve is HandlerBase {
         );
 
         for (uint256 i = 0; i < tokens.length; i++) {
-            if (tokens[i] != NATIVE_TOKEN_ADDRESS)
+            if (tokens[i] != NATIVE_TOKEN_ADDRESS && tokens[i] != address(0))
                 _tokenApproveZero(tokens[i], handler);
         }
 
