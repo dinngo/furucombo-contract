@@ -48,7 +48,6 @@ contract HCEther is HandlerBase {
 
         // if amount == type(uint256).max return balance of Proxy
         redeemTokens = _getBalance(CETHER, redeemTokens);
-        IERC20(CETHER).safeApprove(CETHER, redeemTokens);
 
         // Execute redeem
         try compound.redeem(redeemTokens) returns (uint256 errorCode) {
@@ -62,9 +61,6 @@ contract HCEther is HandlerBase {
         } catch {
             _revertMsg("redeem");
         }
-
-        // Approve cether to zero
-        IERC20(CETHER).safeApprove(CETHER, 0);
 
         // Get ether balance of proxy after redeem
         uint256 afterRedeemAmount = address(this).balance;
@@ -80,10 +76,6 @@ contract HCEther is HandlerBase {
         ICEther compound = ICEther(CETHER);
         uint256 beforeCEtherAmount = compound.balanceOf(address(this));
 
-        IERC20(CETHER).safeApprove(
-            CETHER,
-            0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-        );
         try compound.redeemUnderlying(redeemAmount) returns (
             uint256 errorCode
         ) {
@@ -97,7 +89,6 @@ contract HCEther is HandlerBase {
         } catch {
             _revertMsg("redeemUnderlying");
         }
-        IERC20(CETHER).safeApprove(CETHER, 0);
 
         // Get cether balance of proxy after redeemUnderlying
         uint256 afterCEtherAmount = compound.balanceOf(address(this));

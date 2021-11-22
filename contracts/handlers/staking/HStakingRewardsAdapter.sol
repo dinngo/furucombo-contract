@@ -31,7 +31,7 @@ contract HStakingRewardsAdapter is HandlerBase {
         IStakingRewardsAdapter adapter = IStakingRewardsAdapter(adapterAddr);
         IERC20 token = adapter.stakingToken();
 
-        token.safeApprove(address(adapter), amount);
+        _tokenApprove(address(token), address(adapter), amount);
 
         try adapter.stakeFor(_getSender(), amount) {} catch Error(
             string memory reason
@@ -40,8 +40,7 @@ contract HStakingRewardsAdapter is HandlerBase {
         } catch {
             _revertMsg("stake");
         }
-
-        token.safeApprove(address(adapter), 0);
+        _tokenApproveZero(address(token), address(adapter));
     }
 
     // Stake for account
@@ -53,7 +52,7 @@ contract HStakingRewardsAdapter is HandlerBase {
         IStakingRewardsAdapter adapter = IStakingRewardsAdapter(adapterAddr);
         IERC20 token = adapter.stakingToken();
 
-        token.safeApprove(address(adapter), amount);
+        _tokenApprove(address(token), address(adapter), amount);
 
         try adapter.stakeFor(account, amount) {} catch Error(
             string memory reason
@@ -62,8 +61,7 @@ contract HStakingRewardsAdapter is HandlerBase {
         } catch {
             _revertMsg("stakeFor");
         }
-
-        token.safeApprove(address(adapter), 0);
+        _tokenApproveZero(address(token), address(adapter));
     }
 
     // Only withdraw for msg.sender

@@ -12,6 +12,8 @@ All notable changes to this project will be documented in this file.
 - Upgrade solidity version to 0.8.9.
 - Replace all uint256(-1) with type(uint256).max.
 - Unify 0xEeee...eE naming to NATIVE_TOKEN_ADDRESS.
+- Replace safeApprove with \_tokenApprove.
+- Set token allowance to zero after each \_tokenApprove
 
 ### Fixed
 

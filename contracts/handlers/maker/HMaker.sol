@@ -106,7 +106,7 @@ contract HMaker is HandlerBase {
         // if amount == type(uint256).max return balance of Proxy
         wadC = _getBalance(token, wadC);
 
-        IERC20(token).safeApprove(address(proxy), wadC);
+        _tokenApprove(token, address(proxy), wadC);
         try
             proxy.execute(
                 getProxyActions(),
@@ -130,7 +130,7 @@ contract HMaker is HandlerBase {
         } catch {
             _revertMsg("openLockGemAndDraw");
         }
-        IERC20(token).safeApprove(address(proxy), 0);
+        _tokenApproveZero(token, address(proxy));
 
         // Update post process
         bytes32[] memory params = new bytes32[](1);
@@ -177,7 +177,7 @@ contract HMaker is HandlerBase {
         address token = IMakerGemJoin(gemJoin).gem();
         // if amount == type(uint256).max return balance of Proxy
         wad = _getBalance(token, wad);
-        IERC20(token).safeApprove(address(proxy), wad);
+        _tokenApprove(token, address(proxy), wad);
         try
             proxy.execute(
                 getProxyActions(),
@@ -197,7 +197,7 @@ contract HMaker is HandlerBase {
         } catch {
             _revertMsg("safeLockGem");
         }
-        IERC20(token).safeApprove(address(proxy), 0);
+        _tokenApproveZero(token, address(proxy));
     }
 
     function freeETH(
@@ -292,7 +292,7 @@ contract HMaker is HandlerBase {
         uint256 wad
     ) external payable {
         IDSProxy proxy = IDSProxy(_getProxy(address(this)));
-        IERC20(DAI_TOKEN).safeApprove(address(proxy), wad);
+        _tokenApprove(DAI_TOKEN, address(proxy), wad);
         try
             proxy.execute(
                 getProxyActions(),
@@ -310,12 +310,12 @@ contract HMaker is HandlerBase {
         } catch {
             _revertMsg("wipe");
         }
-        IERC20(DAI_TOKEN).safeApprove(address(proxy), 0);
+        _tokenApproveZero(DAI_TOKEN, address(proxy));
     }
 
     function wipeAll(address daiJoin, uint256 cdp) external payable {
         IDSProxy proxy = IDSProxy(_getProxy(address(this)));
-        IERC20(DAI_TOKEN).safeApprove(address(proxy), type(uint256).max);
+        _tokenApprove(DAI_TOKEN, address(proxy), type(uint256).max);
         try
             proxy.execute(
                 getProxyActions(),
@@ -332,7 +332,7 @@ contract HMaker is HandlerBase {
         } catch {
             _revertMsg("wipeAll");
         }
-        IERC20(DAI_TOKEN).safeApprove(address(proxy), 0);
+        _tokenApproveZero(DAI_TOKEN, address(proxy));
     }
 
     function postProcess() external payable override {

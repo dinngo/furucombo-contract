@@ -25,13 +25,13 @@ contract HYVault is HandlerBase {
         address token = yVault.token();
         // if amount == type(uint256).max return balance of Proxy
         _amount = _getBalance(token, _amount);
-        IERC20(token).safeApprove(address(yVault), _amount);
+        _tokenApprove(token, address(yVault), _amount);
         try yVault.deposit(_amount) {} catch Error(string memory reason) {
             _revertMsg("deposit", reason);
         } catch {
             _revertMsg("deposit");
         }
-        IERC20(token).safeApprove(address(yVault), 0);
+        _tokenApproveZero(token, address(yVault));
 
         uint256 afterYTokenBalance =
             IERC20(address(yVault)).balanceOf(address(this));

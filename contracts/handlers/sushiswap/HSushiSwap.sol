@@ -60,6 +60,7 @@ contract HSushiSwap is HandlerBase {
         } catch {
             _revertMsg("addLiquidityETH");
         }
+        _tokenApproveZero(token, SUSHISWAP_ROUTER);
 
         // Update involved token
         address pair =
@@ -113,7 +114,8 @@ contract HSushiSwap is HandlerBase {
         } catch {
             _revertMsg("addLiquidity");
         }
-
+        _tokenApproveZero(tokenA, SUSHISWAP_ROUTER);
+        _tokenApproveZero(tokenB, SUSHISWAP_ROUTER);
         // Update involved token
         address pair =
             SushiSwapLibrary.pairFor(router.factory(), tokenA, tokenB);
@@ -153,6 +155,7 @@ contract HSushiSwap is HandlerBase {
         } catch {
             _revertMsg("removeLiquidityETH");
         }
+        _tokenApproveZero(pair, SUSHISWAP_ROUTER);
 
         // Update involved token
         _updateToken(token);
@@ -193,6 +196,7 @@ contract HSushiSwap is HandlerBase {
         } catch {
             _revertMsg("removeLiquidity");
         }
+        _tokenApproveZero(pair, SUSHISWAP_ROUTER);
 
         // Update involved token
         _updateToken(tokenA);
@@ -290,6 +294,7 @@ contract HSushiSwap is HandlerBase {
         } catch {
             _revertMsg("swapExactTokensForETH");
         }
+        _tokenApproveZero(tokenIn, SUSHISWAP_ROUTER);
     }
 
     function swapTokensForExactETH(
@@ -324,6 +329,7 @@ contract HSushiSwap is HandlerBase {
         } catch {
             _revertMsg("swapTokensForExactETH");
         }
+        _tokenApproveZero(tokenIn, SUSHISWAP_ROUTER);
     }
 
     function swapExactTokensForTokens(
@@ -361,7 +367,7 @@ contract HSushiSwap is HandlerBase {
         } catch {
             _revertMsg("swapExactTokensForTokens");
         }
-
+        _tokenApproveZero(tokenIn, SUSHISWAP_ROUTER);
         _updateToken(tokenOut);
     }
 
@@ -402,7 +408,7 @@ contract HSushiSwap is HandlerBase {
         } catch {
             _revertMsg("swapTokensForExactTokens");
         }
-
+        _tokenApproveZero(tokenIn, SUSHISWAP_ROUTER);
         _updateToken(tokenOut);
     }
 }

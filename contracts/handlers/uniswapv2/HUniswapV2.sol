@@ -60,6 +60,7 @@ contract HUniswapV2 is HandlerBase {
         } catch {
             _revertMsg("addLiquidityETH");
         }
+        _tokenApproveZero(token, UNISWAPV2_ROUTER);
 
         // Update involved token
         address pair =
@@ -113,6 +114,8 @@ contract HUniswapV2 is HandlerBase {
         } catch {
             _revertMsg("addLiquidity");
         }
+        _tokenApproveZero(tokenA, UNISWAPV2_ROUTER);
+        _tokenApproveZero(tokenB, UNISWAPV2_ROUTER);
 
         // Update involved token
         address pair =
@@ -153,6 +156,7 @@ contract HUniswapV2 is HandlerBase {
         } catch {
             _revertMsg("removeLiquidityETH");
         }
+        _tokenApproveZero(pair, UNISWAPV2_ROUTER);
 
         // Update involved token
         _updateToken(token);
@@ -193,6 +197,7 @@ contract HUniswapV2 is HandlerBase {
         } catch {
             _revertMsg("removeLiquidity");
         }
+        _tokenApproveZero(pair, UNISWAPV2_ROUTER);
 
         // Update involved token
         _updateToken(tokenA);
@@ -290,6 +295,7 @@ contract HUniswapV2 is HandlerBase {
         } catch {
             _revertMsg("swapExactTokensForETH");
         }
+        _tokenApproveZero(tokenIn, UNISWAPV2_ROUTER);
     }
 
     function swapTokensForExactETH(
@@ -308,7 +314,6 @@ contract HUniswapV2 is HandlerBase {
 
         // Approve token
         _tokenApprove(tokenIn, UNISWAPV2_ROUTER, amountInMax);
-
         try
             router.swapTokensForExactETH(
                 amountOut,
@@ -324,6 +329,7 @@ contract HUniswapV2 is HandlerBase {
         } catch {
             _revertMsg("swapTokensForExactETH");
         }
+        _tokenApproveZero(tokenIn, UNISWAPV2_ROUTER);
     }
 
     function swapExactTokensForTokens(
@@ -361,7 +367,7 @@ contract HUniswapV2 is HandlerBase {
         } catch {
             _revertMsg("swapExactTokensForTokens");
         }
-
+        _tokenApproveZero(tokenIn, UNISWAPV2_ROUTER);
         _updateToken(tokenOut);
     }
 
@@ -402,7 +408,7 @@ contract HUniswapV2 is HandlerBase {
         } catch {
             _revertMsg("swapTokensForExactTokens");
         }
-
+        _tokenApproveZero(tokenIn, UNISWAPV2_ROUTER);
         _updateToken(tokenOut);
     }
 }
