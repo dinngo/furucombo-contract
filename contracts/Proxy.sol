@@ -282,8 +282,8 @@ contract Proxy is IProxy, Storage, Config {
         if (stack.length == 0) {
             return;
         } else if (
-            stack.peek(1) == bytes32(bytes12(uint96(HandlerType.Custom))) &&
-            bytes4(stack.peek(2)) != 0x00000000
+            stack.peek() == bytes32(bytes12(uint96(HandlerType.Custom))) &&
+            bytes4(stack.peek(1)) != 0x00000000
         ) {
             stack.pop();
             stack.setAddress(_to);

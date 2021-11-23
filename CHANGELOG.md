@@ -14,7 +14,7 @@ All notable changes to this project will be documented in this file.
 - Unify 0xEeee...eE naming to NATIVE_TOKEN_ADDRESS.
 - Replace safeApprove with \_tokenApprove.
 - Set token allowance to zero after each \_tokenApprove.
-- Peek first and second element from stack at once to avoid too many push/pop.
+- Peek first and second element from stack at once in \_setPostProcess() to avoid too many push/pop.
 
 ### Fixed
 
