@@ -13,7 +13,8 @@ All notable changes to this project will be documented in this file.
 - Replace all uint256(-1) with type(uint256).max.
 - Unify 0xEeee...eE naming to NATIVE_TOKEN_ADDRESS.
 - Replace safeApprove with \_tokenApprove.
-- Set token allowance to zero after each \_tokenApprove
+- Set token allowance to zero after each \_tokenApprove.
+- Peek first and second element from stack at once in \_setPostProcess() to avoid too many push/pop.
 
 ### Fixed
 
