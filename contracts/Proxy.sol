@@ -4,6 +4,7 @@ pragma solidity 0.8.9;
 
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
 import "./interface/IProxy.sol";
 import "./interface/IRegistry.sol";
 import "./Config.sol";
@@ -19,6 +20,7 @@ contract Proxy is IProxy, Storage, Config {
     using SafeERC20 for IERC20;
     using LibParam for bytes32;
     using LibStack for bytes32[];
+    using Strings for uint256;
 
     event LogBegin(
         address indexed handler,
@@ -59,7 +61,7 @@ contract Proxy is IProxy, Storage, Config {
         require(_isValidCaller(msg.sender), "Invalid caller");
 
         address target = address(bytes20(registry.callers(msg.sender)));
-        bytes memory result = _exec(target, msg.data);
+        bytes memory result = _exec(target, msg.data, type(uint256).max);
 
         // return result for aave v2 flashloan()
         uint256 size = result.length;
@@ -120,6 +122,7 @@ contract Proxy is IProxy, Storage, Config {
     ) internal {
         bytes32[256] memory localStack;
         uint256 index = 0;
+        uint256 counter;
 
         require(
             tos.length == datas.length,
@@ -143,7 +146,8 @@ contract Proxy is IProxy, Storage, Config {
             emit LogBegin(to, selector, data);
 
             // Check if the output will be referenced afterwards
-            bytes memory result = _exec(to, data);
+            bytes memory result = _exec(to, data, counter);
+            counter++;
 
             // Emit the execution log after call
             emit LogEnd(to, selector, result);
@@ -239,14 +243,17 @@ contract Proxy is IProxy, Storage, Config {
      * @notice The execution of a single cube.
      * @param _to The handler of cube.
      * @param _data The cube execution data.
+     * @param _counter The current counter of the cube.
      */
-    function _exec(address _to, bytes memory _data)
-        internal
-        returns (bytes memory result)
-    {
+    function _exec(
+        address _to,
+        bytes memory _data,
+        uint256 _counter
+    ) internal returns (bytes memory result) {
         require(_isValidHandler(_to), "Invalid handler");
+        bool success;
         assembly {
-            let succeeded := delegatecall(
+            success := delegatecall(
                 sub(gas(), 5000),
                 _to,
                 add(_data, 0x20),
@@ -263,11 +270,27 @@ contract Proxy is IProxy, Storage, Config {
             )
             mstore(result, size)
             returndatacopy(add(result, 0x20), 0, size)
+        }
 
-            switch iszero(succeeded)
-                case 1 {
-                    revert(add(result, 0x20), size)
-                }
+        if (!success) {
+            if (result.length < 68) revert("_exec");
+            assembly {
+                result := add(result, 0x04)
+            }
+
+            if (_counter == type(uint256).max) {
+                revert(abi.decode(result, (string))); // Don't prepend counter
+            } else {
+                revert(
+                    string(
+                        abi.encodePacked(
+                            _counter.toString(),
+                            "_",
+                            abi.decode(result, (string))
+                        )
+                    )
+                );
+            }
         }
     }
 
@@ -313,7 +336,11 @@ contract Proxy is IProxy, Storage, Config {
                     IERC20(addr).safeTransfer(msg.sender, tokenAmount);
             } else if (handlerType == HandlerType.Custom) {
                 address addr = stack.getAddress();
-                _exec(addr, abi.encodeWithSelector(POSTPROCESS_SIG));
+                _exec(
+                    addr,
+                    abi.encodeWithSelector(POSTPROCESS_SIG),
+                    type(uint256).max
+                );
             } else {
                 revert("Invalid handler type");
             }
