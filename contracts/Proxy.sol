@@ -121,7 +121,7 @@ contract Proxy is IProxy, Storage, Config {
         bytes[] memory datas
     ) internal {
         bytes32[256] memory localStack;
-        uint256 index = 0;
+        uint256 index;
         uint256 counter;
 
         require(
