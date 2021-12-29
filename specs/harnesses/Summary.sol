@@ -622,48 +622,71 @@ contract Summary {
         uint256 amountInMaximum;
     }
     function exactInputSingle(ExactInputSingleParams calldata params) external payable returns (uint256 amountOut) {
+        // only verify consumed token and amount when not using eth as input
+        if (msg.value >= params.amountIn && params.tokenIn == getWethAddress(msg.sender)) {
+            consumedToken = address(0);
+        } else {
+            consumedToken = params.tokenIn;
+            shouldBeConsumedAmount = params.amountIn;
+            IERC20WithDummyFunctionality(consumedToken).transferFrom(msg.sender, address(this), params.amountIn);
+        }
         require (params.amountIn > 0 && params.amountOutMinimum > 0);
         require (params.tokenIn != address(this) && params.tokenOut != address(this));
-        consumedToken = params.tokenIn;
         generatedToken = params.tokenOut;
         require (consumedToken != generatedToken);
-        shouldBeConsumedAmount = params.amountIn;
-        IERC20WithDummyFunctionality(consumedToken).transferFrom(msg.sender, address(this), params.amountIn);
         IERC20WithDummyFunctionality(generatedToken).transfer(params.recipient, params.amountOutMinimum);
         return params.amountOutMinimum;
     }
     function exactInput(ExactInputParams calldata params) external payable returns (uint256 amountOut) {
-        consumedToken = _getFirstToken(params.path);
+        address tokenIn = _getFirstToken(params.path);
+        // only verify consumed token and amount when not using eth as input
+        if (msg.value >= params.amountIn && tokenIn == getWethAddress(msg.sender)) {
+            consumedToken = address(0);
+        } else {
+            consumedToken = tokenIn;
+            shouldBeConsumedAmount = params.amountIn;
+            IERC20WithDummyFunctionality(consumedToken).transferFrom(msg.sender, address(this), params.amountIn);
+        }
         generatedToken = _getLastToken(params.path);
         require (params.amountIn > 0 && params.amountOutMinimum > 0);
         require (consumedToken != address(this) && generatedToken != address(this));
         require (consumedToken != generatedToken);
-        shouldBeConsumedAmount = params.amountIn;
-        IERC20WithDummyFunctionality(consumedToken).transferFrom(msg.sender, address(this), params.amountIn);
         IERC20WithDummyFunctionality(generatedToken).transfer(params.recipient, params.amountOutMinimum);
         return params.amountOutMinimum;
     }
     function exactOutputSingle(ExactOutputSingleParams calldata params) external payable returns (uint256 amountIn) {
+        // only verify consumed token and amount when not using eth as input
+        if (msg.value >= params.amountInMaximum && params.tokenIn == getWethAddress(msg.sender)) {
+            consumedToken = address(0);
+        } else {
+            consumedToken = params.tokenIn;
+            shouldBeConsumedAmount = params.amountInMaximum;
+            IERC20WithDummyFunctionality(consumedToken).transferFrom(msg.sender, address(this), params.amountInMaximum);
+        }
         require (params.amountInMaximum > 0 && params.amountOut > 0);
         require (params.tokenIn != address(this) && params.tokenOut != address(this));
-        consumedToken = params.tokenIn;
         generatedToken = params.tokenOut;
         require (consumedToken != generatedToken);
-        shouldBeConsumedAmount = params.amountInMaximum;
-        IERC20WithDummyFunctionality(consumedToken).transferFrom(msg.sender, address(this), params.amountInMaximum);
         IERC20WithDummyFunctionality(generatedToken).transfer(params.recipient, params.amountOut);
-        return params.amountOut;
+        return params.amountInMaximum;
     }
     function exactOutput(ExactOutputParams calldata params) external payable returns (uint256 amountIn) {
-        consumedToken = _getLastToken(params.path);
+        address tokenIn = _getLastToken(params.path);
+        // only verify consumed token and amount when not using eth as input
+        if (msg.value >= params.amountInMaximum && tokenIn == getWethAddress(msg.sender)) {
+            consumedToken = address(0);
+        } else {
+            consumedToken = tokenIn;
+            shouldBeConsumedAmount = params.amountInMaximum;
+            IERC20WithDummyFunctionality(consumedToken).transferFrom(msg.sender, address(this), params.amountInMaximum);
+        }
         generatedToken = _getFirstToken(params.path);
         require (params.amountInMaximum > 0 && params.amountOut > 0);
         require (consumedToken != address(this) && generatedToken != address(this));
         require (consumedToken != generatedToken);
         shouldBeConsumedAmount = params.amountInMaximum;
-        IERC20WithDummyFunctionality(consumedToken).transferFrom(msg.sender, address(this), params.amountInMaximum);
         IERC20WithDummyFunctionality(generatedToken).transfer(params.recipient, params.amountOut);
-        return params.amountOut;
+        return params.amountInMaximum;
     }
     function refundETH() external payable {
         Nothing(msg.sender).nop{value:0}();
