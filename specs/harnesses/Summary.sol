@@ -1105,16 +1105,6 @@ contract Summary {
         consumedToken = address(0);
         shouldBeConsumedAmount = msg.value;
     }
-    address vault;
-    function vaultOfOrder(
-        address _module,
-        address _inputToken,
-        address payable _owner,
-        address _witness,
-        bytes memory _data
-    ) public view returns (address) {
-        return vault;
-    }
 
     address public consumedToken;
     address public generatedToken;

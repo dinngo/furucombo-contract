@@ -323,7 +323,6 @@ methods {
     // HGelatoV2LimitOrder
     encodeEthOrder(address,address,address,address,bytes,bytes32) => DISPATCHER(true)
     depositEth(bytes) => DISPATCHER(true)
-    vaultOfOrder(address,address,address,address,bytes) => DISPATCHER(true)
 
     // No-op for receiving funds without havocs
     nop() => NONDET
