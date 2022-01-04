@@ -10,7 +10,7 @@ const { expect } = require('chai');
 const {
   DAI_TOKEN,
   USDC_TOKEN,
-  WETH_TOKEN,
+  COMBO_TOKEN,
   NATIVE_TOKEN,
   NATIVE_TOKEN_DECIMAL,
 } = require('./utils/constants');
@@ -18,9 +18,7 @@ const {
   evmRevert,
   evmSnapshot,
   mulPercent,
-  profileGas,
   getHandlerReturn,
-  getFuncSig,
   getCallData,
   tokenProviderYearn,
 } = require('./utils/utils');
@@ -47,6 +45,7 @@ const URL_PARASWAP_TRANSACTION =
   IGNORE_CHECKS_PARAM;
 
 const DUMMY_ADDRESS = '0xa3C1C91403F0026b9dd086882aDbC8Cdbc3b3cfB';
+const sleep = delay => new Promise(resolve => setTimeout(resolve, delay));
 
 async function getPriceData(
   srcToken,
@@ -68,8 +67,19 @@ async function getPriceData(
   });
 
   // Call Paraswap price API
-  const priceResponse = await fetch(priceReq);
-  const priceData = await priceResponse.json();
+  let priceResponse;
+  let priceData;
+  let succ = false;
+  while (!succ) {
+    priceResponse = await fetch(priceReq);
+    priceData = await priceResponse.json();
+    succ = priceResponse.ok;
+    if (succ === false && priceData.error === 'Server too busy') {
+      // if the fail reason is 'Server too busy', try again
+      console.log('ParaSwap Server too busy... retry');
+      await sleep(500);
+    }
+  }
   expect(
     priceResponse.ok,
     'Paraswap price api response not ok:' + priceData.error
@@ -78,14 +88,14 @@ async function getPriceData(
   return priceData;
 }
 
-async function getTransactionData(priceData, slippage) {
+async function getTransactionData(priceData, slippageInBps) {
   const body = {
     srcToken: priceData.priceRoute.srcToken,
     srcDecimals: priceData.priceRoute.srcDecimals,
     destToken: priceData.priceRoute.destToken,
     destDecimals: priceData.priceRoute.destDecimals,
     srcAmount: priceData.priceRoute.srcAmount,
-    slippage: slippage,
+    slippage: slippageInBps,
     userAddress: DUMMY_ADDRESS,
     priceRoute: priceData.priceRoute,
   };
@@ -131,7 +141,7 @@ contract('ParaSwapV5', function([_, user]) {
   describe('Ether to Token', function() {
     const tokenAddress = DAI_TOKEN;
     const tokenDecimal = 18;
-    const slippage = 100; // 1%
+    const slippageInBps = 100; // 1%
     const wrongTokenAddress = USDC_TOKEN;
 
     before(async function() {
@@ -160,8 +170,10 @@ contract('ParaSwapV5', function([_, user]) {
           amount
         );
 
+        const expectReceivedAmount = priceData.priceRoute.destAmount;
+
         // Call Paraswap transaction API
-        const txData = await getTransactionData(priceData, slippage);
+        const txData = await getTransactionData(priceData, slippageInBps);
 
         // Prepare handler data
         const callData = getCallData(HParaSwapV5, 'swap', [
@@ -186,6 +198,9 @@ contract('ParaSwapV5', function([_, user]) {
         // verify user token balance
         expect(handlerReturn).to.be.bignumber.eq(
           userTokenBalanceAfter.sub(userTokenBalance)
+        );
+        expect(userTokenBalanceAfter.sub(userTokenBalance)).to.be.bignumber.gt(
+          mulPercent(expectReceivedAmount, 100 - slippageInBps / 100)
         );
 
         // proxy should not have remaining token
@@ -217,7 +232,7 @@ contract('ParaSwapV5', function([_, user]) {
         );
 
         // Call Paraswap transaction API
-        const txData = await getTransactionData(priceData, slippage);
+        const txData = await getTransactionData(priceData, slippageInBps);
 
         // Prepare handler data
         const callData = getCallData(HParaSwapV5, 'swap', [
@@ -273,7 +288,7 @@ contract('ParaSwapV5', function([_, user]) {
         );
 
         // Call Paraswap transaction API
-        const txData = await getTransactionData(priceData, slippage);
+        const txData = await getTransactionData(priceData, slippageInBps);
 
         // Prepare handler data
         const callData = getCallData(HParaSwapV5, 'swap', [
@@ -308,7 +323,7 @@ contract('ParaSwapV5', function([_, user]) {
         );
 
         // Call Paraswap transaction API
-        const txData = await getTransactionData(priceData, slippage);
+        const txData = await getTransactionData(priceData, slippageInBps);
 
         // Prepare handler data
         const callData = getCallData(HParaSwapV5, 'swap', [
@@ -341,13 +356,10 @@ contract('ParaSwapV5', function([_, user]) {
     });
 
     beforeEach(async function() {
-      userBalance = await tracker(user);
       proxyBalance = await tracker(this.proxy.address);
-      userTokenBalance = await this.token.balanceOf.call(user);
-      proxyTokenBalance = await this.token.balanceOf.call(this.proxy.address);
     });
 
-    it.only('normal', async function() {
+    it('normal', async function() {
       // Get price
       const amount = ether('5000');
       const to = this.hParaSwap.address;
@@ -362,9 +374,6 @@ contract('ParaSwapV5', function([_, user]) {
       );
 
       const expectReceivedAmount = priceData.priceRoute.destAmount;
-
-      console.log('expectReceivedAmount');
-      console.log(expectReceivedAmount);
 
       // Call Paraswap transaction API
       const txData = await getTransactionData(priceData, slippageInBps);
@@ -390,8 +399,6 @@ contract('ParaSwapV5', function([_, user]) {
       const handlerReturn = utils.toBN(
         getHandlerReturn(receipt, ['uint256'])[0]
       );
-      console.log('handlerReturn');
-      console.log(handlerReturn.toString());
 
       //verify user balance
       const userBalanceDelta = await userBalance.delta();
@@ -412,7 +419,115 @@ contract('ParaSwapV5', function([_, user]) {
         )
       );
     });
+
+    it('should revert: not enough srcToken', async function() {
+      // Get price
+      const amount = ether('5000');
+      const to = this.hParaSwap.address;
+
+      // Call Paraswap Price API
+      const priceData = await getPriceData(
+        tokenAddress,
+        tokenDecimal,
+        NATIVE_TOKEN,
+        NATIVE_TOKEN_DECIMAL,
+        amount
+      );
+
+      // Call Paraswap transaction API
+      const txData = await getTransactionData(priceData, slippageInBps);
+
+      // Prepare handler data
+      const callData = getCallData(HParaSwapV5, 'swap', [
+        tokenAddress,
+        amount,
+        NATIVE_TOKEN,
+        txData.data,
+      ]);
+
+      // transfer token to proxy
+      await this.token.transfer(this.proxy.address, amount.sub(ether('1')), {
+        from: providerAddress,
+      });
+
+      // Execute
+      await expectRevert(
+        this.proxy.execMock(to, callData, {
+          from: user,
+        }),
+        'insufficient-balance'
+      );
+    });
   }); //describe('token to ether') end
+
+  describe('token to token', function() {
+    const token1Address = DAI_TOKEN;
+    const token1Decimal = 18;
+    const token2Address = COMBO_TOKEN;
+    const token2Decimal = 18;
+    const slippageInBps = 100; // 1%
+    let providerAddress;
+    before(async function() {
+      providerAddress = await tokenProviderYearn(token1Address);
+      this.token = await IToken.at(token1Address);
+      this.token2 = await IToken.at(token2Address);
+    });
+
+    it('normal', async function() {
+      // Get price
+      const amount = ether('500');
+      const to = this.hParaSwap.address;
+
+      // Call Paraswap Price API
+      const priceData = await getPriceData(
+        token1Address,
+        token1Decimal,
+        token2Address,
+        token2Decimal,
+        amount
+      );
+
+      const expectReceivedAmount = priceData.priceRoute.destAmount;
+
+      // Call Paraswap transaction API
+      const txData = await getTransactionData(priceData, slippageInBps);
+
+      // Prepare handler data
+      const callData = getCallData(HParaSwapV5, 'swap', [
+        token1Address,
+        amount,
+        token2Address,
+        txData.data,
+      ]);
+
+      // transfer token to proxy
+      await this.token.transfer(this.proxy.address, amount, {
+        from: providerAddress,
+      });
+
+      // Execute
+      const receipt = await this.proxy.execMock(to, callData, {
+        from: user,
+      });
+
+      const handlerReturn = utils.toBN(
+        getHandlerReturn(receipt, ['uint256'])[0]
+      );
+
+      const userToken2Balance = await this.token2.balanceOf.call(user);
+
+      //verify user balance
+      expect(handlerReturn).to.be.bignumber.eq(userToken2Balance);
+      expect(userToken2Balance).to.be.bignumber.gt(
+        mulPercent(expectReceivedAmount, 100 - slippageInBps / 100)
+      );
+
+      // proxy should not have remaining token
+      expect(
+        await this.token2.balanceOf.call(this.proxy.address)
+      ).to.be.bignumber.zero;
+    });
+  }); //describe('token to token') end
 
   describe('positive slippage', function() {});
 });
