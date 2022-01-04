@@ -17,3 +17,7 @@ package-lock.json
 artifacts/
 cache/
 deployments/
+
+# certora
+.certora_*
+.last_confs
