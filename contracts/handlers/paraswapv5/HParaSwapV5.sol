@@ -56,6 +56,7 @@ contract HParaSwapV5 is HandlerBase {
             AUGUSTUS_SWAPPER.call{value: value}(data);
 
         console.log("success: %s", success);
+        console.log("returnData.length: %d", returnData.length);
         // not sure
         if (!success) {
             if (returnData.length < 68) {
