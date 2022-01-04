@@ -5,6 +5,7 @@ pragma solidity 0.8.9;
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import "../HandlerBase.sol";
+import "hardhat/console.sol";
 
 contract HParaSwapV5 is HandlerBase {
     using SafeERC20 for IERC20;
@@ -38,6 +39,7 @@ contract HParaSwapV5 is HandlerBase {
         (bool success, bytes memory returnData) =
             AUGUSTUS_SWAPPER.call{value: value}(data);
 
+        console.log("success: %s", success);
         // not sure
         if (!success) {
             if (returnData.length < 68) {
