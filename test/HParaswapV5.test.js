@@ -85,10 +85,10 @@ contract('ParaswapV5', function([_, user]) {
     });
 
     beforeEach(async function() {
-      balanceUser = await tracker(BINANCE_WALLET);
-      balanceProxy = await tracker(this.proxy.address);
-      tokenUser = await this.token.balanceOf.call(BINANCE_WALLET);
-      tokenBalanceProxy = await this.token.balanceOf.call(this.proxy.address);
+      userBalance = await tracker(user);
+      proxyBalance = await tracker(this.proxy.address);
+      userTokenBalance = await this.token.balanceOf.call(user);
+      proxyTokenBalance = await this.token.balanceOf.call(this.proxy.address);
     });
 
     describe('Swap', function() {
@@ -114,9 +114,6 @@ contract('ParaswapV5', function([_, user]) {
         expect(priceResponse.ok, 'Paraswap api response not ok').to.be.true;
         const priceData = await priceResponse.json();
 
-        console.log('priceData:');
-        console.log(priceData);
-
         // Build Transaction
         const body = {
           srcToken: priceData.priceRoute.srcToken,
@@ -126,25 +123,25 @@ contract('ParaswapV5', function([_, user]) {
           srcAmount: priceData.priceRoute.srcAmount,
           slippage: slippage,
           userAddress: BINANCE_WALLET,
-          // receiver: this.hParaSwap.address,
           priceRoute: priceData.priceRoute,
         };
 
-        // console.log('JSON.stringify(body),');
-        // console.log(JSON.stringify(body));
         const txResp = await fetch(URL_PARASWAP_TRANSACTION, {
           method: 'post',
           body: JSON.stringify(body),
           headers: { 'Content-Type': 'application/json' },
         });
         const txData = await txResp.json();
-        console.log('txData:');
-        console.log(txData);
+        expect(
+          txResp.ok,
+          'Paraswap transaction api response not ok:' + txData
+        ).to.be.true;
 
         // Prepare handler data
         const callData = getCallData(HParaSwapV5, 'swap', [
           NATIVE_TOKEN_ADDRESS,
           amount,
+          this.token.address,
           txData.data,
         ]);
 
@@ -154,36 +151,38 @@ contract('ParaswapV5', function([_, user]) {
           value: amount,
         });
 
-        // Verify return value
-        const tokenUserAfter = await this.token.balanceOf.call(BINANCE_WALLET);
-        const tokenBalanceProxyAfter = await this.token.balanceOf.call(
+        const handlerReturn = utils.toBN(
+          getHandlerReturn(receipt, ['uint256'])[0]
+        );
+
+        const userTokenBalanceAfter = await this.token.balanceOf.call(user);
+        const proxyTokenBalanceAfter = await this.token.balanceOf.call(
           this.proxy.address
         );
-        console.log('token change:' + tokenUserAfter.sub(tokenUser));
         console.log(
-          'token change proxy:' + tokenBalanceProxyAfter.sub(tokenBalanceProxy)
+          'token change:' + userTokenBalanceAfter.sub(userTokenBalance)
         );
-        // const handlerReturn = utils.toBN(
-        //   getHandlerReturn(receipt, ['uint256'])[0]
-        // );
-        // expect(handlerReturn).to.be.bignumber.eq(tokenUserEnd.sub(tokenUser));
+        console.log(
+          'token change proxy:' + proxyTokenBalanceAfter.sub(proxyTokenBalance)
+        );
 
-        // // Verify token balance
-        // expect(tokenUserEnd).to.be.bignumber.gte(
-        //   // sub 1 more percent to tolerate the slippage calculation difference with 1inch
-        //   tokenUser.add(mulPercent(quote, 100 - slippage - 1))
-        // );
-        // expect(
-        //   await this.token.balanceOf.call(this.proxy.address)
-        // ).to.be.bignumber.zero;
+        // verify user balance
+        expect(handlerReturn).to.be.bignumber.eq(
+          userTokenBalanceAfter.sub(userTokenBalance)
+        );
 
-        // // Verify ether balance
-        // expect(await balanceProxy.get()).to.be.bignumber.zero;
-        // expect(await balanceUser.delta()).to.be.bignumber.eq(
-        //   ether('0')
-        //     .sub(value)
-        //     .sub(new BN(receipt.receipt.gasUsed))
-        // );
+        // proxy should not have remaining token
+        expect(
+          await this.token.balanceOf.call(this.proxy.address)
+        ).to.be.bignumber.zero;
+
+        // Verify ether balance
+        expect(await proxyBalance.get()).to.be.bignumber.zero;
+        expect(await userBalance.delta()).to.be.bignumber.eq(
+          ether('0')
+            .sub(amount)
+            .sub(new BN(receipt.receipt.gasUsed))
+        );
 
         // profileGas(receipt);
       });

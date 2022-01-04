@@ -20,18 +20,32 @@ contract HParaSwapV5 is HandlerBase {
     }
 
     function swap(
-        IERC20 srcToken,
+        address srcToken,
         uint256 amount,
+        address destToken,
         bytes calldata data
-    ) external payable {
-        if (_isNotNativeToken(address(srcToken))) {
+    ) external payable returns (uint256) {
+        console.log("swapswapswapswap");
+        uint256 destTokenBalanceBefore =
+            _getBalance(destToken, type(uint256).max);
+
+        if (_isNotNativeToken(srcToken)) {
             // ERC20 token need to approve before paraswap
-            _tokenApprove(address(srcToken), TOKEN_TRANSFER_PROXY, amount);
+            _tokenApprove(srcToken, TOKEN_TRANSFER_PROXY, amount);
             _paraswapCall(0, data);
-            _tokenApproveZero(address(srcToken), TOKEN_TRANSFER_PROXY);
+            _tokenApproveZero(srcToken, TOKEN_TRANSFER_PROXY);
         } else {
             _paraswapCall(amount, data);
         }
+
+        if (_isNotNativeToken(destToken)) {
+            _updateToken(destToken);
+        }
+
+        uint256 destTokenBalanceAfter =
+            _getBalance(destToken, type(uint256).max);
+
+        return destTokenBalanceAfter - destTokenBalanceBefore;
     }
 
     function _paraswapCall(uint256 value, bytes calldata data) internal {
