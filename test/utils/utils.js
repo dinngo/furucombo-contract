@@ -171,7 +171,7 @@ async function _tokenProviderUniLike(token0, token1, factoryAddress) {
   const IUniswapV2Factory = artifacts.require('IUniswapV2Factory');
   const factory = await IUniswapV2Factory.at(factoryAddress);
   const pair = await factory.getPair.call(token0, token1);
-  _impersonateAndInjectEther(pair);
+  impersonateAndInjectEther(pair);
 
   return pair;
 }
@@ -203,7 +203,7 @@ async function tokenProviderCurveGauge(lpToken) {
       break;
     }
   }
-  _impersonateAndInjectEther(gauge);
+  impersonateAndInjectEther(gauge);
 
   return gauge;
 }
@@ -215,12 +215,12 @@ async function tokenProviderYearn(token) {
     YEARN_CONTROLLER
   );
   const vault = await controller.vaults(token);
-  _impersonateAndInjectEther(vault);
+  impersonateAndInjectEther(vault);
 
   return vault;
 }
 
-async function _impersonateAndInjectEther(address) {
+async function impersonateAndInjectEther(address) {
   // Impersonate pair
   await network.provider.send('hardhat_impersonateAccount', [address]);
 
@@ -251,4 +251,5 @@ module.exports = {
   tokenProviderSushi,
   tokenProviderCurveGauge,
   tokenProviderYearn,
+  impersonateAndInjectEther,
 };

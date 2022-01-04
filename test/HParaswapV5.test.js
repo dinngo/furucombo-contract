@@ -6,7 +6,7 @@ const {
 } = require('@openzeppelin/test-helpers');
 const { tracker } = balance;
 const utils = web3.utils;
-const { expect } = require('chai');
+const { expect, assert } = require('chai');
 const {
   DAI_TOKEN,
   USDC_TOKEN,
@@ -21,6 +21,7 @@ const {
   getHandlerReturn,
   getCallData,
   tokenProviderYearn,
+  impersonateAndInjectEther,
 } = require('./utils/utils');
 const fetch = require('node-fetch');
 const queryString = require('query-string');
@@ -44,7 +45,8 @@ const URL_PARASWAP_TRANSACTION =
   '?' +
   IGNORE_CHECKS_PARAM;
 
-const DUMMY_ADDRESS = '0xa3C1C91403F0026b9dd086882aDbC8Cdbc3b3cfB';
+const USER_ADDRESS = '0x1b57b3A1d5b4aa8E218F54FafB00975699463e6e'; // this is test case user address
+const COMBO_PROVIDER = '0xb61B8EF639209a8292f88956319172337dFC0Ca5';
 const sleep = delay => new Promise(resolve => setTimeout(resolve, delay));
 
 async function getPriceData(
@@ -74,16 +76,16 @@ async function getPriceData(
     priceResponse = await fetch(priceReq);
     priceData = await priceResponse.json();
     succ = priceResponse.ok;
-    if (succ === false && priceData.error === 'Server too busy') {
-      // if the fail reason is 'Server too busy', try again
-      console.log('ParaSwap Server too busy... retry');
-      await sleep(500);
+    if (succ === false) {
+      if (priceData.error === 'Server too busy') {
+        // if the fail reason is 'Server too busy', try again
+        console.log('ParaSwap Server too busy... retry');
+        await sleep(500);
+      } else {
+        assert.fail(priceData.error);
+      }
     }
   }
-  expect(
-    priceResponse.ok,
-    'Paraswap price api response not ok:' + priceData.error
-  ).to.be.true;
 
   return priceData;
 }
@@ -96,7 +98,7 @@ async function getTransactionData(priceData, slippageInBps) {
     destDecimals: priceData.priceRoute.destDecimals,
     srcAmount: priceData.priceRoute.srcAmount,
     slippage: slippageInBps,
-    userAddress: DUMMY_ADDRESS,
+    userAddress: USER_ADDRESS,
     priceRoute: priceData.priceRoute,
   };
 
@@ -111,7 +113,7 @@ async function getTransactionData(priceData, slippageInBps) {
   return txData;
 }
 
-contract('ParaSwapV5', function([_, user]) {
+contract('ParaSwapV5', function([_, user, user2]) {
   let id;
   let initialEvmId;
   before(async function() {
@@ -124,6 +126,13 @@ contract('ParaSwapV5', function([_, user]) {
       utils.asciiToHex('ParaSwapV5')
     );
     this.proxy = await Proxy.new(this.registry.address);
+
+    await network.provider.request({
+      method: 'hardhat_impersonateAccount',
+      params: [COMBO_PROVIDER],
+    });
+
+    await impersonateAndInjectEther(COMBO_PROVIDER);
   });
 
   beforeEach(async function() {
@@ -529,5 +538,89 @@ contract('ParaSwapV5', function([_, user]) {
     });
   }); //describe('token to token') end
 
-  describe('positive slippage', function() {});
+  describe('positive slippage', function() {
+    const tokenAddress = COMBO_TOKEN;
+    const tokenDecimal = 18;
+    const slippageInBps = 5000; // 50%
+    before(async function() {
+      this.token = await IToken.at(tokenAddress);
+    });
+    beforeEach(async function() {
+      userBalance = await tracker(user);
+    });
+    it('swap COMBO for ETH with positive slippage', async function() {
+      const comboAmount = ether('50000');
+      const to = this.hParaSwap.address;
+
+      // Call Paraswap Price API
+      const comboToEthPriceData = await getPriceData(
+        tokenAddress,
+        tokenDecimal,
+        NATIVE_TOKEN,
+        NATIVE_TOKEN_DECIMAL,
+        comboAmount
+      );
+
+      const expectReceivedEthAmount = comboToEthPriceData.priceRoute.destAmount;
+
+      // Call Paraswap transaction API
+      const comboToEthTxData = await getTransactionData(
+        comboToEthPriceData,
+        slippageInBps
+      );
+
+      // Prepare handler data
+      const comboToEthCallData = getCallData(HParaSwapV5, 'swap', [
+        tokenAddress,
+        comboAmount,
+        NATIVE_TOKEN,
+        comboToEthTxData.data,
+      ]);
+
+      //----- Try to pump COMBO
+      const ethAmount = ether('20');
+      const ethToComboPriceData = await getPriceData(
+        NATIVE_TOKEN,
+        NATIVE_TOKEN_DECIMAL,
+        tokenAddress,
+        tokenDecimal,
+        ethAmount
+      );
+      const ethToComboTxData = await getTransactionData(
+        ethToComboPriceData,
+        slippageInBps
+      );
+      const ethToComboCallData = getCallData(HParaSwapV5, 'swap', [
+        NATIVE_TOKEN,
+        ethAmount,
+        tokenAddress,
+        ethToComboTxData.data,
+      ]);
+      await this.proxy.execMock(to, ethToComboCallData, {
+        from: user2,
+        value: ethAmount,
+      });
+      //-----
+
+      // transfer token to proxy
+      await this.token.transfer(this.proxy.address, comboAmount, {
+        from: COMBO_PROVIDER,
+      });
+
+      const receipt = await this.proxy.execMock(to, comboToEthCallData, {
+        from: user,
+      });
+
+      const handlerReturn = utils.toBN(
+        getHandlerReturn(receipt, ['uint256'])[0]
+      );
+
+      // should have positive slippage
+      const userBalanceDelta = await userBalance.delta();
+      expect(handlerReturn).to.be.bignumber.gt(expectReceivedEthAmount);
+      expect(userBalanceDelta).to.be.bignumber.gt(expectReceivedEthAmount);
+
+      // TODO:verify partner fee.
+    });
+  });
 });
