@@ -36,9 +36,14 @@ const IOneInch = artifacts.require('IAggregationRouterV3');
 const ETHEREUM_NETWORK_ID = 1;
 const POLYGON_NETWORK_ID = 137;
 const URL_PARASWAP = 'https://apiv5.paraswap.io/';
+const IGNORE_CHECKS_PARAM = 'ignoreChecks=true';
 const URL_PARASWAP_PRICE = URL_PARASWAP + 'prices';
 const URL_PARASWAP_TRANSACTION =
-  URL_PARASWAP + 'transactions/' + ETHEREUM_NETWORK_ID;
+  URL_PARASWAP +
+  'transactions/' +
+  ETHEREUM_NETWORK_ID +
+  '?' +
+  IGNORE_CHECKS_PARAM;
 const BUY = 'BUY';
 const SELL = 'SELL';
 
@@ -52,7 +57,7 @@ async function getTransactionData(priceData, slippage) {
     destDecimals: priceData.priceRoute.destDecimals,
     srcAmount: priceData.priceRoute.srcAmount,
     slippage: slippage,
-    userAddress: BINANCE_WALLET,
+    userAddress: '0xB125d4188F9aAC15942Dd68dBE986F4D3ce4015a',
     priceRoute: priceData.priceRoute,
   };
 
@@ -67,7 +72,7 @@ async function getTransactionData(priceData, slippage) {
   return txData;
 }
 
-contract('ParaswapV5', function([_, user]) {
+contract('ParaSwapV5', function([_, user]) {
   let id;
   let initialEvmId;
   before(async function() {
@@ -433,4 +438,6 @@ contract('ParaswapV5', function([_, user]) {
       // );
     });
   }); //describe('token to ether') end
+
+  describe('positive slippage', function() {});
 });
