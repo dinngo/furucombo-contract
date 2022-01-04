@@ -32,9 +32,6 @@ const Proxy = artifacts.require('ProxyMock');
 const IToken = artifacts.require('IERC20');
 const IOneInch = artifacts.require('IAggregationRouterV3');
 
-const SELECTOR_1INCH_SWAP = getFuncSig(IOneInch, 'swap');
-const SELECTOR_1INCH_UNOSWAP = getFuncSig(IOneInch, 'unoswap');
-
 /// network id for different chain
 const ETHEREUM_NETWORK_ID = 1;
 const POLYGON_NETWORK_ID = 137;
@@ -44,6 +41,8 @@ const URL_PARASWAP_TRANSACTION =
   URL_PARASWAP + 'transactions/' + ETHEREUM_NETWORK_ID;
 const BUY = 'BUY';
 const SELL = 'SELL';
+
+const BINANCE_WALLET = '0xF977814e90dA44bFA03b6295A0616a897441aceC';
 
 contract('ParaswapV5', function([_, user]) {
   let id;
@@ -58,10 +57,16 @@ contract('ParaswapV5', function([_, user]) {
       utils.asciiToHex('ParaSwapV5')
     );
     this.proxy = await Proxy.new(this.registry.address);
+
+    await network.provider.request({
+      method: 'hardhat_impersonateAccount',
+      params: [BINANCE_WALLET],
+    });
   });
 
   beforeEach(async function() {
     id = await evmSnapshot();
+    balanceUser = await tracker(user);
   });
 
   afterEach(async function() {
@@ -73,12 +78,24 @@ contract('ParaswapV5', function([_, user]) {
 
   describe('Ether to Token', function() {
     const tokenAddress = DAI_TOKEN;
+    const slippage = 300; // 3%
+
+    before(async function() {
+      this.token = await IToken.at(tokenAddress);
+    });
+
+    beforeEach(async function() {
+      balanceUser = await tracker(BINANCE_WALLET);
+      balanceProxy = await tracker(this.proxy.address);
+      tokenUser = await this.token.balanceOf.call(BINANCE_WALLET);
+      tokenBalanceProxy = await this.token.balanceOf.call(this.proxy.address);
+    });
 
     describe('Swap', function() {
       it('normal', async function() {
         // Get price
         const amount = ether('0.1');
-        // const to = this.hOneInch.address;
+        const to = this.hParaSwap.address;
         const priceReq = queryString.stringifyUrl({
           url: URL_PARASWAP_PRICE,
           query: {
@@ -101,34 +118,51 @@ contract('ParaswapV5', function([_, user]) {
         console.log(priceData);
 
         // Build Transaction
-        const txReq = queryString.stringifyUrl({
-          url: URL_PARASWAP_TRANSACTION,
-          query: {
-            srcToken: NATIVE_TOKEN_ADDRESS,
-            srcDecimals: 18,
-            destToken: tokenAddress,
-            destDecimals: 18,
-            amount: amount,
-            side: SELL,
-            network: ETHEREUM_NETWORK_ID,
-          },
+        const body = {
+          srcToken: priceData.priceRoute.srcToken,
+          srcDecimals: priceData.priceRoute.srcDecimals,
+          destToken: priceData.priceRoute.destToken,
+          destDecimals: priceData.priceRoute.destDecimals,
+          srcAmount: priceData.priceRoute.srcAmount,
+          slippage: slippage,
+          userAddress: BINANCE_WALLET,
+          // receiver: this.hParaSwap.address,
+          priceRoute: priceData.priceRoute,
+        };
+
+        // console.log('JSON.stringify(body),');
+        // console.log(JSON.stringify(body));
+        const txResp = await fetch(URL_PARASWAP_TRANSACTION, {
+          method: 'post',
+          body: JSON.stringify(body),
+          headers: { 'Content-Type': 'application/json' },
+        });
+        const txData = await txResp.json();
+        console.log('txData:');
+        console.log(txData);
+
+        // Prepare handler data
+        const callData = getCallData(HParaSwapV5, 'swap', [
+          NATIVE_TOKEN_ADDRESS,
+          amount,
+          txData.data,
+        ]);
+
+        // Execute
+        const receipt = await this.proxy.execMock(to, callData, {
+          from: user,
+          value: amount,
         });
 
-        // Call Paraswap price API
-        const priceResponse = await fetch(priceReq);
-        expect(priceResponse.ok, 'Paraswap api response not ok').to.be.true;
-        const priceData = await priceResponse.json();
-
-        console.log('priceData:');
-        console.log(priceData);
-        // // Execute
-        // const receipt = await this.proxy.execMock(to, data, {
-        //   from: user,
-        //   value: value,
-        // });
-
-        // // Verify return value
-        // const tokenUserEnd = await this.token.balanceOf.call(user);
+        // Verify return value
+        const tokenUserAfter = await this.token.balanceOf.call(BINANCE_WALLET);
+        const tokenBalanceProxyAfter = await this.token.balanceOf.call(
+          this.proxy.address
+        );
+        console.log('token change:' + tokenUserAfter.sub(tokenUser));
+        console.log(
+          'token change proxy:' + tokenBalanceProxyAfter.sub(tokenBalanceProxy)
+        );
         // const handlerReturn = utils.toBN(
         //   getHandlerReturn(receipt, ['uint256'])[0]
         // );
