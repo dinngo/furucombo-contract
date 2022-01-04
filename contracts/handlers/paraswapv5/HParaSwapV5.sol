@@ -1,13 +1,15 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.8.9;
+pragma solidity 0.6.12;
+pragma experimental ABIEncoderV2;
 
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-
+import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
+import "@openzeppelin/contracts/math/SafeMath.sol";
 import "../HandlerBase.sol";
 import "./IAugustusSwapper.sol";
 
 contract HParaSwapV5 is HandlerBase {
+    using SafeMath for uint256;
     using SafeERC20 for IERC20;
 
     // prettier-ignore
@@ -23,7 +25,6 @@ contract HParaSwapV5 is HandlerBase {
         address destToken,
         bytes calldata data
     ) external payable returns (uint256) {
-        console.log("swapswapswapswap");
         uint256 destTokenBalanceBefore =
             _getBalance(destToken, type(uint256).max);
 
@@ -46,7 +47,7 @@ contract HParaSwapV5 is HandlerBase {
         uint256 destTokenBalanceAfter =
             _getBalance(destToken, type(uint256).max);
 
-        return destTokenBalanceAfter - destTokenBalanceBefore;
+        return destTokenBalanceAfter.sub(destTokenBalanceBefore);
     }
 
     function _paraswapCall(uint256 value, bytes calldata data) internal {
@@ -54,9 +55,6 @@ contract HParaSwapV5 is HandlerBase {
         (bool success, bytes memory returnData) =
             AUGUSTUS_SWAPPER.call{value: value}(data);
 
-        console.log("success: %s", success);
-        console.log("returnData.length: %d", returnData.length);
-        // not sure
         if (!success) {
             if (returnData.length < 68) {
                 // If the returnData length is less than 68, then the transaction failed silently.

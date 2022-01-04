@@ -11,7 +11,7 @@ const {
   DAI_TOKEN,
   USDC_TOKEN,
   WETH_TOKEN,
-  NATIVE_TOKEN_ADDRESS,
+  NATIVE_TOKEN,
 } = require('./utils/constants');
 const {
   evmRevert,
@@ -44,10 +44,8 @@ const URL_PARASWAP_TRANSACTION =
   ETHEREUM_NETWORK_ID +
   '?' +
   IGNORE_CHECKS_PARAM;
-const BUY = 'BUY';
-const SELL = 'SELL';
 
-const BINANCE_WALLET = '0xF977814e90dA44bFA03b6295A0616a897441aceC';
+const DUMMY_ADDRESS = '0xa3C1C91403F0026b9dd086882aDbC8Cdbc3b3cfB';
 
 async function getTransactionData(priceData, slippage) {
   const body = {
@@ -57,7 +55,7 @@ async function getTransactionData(priceData, slippage) {
     destDecimals: priceData.priceRoute.destDecimals,
     srcAmount: priceData.priceRoute.srcAmount,
     slippage: slippage,
-    userAddress: '0xB125d4188F9aAC15942Dd68dBE986F4D3ce4015a',
+    userAddress: DUMMY_ADDRESS,
     priceRoute: priceData.priceRoute,
   };
 
@@ -85,11 +83,6 @@ contract('ParaSwapV5', function([_, user]) {
       utils.asciiToHex('ParaSwapV5')
     );
     this.proxy = await Proxy.new(this.registry.address);
-
-    await network.provider.request({
-      method: 'hardhat_impersonateAccount',
-      params: [BINANCE_WALLET],
-    });
   });
 
   beforeEach(async function() {
@@ -129,12 +122,11 @@ contract('ParaSwapV5', function([_, user]) {
         const priceReq = queryString.stringifyUrl({
           url: URL_PARASWAP_PRICE,
           query: {
-            srcToken: NATIVE_TOKEN_ADDRESS,
+            srcToken: NATIVE_TOKEN,
             srcDecimals: 18,
             destToken: tokenAddress,
             destDecimals: tokenDecimal,
             amount: amount,
-            side: SELL,
             network: ETHEREUM_NETWORK_ID,
           },
         });
@@ -152,7 +144,7 @@ contract('ParaSwapV5', function([_, user]) {
         console.log(txData);
         // Prepare handler data
         const callData = getCallData(HParaSwapV5, 'swap', [
-          NATIVE_TOKEN_ADDRESS,
+          NATIVE_TOKEN,
           amount,
           tokenAddress,
           txData.data,
@@ -196,12 +188,11 @@ contract('ParaSwapV5', function([_, user]) {
         const priceReq = queryString.stringifyUrl({
           url: URL_PARASWAP_PRICE,
           query: {
-            srcToken: NATIVE_TOKEN_ADDRESS,
+            srcToken: NATIVE_TOKEN,
             srcDecimals: 18,
             destToken: tokenAddress,
             destDecimals: tokenDecimal,
             amount: amount,
-            side: SELL,
             network: ETHEREUM_NETWORK_ID,
           },
         });
@@ -219,7 +210,7 @@ contract('ParaSwapV5', function([_, user]) {
         console.log(txData);
         // Prepare handler data
         const callData = getCallData(HParaSwapV5, 'swap', [
-          NATIVE_TOKEN_ADDRESS,
+          NATIVE_TOKEN,
           amount,
           tokenAddress,
           txData.data,
@@ -263,20 +254,23 @@ contract('ParaSwapV5', function([_, user]) {
         const priceReq = queryString.stringifyUrl({
           url: URL_PARASWAP_PRICE,
           query: {
-            srcToken: NATIVE_TOKEN_ADDRESS,
+            srcToken: NATIVE_TOKEN,
             srcDecimals: 18,
             destToken: tokenAddress,
             destDecimals: tokenDecimal,
             amount: amount,
-            side: SELL,
             network: ETHEREUM_NETWORK_ID,
           },
         });
 
         // Call Paraswap price API
         const priceResponse = await fetch(priceReq);
-        expect(priceResponse.ok, 'Paraswap api response not ok').to.be.true;
         const priceData = await priceResponse.json();
+        expect(
+          priceResponse.ok,
+          'Paraswap api response not ok:' + priceData.error
+        ).to.be.true;
+
         console.log('priceData');
         console.log(priceData);
         // Call Paraswap transaction API
@@ -308,12 +302,11 @@ contract('ParaSwapV5', function([_, user]) {
         const priceReq = queryString.stringifyUrl({
           url: URL_PARASWAP_PRICE,
           query: {
-            srcToken: NATIVE_TOKEN_ADDRESS,
+            srcToken: NATIVE_TOKEN,
             srcDecimals: 18,
             destToken: tokenAddress,
             destDecimals: tokenDecimal,
             amount: amount,
-            side: SELL,
             network: ETHEREUM_NETWORK_ID,
           },
         });
@@ -348,96 +341,95 @@ contract('ParaSwapV5', function([_, user]) {
     });
   }); // describe('ether to token') end
 
-  describe('token to ether', function() {
-    const tokenAddress = DAI_TOKEN;
-    const tokenDecimal = 18;
-    const slippage = 100; // 1%
-    let providerAddress;
-    before(async function() {
-      providerAddress = await tokenProviderYearn(tokenAddress);
-      this.token = await IToken.at(tokenAddress);
-    });
+  // describe('token to ether', function() {
+  //   const tokenAddress = DAI_TOKEN;
+  //   const tokenDecimal = 18;
+  //   const slippage = 100; // 1%
+  //   let providerAddress;
+  //   before(async function() {
+  //     providerAddress = await tokenProviderYearn(tokenAddress);
+  //     this.token = await IToken.at(tokenAddress);
+  //   });
 
-    beforeEach(async function() {
-      userBalance = await tracker(user);
-      proxyBalance = await tracker(this.proxy.address);
-      userTokenBalance = await this.token.balanceOf.call(user);
-      proxyTokenBalance = await this.token.balanceOf.call(this.proxy.address);
-    });
+  //   beforeEach(async function() {
+  //     userBalance = await tracker(user);
+  //     proxyBalance = await tracker(this.proxy.address);
+  //     userTokenBalance = await this.token.balanceOf.call(user);
+  //     proxyTokenBalance = await this.token.balanceOf.call(this.proxy.address);
+  //   });
 
-    it.only('normal', async function() {
-      // Get price
-      const amount = ether('5000');
-      const to = this.hParaSwap.address;
-      const priceReq = queryString.stringifyUrl({
-        url: URL_PARASWAP_PRICE,
-        query: {
-          srcToken: tokenAddress,
-          srcDecimals: tokenDecimal,
-          destToken: NATIVE_TOKEN_ADDRESS,
-          destDecimals: 18,
-          amount: amount,
-          side: SELL,
-          network: ETHEREUM_NETWORK_ID,
-        },
-      });
+  //   it.only('normal', async function() {
+  //     // Get price
+  //     const amount = ether('5000');
+  //     const to = this.hParaSwap.address;
+  //     const priceReq = queryString.stringifyUrl({
+  //       url: URL_PARASWAP_PRICE,
+  //       query: {
+  //         srcToken: tokenAddress,
+  //         srcDecimals: tokenDecimal,
+  //         destToken: NATIVE_TOKEN,
+  //         destDecimals: 18,
+  //         amount: amount,
+  //         network: ETHEREUM_NETWORK_ID,
+  //       },
+  //     });
 
-      // Call Paraswap price API
-      const priceResponse = await fetch(priceReq);
-      expect(priceResponse.ok, 'Paraswap api response not ok').to.be.true;
-      const priceData = await priceResponse.json();
-      console.log('priceData');
-      console.log(priceData);
-      // Call Paraswap transaction API
-      const txData = await getTransactionData(priceData, slippage);
+  //     // Call Paraswap price API
+  //     const priceResponse = await fetch(priceReq);
+  //     expect(priceResponse.ok, 'Paraswap api response not ok').to.be.true;
+  //     const priceData = await priceResponse.json();
+  //     console.log('priceData');
+  //     console.log(priceData);
+  //     // Call Paraswap transaction API
+  //     const txData = await getTransactionData(priceData, slippage);
 
-      console.log('txData');
-      console.log(txData);
-      // Prepare handler data
-      const callData = getCallData(HParaSwapV5, 'swap', [
-        tokenAddress,
-        amount,
-        NATIVE_TOKEN_ADDRESS,
-        txData.data,
-      ]);
+  //     console.log('txData');
+  //     console.log(txData);
+  //     // Prepare handler data
+  //     const callData = getCallData(HParaSwapV5, 'swap', [
+  //       tokenAddress,
+  //       amount,
+  //       NATIVE_TOKEN,
+  //       txData.data,
+  //     ]);
 
-      // transfer token to proxy
-      await this.token.transfer(this.proxy.address, amount, {
-        from: providerAddress,
-      });
+  //     // transfer token to proxy
+  //     await this.token.transfer(this.proxy.address, amount, {
+  //       from: providerAddress,
+  //     });
 
-      // Execute
-      const receipt = await this.proxy.execMock(to, callData, {
-        from: user,
-      });
+  //     // Execute
+  //     const receipt = await this.proxy.execMock(to, callData, {
+  //       from: user,
+  //     });
 
-      const handlerReturn = utils.toBN(
-        getHandlerReturn(receipt, ['uint256'])[0]
-      );
-      console.log('handlerReturn');
-      console.log(handlerReturn).toString();
+  //     const handlerReturn = utils.toBN(
+  //       getHandlerReturn(receipt, ['uint256'])[0]
+  //     );
+  //     console.log('handlerReturn');
+  //     console.log(handlerReturn).toString();
 
-      const userTokenBalanceAfter = await this.token.balanceOf.call(user);
+  //     const userTokenBalanceAfter = await this.token.balanceOf.call(user);
 
-      // verify user balance
-      // expect(handlerReturn).to.be.bignumber.eq(
-      //   userTokenBalanceAfter.sub(userTokenBalance)
-      // );
+  //     // verify user balance
+  //     // expect(handlerReturn).to.be.bignumber.eq(
+  //     //   userTokenBalanceAfter.sub(userTokenBalance)
+  //     // );
 
-      // // proxy should not have remaining token
-      // expect(
-      //   await this.token.balanceOf.call(this.proxy.address)
-      // ).to.be.bignumber.zero;
+  //     // // proxy should not have remaining token
+  //     // expect(
+  //     //   await this.token.balanceOf.call(this.proxy.address)
+  //     // ).to.be.bignumber.zero;
 
-      // // verify ether balance
-      // expect(await proxyBalance.get()).to.be.bignumber.zero;
-      // expect(await userBalance.delta()).to.be.bignumber.eq(
-      //   ether('0')
-      //     .sub(amount)
-      //     .sub(new BN(receipt.receipt.gasUsed))
-      // );
-    });
-  }); //describe('token to ether') end
+  //     // // verify ether balance
+  //     // expect(await proxyBalance.get()).to.be.bignumber.zero;
+  //     // expect(await userBalance.delta()).to.be.bignumber.eq(
+  //     //   ether('0')
+  //     //     .sub(amount)
+  //     //     .sub(new BN(receipt.receipt.gasUsed))
+  //     // );
+  //   });
+  // }); //describe('token to ether') end
 
   describe('positive slippage', function() {});
 });
