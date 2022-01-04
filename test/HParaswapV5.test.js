@@ -44,6 +44,29 @@ const SELL = 'SELL';
 
 const BINANCE_WALLET = '0xF977814e90dA44bFA03b6295A0616a897441aceC';
 
+async function getTransactionData(priceData, slippage) {
+  const body = {
+    srcToken: priceData.priceRoute.srcToken,
+    srcDecimals: priceData.priceRoute.srcDecimals,
+    destToken: priceData.priceRoute.destToken,
+    destDecimals: priceData.priceRoute.destDecimals,
+    srcAmount: priceData.priceRoute.srcAmount,
+    slippage: slippage,
+    userAddress: BINANCE_WALLET,
+    priceRoute: priceData.priceRoute,
+  };
+
+  const txResp = await fetch(URL_PARASWAP_TRANSACTION, {
+    method: 'post',
+    body: JSON.stringify(body),
+    headers: { 'Content-Type': 'application/json' },
+  });
+  const txData = await txResp.json();
+  expect(txResp.ok, 'Paraswap transaction api response not ok: ' + txData.error)
+    .to.be.true;
+  return txData;
+}
+
 contract('ParaswapV5', function([_, user]) {
   let id;
   let initialEvmId;
@@ -78,6 +101,7 @@ contract('ParaswapV5', function([_, user]) {
 
   describe('Ether to Token', function() {
     const tokenAddress = DAI_TOKEN;
+    const tokenDecimal = 18;
     const slippage = 300; // 3%
 
     before(async function() {
@@ -102,7 +126,7 @@ contract('ParaswapV5', function([_, user]) {
             srcToken: NATIVE_TOKEN_ADDRESS,
             srcDecimals: 18,
             destToken: tokenAddress,
-            destDecimals: 18,
+            destDecimals: tokenDecimal,
             amount: amount,
             side: SELL,
             network: ETHEREUM_NETWORK_ID,
@@ -114,28 +138,8 @@ contract('ParaswapV5', function([_, user]) {
         expect(priceResponse.ok, 'Paraswap api response not ok').to.be.true;
         const priceData = await priceResponse.json();
 
-        // Build Transaction
-        const body = {
-          srcToken: priceData.priceRoute.srcToken,
-          srcDecimals: priceData.priceRoute.srcDecimals,
-          destToken: priceData.priceRoute.destToken,
-          destDecimals: priceData.priceRoute.destDecimals,
-          srcAmount: priceData.priceRoute.srcAmount,
-          slippage: slippage,
-          userAddress: BINANCE_WALLET,
-          priceRoute: priceData.priceRoute,
-        };
-
-        const txResp = await fetch(URL_PARASWAP_TRANSACTION, {
-          method: 'post',
-          body: JSON.stringify(body),
-          headers: { 'Content-Type': 'application/json' },
-        });
-        const txData = await txResp.json();
-        expect(
-          txResp.ok,
-          'Paraswap transaction api response not ok:' + txData
-        ).to.be.true;
+        // Call Paraswap transaction API
+        const txData = await getTransactionData(priceData, slippage);
 
         // Prepare handler data
         const callData = getCallData(HParaSwapV5, 'swap', [
@@ -159,11 +163,72 @@ contract('ParaswapV5', function([_, user]) {
         const proxyTokenBalanceAfter = await this.token.balanceOf.call(
           this.proxy.address
         );
-        console.log(
-          'token change:' + userTokenBalanceAfter.sub(userTokenBalance)
+
+        // verify user balance
+        expect(handlerReturn).to.be.bignumber.eq(
+          userTokenBalanceAfter.sub(userTokenBalance)
         );
-        console.log(
-          'token change proxy:' + proxyTokenBalanceAfter.sub(proxyTokenBalance)
+
+        // proxy should not have remaining token
+        expect(
+          await this.token.balanceOf.call(this.proxy.address)
+        ).to.be.bignumber.zero;
+
+        // Verify ether balance
+        expect(await proxyBalance.get()).to.be.bignumber.zero;
+        expect(await userBalance.delta()).to.be.bignumber.eq(
+          ether('0')
+            .sub(amount)
+            .sub(new BN(receipt.receipt.gasUsed))
+        );
+      });
+
+      it('msg.value greater than input ether amount', async function() {
+        // Get price
+        const amount = ether('0.1');
+        const to = this.hParaSwap.address;
+        const priceReq = queryString.stringifyUrl({
+          url: URL_PARASWAP_PRICE,
+          query: {
+            srcToken: NATIVE_TOKEN_ADDRESS,
+            srcDecimals: 18,
+            destToken: tokenAddress,
+            destDecimals: tokenDecimal,
+            amount: amount,
+            side: SELL,
+            network: ETHEREUM_NETWORK_ID,
+          },
+        });
+
+        // Call Paraswap price API
+        const priceResponse = await fetch(priceReq);
+        expect(priceResponse.ok, 'Paraswap api response not ok').to.be.true;
+        const priceData = await priceResponse.json();
+
+        // Call Paraswap transaction API
+        const txData = await getTransactionData(priceData, slippage);
+
+        // Prepare handler data
+        const callData = getCallData(HParaSwapV5, 'swap', [
+          NATIVE_TOKEN_ADDRESS,
+          amount,
+          this.token.address,
+          txData.data,
+        ]);
+
+        // Execute
+        const receipt = await this.proxy.execMock(to, callData, {
+          from: user,
+          value: amount.add(ether('1')),
+        });
+
+        const handlerReturn = utils.toBN(
+          getHandlerReturn(receipt, ['uint256'])[0]
+        );
+
+        const userTokenBalanceAfter = await this.token.balanceOf.call(user);
+        const proxyTokenBalanceAfter = await this.token.balanceOf.call(
+          this.proxy.address
         );
 
         // verify user balance
@@ -183,9 +248,9 @@ contract('ParaswapV5', function([_, user]) {
             .sub(amount)
             .sub(new BN(receipt.receipt.gasUsed))
         );
-
-        // profileGas(receipt);
       });
+
+      //});
     });
   });
 });
