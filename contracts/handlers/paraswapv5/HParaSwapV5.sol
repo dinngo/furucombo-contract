@@ -5,6 +5,7 @@ pragma solidity 0.8.9;
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import "../HandlerBase.sol";
+import "./IAugustusSwapper.sol";
 import "hardhat/console.sol";
 
 contract HParaSwapV5 is HandlerBase {
@@ -12,8 +13,6 @@ contract HParaSwapV5 is HandlerBase {
 
     // prettier-ignore
     address public constant AUGUSTUS_SWAPPER = 0xDEF171Fe48CF0115B1d80b88dc8eAB59176FEe57;
-    // prettier-ignore
-    address public constant TOKEN_TRANSFER_PROXY = 0x216B4B4Ba9F3e719726886d34a177484278Bfcae;
 
     function getContractName() public pure override returns (string memory) {
         return "HParaSwapV5";
@@ -29,11 +28,14 @@ contract HParaSwapV5 is HandlerBase {
         uint256 destTokenBalanceBefore =
             _getBalance(destToken, type(uint256).max);
 
+        address tokenTransferProxy =
+            IAugustusSwapper(AUGUSTUS_SWAPPER).getTokenTransferProxy();
+
         if (_isNotNativeToken(srcToken)) {
             // ERC20 token need to approve before paraswap
-            _tokenApprove(srcToken, TOKEN_TRANSFER_PROXY, amount);
+            _tokenApprove(srcToken, tokenTransferProxy, amount);
             _paraswapCall(0, data);
-            _tokenApproveZero(srcToken, TOKEN_TRANSFER_PROXY);
+            _tokenApproveZero(srcToken, tokenTransferProxy);
         } else {
             _paraswapCall(amount, data);
         }
