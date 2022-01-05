@@ -30,7 +30,6 @@ const HParaSwapV5 = artifacts.require('HParaSwapV5');
 const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('ProxyMock');
 const IToken = artifacts.require('IERC20');
-const IOneInch = artifacts.require('IAggregationRouterV3');
 
 /// network id for different chain
 const ETHEREUM_NETWORK_ID = 1;
@@ -282,7 +281,7 @@ contract('ParaSwapV5', function([_, user, user2]) {
         );
       });
 
-      it('should revert: wrong src token(erc20)', async function() {
+      it('should revert: wrong destination token(erc20)', async function() {
         // Get price
         const amount = ether('0.1');
         const to = this.hParaSwap.address;
@@ -301,9 +300,9 @@ contract('ParaSwapV5', function([_, user, user2]) {
 
         // Prepare handler data
         const callData = getCallData(HParaSwapV5, 'swap', [
-          wrongTokenAddress,
+          NATIVE_TOKEN,
           amount,
-          tokenAddress,
+          wrongTokenAddress,
           txData.data,
         ]);
 
@@ -313,7 +312,7 @@ contract('ParaSwapV5', function([_, user, user2]) {
             from: user,
             value: amount,
           }),
-          'HParaSwapV5_paraswap: Incorrect amount of ETH sent'
+          'HParaSwapV5_paraswap: Invalid output token amount'
         );
       });
 
@@ -336,7 +335,7 @@ contract('ParaSwapV5', function([_, user, user2]) {
 
         // Prepare handler data
         const callData = getCallData(HParaSwapV5, 'swap', [
-          wrongTokenAddress,
+          NATIVE_TOKEN,
           amount.sub(ether('0.05')),
           tokenAddress,
           txData.data,

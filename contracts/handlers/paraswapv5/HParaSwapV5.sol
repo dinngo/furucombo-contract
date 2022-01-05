@@ -47,6 +47,9 @@ contract HParaSwapV5 is HandlerBase {
         uint256 destTokenBalanceAfter =
             _getBalance(destToken, type(uint256).max);
 
+        if (destTokenBalanceAfter.sub(destTokenBalanceBefore) == 0) {
+            _revertMsg("paraswap", "Invalid output token amount");
+        }
         return destTokenBalanceAfter.sub(destTokenBalanceBefore);
     }
 
