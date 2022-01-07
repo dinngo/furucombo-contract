@@ -349,7 +349,7 @@ contract('ParaSwapV5', function([_, user, user2]) {
             from: user,
             value: amount.sub(ether('0.05')),
           }),
-          'HParaSwapV5_paraswap: Incorrect amount of ETH sent'
+          'HParaSwapV5_paraswap:'
         );
       });
     });
@@ -465,7 +465,7 @@ contract('ParaSwapV5', function([_, user, user2]) {
         this.proxy.execMock(to, callData, {
           from: user,
         }),
-        'insufficient-balance'
+        'HParaSwapV5_paraswap'
       );
     });
   }); //describe('token to ether') end
