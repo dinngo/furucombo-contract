@@ -53,7 +53,8 @@ async function getPriceData(
   srcDecimals,
   destToken,
   destDecimals,
-  amount
+  amount,
+  route = ''
 ) {
   const priceReq = queryString.stringifyUrl({
     url: URL_PARASWAP_PRICE,
@@ -64,6 +65,7 @@ async function getPriceData(
       destDecimals: destDecimals,
       amount: amount,
       network: ETHEREUM_NETWORK_ID,
+      route: route,
     },
   });
 
@@ -557,7 +559,8 @@ contract('ParaSwapV5', function([_, user, user2]) {
         tokenDecimal,
         NATIVE_TOKEN,
         NATIVE_TOKEN_DECIMAL,
-        comboAmount
+        comboAmount,
+        tokenAddress + '-' + NATIVE_TOKEN
       );
 
       const expectReceivedEthAmount = comboToEthPriceData.priceRoute.destAmount;
@@ -583,7 +586,8 @@ contract('ParaSwapV5', function([_, user, user2]) {
         NATIVE_TOKEN_DECIMAL,
         tokenAddress,
         tokenDecimal,
-        ethAmount
+        ethAmount,
+        NATIVE_TOKEN + '-' + tokenAddress
       );
       const ethToComboTxData = await getTransactionData(
         ethToComboPriceData,
