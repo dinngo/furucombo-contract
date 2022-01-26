@@ -14,6 +14,8 @@ contract HParaSwapV5 is HandlerBase {
 
     // prettier-ignore
     address public constant AUGUSTUS_SWAPPER = 0xDEF171Fe48CF0115B1d80b88dc8eAB59176FEe57;
+    // prettier-ignore
+    address private constant NATIVE_TOKEN = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
     function getContractName() public pure override returns (string memory) {
         return "HParaSwapV5";
@@ -35,22 +37,24 @@ contract HParaSwapV5 is HandlerBase {
             // ERC20 token need to approve before paraswap
             _tokenApprove(srcToken, tokenTransferProxy, amount);
             _paraswapCall(0, data);
-            _tokenApproveZero(srcToken, tokenTransferProxy);
         } else {
             _paraswapCall(amount, data);
+        }
+
+        uint256 destTokenBalanceAfter =
+            _getBalance(destToken, type(uint256).max);
+
+        uint256 destTokenDelta =
+            destTokenBalanceAfter.sub(destTokenBalanceBefore);
+        if (destTokenDelta == 0) {
+            _revertMsg("swap", "Invalid output token amount");
         }
 
         if (_isNotNativeToken(destToken)) {
             _updateToken(destToken);
         }
 
-        uint256 destTokenBalanceAfter =
-            _getBalance(destToken, type(uint256).max);
-
-        if (destTokenBalanceAfter.sub(destTokenBalanceBefore) == 0) {
-            _revertMsg("paraswap", "Invalid output token amount");
-        }
-        return destTokenBalanceAfter.sub(destTokenBalanceBefore);
+        return destTokenDelta;
     }
 
     function _paraswapCall(uint256 value, bytes calldata data) internal {
@@ -61,14 +65,18 @@ contract HParaSwapV5 is HandlerBase {
         if (!success) {
             if (returnData.length < 68) {
                 // If the returnData length is less than 68, then the transaction failed silently.
-                _revertMsg("paraswap");
+                _revertMsg("_paraswapCall");
             } else {
                 // Look for revert reason and bubble it up if present
                 assembly {
                     returnData := add(returnData, 0x04)
                 }
-                _revertMsg("paraswap", abi.decode(returnData, (string)));
+                _revertMsg("_paraswapCall", abi.decode(returnData, (string)));
             }
         }
+    }
+
+    function _isNotNativeToken(address token) internal pure returns (bool) {
+        return (token != address(0) && token != NATIVE_TOKEN);
     }
 }
