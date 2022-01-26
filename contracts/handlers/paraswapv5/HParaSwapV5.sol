@@ -15,6 +15,8 @@ contract HParaSwapV5 is HandlerBase {
     // prettier-ignore
     address public constant AUGUSTUS_SWAPPER = 0xDEF171Fe48CF0115B1d80b88dc8eAB59176FEe57;
     // prettier-ignore
+    address public constant TOKEN_TRANSFER_PROXY = 0x216B4B4Ba9F3e719726886d34a177484278Bfcae;
+    // prettier-ignore
     address private constant NATIVE_TOKEN = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
     function getContractName() public pure override returns (string memory) {
@@ -30,12 +32,9 @@ contract HParaSwapV5 is HandlerBase {
         uint256 destTokenBalanceBefore =
             _getBalance(destToken, type(uint256).max);
 
-        address tokenTransferProxy =
-            IAugustusSwapper(AUGUSTUS_SWAPPER).getTokenTransferProxy();
-
         if (_isNotNativeToken(srcToken)) {
             // ERC20 token need to approve before paraswap
-            _tokenApprove(srcToken, tokenTransferProxy, amount);
+            _tokenApprove(srcToken, TOKEN_TRANSFER_PROXY, amount);
             _paraswapCall(0, data);
         } else {
             _paraswapCall(amount, data);
@@ -46,6 +45,7 @@ contract HParaSwapV5 is HandlerBase {
 
         uint256 destTokenDelta =
             destTokenBalanceAfter.sub(destTokenBalanceBefore);
+
         if (destTokenDelta == 0) {
             _revertMsg("swap", "Invalid output token amount");
         }

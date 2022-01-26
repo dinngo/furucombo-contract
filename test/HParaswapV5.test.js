@@ -314,7 +314,7 @@ contract('ParaSwapV5', function([_, user, user2]) {
             from: user,
             value: amount,
           }),
-          'HParaSwapV5_paraswap: Invalid output token amount'
+          'HParaSwapV5_swap: Invalid output token amount'
         );
       });
 
@@ -349,7 +349,7 @@ contract('ParaSwapV5', function([_, user, user2]) {
             from: user,
             value: amount.sub(ether('0.05')),
           }),
-          'HParaSwapV5_paraswap:'
+          'HParaSwapV5__paraswapCall:'
         );
       });
     });
@@ -465,7 +465,7 @@ contract('ParaSwapV5', function([_, user, user2]) {
         this.proxy.execMock(to, callData, {
           from: user,
         }),
-        'HParaSwapV5_paraswap'
+        'HParaSwapV5__paraswapCall'
       );
     });
   }); //describe('token to ether') end
