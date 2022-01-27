@@ -6,7 +6,6 @@ pragma experimental ABIEncoderV2;
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "../HandlerBase.sol";
-import "./IAugustusSwapper.sol";
 
 contract HParaSwapV5 is HandlerBase {
     using SafeMath for uint256;
