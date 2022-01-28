@@ -348,6 +348,40 @@ contract('ParaSwapV5', function([_, user, user2]) {
           'HParaSwapV5__paraswapCall:'
         );
       });
+
+      it('should revert: msg.value greater than api amount', async function() {
+        const amount = ether('0.1');
+        const to = this.hParaSwap.address;
+
+        // Call Paraswap price API
+        const priceData = await getPriceData(
+          NATIVE_TOKEN,
+          NATIVE_TOKEN_DECIMAL,
+          tokenAddress,
+          tokenDecimal,
+          amount
+        );
+
+        // Call Paraswap transaction API
+        const txData = await getTransactionData(priceData, slippageInBps);
+
+        // Prepare handler data
+        const callData = getCallData(HParaSwapV5, 'swap', [
+          NATIVE_TOKEN,
+          amount.add(ether('1')),
+          tokenAddress,
+          txData.data,
+        ]);
+
+        // Execute
+        await expectRevert(
+          this.proxy.execMock(to, callData, {
+            from: user,
+            value: amount.add(ether('1')),
+          }),
+          'HParaSwapV5__paraswapCall:'
+        );
+      });
     });
   }); // describe('ether to token') end
 
