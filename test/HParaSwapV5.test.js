@@ -12,7 +12,6 @@ const {
   DAI_TOKEN,
   USDC_TOKEN,
   COMBO_TOKEN,
-  COMBO_VESTING_CONTRACT,
   NATIVE_TOKEN,
   NATIVE_TOKEN_DECIMAL,
 } = require('./utils/constants');
@@ -23,7 +22,6 @@ const {
   getHandlerReturn,
   getCallData,
   tokenProviderYearn,
-  impersonateAndInjectEther,
 } = require('./utils/utils');
 const fetch = require('node-fetch');
 const queryString = require('query-string');
@@ -399,7 +397,7 @@ contract('ParaSwapV5', function([_, user, user2]) {
     });
 
     it('normal', async function() {
-      const amount = ether('5000');
+      const amount = ether('500');
       const to = this.hParaSwap.address;
 
       // Call Paraswap price API

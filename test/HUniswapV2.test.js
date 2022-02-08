@@ -17,7 +17,6 @@ const {
   UNISWAPV2_ROUTER02,
   HBTC_TOKEN,
   HBTC_PROVIDER,
-  WBTC_TOKEN,
   OMG_TOKEN,
   USDT_TOKEN,
 } = require('./utils/constants');
@@ -27,8 +26,8 @@ const {
   mulPercent,
   profileGas,
   getHandlerReturn,
-  tokenProviderUniV2,
   tokenProviderSushi,
+  impersonateAndInjectEther,
 } = require('./utils/utils');
 
 const HUniswapV2 = artifacts.require('HUniswapV2');
@@ -60,15 +59,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
     this.router = await IUniswapV2Router.at(UNISWAPV2_ROUTER02);
     this.proxy = await Proxy.new(this.registry.address);
 
-    // FIXME: static provider and inject native token
-    await network.provider.request({
-      method: 'hardhat_impersonateAccount',
-      params: [HBTC_PROVIDER],
-    });
-    await network.provider.send('hardhat_setBalance', [
-      HBTC_PROVIDER,
-      '0xde0b6b3a7640000',
-    ]);
+    impersonateAndInjectEther(hbtcProviderAddress);
   });
 
   beforeEach(async function() {
