@@ -44,7 +44,7 @@ const URL_PARASWAP_TRANSACTION =
   '?' +
   IGNORE_CHECKS_PARAM;
 
-const COMBO_PROVIDER = COMBO_VESTING_CONTRACT;
+const PARTNER_ADDRESS = '0x5cF829F5A8941f4CD2dD104e39486a69611CD013';
 const sleep = delay => new Promise(resolve => setTimeout(resolve, delay));
 
 async function getPriceData(
@@ -53,7 +53,8 @@ async function getPriceData(
   destToken,
   destDecimals,
   amount,
-  route = ''
+  route = '',
+  excludeDirectContractMethods = ''
 ) {
   const priceReq = queryString.stringifyUrl({
     url: URL_PARASWAP_PRICE,
@@ -65,6 +66,8 @@ async function getPriceData(
       amount: amount,
       network: ETHEREUM_NETWORK_ID,
       route: route,
+      partner: PARTNER_ADDRESS,
+      excludeDirectContractMethods: excludeDirectContractMethods,
     },
   });
 
@@ -86,7 +89,6 @@ async function getPriceData(
       }
     }
   }
-
   return priceData;
 }
 
@@ -100,6 +102,7 @@ async function getTransactionData(priceData, slippageInBps) {
     slippage: slippageInBps,
     userAddress: constants.ZERO_ADDRESS,
     priceRoute: priceData.priceRoute,
+    partner: PARTNER_ADDRESS,
   };
 
   const txResp = await fetch(URL_PARASWAP_TRANSACTION, {
@@ -127,13 +130,6 @@ contract('ParaSwapV5', function([_, user, user2]) {
       utils.asciiToHex('ParaSwapV5')
     );
     this.proxy = await Proxy.new(this.registry.address);
-
-    await network.provider.request({
-      method: 'hardhat_impersonateAccount',
-      params: [COMBO_PROVIDER],
-    });
-
-    await impersonateAndInjectEther(COMBO_PROVIDER);
   });
 
   beforeEach(async function() {
@@ -569,96 +565,4 @@ contract('ParaSwapV5', function([_, user, user2]) {
       ).to.be.bignumber.zero;
     });
   }); // describe('token to token') end
-
-  describe('positive slippage', function() {
-    const tokenAddress = COMBO_TOKEN;
-    const tokenDecimal = 18;
-    const slippageInBps = 5000; // 50%
-    let userBalance;
-
-    before(async function() {
-      this.token = await IToken.at(tokenAddress);
-    });
-
-    beforeEach(async function() {
-      userBalance = await tracker(user);
-    });
-
-    it('swap COMBO for ETH with positive slippage', async function() {
-      const comboAmount = ether('50000');
-      const to = this.hParaSwap.address;
-
-      // Call Paraswap price API
-      const comboToEthPriceData = await getPriceData(
-        tokenAddress,
-        tokenDecimal,
-        NATIVE_TOKEN,
-        NATIVE_TOKEN_DECIMAL,
-        comboAmount,
-        tokenAddress + '-' + NATIVE_TOKEN
-      );
-
-      const expectReceivedEthAmount = comboToEthPriceData.priceRoute.destAmount;
-
-      // Call Paraswap transaction API
-      const comboToEthTxData = await getTransactionData(
-        comboToEthPriceData,
-        slippageInBps
-      );
-
-      // Prepare handler data
-      const comboToEthCallData = getCallData(HParaSwapV5, 'swap', [
-        tokenAddress,
-        comboAmount,
-        NATIVE_TOKEN,
-        comboToEthTxData.data,
-      ]);
-
-      //----- Try to pump COMBO
-      const ethAmount = ether('20');
-      const ethToComboPriceData = await getPriceData(
-        NATIVE_TOKEN,
-        NATIVE_TOKEN_DECIMAL,
-        tokenAddress,
-        tokenDecimal,
-        ethAmount,
-        NATIVE_TOKEN + '-' + tokenAddress
-      );
-      const ethToComboTxData = await getTransactionData(
-        ethToComboPriceData,
-        slippageInBps
-      );
-      const ethToComboCallData = getCallData(HParaSwapV5, 'swap', [
-        NATIVE_TOKEN,
-        ethAmount,
-        tokenAddress,
-        ethToComboTxData.data,
-      ]);
-      await this.proxy.execMock(to, ethToComboCallData, {
-        from: user2,
-        value: ethAmount,
-      });
-      //-----
-
-      // Transfer token to proxy
-      await this.token.transfer(this.proxy.address, comboAmount, {
-        from: COMBO_PROVIDER,
-      });
-
-      const receipt = await this.proxy.execMock(to, comboToEthCallData, {
-        from: user,
-      });
-
-      const handlerReturn = utils.toBN(
-        getHandlerReturn(receipt, ['uint256'])[0]
-      );
-
-      // Should have positive slippage
-      const userBalanceDelta = await userBalance.delta();
-      expect(handlerReturn).to.be.bignumber.gt(expectReceivedEthAmount);
-      expect(userBalanceDelta).to.be.bignumber.gt(expectReceivedEthAmount);
-
-      // TODO: Verify partner fee.
-    });
-  });
 });
