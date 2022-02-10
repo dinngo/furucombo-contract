@@ -328,7 +328,7 @@ contract('ParaSwapV5', function([_, user, user2]) {
         // Prepare handler data
         const callData = getCallData(HParaSwapV5, 'swap', [
           NATIVE_TOKEN,
-          amount,
+          amount.sub(ether('0.05')),
           tokenAddress,
           txData.data,
         ]);
