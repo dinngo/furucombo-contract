@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+### Added
+
+- Support ParaSwapV5.
+
 ### Changed
 
 - Refine token provider for tests.

@@ -25,6 +25,7 @@ const {
   CURVE_YDAI_TOKEN,
   CURVE_YUSDT_TOKEN,
   CURVE_HBTC_SWAP,
+  HBTC_PROVIDER,
 } = require('./utils/constants');
 const {
   evmRevert,
@@ -32,9 +33,9 @@ const {
   mulPercent,
   profileGas,
   getHandlerReturn,
-  expectEqWithinBps,
   tokenProviderUniV2,
   tokenProviderCurveGauge,
+  impersonateAndInjectEther,
 } = require('./utils/utils');
 
 const Proxy = artifacts.require('ProxyMock');
@@ -324,10 +325,10 @@ contract('Curve', function([_, user]) {
       let balanceUser;
       let balanceProxy;
       let tokenUser;
-      let providerAddress;
+      let providerAddress = HBTC_PROVIDER;
 
       before(async function() {
-        providerAddress = await tokenProviderUniV2(tokenAddress);
+        impersonateAndInjectEther(providerAddress);
         this.token = await IToken.at(tokenAddress);
       });
 
