@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+## [1.11.0] - 2022-02-14
+
 ### Added
 
 - Support ParaSwapV5.
