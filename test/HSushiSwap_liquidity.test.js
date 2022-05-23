@@ -135,9 +135,7 @@ contract('SushiSwap Liquidity', function([_, user]) {
       );
 
       expect(userBalanceDelta).to.be.bignumber.eq(
-        ether('0')
-          .sub(utils.toBN(handlerReturn[1]))
-          .sub(new BN(receipt.receipt.gasUsed))
+        ether('0').sub(utils.toBN(handlerReturn[1]))
       );
 
       expect(utils.toBN(handlerReturn[2])).to.be.bignumber.eq(
@@ -147,9 +145,7 @@ contract('SushiSwap Liquidity', function([_, user]) {
       // Result Verification
       // Verify spent ether
       expect(userBalanceDelta).to.be.bignumber.lte(
-        ether('0')
-          .sub(minEthAmount)
-          .sub(new BN(receipt.receipt.gasUsed))
+        ether('0').sub(minEthAmount)
       );
 
       // Verify spent token
@@ -218,9 +214,7 @@ contract('SushiSwap Liquidity', function([_, user]) {
       );
 
       expect(userBalanceDelta).to.be.bignumber.eq(
-        ether('0')
-          .sub(utils.toBN(handlerReturn[1]))
-          .sub(new BN(receipt.receipt.gasUsed))
+        ether('0').sub(utils.toBN(handlerReturn[1]))
       );
 
       expect(utils.toBN(handlerReturn[2])).to.be.bignumber.eq(
@@ -230,9 +224,7 @@ contract('SushiSwap Liquidity', function([_, user]) {
       // Result Verification
       // Verify spent ether
       expect(userBalanceDelta).to.be.bignumber.lte(
-        ether('0')
-          .sub(minEthAmount)
-          .sub(new BN(receipt.receipt.gasUsed))
+        ether('0').sub(minEthAmount)
       );
 
       // Verify spent token
@@ -502,9 +494,7 @@ contract('SushiSwap Liquidity', function([_, user]) {
       expect(utils.toBN(handlerReturn[0])).to.be.bignumber.eq(
         tokenAUserAmountEnd.sub(tokenAUserAmount)
       );
-      expect(userBalanceDelta).to.be.bignumber.eq(
-        utils.toBN(handlerReturn[1]).sub(new BN(receipt.receipt.gasUsed))
-      );
+      expect(userBalanceDelta).to.be.bignumber.eq(utils.toBN(handlerReturn[1]));
 
       // Verify User Token
       expect(await this.tokenA.balanceOf.call(user)).to.be.bignumber.eq(
@@ -524,9 +514,7 @@ contract('SushiSwap Liquidity', function([_, user]) {
       expect(await balanceProxy.get()).to.be.bignumber.eq(ether('0'));
 
       // Verify spent ETH
-      expect(userBalanceDelta).to.be.bignumber.eq(
-        result[1].sub(new BN(receipt.receipt.gasUsed))
-      );
+      expect(userBalanceDelta).to.be.bignumber.eq(result[1]);
 
       // Gas profile
       profileGas(receipt);
@@ -574,9 +562,7 @@ contract('SushiSwap Liquidity', function([_, user]) {
       expect(utils.toBN(handlerReturn[0])).to.be.bignumber.eq(
         tokenAUserAmountEnd.sub(tokenAUserAmount)
       );
-      expect(userBalanceDelta).to.be.bignumber.eq(
-        utils.toBN(handlerReturn[1]).sub(new BN(receipt.receipt.gasUsed))
-      );
+      expect(userBalanceDelta).to.be.bignumber.eq(utils.toBN(handlerReturn[1]));
 
       // Verify User Token
       expect(await this.tokenA.balanceOf.call(user)).to.be.bignumber.eq(
@@ -596,9 +582,7 @@ contract('SushiSwap Liquidity', function([_, user]) {
       expect(await balanceProxy.get()).to.be.bignumber.eq(ether('0'));
 
       // Verify spent ETH
-      expect(userBalanceDelta).to.be.bignumber.eq(
-        result[1].sub(new BN(receipt.receipt.gasUsed))
-      );
+      expect(userBalanceDelta).to.be.bignumber.eq(result[1]);
 
       // Gas profile
       profileGas(receipt);
@@ -723,9 +707,7 @@ contract('SushiSwap Liquidity', function([_, user]) {
       expect(await balanceProxy.get()).to.be.bignumber.eq(ether('0'));
 
       // Verify spent ETH
-      expect(await balanceUser.delta()).to.be.bignumber.eq(
-        ether('0').sub(new BN(receipt.receipt.gasUsed))
-      );
+      expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
 
       // Gas profile
       profileGas(receipt);
@@ -811,9 +793,7 @@ contract('SushiSwap Liquidity', function([_, user]) {
       expect(await balanceProxy.get()).to.be.bignumber.eq(ether('0'));
 
       // Verify spent ETH
-      expect(await balanceUser.delta()).to.be.bignumber.eq(
-        ether('0').sub(new BN(receipt.receipt.gasUsed))
-      );
+      expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
 
       // Gas profile
       profileGas(receipt);

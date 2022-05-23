@@ -188,9 +188,7 @@ contract('YVault', function([_, user]) {
       );
       // Check user eth balance
       expect(await balanceUser.delta()).to.be.bignumber.eq(
-        ether('0')
-          .sub(value)
-          .sub(new BN(receipt.receipt.gasUsed))
+        ether('0').sub(value)
       );
       profileGas(receipt);
     });
@@ -237,9 +235,7 @@ contract('YVault', function([_, user]) {
       );
       // Check user eth balance
       expect(await balanceUser.delta()).to.be.bignumber.eq(
-        ether('0')
-          .sub(value)
-          .sub(new BN(receipt.receipt.gasUsed))
+        ether('0').sub(value)
       );
       profileGas(receipt);
     });
@@ -279,9 +275,7 @@ contract('YVault', function([_, user]) {
         getHandlerReturn(receipt, ['uint256'])[0]
       );
       const delta = await balanceUser.delta();
-      expect(delta).to.be.bignumber.eq(
-        handlerReturn.sub(new BN(receipt.receipt.gasUsed))
-      );
+      expect(delta).to.be.bignumber.eq(handlerReturn);
 
       // Check proxy balance
       expect(
@@ -293,19 +287,13 @@ contract('YVault', function([_, user]) {
       expect(await vault.balanceOf.call(user)).to.be.bignumber.zero;
 
       // Check user eth balance <= 100.1% expected result
-      expect(delta).to.be.bignumber.gte(
-        amount
-          .mul(ratio)
-          .div(ether('1'))
-          .sub(new BN(receipt.receipt.gasUsed))
-      );
+      expect(delta).to.be.bignumber.gte(amount.mul(ratio).div(ether('1')));
       expect(delta).to.be.bignumber.lte(
         amount
           .mul(ratio)
           .div(ether('1'))
           .mul(new BN('1001'))
           .div(new BN('1000'))
-          .sub(new BN(receipt.receipt.gasUsed))
       );
 
       profileGas(receipt);
@@ -344,9 +332,7 @@ contract('YVault', function([_, user]) {
         getHandlerReturn(receipt, ['uint256'])[0]
       );
       const delta = await balanceUser.delta();
-      expect(delta).to.be.bignumber.eq(
-        handlerReturn.sub(new BN(receipt.receipt.gasUsed))
-      );
+      expect(delta).to.be.bignumber.eq(handlerReturn);
 
       // Check proxy balance
       expect(
@@ -358,19 +344,13 @@ contract('YVault', function([_, user]) {
       expect(await vault.balanceOf.call(user)).to.be.bignumber.zero;
 
       // Check user eth balance <= 100.1% expected result
-      expect(delta).to.be.bignumber.gte(
-        amount
-          .mul(ratio)
-          .div(ether('1'))
-          .sub(new BN(receipt.receipt.gasUsed))
-      );
+      expect(delta).to.be.bignumber.gte(amount.mul(ratio).div(ether('1')));
       expect(delta).to.be.bignumber.lte(
         amount
           .mul(ratio)
           .div(ether('1'))
           .mul(new BN('1001'))
           .div(new BN('1000'))
-          .sub(new BN(receipt.receipt.gasUsed))
       );
 
       profileGas(receipt);

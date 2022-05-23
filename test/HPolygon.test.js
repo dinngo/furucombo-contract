@@ -115,9 +115,7 @@ contract('Polygon Token Bridge', function([_, user]) {
         expect(await balanceBridge.delta()).to.be.bignumber.eq(value);
         expect(await balanceProxy.get()).to.be.bignumber.zero;
         expect(await balanceUser.delta()).to.be.bignumber.eq(
-          ether('0')
-            .sub(value)
-            .sub(new BN(receipt.receipt.gasUsed))
+          ether('0').sub(value)
         );
         profileGas(receipt);
       });
@@ -159,9 +157,7 @@ contract('Polygon Token Bridge', function([_, user]) {
         expect(await balanceBridge.delta()).to.be.bignumber.eq(value);
         expect(await balanceProxy.get()).to.be.bignumber.zero;
         expect(await balanceUser.delta()).to.be.bignumber.eq(
-          ether('0')
-            .sub(value)
-            .sub(new BN(receipt.receipt.gasUsed))
+          ether('0').sub(value)
         );
         profileGas(receipt);
       });
@@ -220,9 +216,7 @@ contract('Polygon Token Bridge', function([_, user]) {
         expect(await balanceProxy.get()).to.be.bignumber.zero;
         // Verify User balance
         expect(await this.token.balanceOf.call(user)).to.be.bignumber.zero;
-        expect(await balanceUser.delta()).to.be.bignumber.eq(
-          ether('0').sub(new BN(receipt.receipt.gasUsed))
-        );
+        expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
         profileGas(receipt);
       });
 
@@ -281,9 +275,7 @@ contract('Polygon Token Bridge', function([_, user]) {
         expect(await balanceProxy.get()).to.be.bignumber.zero;
         // Verify User balance
         expect(await this.token.balanceOf.call(user)).to.be.bignumber.zero;
-        expect(await balanceUser.delta()).to.be.bignumber.eq(
-          ether('0').sub(new BN(receipt.receipt.gasUsed))
-        );
+        expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
         profileGas(receipt);
       });
     });
@@ -352,9 +344,7 @@ contract('Polygon Token Bridge', function([_, user]) {
         expect(await balanceProxy.get()).to.be.bignumber.zero;
         // Verify User balance
         expect(await this.matic.balanceOf.call(user)).to.be.bignumber.zero;
-        expect(await balanceUser.delta()).to.be.bignumber.eq(
-          ether('0').sub(new BN(receipt.receipt.gasUsed))
-        );
+        expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
         profileGas(receipt);
       });
 
@@ -412,9 +402,7 @@ contract('Polygon Token Bridge', function([_, user]) {
         expect(await balanceProxy.get()).to.be.bignumber.zero;
         // Verify User balance
         expect(await this.matic.balanceOf.call(user)).to.be.bignumber.zero;
-        expect(await balanceUser.delta()).to.be.bignumber.eq(
-          ether('0').sub(new BN(receipt.receipt.gasUsed))
-        );
+        expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
         profileGas(receipt);
       });
     });

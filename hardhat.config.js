@@ -48,7 +48,6 @@ module.exports = {
       default: 0,
     },
   },
-  defaultNetwork: 'hardhat',
   networks: {
     beta: {
       accounts: key_beta ? [key_beta] : [],
@@ -56,13 +55,14 @@ module.exports = {
       url: 'https://geth-beta.furucombo.app/',
     },
     hardhat: {
+      chainId: 1, // hardhat sets 31337 as chainId rather than a forked chainId, so we set here.
       accounts: {
         mnemonic:
           'dice shove sheriff police boss indoor hospital vivid tenant method game matter',
         path: "m/44'/60'/0'/0",
         initialIndex: 0,
       },
-      hardfork: 'berlin',
+      initialBaseFeePerGas: 0,
     },
     // Due to "evm_snapshot/evm_revert" JSON-RPC method used in tests
     // we have to launch hardhat network at localhost:8545(like ganache)
@@ -70,7 +70,7 @@ module.exports = {
     // some settings like gasPrice might be overrided if we configure it at networks "hardhat".
     // So configure these parameters at networks "localhost".
     localhost: {
-      gasPrice: 1,
+      gasPrice: 0,
       gas: 30000000,
       timeout: 900000,
     },

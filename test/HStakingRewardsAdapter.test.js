@@ -174,9 +174,7 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
       expect(await balance.current(this.proxy.address)).to.be.bignumber.zero;
       // Check user balance
       expect(await this.st.balanceOf(user)).to.be.bignumber.zero;
-      expect(await balanceUser.delta()).to.be.bignumber.eq(
-        ether('0').sub(new BN(receipt.receipt.gasUsed))
-      );
+      expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
       profileGas(receipt);
     });
 
@@ -346,9 +344,7 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
       );
       // Verify user receive unstaked token
       expect(stBalanceUserAfter.sub(stBalanceUser)).to.be.bignumber.eq(sValue);
-      expect(await balanceUser.delta()).to.be.bignumber.eq(
-        ether('0').sub(new BN(receipt.receipt.gasUsed))
-      );
+      expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
       profileGas(receipt);
     });
 
@@ -493,9 +489,7 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
       expect(rtBalanceUserAfter).to.be.bignumber.eq(
         utils.toBN(handlerReturn[1])
       );
-      expect(await balanceUser.delta()).to.be.bignumber.eq(
-        ether('0').sub(new BN(receipt.receipt.gasUsed))
-      );
+      expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
       profileGas(receipt);
     });
 
@@ -627,9 +621,7 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
       expect(rtBalanceUserAfter).to.be.bignumber.gte(earnedUser);
       expect(rtBalanceUserAfter).to.be.bignumber.lte(getBuffer(earnedUser));
       expect(rtBalanceUserAfter).to.be.bignumber.eq(handlerReturn);
-      expect(await balanceUser.delta()).to.be.bignumber.eq(
-        ether('0').sub(new BN(receipt.receipt.gasUsed))
-      );
+      expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
       profileGas(receipt);
     });
 
