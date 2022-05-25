@@ -118,9 +118,7 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
       const ethUserAfter = await balance.current(user);
       expect(ethUserProxyAfter).to.be.bignumber.eq(amount);
       expect(ethProxyAfter).to.be.bignumber.zero;
-      expect(ethUserAfter).to.be.bignumber.eq(
-        ethUserBefore.sub(amount).sub(new BN(receipt.receipt.gasUsed))
-      );
+      expect(ethUserAfter).to.be.bignumber.eq(ethUserBefore.sub(amount));
       profileGas(receipt);
     });
 
@@ -205,9 +203,7 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
 
       expect(ethUserProxyAfter).to.be.bignumber.zero;
       expect(ethProxyAfter).to.be.bignumber.zero;
-      expect(ethUserAfter).to.be.bignumber.eq(
-        ethUserBefore.add(amount).sub(new BN(receipt.receipt.gasUsed))
-      );
+      expect(ethUserAfter).to.be.bignumber.eq(ethUserBefore.add(amount));
       profileGas(receipt);
     });
 
@@ -536,7 +532,7 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
         expect(ethUserProxyAfter).to.be.bignumber.zero;
         expect(ethProxyAfter).to.be.bignumber.zero;
         expect(ethUserAfter).to.be.bignumber.eq(
-          ethUserBefore.add(borrowAmount).sub(new BN(receipt.receipt.gasUsed))
+          ethUserBefore.add(borrowAmount)
         );
         expect(borrowBalanceAfter).to.be.bignumber.eq(borrowAmount);
         profileGas(receipt);
@@ -591,9 +587,7 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
         expect(collateralUserProxyAfter).to.be.bignumber.eq(cAmountIn);
         expect(ethUserProxyAfter).to.be.bignumber.zero;
         expect(ethProxyAfter).to.be.bignumber.zero;
-        expect(ethUserAfter).to.be.bignumber.eq(
-          ethUserBefore.sub(new BN(receipt.receipt.gasUsed))
-        );
+        expect(ethUserAfter).to.be.bignumber.eq(ethUserBefore);
         expect(borrowBalanceAfter).to.be.bignumber.zero;
         profileGas(receipt);
       });
@@ -657,7 +651,7 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
         expect(ethUserProxyAfter).to.be.bignumber.zero;
         expect(ethProxyAfter).to.be.bignumber.zero;
         expect(ethUserAfter).to.be.bignumber.eq(
-          ethUserBefore.add(borrowAmount).sub(new BN(receipt.receipt.gasUsed))
+          ethUserBefore.add(borrowAmount)
         );
         expect(borrowBalanceAfter).to.be.bignumber.eq(borrowAmount);
         profileGas(receipt);
@@ -714,9 +708,7 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
         expect(tokenUserProxyAfter).to.be.bignumber.zero;
         expect(tokenProxyAfter).to.be.bignumber.zero;
         expect(tokenUserAfter).to.be.bignumber.eq(borrowAmount);
-        expect(ethUserAfter).to.be.bignumber.eq(
-          ethUserBefore.sub(new BN(receipt.receipt.gasUsed))
-        );
+        expect(ethUserAfter).to.be.bignumber.eq(ethUserBefore);
         expect(borrowBalanceAfter).to.be.bignumber.eq(borrowAmount);
         profileGas(receipt);
       });
@@ -863,15 +855,11 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
         expect(ethProxyAfter).to.be.bignumber.zero;
         // balance might less than expected since debt might be slightly higher than borrowBalanceStored we got
         expect(ethUserAfter).to.be.bignumber.lte(
-          ethUserBefore
-            .sub(borrowBalanceBefore)
-            .sub(new BN(receipt.receipt.gasUsed))
+          ethUserBefore.sub(borrowBalanceBefore)
         );
         // assume maximum interest is 1% and the balance left after repay should be greater than this
         expect(ethUserAfter).to.be.bignumber.gte(
-          ethUserBefore
-            .sub(mulPercent(borrowBalanceBefore, 101))
-            .sub(new BN(receipt.receipt.gasUsed))
+          ethUserBefore.sub(mulPercent(borrowBalanceBefore, 101))
         );
         expect(cTokenUserAfter).to.be.bignumber.eq(cWithdrawAmount);
         expect(borrowBalanceAfter).to.be.bignumber.zero;
@@ -972,9 +960,7 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
         expect(ethUserProxyAfter).to.be.bignumber.zero;
         expect(tokenProxyAfter).to.be.bignumber.zero;
         expect(tokenUserProxyAfter).to.be.bignumber.zero;
-        expect(ethUserAfter).to.be.bignumber.eq(
-          ethUserBefore.sub(new BN(receipt.receipt.gasUsed))
-        );
+        expect(ethUserAfter).to.be.bignumber.eq(ethUserBefore);
         // balance might less than expected since debt might be slightly higher than borrowBalanceStored we got
         expect(tokenUserAfter.sub(tokenUserBefore)).to.be.bignumber.lte(
           repayAmount.sub(borrowBalanceBefore)
@@ -1039,9 +1025,7 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
         expect(ethUserProxyAfter).to.be.bignumber.zero;
         expect(tokenProxyAfter).to.be.bignumber.zero;
         expect(tokenUserProxyAfter).to.be.bignumber.zero;
-        expect(ethUserAfter).to.be.bignumber.eq(
-          ethUserBefore.sub(new BN(receipt.receipt.gasUsed))
-        );
+        expect(ethUserAfter).to.be.bignumber.eq(ethUserBefore);
         // balance might less than expected since debt might be slightly higher than borrowBalanceStored we got
         expect(tokenUserAfter.sub(tokenUserBefore)).to.be.bignumber.lte(
           repayAmount.sub(borrowBalanceBefore)
@@ -1104,9 +1088,7 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
         expect(ethUserProxyAfter).to.be.bignumber.zero;
         expect(tokenProxyAfter).to.be.bignumber.zero;
         expect(tokenUserProxyAfter).to.be.bignumber.zero;
-        expect(ethUserAfter).to.be.bignumber.eq(
-          ethUserBefore.sub(new BN(receipt.receipt.gasUsed))
-        );
+        expect(ethUserAfter).to.be.bignumber.eq(ethUserBefore);
         // token balance of user should not change
         expect(tokenUserAfter).to.be.bignumber.eq(tokenUserBefore);
         // withdrawn cToken should be in user's wallet

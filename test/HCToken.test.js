@@ -97,9 +97,7 @@ contract('CToken', function([_, user]) {
       expect(
         cTokenUserEnd.mul(new BN('1000')).divRound(result)
       ).to.be.bignumber.eq(new BN('1000'));
-      expect(await balanceUser.delta()).to.be.bignumber.eq(
-        ether('0').sub(new BN(receipt.receipt.gasUsed))
-      );
+      expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
       profileGas(receipt);
     });
 
@@ -131,9 +129,7 @@ contract('CToken', function([_, user]) {
       expect(
         cTokenUserEnd.mul(new BN('1000')).divRound(result)
       ).to.be.bignumber.eq(new BN('1000'));
-      expect(await balanceUser.delta()).to.be.bignumber.eq(
-        ether('0').sub(new BN(receipt.receipt.gasUsed))
-      );
+      expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
       profileGas(receipt);
     });
 
@@ -269,7 +265,7 @@ contract('CToken', function([_, user]) {
           from: user,
           value: ether('0.1'),
         }),
-        'HCToken_redeem: error 9'
+        'HCToken_redeem: Unspecified'
       );
     });
 
@@ -287,7 +283,7 @@ contract('CToken', function([_, user]) {
           from: user,
           value: ether('0.1'),
         }),
-        'HCToken_redeem: error 9'
+        'HCToken_redeem: Unspecified'
       );
     });
   });
@@ -355,7 +351,7 @@ contract('CToken', function([_, user]) {
           from: user,
           value: ether('0.1'),
         }),
-        'HCToken_redeemUnderlying: error 9'
+        'HCToken_redeemUnderlying: Unspecified'
       );
     });
   });

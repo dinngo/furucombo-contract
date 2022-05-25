@@ -95,9 +95,7 @@ contract('CEther', function([_, user]) {
       ).to.be.bignumber.eq(new BN('1000'));
 
       expect(await balanceUser.delta()).to.be.bignumber.eq(
-        ether('0')
-          .sub(ether('0.1'))
-          .sub(new BN(receipt.receipt.gasUsed))
+        ether('0').sub(ether('0.1'))
       );
 
       profileGas(receipt);
@@ -130,9 +128,7 @@ contract('CEther', function([_, user]) {
       ).to.be.bignumber.eq(new BN('1000'));
 
       expect(await balanceUser.delta()).to.be.bignumber.eq(
-        ether('0')
-          .sub(ether('0.1'))
-          .sub(new BN(receipt.receipt.gasUsed))
+        ether('0').sub(ether('0.1'))
       );
 
       profileGas(receipt);
@@ -169,17 +165,13 @@ contract('CEther', function([_, user]) {
       );
 
       const balanceDelta = await balanceUser.delta();
-      expect(balanceDelta).to.be.bignumber.eq(
-        handlerReturn.sub(new BN(receipt.receipt.gasUsed))
-      );
+      expect(balanceDelta).to.be.bignumber.eq(handlerReturn);
 
       expect(await this.cEther.balanceOf.call(user)).to.be.bignumber.eq(
         ether('0')
       );
       expect(
-        balanceDelta
-          .mul(new BN('1000'))
-          .divRound(result.sub(new BN(receipt.receipt.gasUsed)))
+        balanceDelta.mul(new BN('1000')).divRound(result)
       ).to.be.bignumber.eq(new BN('1000'));
 
       profileGas(receipt);
@@ -206,17 +198,13 @@ contract('CEther', function([_, user]) {
       );
 
       const balanceDelta = await balanceUser.delta();
-      expect(balanceDelta).to.be.bignumber.eq(
-        handlerReturn.sub(new BN(receipt.receipt.gasUsed))
-      );
+      expect(balanceDelta).to.be.bignumber.eq(handlerReturn);
 
       expect(await this.cEther.balanceOf.call(user)).to.be.bignumber.eq(
         ether('0')
       );
       expect(
-        balanceDelta
-          .mul(new BN('1000'))
-          .divRound(result.sub(new BN(receipt.receipt.gasUsed)))
+        balanceDelta.mul(new BN('1000')).divRound(result)
       ).to.be.bignumber.eq(new BN('1000'));
 
       profileGas(receipt);
@@ -274,9 +262,7 @@ contract('CEther', function([_, user]) {
         cEtherUser.sub(cEtherUserAmountEnd)
       );
 
-      expect(await balanceUser.delta()).to.be.bignumber.eq(
-        value.sub(new BN(receipt.receipt.gasUsed))
-      );
+      expect(await balanceUser.delta()).to.be.bignumber.eq(value);
       expect(
         (await this.cEther.balanceOf.call(user)).sub(cEtherUser.sub(result))
       ).to.be.bignumber.lt(new BN('1000'));

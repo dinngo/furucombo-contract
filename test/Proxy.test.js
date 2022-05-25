@@ -298,14 +298,12 @@ contract('Proxy', function([_, deployer, user]) {
 
       expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
       expect(await balanceUser.delta()).to.be.bignumber.eq(
-        ether('0')
-          .sub(
-            value[0]
-              .add(value[1])
-              .add(value[2])
-              .div(new BN('2'))
-          )
-          .sub(new BN(receipt.receipt.gasUsed))
+        ether('0').sub(
+          value[0]
+            .add(value[1])
+            .add(value[2])
+            .div(new BN('2'))
+        )
       );
       expect(
         await this.foo0.balanceOf.call(this.proxy.address)

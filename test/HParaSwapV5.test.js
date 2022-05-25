@@ -214,9 +214,7 @@ contract('ParaSwapV5', function([_, user, user2]) {
         // Verify ether balance
         expect(await proxyBalance.get()).to.be.bignumber.zero;
         expect(await userBalance.delta()).to.be.bignumber.eq(
-          ether('0')
-            .sub(amount)
-            .sub(new BN(receipt.receipt.gasUsed))
+          ether('0').sub(amount)
         );
       });
 
@@ -269,9 +267,7 @@ contract('ParaSwapV5', function([_, user, user2]) {
         // Verify ether balance
         expect(await proxyBalance.get()).to.be.bignumber.zero;
         expect(await userBalance.delta()).to.be.bignumber.eq(
-          ether('0')
-            .sub(amount)
-            .sub(new BN(receipt.receipt.gasUsed))
+          ether('0').sub(amount)
         );
       });
 
@@ -404,9 +400,7 @@ contract('ParaSwapV5', function([_, user, user2]) {
 
       // Verify user balance
       const userBalanceDelta = await userBalance.delta();
-      expect(handlerReturn).to.be.bignumber.eq(
-        userBalanceDelta.add(new BN(receipt.receipt.gasUsed))
-      );
+      expect(handlerReturn).to.be.bignumber.eq(userBalanceDelta);
 
       // Proxy should not have remaining token
       expect(
@@ -416,9 +410,7 @@ contract('ParaSwapV5', function([_, user, user2]) {
       // Verify ether balance
       expect(await proxyBalance.get()).to.be.bignumber.zero;
       expect(userBalanceDelta).to.be.bignumber.gt(
-        mulPercent(expectReceivedAmount, 100 - slippageInBps / 100).sub(
-          new BN(receipt.receipt.gasUsed)
-        )
+        mulPercent(expectReceivedAmount, 100 - slippageInBps / 100)
       );
     });
 

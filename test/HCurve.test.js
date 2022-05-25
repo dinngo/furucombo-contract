@@ -367,9 +367,7 @@ contract('Curve', function([_, user]) {
           getHandlerReturn(receipt, ['uint256'])[0]
         );
         const userBalanceDelta = await balanceUser.delta();
-        expect(userBalanceDelta).to.be.bignumber.eq(
-          ether('0').sub(new BN(receipt.receipt.gasUsed))
-        );
+        expect(userBalanceDelta).to.be.bignumber.eq(ether('0'));
 
         // Check proxy
         expect(await balanceProxy.get()).to.be.bignumber.zero;
@@ -445,9 +443,7 @@ contract('Curve', function([_, user]) {
 
         // Check user
         expect(await balanceUser.delta()).to.be.bignumber.eq(
-          ether('0')
-            .sub(value)
-            .sub(new BN(receipt.receipt.gasUsed))
+          ether('0').sub(value)
         );
         expect(tokenUserEnd).to.be.bignumber.eq(tokenUser.add(answer));
         profileGas(receipt);
@@ -484,9 +480,7 @@ contract('Curve', function([_, user]) {
         );
         const userBalanceDelta = await balanceUser.delta();
         expect(userBalanceDelta).to.be.bignumber.eq(
-          ether('0')
-            .add(handlerReturn)
-            .sub(new BN(receipt.receipt.gasUsed))
+          ether('0').add(handlerReturn)
         );
 
         // Check proxy
@@ -873,9 +867,7 @@ contract('Curve', function([_, user]) {
 
         // Check user balance
         expect(await balanceUser.delta()).to.be.bignumber.eq(
-          ether('0')
-            .sub(value)
-            .sub(new BN(receipt.receipt.gasUsed))
+          ether('0').sub(value)
         );
         expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
           tokenUser
@@ -943,9 +935,7 @@ contract('Curve', function([_, user]) {
 
         // Check user balance
         expect(await balanceUser.delta()).to.be.bignumber.eq(
-          ether('0')
-            .sub(value)
-            .sub(new BN(receipt.receipt.gasUsed))
+          ether('0').sub(value)
         );
         expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
           tokenUser
@@ -993,9 +983,7 @@ contract('Curve', function([_, user]) {
         );
         const userBalanceDelta = await balanceUser.delta();
         expect(userBalanceDelta).to.be.bignumber.eq(
-          ether('0')
-            .add(handlerReturn)
-            .sub(new BN(receipt.receipt.gasUsed))
+          ether('0').add(handlerReturn)
         );
 
         // Check proxy balance
@@ -1005,11 +993,7 @@ contract('Curve', function([_, user]) {
         ).to.be.bignumber.zero;
 
         // Check user
-        expect(userBalanceDelta).to.be.bignumber.eq(
-          ether('0')
-            .add(answer)
-            .sub(new BN(receipt.receipt.gasUsed))
-        );
+        expect(userBalanceDelta).to.be.bignumber.eq(ether('0').add(answer));
 
         profileGas(receipt);
       });
@@ -1095,9 +1079,7 @@ contract('Curve', function([_, user]) {
         ).to.be.bignumber.zero;
 
         // Check user balance
-        expect(await balanceUser.delta()).to.be.bignumber.eq(
-          ether('0').sub(new BN(receipt.receipt.gasUsed))
-        );
+        expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
         expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
           tokenUser
         );

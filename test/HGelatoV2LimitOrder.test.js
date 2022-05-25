@@ -139,9 +139,7 @@ contract('GelatoLimitOrder', function([_, user]) {
       });
       expect(await balanceProxy.delta()).to.be.bignumber.zero;
       expect(await balanceUser.delta()).to.be.bignumber.eq(
-        ether('0')
-          .sub(sellAmount)
-          .sub(new BN(receipt.receipt.gasUsed))
+        ether('0').sub(sellAmount)
       );
 
       // Check order exists
@@ -289,9 +287,7 @@ contract('GelatoLimitOrder', function([_, user]) {
       });
       expect(await balanceProxy.delta()).to.be.bignumber.zero;
       expect(await balanceUser.delta()).to.be.bignumber.eq(
-        ether('0')
-          .sub(sellAmount)
-          .sub(new BN(receipt.receipt.gasUsed))
+        ether('0').sub(sellAmount)
       );
 
       // Check order exists
@@ -327,9 +323,7 @@ contract('GelatoLimitOrder', function([_, user]) {
         )
       ).to.be.false;
       expect(await balanceUser.delta()).to.be.bignumber.eq(
-        ether('0')
-          .add(sellAmount)
-          .sub(new BN(cancelReceipt.receipt.gasUsed))
+        ether('0').add(sellAmount)
       );
     });
 
@@ -375,9 +369,7 @@ contract('GelatoLimitOrder', function([_, user]) {
         value: ether('1'),
       });
       expect(await balanceProxy.delta()).to.be.bignumber.zero;
-      expect(await balanceUser.delta()).to.be.bignumber.eq(
-        ether('0').sub(new BN(receipt.receipt.gasUsed))
-      );
+      expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
 
       // Check order existed
       const orderExists = await this.gelatoPine.existOrder.call(
@@ -534,9 +526,7 @@ contract('GelatoLimitOrder', function([_, user]) {
         value: ether('1'),
       });
       expect(await balanceProxy.delta()).to.be.bignumber.zero;
-      expect(await balanceUser.delta()).to.be.bignumber.eq(
-        ether('0').sub(new BN(receipt.receipt.gasUsed))
-      );
+      expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
 
       // check order existed
       const orderExists = await this.gelatoPine.existOrder.call(
@@ -622,9 +612,7 @@ contract('GelatoLimitOrder', function([_, user]) {
         value: ether('1'),
       });
       expect(await balanceProxy.delta()).to.be.bignumber.zero;
-      expect(await balanceUser.delta()).to.be.bignumber.eq(
-        ether('0').sub(new BN(receipt.receipt.gasUsed))
-      );
+      expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
 
       // Check order existed
       const orderExists = await this.gelatoPine.existOrder.call(
@@ -737,9 +725,7 @@ contract('GelatoLimitOrder', function([_, user]) {
         value: ether('1'),
       });
       expect(await balanceProxy.delta()).to.be.bignumber.zero;
-      expect(await balanceUser.delta()).to.be.bignumber.eq(
-        ether('0').sub(new BN(receipt.receipt.gasUsed))
-      );
+      expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
 
       // Check order existed
       const orderExists = await this.gelatoPine.existOrder.call(
@@ -819,9 +805,7 @@ contract('GelatoLimitOrder', function([_, user]) {
         });
         expect(await balanceProxy.delta()).to.be.bignumber.zero;
         expect(await balanceUser.delta()).to.be.bignumber.eq(
-          ether('0')
-            .sub(sellAmount)
-            .sub(new BN(receipt.receipt.gasUsed))
+          ether('0').sub(sellAmount)
         );
       }
 
@@ -941,9 +925,7 @@ contract('GelatoLimitOrder', function([_, user]) {
           value: ether('1'),
         });
         expect(await balanceProxy.delta()).to.be.bignumber.zero;
-        expect(await balanceUser.delta()).to.be.bignumber.eq(
-          ether('0').sub(new BN(receipt.receipt.gasUsed))
-        );
+        expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
       }
 
       // Check order existed
@@ -1060,9 +1042,7 @@ contract('GelatoLimitOrder', function([_, user]) {
           value: ether('1'),
         });
         expect(await balanceProxy.delta()).to.be.bignumber.zero;
-        expect(await balanceUser.delta()).to.be.bignumber.eq(
-          ether('0').sub(new BN(receipt.receipt.gasUsed))
-        );
+        expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
       }
 
       // Check order existed

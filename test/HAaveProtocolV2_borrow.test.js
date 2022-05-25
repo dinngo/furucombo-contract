@@ -153,10 +153,10 @@ contract('Aave V2', function([_, user, someone]) {
         borrowTokenUserAfter.sub(borrowTokenUserBefore)
       ).to.be.bignumber.eq(borrowAmount);
 
-      //  borrowAmount <= (debtTokenUserAfter-debtTokenUserBefore) < borrowAmount + interestMax
+      //  borrowAmount - 1 <= (debtTokenUserAfter-debtTokenUserBefore) < borrowAmount + interestMax
       const interestMax = borrowAmount.mul(new BN(1)).div(new BN(10000));
       expect(debtTokenUserAfter.sub(debtTokenUserBefore)).to.be.bignumber.gte(
-        borrowAmount
+        borrowAmount.sub(new BN(1))
       );
       expect(debtTokenUserAfter.sub(debtTokenUserBefore)).to.be.bignumber.lt(
         borrowAmount.add(interestMax)
@@ -198,10 +198,10 @@ contract('Aave V2', function([_, user, someone]) {
         borrowAmount
       );
 
-      //  borrowAmount <= (debtTokenUserAfter-debtTokenUserBefore) < borrowAmount + interestMax
+      //  borrowAmount - 1 <= (debtTokenUserAfter-debtTokenUserBefore) < borrowAmount + interestMax
       const interestMax = borrowAmount.mul(new BN(1)).div(new BN(10000));
       expect(debtWETHUserAfter.sub(debtWETHUserBefore)).to.be.bignumber.gte(
-        borrowAmount
+        borrowAmount.sub(new BN(1))
       );
       expect(debtWETHUserAfter.sub(debtWETHUserBefore)).to.be.bignumber.lt(
         borrowAmount.add(interestMax)
@@ -236,12 +236,12 @@ contract('Aave V2', function([_, user, someone]) {
 
       // Verify user balance
       expect(balancerUserAfter.sub(balancerUserBefore)).to.be.bignumber.eq(
-        borrowAmount.sub(new BN(receipt.receipt.gasUsed))
+        borrowAmount
       );
-      //  borrowAmount <= (debtTokenUserAfter-debtTokenUserBefore) < borrowAmount + interestMax
+      //  borrowAmount - 1 <= (debtTokenUserAfter-debtTokenUserBefore) < borrowAmount + interestMax
       const interestMax = borrowAmount.mul(new BN(1)).div(new BN(10000));
       expect(debtWETHUserAfter.sub(debtWETHUserBefore)).to.be.bignumber.gte(
-        borrowAmount
+        borrowAmount.sub(new BN(1))
       );
       expect(debtWETHUserAfter.sub(debtWETHUserBefore)).to.be.bignumber.lt(
         borrowAmount.add(interestMax)
@@ -474,10 +474,10 @@ contract('Aave V2', function([_, user, someone]) {
         borrowAmount
       );
 
-      //  borrowAmount <= (debtTokenUserAfter-debtTokenUserBefore) < borrowAmount + interestMax
+      //  borrowAmount - 1 <= (debtTokenUserAfter-debtTokenUserBefore) < borrowAmount + interestMax
       const interestMax = borrowAmount.mul(new BN(1)).div(new BN(10000));
       expect(debtWETHUserAfter.sub(debtWETHUserBefore)).to.be.bignumber.gte(
-        borrowAmount
+        borrowAmount.sub(new BN(1))
       );
       expect(debtWETHUserAfter.sub(debtWETHUserBefore)).to.be.bignumber.lt(
         borrowAmount.add(interestMax)
@@ -513,13 +513,13 @@ contract('Aave V2', function([_, user, someone]) {
 
       // Verify user balance
       expect(balancerUserAfter.sub(balancerUserBefore)).to.be.bignumber.eq(
-        borrowAmount.sub(new BN(receipt.receipt.gasUsed))
+        borrowAmount
       );
 
-      //  borrowAmount <= (debtTokenUserAfter-debtTokenUserBefore) < borrowAmount + interestMax
+      //  borrowAmount - 1 <= (debtTokenUserAfter-debtTokenUserBefore) < borrowAmount + interestMax
       const interestMax = borrowAmount.mul(new BN(1)).div(new BN(10000));
       expect(debtWETHUserAfter.sub(debtWETHUserBefore)).to.be.bignumber.gte(
-        borrowAmount
+        borrowAmount.sub(new BN(1))
       );
       expect(debtWETHUserAfter.sub(debtWETHUserBefore)).to.be.bignumber.lt(
         borrowAmount.add(interestMax)
