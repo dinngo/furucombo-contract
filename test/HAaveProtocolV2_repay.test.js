@@ -25,6 +25,7 @@ const {
   profileGas,
   getHandlerReturn,
   tokenProviderUniV2,
+  expectEqWithinBps,
 } = require('./utils/utils');
 
 const HAaveV2 = artifacts.require('HAaveProtocolV2');
@@ -118,7 +119,8 @@ contract('Aave V2', function([_, user]) {
       expect(await this.borrowToken.balanceOf.call(user)).to.be.bignumber.eq(
         borrowAmount
       );
-      expect(await this.debtToken.balanceOf.call(user)).to.be.bignumber.eq(
+      expectEqWithinBps(
+        await this.debtToken.balanceOf.call(user),
         borrowAmount
       );
     });
@@ -162,8 +164,10 @@ contract('Aave V2', function([_, user]) {
         await this.borrowToken.balanceOf.call(this.proxy.address)
       ).to.be.bignumber.zero;
       // Verify user balance
-      // (borrow - repay) <= debtTokenUserAfter < (borrow + interestMax - repay)
-      expect(debtTokenUserAfter).to.be.bignumber.gte(borrowAmount.sub(value));
+      // (borrow - repay - 1) <= debtTokenUserAfter < (borrow + interestMax - repay)
+      expect(debtTokenUserAfter).to.be.bignumber.gte(
+        borrowAmount.sub(value).sub(new BN(1))
+      );
       expect(debtTokenUserAfter).to.be.bignumber.lt(
         borrowAmount.add(interestMax).sub(value)
       );
@@ -206,8 +210,10 @@ contract('Aave V2', function([_, user]) {
         await this.borrowToken.balanceOf.call(this.proxy.address)
       ).to.be.bignumber.zero;
       // Verify user balance
-      // (borrow - repay) <= debtTokenUserAfter < (borrow + interestMax - repay)
-      expect(debtTokenUserAfter).to.be.bignumber.gte(borrowAmount.sub(value));
+      // (borrow - repay - 1) <= debtTokenUserAfter < (borrow + interestMax - repay)
+      expect(debtTokenUserAfter).to.be.bignumber.gte(
+        borrowAmount.sub(value).sub(new BN(1))
+      );
       expect(debtTokenUserAfter).to.be.bignumber.lt(
         borrowAmount.add(interestMax).sub(value)
       );
@@ -416,7 +422,8 @@ contract('Aave V2', function([_, user]) {
       expect(await this.borrowToken.balanceOf.call(user)).to.be.bignumber.eq(
         borrowAmount
       );
-      expect(await this.debtToken.balanceOf.call(user)).to.be.bignumber.eq(
+      expectEqWithinBps(
+        await this.debtToken.balanceOf.call(user),
         borrowAmount
       );
     });
@@ -465,8 +472,10 @@ contract('Aave V2', function([_, user]) {
         await this.borrowToken.balanceOf.call(this.proxy.address)
       ).to.be.bignumber.zero;
       // Verify user balance
-      // (borrow - repay) <= debtTokenUserAfter < (borrow + interestMax - repay)
-      expect(debtTokenUserAfter).to.be.bignumber.gte(borrowAmount.sub(value));
+      // (borrow - repay - 1) <= debtTokenUserAfter < (borrow + interestMax - repay)
+      expect(debtTokenUserAfter).to.be.bignumber.gte(
+        borrowAmount.sub(value).sub(new BN(1))
+      );
       expect(debtTokenUserAfter).to.be.bignumber.lt(
         borrowAmount.add(interestMax).sub(value)
       );
@@ -512,8 +521,10 @@ contract('Aave V2', function([_, user]) {
         await this.borrowToken.balanceOf.call(this.proxy.address)
       ).to.be.bignumber.zero;
       // Verify user balance
-      // (borrow - repay) <= debtTokenUserAfter < (borrow + interestMax - repay)
-      expect(debtTokenUserAfter).to.be.bignumber.gte(borrowAmount.sub(value));
+      // (borrow - repay - 1) <= debtTokenUserAfter < (borrow + interestMax - repay)
+      expect(debtTokenUserAfter).to.be.bignumber.gte(
+        borrowAmount.sub(value).sub(new BN(1))
+      );
       expect(debtTokenUserAfter).to.be.bignumber.lt(
         borrowAmount.add(interestMax).sub(value)
       );

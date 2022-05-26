@@ -247,8 +247,10 @@ contract('Aave V2', function([_, user, someone]) {
           await this.aweth.balanceOf.call(this.proxy.address)
         ).to.be.bignumber.zero;
         // Verify user balance
-        // (deposit - withdraw) <= aTokenAfter < (deposit + interestMax - withdraw)
-        expect(aTokenUserAfter).to.be.bignumber.gte(depositAmount.sub(value));
+        // (deposit - withdraw - 1) <= aTokenAfter < (deposit + interestMax - withdraw)
+        expect(aTokenUserAfter).to.be.bignumber.gte(
+          depositAmount.sub(value).sub(new BN(1))
+        );
         expect(aTokenUserAfter).to.be.bignumber.lt(
           depositAmount.add(interestMax).sub(value)
         );
@@ -353,8 +355,10 @@ contract('Aave V2', function([_, user, someone]) {
         ).to.be.bignumber.zero;
 
         // Verify user balance
-        // (deposit - withdraw) <= aTokenAfter < (deposit + interestMax - withdraw)
-        expect(aTokenUserAfter).to.be.bignumber.gte(depositAmount.sub(value));
+        // (deposit - withdraw - 1) <= aTokenAfter < (deposit + interestMax - withdraw)
+        expect(aTokenUserAfter).to.be.bignumber.gte(
+          depositAmount.sub(value).sub(new BN(1))
+        );
         expect(aTokenUserAfter).to.be.bignumber.lt(
           depositAmount.add(interestMax).sub(value)
         );

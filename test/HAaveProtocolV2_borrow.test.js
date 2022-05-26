@@ -27,7 +27,7 @@ const {
   evmRevert,
   evmSnapshot,
   profileGas,
-  errorCompare,
+  expectEqWithinBps,
   tokenProviderUniV2,
 } = require('./utils/utils');
 
@@ -112,7 +112,7 @@ contract('Aave V2', function([_, user, someone]) {
         0,
         { from: providerAddress }
       );
-      errorCompare(await this.aToken.balanceOf.call(user), depositAmount);
+      expectEqWithinBps(await this.aToken.balanceOf.call(user), depositAmount);
 
       borrowTokenUserBefore = await this.borrowToken.balanceOf.call(user);
       borrowWETHUserBefore = await this.weth.balanceOf.call(user);
@@ -389,7 +389,7 @@ contract('Aave V2', function([_, user, someone]) {
         0,
         { from: providerAddress }
       );
-      errorCompare(await this.aToken.balanceOf.call(user), depositAmount);
+      expectEqWithinBps(await this.aToken.balanceOf.call(user), depositAmount);
 
       borrowTokenUserBefore = await this.borrowToken.balanceOf.call(user);
       borrowWETHUserBefore = await this.weth.balanceOf.call(user);
@@ -432,7 +432,10 @@ contract('Aave V2', function([_, user, someone]) {
 
       //  borrowAmount <= (debtTokenUserAfter-debtTokenUserBefore) < borrowAmount + interestMax
       const interestMax = borrowAmount.mul(new BN(1)).div(new BN(10000));
-      errorCompare(debtTokenUserAfter.sub(debtTokenUserBefore), borrowAmount);
+      expectEqWithinBps(
+        debtTokenUserAfter.sub(debtTokenUserBefore),
+        borrowAmount
+      );
       expect(debtTokenUserAfter.sub(debtTokenUserBefore)).to.be.bignumber.lt(
         borrowAmount.add(interestMax)
       );
