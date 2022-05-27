@@ -106,9 +106,7 @@ contract('SushiSwap Swap', function([_, user, someone]) {
         ).to.be.bignumber.eq(ether('0'));
         expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
         expect(await balanceUser.delta()).to.be.bignumber.eq(
-          ether('0')
-            .sub(ether('1'))
-            .sub(new BN(receipt.receipt.gasUsed))
+          ether('0').sub(ether('1'))
         );
         profileGas(receipt);
       });
@@ -147,9 +145,7 @@ contract('SushiSwap Swap', function([_, user, someone]) {
         ).to.be.bignumber.eq(ether('0'));
         expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
         expect(await balanceUser.delta()).to.be.bignumber.eq(
-          ether('0')
-            .sub(ether('1'))
-            .sub(new BN(receipt.receipt.gasUsed))
+          ether('0').sub(ether('1'))
         );
         profileGas(receipt);
       });
@@ -224,9 +220,7 @@ contract('SushiSwap Swap', function([_, user, someone]) {
         const userBalanceDelta = await balanceUser.delta();
 
         expect(userBalanceDelta).to.be.bignumber.eq(
-          ether('0')
-            .sub(handlerReturn)
-            .sub(new BN(receipt.receipt.gasUsed))
+          ether('0').sub(handlerReturn)
         );
 
         expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
@@ -236,11 +230,7 @@ contract('SushiSwap Swap', function([_, user, someone]) {
           await this.token.balanceOf.call(this.proxy.address)
         ).to.be.bignumber.eq(ether('0'));
         expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
-        expect(userBalanceDelta).to.be.bignumber.eq(
-          ether('0')
-            .sub(result[0])
-            .sub(new BN(receipt.receipt.gasUsed))
-        );
+        expect(userBalanceDelta).to.be.bignumber.eq(ether('0').sub(result[0]));
         profileGas(receipt);
       });
 
@@ -269,9 +259,7 @@ contract('SushiSwap Swap', function([_, user, someone]) {
         const userBalanceDelta = await balanceUser.delta();
 
         expect(userBalanceDelta).to.be.bignumber.eq(
-          ether('0')
-            .sub(handlerReturn)
-            .sub(new BN(receipt.receipt.gasUsed))
+          ether('0').sub(handlerReturn)
         );
 
         expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
@@ -281,11 +269,7 @@ contract('SushiSwap Swap', function([_, user, someone]) {
           await this.token.balanceOf.call(this.proxy.address)
         ).to.be.bignumber.eq(ether('0'));
         expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
-        expect(userBalanceDelta).to.be.bignumber.eq(
-          ether('0')
-            .sub(result[0])
-            .sub(new BN(receipt.receipt.gasUsed))
-        );
+        expect(userBalanceDelta).to.be.bignumber.eq(ether('0').sub(result[0]));
         profileGas(receipt);
       });
 
@@ -380,9 +364,7 @@ contract('SushiSwap Swap', function([_, user, someone]) {
         const userBalanceDelta = await balanceUser.delta();
 
         expect(userBalanceDelta).to.be.bignumber.eq(
-          ether('0')
-            .add(handlerReturn)
-            .sub(new BN(receipt.receipt.gasUsed))
+          ether('0').add(handlerReturn)
         );
 
         expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
@@ -393,9 +375,7 @@ contract('SushiSwap Swap', function([_, user, someone]) {
         ).to.be.bignumber.eq(ether('0'));
         expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
         expect(userBalanceDelta).to.be.bignumber.eq(
-          ether('0')
-            .add(result[result.length - 1])
-            .sub(new BN(receipt.receipt.gasUsed))
+          ether('0').add(result[result.length - 1])
         );
         profileGas(receipt);
       });
@@ -425,9 +405,7 @@ contract('SushiSwap Swap', function([_, user, someone]) {
         const userBalanceDelta = await balanceUser.delta();
 
         expect(userBalanceDelta).to.be.bignumber.eq(
-          ether('0')
-            .add(handlerReturn)
-            .sub(new BN(receipt.receipt.gasUsed))
+          ether('0').add(handlerReturn)
         );
 
         expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
@@ -438,9 +416,7 @@ contract('SushiSwap Swap', function([_, user, someone]) {
         ).to.be.bignumber.eq(ether('0'));
         expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
         expect(userBalanceDelta).to.be.bignumber.eq(
-          ether('0')
-            .add(result[result.length - 1])
-            .sub(new BN(receipt.receipt.gasUsed))
+          ether('0').add(result[result.length - 1])
         );
         profileGas(receipt);
       });
@@ -525,9 +501,7 @@ contract('SushiSwap Swap', function([_, user, someone]) {
           await this.token.balanceOf.call(this.proxy.address)
         ).to.be.bignumber.eq(ether('0'));
         expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
-        expect(userBalanceDelta).to.be.bignumber.eq(
-          buyAmt.sub(new BN(receipt.receipt.gasUsed))
-        );
+        expect(userBalanceDelta).to.be.bignumber.eq(buyAmt);
         profileGas(receipt);
       });
 
@@ -566,9 +540,7 @@ contract('SushiSwap Swap', function([_, user, someone]) {
           await this.token.balanceOf.call(this.proxy.address)
         ).to.be.bignumber.eq(ether('0'));
         expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
-        expect(userBalanceDelta).to.be.bignumber.eq(
-          buyAmt.sub(new BN(receipt.receipt.gasUsed))
-        );
+        expect(userBalanceDelta).to.be.bignumber.eq(buyAmt);
         profileGas(receipt);
       });
 

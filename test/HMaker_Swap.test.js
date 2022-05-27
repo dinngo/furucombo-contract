@@ -158,9 +158,7 @@ contract('Maker', function([_, user]) {
           );
           const daiUserEnd = await this.dai.balanceOf.call(user);
           expect(daiUserEnd.sub(daiUser)).to.be.bignumber.eq(ether('0'));
-          expect(await balanceUser.delta()).to.be.bignumber.lte(
-            ether('0').sub(new BN(receipt.receipt.gasUsed))
-          );
+          expect(await balanceUser.delta()).to.be.bignumber.lte(ether('0'));
         });
       });
     });

@@ -118,9 +118,7 @@ contract('Curve Crypto', function([_, user]) {
         handlerReturn = utils.toBN(getHandlerReturn(receipt, ['uint256'])[0]);
 
         // Check user
-        expect(await balanceUser.delta()).to.be.bignumber.eq(
-          ether('0').sub(new BN(receipt.receipt.gasUsed))
-        );
+        expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
         expect(await token1.balanceOf.call(user)).to.be.bignumber.eq(
           handlerReturn.add(token1User)
         );
@@ -154,9 +152,7 @@ contract('Curve Crypto', function([_, user]) {
 
         // Check user
         expect(await balanceUser.delta()).to.be.bignumber.eq(
-          ether('0')
-            .add(handlerReturn)
-            .sub(new BN(receipt.receipt.gasUsed))
+          ether('0').add(handlerReturn)
         );
       });
 
@@ -184,9 +180,7 @@ contract('Curve Crypto', function([_, user]) {
 
         // Check user
         expect(await balanceUser.delta()).to.be.bignumber.eq(
-          ether('0')
-            .sub(value)
-            .sub(new BN(receipt.receipt.gasUsed))
+          ether('0').sub(value)
         );
         expect(await token1.balanceOf.call(user)).to.be.bignumber.eq(
           handlerReturn.add(token1User)
@@ -283,9 +277,7 @@ contract('Curve Crypto', function([_, user]) {
 
         // Check user
         expect(await balanceUser.delta()).to.be.bignumber.eq(
-          ether('0')
-            .sub(value)
-            .sub(new BN(receipt.receipt.gasUsed))
+          ether('0').sub(value)
         );
         expect(await token0.balanceOf.call(user)).to.be.bignumber.eq(
           token0User
@@ -336,9 +328,7 @@ contract('Curve Crypto', function([_, user]) {
 
         // Check user
         expect(await balanceUser.delta()).to.be.bignumber.eq(
-          ether('0')
-            .sub(value)
-            .sub(new BN(receipt.receipt.gasUsed))
+          ether('0').sub(value)
         );
         expect(await token0.balanceOf.call(user)).to.be.bignumber.eq(
           token0User
@@ -409,9 +399,7 @@ contract('Curve Crypto', function([_, user]) {
 
         // Check user
         expect(await balanceUser.delta()).to.be.bignumber.eq(
-          ether('0')
-            .add(handlerReturn)
-            .sub(new BN(receipt.receipt.gasUsed))
+          ether('0').add(handlerReturn)
         );
       });
     });

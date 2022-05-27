@@ -27,7 +27,7 @@ const {
 const {
   evmRevert,
   evmSnapshot,
-  errorCompare,
+  expectEqWithinBps,
   tokenProviderUniV2,
 } = require('./utils/utils');
 
@@ -160,7 +160,7 @@ contract('AaveV2 flashloan', function([_, user, someone]) {
         0,
         { from: this.tokenBProvider }
       );
-      errorCompare(await this.aTokenB.balanceOf.call(user), depositAmount);
+      expectEqWithinBps(await this.aTokenB.balanceOf.call(user), depositAmount);
     });
 
     it('single asset with no debt', async function() {
@@ -191,12 +191,11 @@ contract('AaveV2 flashloan', function([_, user, someone]) {
       expect(
         await this.tokenA.balanceOf.call(this.proxy.address)
       ).to.be.bignumber.zero;
-      expect(await this.tokenA.balanceOf.call(user)).to.be.bignumber.eq(
+      expectEqWithinBps(
+        await this.tokenA.balanceOf.call(user),
         tokenAUser.add(value).sub(fee)
       );
-      expect(await balanceUser.delta()).to.be.bignumber.eq(
-        ether('0').sub(new BN(receipt.receipt.gasUsed))
-      );
+      expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
     });
 
     it('single asset with stable rate by borrowing from itself', async function() {
@@ -236,12 +235,11 @@ contract('AaveV2 flashloan', function([_, user, someone]) {
       expect(await this.tokenA.balanceOf.call(user)).to.be.bignumber.eq(
         tokenAUser.add(value).add(value)
       );
-      expect(
-        await this.stableDebtTokenA.balanceOf.call(user)
-      ).to.be.bignumber.eq(value);
-      expect(await balanceUser.delta()).to.be.bignumber.eq(
-        ether('0').sub(new BN(receipt.receipt.gasUsed))
+      expectEqWithinBps(
+        await this.stableDebtTokenA.balanceOf.call(user),
+        value
       );
+      expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
     });
 
     it('single asset with variable rate by borrowing from itself', async function() {
@@ -287,12 +285,11 @@ contract('AaveV2 flashloan', function([_, user, someone]) {
       expect(await this.tokenA.balanceOf.call(user)).to.be.bignumber.eq(
         tokenAUser.add(value).add(value)
       );
-      expect(
-        await this.variableDebtTokenA.balanceOf.call(user)
-      ).to.be.bignumber.eq(value);
-      expect(await balanceUser.delta()).to.be.bignumber.eq(
-        ether('0').sub(new BN(receipt.receipt.gasUsed))
+      expectEqWithinBps(
+        await this.variableDebtTokenA.balanceOf.call(user),
+        value
       );
+      expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
     });
 
     it('multiple assets with no debt', async function() {
@@ -333,9 +330,7 @@ contract('AaveV2 flashloan', function([_, user, someone]) {
       expect(await this.tokenB.balanceOf.call(user)).to.be.bignumber.eq(
         tokenBUser.add(value).sub(fee)
       );
-      expect(await balanceUser.delta()).to.be.bignumber.eq(
-        ether('0').sub(new BN(receipt.receipt.gasUsed))
-      );
+      expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
     });
 
     it('should revert: assets and amount do not match', async function() {
@@ -549,9 +544,7 @@ contract('AaveV2 flashloan', function([_, user, someone]) {
       expect(await this.tokenB.balanceOf.call(user)).to.be.bignumber.eq(
         tokenBUser.add(value.add(value)).sub(fee)
       );
-      expect(await balanceUser.delta()).to.be.bignumber.eq(
-        ether('0').sub(new BN(receipt.receipt.gasUsed))
-      );
+      expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
     });
 
     it('nested', async function() {
@@ -616,9 +609,7 @@ contract('AaveV2 flashloan', function([_, user, someone]) {
       expect(await this.tokenB.balanceOf.call(user)).to.be.bignumber.eq(
         tokenBUser.add(value).sub(fee)
       );
-      expect(await balanceUser.delta()).to.be.bignumber.eq(
-        ether('0').sub(new BN(receipt.receipt.gasUsed))
-      );
+      expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
     });
   });
 
@@ -695,9 +686,7 @@ contract('AaveV2 flashloan', function([_, user, someone]) {
       expect(await this.tokenB.balanceOf.call(user)).to.be.bignumber.eq(
         tokenBUser.add(value.sub(depositValue).sub(fee))
       );
-      expect(await balanceUser.delta()).to.be.bignumber.eq(
-        ether('0').sub(new BN(receipt.receipt.gasUsed))
-      );
+      expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
     });
 
     it('deposit aaveV2 after flashloan', async function() {
@@ -760,9 +749,7 @@ contract('AaveV2 flashloan', function([_, user, someone]) {
       expect(await this.tokenB.balanceOf.call(user)).to.be.bignumber.eq(
         tokenBUser.add(value.sub(depositValue).sub(fee))
       );
-      expect(await balanceUser.delta()).to.be.bignumber.eq(
-        ether('0').sub(new BN(receipt.receipt.gasUsed))
-      );
+      expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
     });
   });
 

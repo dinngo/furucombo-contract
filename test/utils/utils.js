@@ -99,10 +99,6 @@ function getHandlerReturn(receipt, dataTypes) {
   return handlerResult;
 }
 
-function errorCompare(a, b, e = new BN('1')) {
-  expect(a.sub(b).abs()).to.be.bignumber.lte(e);
-}
-
 // Only works when one function name matches
 function getAbi(artifact, name) {
   var abi;
@@ -239,7 +235,6 @@ module.exports = {
   mulPercent,
   cUnit,
   getHandlerReturn,
-  errorCompare,
   getAbi,
   getCallData,
   decodeInputData,
