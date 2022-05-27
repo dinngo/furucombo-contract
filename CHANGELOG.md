@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+## [1.11.1] - 2022-05-27
+
 ### Changed
 
 - Archive GasTokens related handlers and tests.
