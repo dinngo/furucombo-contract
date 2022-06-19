@@ -304,7 +304,6 @@ contract('Maker', function([_, user1, user2, someone]) {
 
         it('User has proxy with max amount', async function() {
           const to = this.hMaker.address;
-          const value = ether('20');
           const ilkEth = utils.padRight(
             utils.asciiToHex(makerMcdJoinETHName),
             64
@@ -314,6 +313,7 @@ contract('Maker', function([_, user1, user2, someone]) {
             minCollateral,
           ] = await getGenerateLimitAndMinCollateral(ilkEth);
           const wadD = generateLimit;
+          const value = minCollateral;
           const data = abi.simpleEncode(
             'openLockETHAndDraw(uint256,address,address,bytes32,uint256)',
             MAX_UINT256,
