@@ -22,8 +22,8 @@ const {
   getHandlerReturn,
   getCallData,
   tokenProviderYearn,
+  callExternalApi,
 } = require('./utils/utils');
-const fetch = require('node-fetch');
 const queryString = require('query-string');
 
 const HParaSwapV5 = artifacts.require('HParaSwapV5');
@@ -43,7 +43,6 @@ const URL_PARASWAP_TRANSACTION =
   IGNORE_CHECKS_PARAM;
 
 const PARTNER_ADDRESS = '0x5cF829F5A8941f4CD2dD104e39486a69611CD013';
-const sleep = delay => new Promise(resolve => setTimeout(resolve, delay));
 
 async function getPriceData(
   srcToken,
@@ -70,22 +69,10 @@ async function getPriceData(
   });
 
   // Call Paraswap price API
-  let priceResponse;
-  let priceData;
-  let succ = false;
-  while (!succ) {
-    priceResponse = await fetch(priceReq);
-    priceData = await priceResponse.json();
-    succ = priceResponse.ok;
-    if (succ === false) {
-      if (priceData.error === 'Server too busy') {
-        // if the fail reason is 'Server too busy', try again
-        console.log('ParaSwap Server too busy... retry');
-        await sleep(500);
-      } else {
-        assert.fail(priceData.error);
-      }
-    }
+  const priceResponse = await callExternalApi(priceReq);
+  let priceData = priceResponse.json();
+  if (priceResponse.ok === false) {
+    assert.fail('ParaSwap price api fail:' + priceData.error);
   }
   return priceData;
 }
@@ -103,14 +90,11 @@ async function getTransactionData(priceData, slippageInBps) {
     partner: PARTNER_ADDRESS,
   };
 
-  const txResp = await fetch(URL_PARASWAP_TRANSACTION, {
-    method: 'post',
-    body: JSON.stringify(body),
-    headers: { 'Content-Type': 'application/json' },
-  });
+  const txResp = await callExternalApi(URL_PARASWAP_TRANSACTION, 'post', body);
   const txData = await txResp.json();
-  expect(txResp.ok, 'Paraswap transaction api response not ok: ' + txData.error)
-    .to.be.true;
+  if (txResp.ok === false) {
+    assert.fail('ParaSwap transaction api fail:' + txData.error);
+  }
   return txData;
 }
 

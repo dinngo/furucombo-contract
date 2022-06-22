@@ -1,6 +1,7 @@
 const { BN, ether, ZERO_ADDRESS } = require('@openzeppelin/test-helpers');
 const fetch = require('node-fetch');
 // const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+const sleep = delay => new Promise(resolve => setTimeout(resolve, delay));
 const {
   UNISWAPV2_FACTORY,
   SUSHISWAP_FACTORY,
@@ -227,6 +228,28 @@ async function impersonateAndInjectEther(address) {
   ]);
 }
 
+async function callExternalApi(request, method = 'get', body = '') {
+  let resp;
+  let maxTryTimes = 5;
+  while (maxTryTimes > 0) {
+    maxTryTimes--;
+    if (method === 'get') {
+      resp = await fetch(request);
+    } else {
+      resp = await fetch(request, {
+        method: method,
+        body: JSON.stringify(body),
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (resp.ok === true) {
+      return resp;
+    }
+    await sleep(500);
+  }
+}
+
 module.exports = {
   profileGas,
   evmSnapshot,
@@ -247,4 +270,5 @@ module.exports = {
   tokenProviderCurveGauge,
   tokenProviderYearn,
   impersonateAndInjectEther,
+  callExternalApi,
 };
