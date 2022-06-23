@@ -10,6 +10,7 @@ const {
   WETH_TOKEN,
   USDC_TOKEN,
   RecordHandlerResultSig,
+  MAX_EXTERNAL_API_RETRY_TIME,
 } = require('./constants');
 
 const { expect } = require('chai');
@@ -230,9 +231,9 @@ async function impersonateAndInjectEther(address) {
 
 async function callExternalApi(request, method = 'get', body = '') {
   let resp;
-  let maxTryTimes = 5;
-  while (maxTryTimes > 0) {
-    maxTryTimes--;
+  let tryTimes = MAX_EXTERNAL_API_RETRY_TIME;
+  while (tryTimes > 0) {
+    tryTimes--;
     if (method === 'get') {
       resp = await fetch(request);
     } else {
@@ -248,6 +249,7 @@ async function callExternalApi(request, method = 'get', body = '') {
     }
     await sleep(500);
   }
+  return resp; // return error resp from external api to caller.
 }
 
 module.exports = {
