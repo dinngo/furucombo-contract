@@ -1,7 +1,6 @@
 const ether = require('@openzeppelin/test-helpers/src/ether');
 
 module.exports = {
-  MAX_EXTERNAL_API_RETRY_TIME: 5,
   BLOCK_REWARD: '2', // ether
   NATIVE_TOKEN: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
   NATIVE_TOKEN_DECIMAL: 18,

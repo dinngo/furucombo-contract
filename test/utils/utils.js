@@ -229,9 +229,14 @@ async function impersonateAndInjectEther(address) {
   ]);
 }
 
-async function callExternalApi(request, method = 'get', body = '') {
+async function callExternalApi(
+  request,
+  method = 'get',
+  body = '',
+  retryTimes = 5
+) {
   let resp;
-  let tryTimes = MAX_EXTERNAL_API_RETRY_TIME;
+  let tryTimes = retryTimes;
   while (tryTimes > 0) {
     tryTimes--;
     if (method === 'get') {
