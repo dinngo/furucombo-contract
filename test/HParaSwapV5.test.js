@@ -328,7 +328,7 @@ contract('ParaSwapV5', function([_, user, user2]) {
 
   describe('token to ether', function() {
     const tokenAddress = USDC_TOKEN;
-    const tokenDecimal = 18;
+    const tokenDecimal = 6;
     const slippageInBps = 100; // 1%
     let providerAddress;
     let userBalance, proxyBalance;
@@ -400,7 +400,7 @@ contract('ParaSwapV5', function([_, user, user2]) {
     });
 
     it('should revert: not enough srcToken', async function() {
-      const amount = ether('5000');
+      const amount = mwei('5000');
       const to = this.hParaSwap.address;
 
       // Call Paraswap price API
@@ -424,7 +424,7 @@ contract('ParaSwapV5', function([_, user, user2]) {
       ]);
 
       // Transfer token to proxy
-      await this.token.transfer(this.proxy.address, amount.sub(ether('1')), {
+      await this.token.transfer(this.proxy.address, amount.sub(mwei('1')), {
         from: providerAddress,
       });
 
