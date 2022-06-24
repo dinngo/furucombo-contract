@@ -257,6 +257,10 @@ async function callExternalApi(
   return resp; // return error resp from external api to caller.
 }
 
+function mwei(num) {
+  return new BN(ethers.utils.parseUnits(num, 6).toString());
+}
+
 module.exports = {
   profileGas,
   evmSnapshot,
@@ -278,4 +282,5 @@ module.exports = {
   tokenProviderYearn,
   impersonateAndInjectEther,
   callExternalApi,
+  mwei,
 };

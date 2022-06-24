@@ -23,6 +23,7 @@ const {
   getCallData,
   tokenProviderYearn,
   callExternalApi,
+  mwei,
 } = require('./utils/utils');
 const queryString = require('query-string');
 
@@ -326,7 +327,7 @@ contract('ParaSwapV5', function([_, user, user2]) {
   }); // describe('ether to token') end
 
   describe('token to ether', function() {
-    const tokenAddress = DAI_TOKEN;
+    const tokenAddress = USDC_TOKEN;
     const tokenDecimal = 18;
     const slippageInBps = 100; // 1%
     let providerAddress;
@@ -343,7 +344,7 @@ contract('ParaSwapV5', function([_, user, user2]) {
     });
 
     it('normal', async function() {
-      const amount = ether('500');
+      const amount = mwei('500');
       const to = this.hParaSwap.address;
 
       // Call Paraswap price API
