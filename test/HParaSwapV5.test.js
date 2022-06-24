@@ -22,8 +22,9 @@ const {
   getHandlerReturn,
   getCallData,
   tokenProviderYearn,
+  callExternalApi,
+  mwei,
 } = require('./utils/utils');
-const fetch = require('node-fetch');
 const queryString = require('query-string');
 
 const HParaSwapV5 = artifacts.require('HParaSwapV5');
@@ -43,7 +44,6 @@ const URL_PARASWAP_TRANSACTION =
   IGNORE_CHECKS_PARAM;
 
 const PARTNER_ADDRESS = '0x5cF829F5A8941f4CD2dD104e39486a69611CD013';
-const sleep = delay => new Promise(resolve => setTimeout(resolve, delay));
 
 async function getPriceData(
   srcToken,
@@ -70,22 +70,10 @@ async function getPriceData(
   });
 
   // Call Paraswap price API
-  let priceResponse;
-  let priceData;
-  let succ = false;
-  while (!succ) {
-    priceResponse = await fetch(priceReq);
-    priceData = await priceResponse.json();
-    succ = priceResponse.ok;
-    if (succ === false) {
-      if (priceData.error === 'Server too busy') {
-        // if the fail reason is 'Server too busy', try again
-        console.log('ParaSwap Server too busy... retry');
-        await sleep(500);
-      } else {
-        assert.fail(priceData.error);
-      }
-    }
+  const priceResponse = await callExternalApi(priceReq);
+  let priceData = priceResponse.json();
+  if (priceResponse.ok === false) {
+    assert.fail('ParaSwap price api fail:' + priceData.error);
   }
   return priceData;
 }
@@ -103,14 +91,11 @@ async function getTransactionData(priceData, slippageInBps) {
     partner: PARTNER_ADDRESS,
   };
 
-  const txResp = await fetch(URL_PARASWAP_TRANSACTION, {
-    method: 'post',
-    body: JSON.stringify(body),
-    headers: { 'Content-Type': 'application/json' },
-  });
+  const txResp = await callExternalApi(URL_PARASWAP_TRANSACTION, 'post', body);
   const txData = await txResp.json();
-  expect(txResp.ok, 'Paraswap transaction api response not ok: ' + txData.error)
-    .to.be.true;
+  if (txResp.ok === false) {
+    assert.fail('ParaSwap transaction api fail:' + txData.error);
+  }
   return txData;
 }
 
@@ -342,8 +327,8 @@ contract('ParaSwapV5', function([_, user, user2]) {
   }); // describe('ether to token') end
 
   describe('token to ether', function() {
-    const tokenAddress = DAI_TOKEN;
-    const tokenDecimal = 18;
+    const tokenAddress = USDC_TOKEN;
+    const tokenDecimal = 6;
     const slippageInBps = 100; // 1%
     let providerAddress;
     let userBalance, proxyBalance;
@@ -359,7 +344,7 @@ contract('ParaSwapV5', function([_, user, user2]) {
     });
 
     it('normal', async function() {
-      const amount = ether('500');
+      const amount = mwei('500');
       const to = this.hParaSwap.address;
 
       // Call Paraswap price API
@@ -415,7 +400,7 @@ contract('ParaSwapV5', function([_, user, user2]) {
     });
 
     it('should revert: not enough srcToken', async function() {
-      const amount = ether('5000');
+      const amount = mwei('5000');
       const to = this.hParaSwap.address;
 
       // Call Paraswap price API
@@ -439,7 +424,7 @@ contract('ParaSwapV5', function([_, user, user2]) {
       ]);
 
       // Transfer token to proxy
-      await this.token.transfer(this.proxy.address, amount.sub(ether('1')), {
+      await this.token.transfer(this.proxy.address, amount.sub(mwei('1')), {
         from: providerAddress,
       });
 

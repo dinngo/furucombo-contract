@@ -1,6 +1,7 @@
 const { BN, ether, ZERO_ADDRESS } = require('@openzeppelin/test-helpers');
 const fetch = require('node-fetch');
 // const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+const sleep = delay => new Promise(resolve => setTimeout(resolve, delay));
 const {
   UNISWAPV2_FACTORY,
   SUSHISWAP_FACTORY,
@@ -9,6 +10,7 @@ const {
   WETH_TOKEN,
   USDC_TOKEN,
   RecordHandlerResultSig,
+  MAX_EXTERNAL_API_RETRY_TIME,
 } = require('./constants');
 
 const { expect } = require('chai');
@@ -227,6 +229,38 @@ async function impersonateAndInjectEther(address) {
   ]);
 }
 
+async function callExternalApi(
+  request,
+  method = 'get',
+  body = '',
+  retryTimes = 5
+) {
+  let resp;
+  let tryTimes = retryTimes;
+  while (tryTimes > 0) {
+    tryTimes--;
+    if (method === 'get') {
+      resp = await fetch(request);
+    } else {
+      resp = await fetch(request, {
+        method: method,
+        body: JSON.stringify(body),
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (resp.ok === true) {
+      return resp;
+    }
+    await sleep(500); // sleep 500ms.
+  }
+  return resp; // return error resp from external api to caller.
+}
+
+function mwei(num) {
+  return new BN(ethers.utils.parseUnits(num, 6).toString());
+}
+
 module.exports = {
   profileGas,
   evmSnapshot,
@@ -247,4 +281,6 @@ module.exports = {
   tokenProviderCurveGauge,
   tokenProviderYearn,
   impersonateAndInjectEther,
+  callExternalApi,
+  mwei,
 };
