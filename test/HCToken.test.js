@@ -51,7 +51,11 @@ contract('CToken', function([_, user]) {
     providerAddress = await tokenProviderUniV2(tokenAddress);
 
     this.registry = await Registry.new();
-    this.proxy = await Proxy.new(this.registry.address);
+    this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);
+    this.proxy = await Proxy.new(
+      this.registry.address,
+      this.feeRuleRegistry.address
+    );
     this.hCToken = await HCToken.new();
     await this.registry.register(
       this.hCToken.address,

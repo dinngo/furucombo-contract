@@ -237,6 +237,17 @@ function mwei(num) {
   return new BN(ethers.utils.parseUnits(num, 6).toString());
 }
 
+async function checkCacheClean(proxyAddr) {
+  expect(await web3.eth.getStorageAt(proxyAddr, STORAGE_KEY_MSG_SENDER)).to.be
+    .zero;
+  expect(await web3.eth.getStorageAt(proxyAddr, STORAGE_KEY_CUBE_COUNTER)).to.be
+    .zero;
+  expect(await web3.eth.getStorageAt(proxyAddr, STORAGE_KEY_FEE_RATE)).to.be
+    .zero;
+  expect(await web3.eth.getStorageAt(proxyAddr, STORAGE_KEY_FEE_COLLECTOR)).to
+    .be.zero;
+}
+
 module.exports = {
   profileGas,
   evmSnapshot,
@@ -260,4 +271,5 @@ module.exports = {
   impersonateAndInjectEther,
   callExternalApi,
   mwei,
+  checkCacheClean,
 };

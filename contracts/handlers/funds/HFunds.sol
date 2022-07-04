@@ -37,15 +37,16 @@ contract HFunds is HandlerBase {
         payable
         returns (uint256[] memory)
     {
-        _inject(tokens, amounts);
+        return _inject(tokens, amounts);
     }
 
     // Same as inject() and just to make another interface for different use case
     function addFunds(address[] calldata tokens, uint256[] calldata amounts)
         external
         payable
+        returns (uint256[] memory)
     {
-        _inject(tokens, amounts);
+        return _inject(tokens, amounts);
     }
 
     function sendTokens(
@@ -108,27 +109,31 @@ contract HFunds is HandlerBase {
         for (uint256 i = 0; i < tokens.length; i++) {
             if (tokens[i] == address(0)) {
                 if (address(this).balance < amounts[i]) {
-                    string memory errMsg = string(
-                        abi.encodePacked(
-                            "error: ",
-                            _uint2String(i),
-                            "_",
-                            _uint2String(address(this).balance)
-                        )
-                    );
+                    string memory errMsg =
+                        string(
+                            abi.encodePacked(
+                                "error: ",
+                                _uint2String(i),
+                                "_",
+                                _uint2String(address(this).balance)
+                            )
+                        );
                     _revertMsg("checkSlippage", errMsg);
                 }
             } else if (
                 IERC20(tokens[i]).balanceOf(address(this)) < amounts[i]
             ) {
-                string memory errMsg = string(
-                    abi.encodePacked(
-                        "error: ",
-                        _uint2String(i),
-                        "_",
-                        _uint2String(IERC20(tokens[i]).balanceOf(address(this)))
-                    )
-                );
+                string memory errMsg =
+                    string(
+                        abi.encodePacked(
+                            "error: ",
+                            _uint2String(i),
+                            "_",
+                            _uint2String(
+                                IERC20(tokens[i]).balanceOf(address(this))
+                            )
+                        )
+                    );
 
                 _revertMsg("checkSlippage", errMsg);
             }
@@ -141,11 +146,15 @@ contract HFunds is HandlerBase {
 
     function _inject(address[] calldata tokens, uint256[] calldata amounts)
         internal
+        returns (uint256[] memory)
     {
         if (tokens.length != amounts.length)
             _revertMsg("inject", "token and amount does not match");
         address sender = _getSender();
         uint256 feeRate = cache._getFeeRate();
+
+        uint256[] memory amountsInProxy = new uint256[](amounts.length);
+
         for (uint256 i = 0; i < tokens.length; i++) {
             IERC20(tokens[i]).safeTransferFrom(
                 sender,
@@ -155,11 +164,15 @@ contract HFunds is HandlerBase {
             if (feeRate > 0) {
                 uint256 fee = _calFee(amounts[i], feeRate);
                 IERC20(tokens[i]).safeTransfer(cache._getFeeCollector(), fee);
+                amountsInProxy[i] = amounts[i].sub(fee);
+            } else {
+                amountsInProxy[i] = amounts[i];
             }
 
             // Update involved token
             _updateToken(tokens[i]);
         }
+        return amountsInProxy;
     }
 
     function _calFee(uint256 _amount, uint256 _feeRate)

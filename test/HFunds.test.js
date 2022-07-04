@@ -85,9 +85,9 @@ contract('Funds', function([_, user, someone]) {
       balanceProxy = await tracker(this.proxy.address);
     });
 
-    it('inject', async function() {
-      const token = [this.token0.address];
-      const value = [ether('100')];
+    it('normal', async function() {
+      const token = [this.token0.address, this.token1.address];
+      const value = [ether('100'), ether('200')];
       const to = this.hFunds.address;
       const data = abi.simpleEncode('updateTokens(address[])', token);
       await this.token0.transfer(this.proxy.address, value[0], {
@@ -124,43 +124,10 @@ contract('Funds', function([_, user, someone]) {
       profileGas(receipt);
     });
 
-
-
-    it('add funds', async function() {
-      const token = [this.token0.address];
-      const value = [ether('100')];
-      const to = this.hFunds.address;
-      const data = abi.simpleEncode(
-        'addFunds(address[],uint256[])',
-        token,
-        value
-      );
-      await this.token0.transfer(user, value[0], {
-        from: providerAddresses[0],
-      });
-      await this.token0.approve(this.proxy.address, value[0], { from: user });
-
-      const receipt = await this.proxy.execMock(to, data, {
-        from: user,
-        value: ether('0.1'),
-      });
-
-      await expectEvent.inTransaction(receipt.tx, this.token0, 'Transfer', {
-        from: user,
-        to: this.proxy.address,
-        value: value[0],
-      });
-      await expectEvent.inTransaction(receipt.tx, this.token0, 'Transfer', {
-        from: this.proxy.address,
-        to: user,
-        value: value[0],
-      });
-      profileGas(receipt);
-    });
-
-    it('USDT', async function() {
-      const token = [this.usdt.address];
-      const value = [new BN('1000000')];
+    it('native token - zero address', async function() {
+      const token = [this.token0.address, ZERO_ADDRESS];
+      const msgValue = ether('0.1');
+      const value = [ether('200'), ether('1')];
       const to = this.hFunds.address;
       const data = abi.simpleEncode('updateTokens(address[])', token);
       // Transfer tokens to proxy first
@@ -195,11 +162,51 @@ contract('Funds', function([_, user, someone]) {
       profileGas(receipt);
     });
 
+    it('native token - 0xEEEE', async function() {
+      const token = [this.token0.address, NATIVE_TOKEN];
+      const msgValue = ether('0.1');
+      const value = [ether('200'), ether('1')];
+      const to = this.hFunds.address;
+      const data = abi.simpleEncode('updateTokens(address[])', token);
+      // Transfer tokens to proxy first
+      await this.token0.transfer(this.proxy.address, value[0], {
+        from: provider0Address,
+      });
+      // Proxy does not allow transfer ether from EOA so we use provider contract
+      await send.ether(ethProviderAddress, this.proxy.address, value[1]);
+      await balanceUser.get();
+
+      const receipt = await this.proxy.execMock(to, data, {
+        from: user,
+        value: msgValue,
+      });
+
+      const handlerReturn = getHandlerReturn(receipt, ['uint256[]'])[0];
+      // Verify token0
+      expect(handlerReturn[0]).to.be.bignumber.eq(value[0]);
+      expect(
+        await this.token0.balanceOf.call(this.proxy.address)
+      ).to.be.bignumber.zero;
+      expect(await this.token0.balanceOf.call(user)).to.be.bignumber.eq(
+        value[0]
+      );
+
+      // Verify ether
+      expect(handlerReturn[1]).to.be.bignumber.eq(value[1].add(msgValue)); // handlerReturn should include msg.value
+      expect(await balanceProxy.get()).to.be.bignumber.zero;
+      // user balance will not include msg.value because it is provided by user itself
+      expect(await balanceUser.delta()).to.be.bignumber.eq(value[1]);
+
+      profileGas(receipt);
+    });
+  });
+
   describe('multiple tokens', function() {
     before(async function() {
-      this.token0 = await IToken.at(tokenAddresses[0]);
-      this.token1 = await IToken.at(tokenAddresses[1]);
+      this.token0 = await IToken.at(token0Address);
+      this.token1 = await IToken.at(token1Address);
     });
+
     it('inject', async function() {
       const token = [this.token0.address, this.token1.address];
       const value = [ether('100'), ether('100')];
@@ -210,11 +217,11 @@ contract('Funds', function([_, user, someone]) {
         value
       );
       await this.token0.transfer(user, value[0], {
-        from: providerAddresses[0],
+        from: provider0Address,
       });
       await this.token0.approve(this.proxy.address, value[0], { from: user });
       await this.token1.transfer(user, value[1], {
-        from: providerAddresses[1],
+        from: provider1Address,
       });
       await this.token1.approve(this.proxy.address, value[1], { from: user });
 
@@ -251,36 +258,46 @@ contract('Funds', function([_, user, someone]) {
       const token = [this.token0.address, this.token1.address];
       const value = [ether('100'), ether('100')];
       const to = this.hFunds.address;
-      const data = abi.simpleEncode('updateTokens(address[])', token);
-      // Transfer tokens to proxy first
-      await this.token0.transfer(this.proxy.address, value[0], {
+      const data = abi.simpleEncode(
+        'inject(address[],uint256[])',
+        token,
+        value
+      );
+      await this.token0.transfer(user, value[0], {
         from: provider0Address,
       });
-      // Proxy does not allow transfer ether from EOA so we use provider contract
-      await send.ether(ethProviderAddress, this.proxy.address, value[1]);
-      await balanceUser.get();
+      await this.token0.approve(this.proxy.address, value[0], { from: user });
+      await this.token1.transfer(user, value[1], {
+        from: provider1Address,
+      });
+      await this.token1.approve(this.proxy.address, value[1], { from: user });
 
       const receipt = await this.proxy.execMock(to, data, {
         from: user,
-        value: msgValue,
+        value: ether('1'),
       });
 
-      const handlerReturn = getHandlerReturn(receipt, ['uint256[]'])[0];
-      // Verify token0
-      expect(handlerReturn[0]).to.be.bignumber.eq(value[0]);
-      expect(
-        await this.token0.balanceOf.call(this.proxy.address)
-      ).to.be.bignumber.zero;
-      expect(await this.token0.balanceOf.call(user)).to.be.bignumber.eq(
-        value[0]
-      );
+      await expectEvent.inTransaction(receipt.tx, this.token0, 'Transfer', {
+        from: user,
+        to: this.proxy.address,
+        value: value[0],
+      });
+      await expectEvent.inTransaction(receipt.tx, this.token0, 'Transfer', {
+        from: this.proxy.address,
+        to: user,
+        value: value[0],
+      });
 
-      // Verify ether
-      expect(handlerReturn[1]).to.be.bignumber.eq(value[1].add(msgValue)); // handlerReturn should include msg.value
-      expect(await balanceProxy.get()).to.be.bignumber.zero;
-      // user balance will not include msg.value because it is provided by user itself
-      expect(await balanceUser.delta()).to.be.bignumber.eq(value[1]);
-
+      await expectEvent.inTransaction(receipt.tx, this.token1, 'Transfer', {
+        from: user,
+        to: this.proxy.address,
+        value: value[1],
+      });
+      await expectEvent.inTransaction(receipt.tx, this.token1, 'Transfer', {
+        from: this.proxy.address,
+        to: user,
+        value: value[1],
+      });
       profileGas(receipt);
     });
   });
@@ -312,7 +329,40 @@ contract('Funds', function([_, user, someone]) {
         });
 
         const handlerReturn = getHandlerReturn(receipt, ['uint256[]'])[0];
+
         expect(handlerReturn[0]).to.be.bignumber.eq(value[0]);
+        await expectEvent.inTransaction(receipt.tx, this.token0, 'Transfer', {
+          from: user,
+          to: this.proxy.address,
+          value: value[0],
+        });
+        await expectEvent.inTransaction(receipt.tx, this.token0, 'Transfer', {
+          from: this.proxy.address,
+          to: user,
+          value: value[0],
+        });
+        profileGas(receipt);
+      });
+
+      it('add funds', async function() {
+        const token = [this.token0.address];
+        const value = [ether('100')];
+        const to = this.hFunds.address;
+        const data = abi.simpleEncode(
+          'addFunds(address[],uint256[])',
+          token,
+          value
+        );
+        await this.token0.transfer(user, value[0], {
+          from: provider0Address,
+        });
+        await this.token0.approve(this.proxy.address, value[0], { from: user });
+
+        const receipt = await this.proxy.execMock(to, data, {
+          from: user,
+          value: ether('0.1'),
+        });
+
         await expectEvent.inTransaction(receipt.tx, this.token0, 'Transfer', {
           from: user,
           to: this.proxy.address,
@@ -404,6 +454,52 @@ contract('Funds', function([_, user, someone]) {
         });
 
         expect(handlerReturn[1]).to.be.bignumber.eq(value[1]);
+        await expectEvent.inTransaction(receipt.tx, this.token1, 'Transfer', {
+          from: user,
+          to: this.proxy.address,
+          value: value[1],
+        });
+        await expectEvent.inTransaction(receipt.tx, this.token1, 'Transfer', {
+          from: this.proxy.address,
+          to: user,
+          value: value[1],
+        });
+        profileGas(receipt);
+      });
+      it('add funds', async function() {
+        const token = [this.token0.address, this.token1.address];
+        const value = [ether('100'), ether('100')];
+        const to = this.hFunds.address;
+        const data = abi.simpleEncode(
+          'inject(address[],uint256[])',
+          token,
+          value
+        );
+        await this.token0.transfer(user, value[0], {
+          from: provider0Address,
+        });
+        await this.token0.approve(this.proxy.address, value[0], { from: user });
+        await this.token1.transfer(user, value[1], {
+          from: provider1Address,
+        });
+        await this.token1.approve(this.proxy.address, value[1], { from: user });
+
+        const receipt = await this.proxy.execMock(to, data, {
+          from: user,
+          value: ether('1'),
+        });
+
+        await expectEvent.inTransaction(receipt.tx, this.token0, 'Transfer', {
+          from: user,
+          to: this.proxy.address,
+          value: value[0],
+        });
+        await expectEvent.inTransaction(receipt.tx, this.token0, 'Transfer', {
+          from: this.proxy.address,
+          to: user,
+          value: value[0],
+        });
+
         await expectEvent.inTransaction(receipt.tx, this.token1, 'Transfer', {
           from: user,
           to: this.proxy.address,
