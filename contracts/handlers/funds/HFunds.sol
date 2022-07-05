@@ -11,6 +11,8 @@ contract HFunds is HandlerBase {
     using SafeERC20 for IERC20;
     using LibFeeStorage for mapping(bytes32 => bytes32);
 
+    event ChargeFee(address indexed tokenIn, uint256 indexed feeAmount);
+
     function getContractName() public pure override returns (string memory) {
         return "HFunds";
     }
@@ -109,31 +111,27 @@ contract HFunds is HandlerBase {
         for (uint256 i = 0; i < tokens.length; i++) {
             if (tokens[i] == address(0)) {
                 if (address(this).balance < amounts[i]) {
-                    string memory errMsg =
-                        string(
-                            abi.encodePacked(
-                                "error: ",
-                                _uint2String(i),
-                                "_",
-                                _uint2String(address(this).balance)
-                            )
-                        );
+                    string memory errMsg = string(
+                        abi.encodePacked(
+                            "error: ",
+                            _uint2String(i),
+                            "_",
+                            _uint2String(address(this).balance)
+                        )
+                    );
                     _revertMsg("checkSlippage", errMsg);
                 }
             } else if (
                 IERC20(tokens[i]).balanceOf(address(this)) < amounts[i]
             ) {
-                string memory errMsg =
-                    string(
-                        abi.encodePacked(
-                            "error: ",
-                            _uint2String(i),
-                            "_",
-                            _uint2String(
-                                IERC20(tokens[i]).balanceOf(address(this))
-                            )
-                        )
-                    );
+                string memory errMsg = string(
+                    abi.encodePacked(
+                        "error: ",
+                        _uint2String(i),
+                        "_",
+                        _uint2String(IERC20(tokens[i]).balanceOf(address(this)))
+                    )
+                );
 
                 _revertMsg("checkSlippage", errMsg);
             }
@@ -165,6 +163,7 @@ contract HFunds is HandlerBase {
                 uint256 fee = _calFee(amounts[i], feeRate);
                 IERC20(tokens[i]).safeTransfer(cache._getFeeCollector(), fee);
                 amountsInProxy[i] = amounts[i].sub(fee);
+                emit ChargeFee(tokens[i], fee);
             } else {
                 amountsInProxy[i] = amounts[i];
             }

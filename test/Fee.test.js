@@ -26,6 +26,7 @@ const {
   OMG_PROVIDER,
   KNC_TOKEN,
   KNC_PROVIDER,
+  NATIVE_TOKEN,
 } = require('./utils/constants');
 const {
   evmRevert,
@@ -161,6 +162,11 @@ contract('Fee', function([_, feeCollector, user]) {
         .div(BASE);
       const feeETH = ethAmount.mul(feeRateUser).div(BASE);
 
+      expectEvent(receipt, 'ChargeFee', {
+        tokenIn: NATIVE_TOKEN,
+        feeAmount: feeETH,
+      });
+
       // Fee collector
       expect(await balanceFeeCollector.delta()).to.be.bignumber.eq(feeETH);
       // Proxy
@@ -196,6 +202,13 @@ contract('Fee', function([_, feeCollector, user]) {
         .div(BASE)
         .div(BASE);
       const feeToken = tokenAmount.mul(feeRateUser).div(BASE);
+
+      // Verify event
+      await expectEvent.inTransaction(receipt.tx, this.proxy, 'ChargeFee', {
+        tokenIn: tokenAddress,
+        feeAmount: feeToken,
+      });
+
       // Fee collector
       expect(await balanceFeeCollector.delta()).to.be.zero;
       expect(await this.token.balanceOf.call(feeCollector)).to.be.bignumber.eq(
@@ -236,6 +249,13 @@ contract('Fee', function([_, feeCollector, user]) {
         .div(BASE)
         .div(BASE);
       const feeToken = usdtAmount.mul(feeRateUser).div(BASE);
+
+      // Verify event
+      await expectEvent.inTransaction(receipt.tx, this.proxy, 'ChargeFee', {
+        tokenIn: USDT_TOKEN,
+        feeAmount: feeToken,
+      });
+
       // Fee collector
       expect(await balanceFeeCollector.delta()).to.be.zero;
       expect(await this.usdt.balanceOf.call(feeCollector)).to.be.bignumber.eq(
@@ -276,6 +296,13 @@ contract('Fee', function([_, feeCollector, user]) {
         .div(BASE)
         .div(BASE);
       const feeToken = hbtcAmount.mul(feeRateUser).div(BASE);
+
+      // Verify event
+      await expectEvent.inTransaction(receipt.tx, this.proxy, 'ChargeFee', {
+        tokenIn: HBTC_TOKEN,
+        feeAmount: feeToken,
+      });
+
       // Fee collector
       expect(await balanceFeeCollector.delta()).to.be.zero;
       expect(await this.hbtc.balanceOf.call(feeCollector)).to.be.bignumber.eq(
@@ -316,6 +343,13 @@ contract('Fee', function([_, feeCollector, user]) {
         .div(BASE)
         .div(BASE);
       const feeToken = omgAmount.mul(feeRateUser).div(BASE);
+
+      // Verify event
+      await expectEvent.inTransaction(receipt.tx, this.proxy, 'ChargeFee', {
+        tokenIn: OMG_TOKEN,
+        feeAmount: feeToken,
+      });
+
       // Fee collector
       expect(await balanceFeeCollector.delta()).to.be.zero;
       expect(await this.omg.balanceOf.call(feeCollector)).to.be.bignumber.eq(
@@ -357,6 +391,19 @@ contract('Fee', function([_, feeCollector, user]) {
       const feeRateUser = BASIS_FEE_RATE;
       const feeETH = ethAmount.mul(feeRateUser).div(BASE);
       const feeToken = tokenAmount.mul(feeRateUser).div(BASE);
+
+      // Verify event
+      await expectEvent.inTransaction(receipt.tx, this.proxy, 'ChargeFee', {
+        tokenIn: NATIVE_TOKEN,
+        feeAmount: feeETH,
+      });
+
+      // Verify event
+      await expectEvent.inTransaction(receipt.tx, this.proxy, 'ChargeFee', {
+        tokenIn: tokenAddress,
+        feeAmount: feeToken,
+      });
+
       // Fee collector
       expect(await balanceFeeCollector.delta()).to.be.bignumber.eq(feeETH);
       expect(await this.token.balanceOf.call(feeCollector)).to.be.bignumber.eq(
@@ -401,6 +448,19 @@ contract('Fee', function([_, feeCollector, user]) {
         .div(BASE);
       const feeETH = ethAmount.mul(feeRateUser).div(BASE);
       const feeToken = tokenAmount.mul(feeRateUser).div(BASE);
+
+      // Verify event
+      await expectEvent.inTransaction(receipt.tx, this.proxy, 'ChargeFee', {
+        tokenIn: NATIVE_TOKEN,
+        feeAmount: feeETH,
+      });
+
+      // Verify event
+      await expectEvent.inTransaction(receipt.tx, this.proxy, 'ChargeFee', {
+        tokenIn: tokenAddress,
+        feeAmount: feeToken,
+      });
+
       // Fee collector
       expect(await balanceFeeCollector.delta()).to.be.bignumber.eq(feeETH);
       expect(await this.token.balanceOf.call(feeCollector)).to.be.bignumber.eq(
@@ -444,6 +504,19 @@ contract('Fee', function([_, feeCollector, user]) {
         .div(BASE);
       const feeToken = tokenAmount.mul(feeRateUser).div(BASE);
       const feeToken2 = token2Amount.mul(feeRateUser).div(BASE);
+
+      // Verify event
+      await expectEvent.inTransaction(receipt.tx, this.proxy, 'ChargeFee', {
+        tokenIn: tokenAddress,
+        feeAmount: feeToken,
+      });
+
+      // Verify event
+      await expectEvent.inTransaction(receipt.tx, this.proxy, 'ChargeFee', {
+        tokenIn: token2Address,
+        feeAmount: feeToken2,
+      });
+
       // Fee collector
       expect(await this.token.balanceOf.call(feeCollector)).to.be.bignumber.eq(
         feeToken

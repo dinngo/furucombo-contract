@@ -36,6 +36,7 @@ contract Proxy is IProxy, Storage, Config {
         bytes4 indexed selector,
         bytes result
     );
+    event ChargeFee(address indexed tokenIn, uint256 indexed feeAmount);
 
     modifier isNotBanned() {
         require(registry.bannedAgents(address(this)) == 0, "Banned");
@@ -47,6 +48,8 @@ contract Proxy is IProxy, Storage, Config {
         _;
     }
 
+    address private constant NATIVE_TOKEN =
+        0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
     IRegistry public immutable registry;
     IFeeRuleRegistry public immutable feeRuleRegistry;
 
@@ -345,6 +348,7 @@ contract Proxy is IProxy, Storage, Config {
             // Process ether fee
             uint256 feeEth = _calFee(msg.value, feeRate);
             payable(cache._getFeeCollector()).transfer(feeEth);
+            emit ChargeFee(NATIVE_TOKEN, feeEth);
         }
     }
 
