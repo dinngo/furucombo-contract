@@ -25,6 +25,7 @@ const {
   tokenProviderUniV2,
 } = require('./utils/utils');
 
+const FeeRuleRegistry = artifacts.require('FeeRuleRegistry');
 const HUniswapV3 = artifacts.require('HUniswapV3');
 const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('ProxyMock');
@@ -55,7 +56,11 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
     );
     this.router = await ISwapRouter.at(UNISWAPV3_ROUTER);
     this.quoter = await IQuoter.at(UNISWAPV3_QUOTER);
-    this.proxy = await Proxy.new(this.registry.address);
+    this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);
+    this.proxy = await Proxy.new(
+      this.registry.address,
+      this.feeRuleRegistry.address
+    );
     this.token = await IToken.at(tokenAddress);
     this.token2 = await IToken.at(token2Address);
     this.weth = await IToken.at(WETH_TOKEN);

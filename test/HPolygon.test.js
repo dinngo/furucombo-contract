@@ -26,6 +26,7 @@ const {
 } = require('./utils/utils');
 const { MAX_UINT256 } = require('@openzeppelin/test-helpers/src/constants');
 
+const FeeRuleRegistry = artifacts.require('FeeRuleRegistry');
 const HPolygon = artifacts.require('HPolygon');
 const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('ProxyMock');
@@ -45,7 +46,11 @@ contract('Polygon Token Bridge', function([_, user]) {
     maticProviderAddress = await tokenProviderUniV2(MATIC_TOKEN);
 
     this.registry = await Registry.new();
-    this.proxy = await Proxy.new(this.registry.address);
+    this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);
+    this.proxy = await Proxy.new(
+      this.registry.address,
+      this.feeRuleRegistry.address
+    );
     this.hPolygon = await HPolygon.new();
     await this.registry.register(
       this.hPolygon.address,

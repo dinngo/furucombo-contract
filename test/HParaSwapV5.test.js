@@ -27,6 +27,7 @@ const {
 } = require('./utils/utils');
 const queryString = require('query-string');
 
+const FeeRuleRegistry = artifacts.require('FeeRuleRegistry');
 const HParaSwapV5 = artifacts.require('HParaSwapV5');
 const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('ProxyMock');
@@ -118,7 +119,11 @@ contract('ParaSwapV5', function([_, user, user2]) {
       this.hParaSwap.address,
       utils.asciiToHex('ParaSwapV5')
     );
-    this.proxy = await Proxy.new(this.registry.address);
+    this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);
+    this.proxy = await Proxy.new(
+      this.registry.address,
+      this.feeRuleRegistry.address
+    );
   });
 
   beforeEach(async function() {

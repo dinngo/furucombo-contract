@@ -19,7 +19,7 @@ const {
   DAI_TOKEN,
   DAI_PROVIDER,
   USDT_TOKEN,
-  USDT_PROVIDER,
+  // USDT_PROVIDER,
   HBTC_TOKEN,
   HBTC_PROVIDER,
   OMG_TOKEN,
@@ -32,6 +32,8 @@ const {
   evmSnapshot,
   profileGas,
   checkCacheClean,
+  tokenProviderUniV2,
+  impersonateAndInjectEther,
 } = require('./utils/utils');
 
 const Proxy = artifacts.require('Proxy');
@@ -52,11 +54,11 @@ const RULE2_REQUIREMENT = ether('10'); // should match the verify requirement in
 
 contract('Fee', function([_, feeCollector, user]) {
   const tokenAddress = DAI_TOKEN;
-  const providerAddress = DAI_PROVIDER;
+  // const providerAddress = DAI_PROVIDER;
   const token2Address = KNC_TOKEN;
-  const provider2Address = KNC_PROVIDER;
+  // const provider2Address = KNC_PROVIDER;
   const rule1TokenAddress = COMBO_TOKEN;
-  const rule1TokenProviderAddress = COMBO_PROVIDER;
+  // const rule1TokenProviderAddress = COMBO_PROVIDER;
   const ethAmount = ether('10');
   const tokenAmount = ether('100');
   const token2Amount = ether('100');
@@ -93,23 +95,32 @@ contract('Fee', function([_, feeCollector, user]) {
     );
     // Prepare
     this.token = await IToken.at(tokenAddress);
+    const providerAddress = await tokenProviderUniV2(this.token.address);
     await this.token.transfer(user, tokenAmount, { from: providerAddress });
     await this.token.approve(this.proxy.address, tokenAmount, { from: user });
     this.rule1Token = await IToken.at(rule1TokenAddress);
+    const rule1TokenProviderAddress = await tokenProviderUniV2(
+      this.rule1Token.address
+    );
     await this.rule1Token.transfer(user, RULE1_REQUIREMENT, {
       from: rule1TokenProviderAddress,
     });
     // Prepare token
     this.token2 = await IToken.at(token2Address);
+    const provider2Address = await tokenProviderUniV2(this.token2.address);
     await this.token2.transfer(user, token2Amount, { from: provider2Address });
     await this.token2.approve(this.proxy.address, token2Amount, { from: user });
     this.usdt = await IUsdt.at(USDT_TOKEN);
+    const USDT_PROVIDER = await tokenProviderUniV2(this.usdt.address);
     await this.usdt.transfer(user, usdtAmount, { from: USDT_PROVIDER });
     await this.usdt.approve(this.proxy.address, usdtAmount, { from: user });
     this.hbtc = await IToken.at(HBTC_TOKEN);
+    // const HBTC_PROVIDER = await tokenProviderUniV2(this.hbtc.address);
+    impersonateAndInjectEther(HBTC_PROVIDER);
     await this.hbtc.transfer(user, hbtcAmount, { from: HBTC_PROVIDER });
     await this.hbtc.approve(this.proxy.address, hbtcAmount, { from: user });
     this.omg = await IToken.at(OMG_TOKEN);
+    impersonateAndInjectEther(OMG_PROVIDER);
     await this.omg.transfer(user, omgAmount, { from: OMG_PROVIDER });
     await this.omg.approve(this.proxy.address, omgAmount, { from: user });
   });
@@ -149,15 +160,14 @@ contract('Fee', function([_, feeCollector, user]) {
         .div(BASE)
         .div(BASE);
       const feeETH = ethAmount.mul(feeRateUser).div(BASE);
+
       // Fee collector
       expect(await balanceFeeCollector.delta()).to.be.bignumber.eq(feeETH);
       // Proxy
       expect(await balanceProxy.delta()).to.be.zero;
       // User
       expect(await balanceUser.delta()).to.be.bignumber.eq(
-        ether('0')
-          .sub(feeETH)
-          .sub(new BN(receipt.receipt.gasUsed))
+        ether('0').sub(feeETH)
       );
     });
 
@@ -195,9 +205,7 @@ contract('Fee', function([_, feeCollector, user]) {
       expect(await balanceProxy.delta()).to.be.zero;
       expect(await this.token.balanceOf.call(this.proxy.address)).to.be.zero;
       // User
-      expect(await balanceUser.delta()).to.be.bignumber.eq(
-        ether('0').sub(new BN(receipt.receipt.gasUsed))
-      );
+      expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
       expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
         tokenAmount.sub(feeToken)
       );
@@ -237,9 +245,7 @@ contract('Fee', function([_, feeCollector, user]) {
       expect(await balanceProxy.delta()).to.be.zero;
       expect(await this.usdt.balanceOf.call(this.proxy.address)).to.be.zero;
       // User
-      expect(await balanceUser.delta()).to.be.bignumber.eq(
-        ether('0').sub(new BN(receipt.receipt.gasUsed))
-      );
+      expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
       expect(await this.usdt.balanceOf.call(user)).to.be.bignumber.eq(
         usdtAmount.sub(feeToken)
       );
@@ -279,9 +285,7 @@ contract('Fee', function([_, feeCollector, user]) {
       expect(await balanceProxy.delta()).to.be.zero;
       expect(await this.hbtc.balanceOf.call(this.proxy.address)).to.be.zero;
       // User
-      expect(await balanceUser.delta()).to.be.bignumber.eq(
-        ether('0').sub(new BN(receipt.receipt.gasUsed))
-      );
+      expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
       expect(await this.hbtc.balanceOf.call(user)).to.be.bignumber.eq(
         hbtcAmount.sub(feeToken)
       );
@@ -321,9 +325,7 @@ contract('Fee', function([_, feeCollector, user]) {
       expect(await balanceProxy.delta()).to.be.zero;
       expect(await this.omg.balanceOf.call(this.proxy.address)).to.be.zero;
       // User
-      expect(await balanceUser.delta()).to.be.bignumber.eq(
-        ether('0').sub(new BN(receipt.receipt.gasUsed))
-      );
+      expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
       expect(await this.omg.balanceOf.call(user)).to.be.bignumber.eq(
         omgAmount.sub(feeToken)
       );
@@ -365,9 +367,7 @@ contract('Fee', function([_, feeCollector, user]) {
       expect(await this.token.balanceOf.call(this.proxy.address)).to.be.zero;
       // User
       expect(await balanceUser.delta()).to.be.bignumber.eq(
-        ether('0')
-          .sub(feeETH)
-          .sub(new BN(receipt.receipt.gasUsed))
+        ether('0').sub(feeETH)
       );
       expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
         tokenAmount.sub(feeToken)
@@ -411,9 +411,7 @@ contract('Fee', function([_, feeCollector, user]) {
       expect(await this.token.balanceOf.call(this.proxy.address)).to.be.zero;
       // User
       expect(await balanceUser.delta()).to.be.bignumber.eq(
-        ether('0')
-          .sub(feeETH)
-          .sub(new BN(receipt.receipt.gasUsed))
+        ether('0').sub(feeETH)
       );
       expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
         tokenAmount.sub(feeToken)
@@ -457,9 +455,7 @@ contract('Fee', function([_, feeCollector, user]) {
       expect(await this.token.balanceOf.call(this.proxy.address)).to.be.zero;
       expect(await this.token2.balanceOf.call(this.proxy.address)).to.be.zero;
       // User
-      expect(await balanceUser.delta()).to.be.bignumber.eq(
-        ether('0').sub(new BN(receipt.receipt.gasUsed))
-      );
+      expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
       expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
         tokenAmount.sub(feeToken)
       );
@@ -500,9 +496,7 @@ contract('Fee', function([_, feeCollector, user]) {
       expect(await balanceProxy.delta()).to.be.zero;
       expect(await this.token.balanceOf.call(this.proxy.address)).to.be.zero;
       // User
-      expect(await balanceUser.delta()).to.be.bignumber.eq(
-        ether('0').sub(new BN(receipt.receipt.gasUsed))
-      );
+      expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
       expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
         tokenAmount
       );

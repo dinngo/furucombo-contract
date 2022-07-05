@@ -23,6 +23,7 @@ const {
   tokenProviderCurveGauge,
 } = require('./utils/utils');
 
+const FeeRuleRegistry = artifacts.require('FeeRuleRegistry');
 const Proxy = artifacts.require('ProxyMock');
 const Registry = artifacts.require('Registry');
 const HCurve = artifacts.require('HCurve');
@@ -39,7 +40,11 @@ contract('Curve Crypto', function([_, user]) {
       this.hCurve.address,
       utils.asciiToHex('HCurve')
     );
-    this.proxy = await Proxy.new(this.registry.address);
+    this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);
+    this.proxy = await Proxy.new(
+      this.registry.address,
+      this.feeRuleRegistry.address
+    );
     this.tricryptoSwap = await ICurveHandler.at(CURVE_TRICRYPTO_SWAP);
     this.tricryptoDeposit = await ICurveHandler.at(CURVE_TRICRYPTO_DEPOSIT);
   });

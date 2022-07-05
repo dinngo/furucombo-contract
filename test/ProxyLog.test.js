@@ -13,6 +13,7 @@ const { expect } = require('chai');
 
 const { evmRevert, evmSnapshot, getFuncSig } = require('./utils/utils');
 
+const FeeRuleRegistry = artifacts.require('FeeRuleRegistry');
 const Foo = artifacts.require('Foo');
 const FooFactory = artifacts.require('FooFactory');
 const FooHandler = artifacts.require('FooHandler');
@@ -26,7 +27,11 @@ contract('ProxyLog', function([_, deployer, user]) {
 
   before(async function() {
     this.registry = await Registry.new();
-    this.proxy = await Proxy.new(this.registry.address);
+    this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);
+    this.proxy = await Proxy.new(
+      this.registry.address,
+      this.feeRuleRegistry.address
+    );
   });
 
   beforeEach(async function() {
@@ -69,8 +74,14 @@ contract('ProxyLog', function([_, deployer, user]) {
         abi.simpleEncode('bar(uint256,uint256):(uint256)', indices[1], nums[1]),
         abi.simpleEncode('bar(uint256,uint256):(uint256)', indices[2], nums[2]),
       ];
+      const ruleIndex = [];
       const selector = getFuncSig(FooHandler, 'bar');
-      const receipt = await this.proxy.batchExec(tos, configs, datas);
+      const receipt = await this.proxy.batchExec(
+        tos,
+        configs,
+        datas,
+        ruleIndex
+      );
       const result = [
         await this.foo0.accounts.call(this.proxy.address),
         await this.foo1.accounts.call(this.proxy.address),
@@ -129,15 +140,22 @@ contract('ProxyLog', function([_, deployer, user]) {
       const configs = [
         '0x0000000000000000000000000000000000000000000000000000000000000000',
       ];
+
       const datas = [
         abi.simpleEncode('bar1(address,bytes32)', this.foo.address, a),
       ];
       const selector = getFuncSig(Foo4Handler, 'bar1');
-
-      const receipt = await this.proxy.batchExec(tos, configs, datas, {
-        from: user,
-        value: ether('1'),
-      });
+      const ruleIndex = [];
+      const receipt = await this.proxy.batchExec(
+        tos,
+        configs,
+        datas,
+        ruleIndex,
+        {
+          from: user,
+          value: ether('1'),
+        }
+      );
 
       expect(await this.foo.bValue.call()).eq(a);
       expectEvent(receipt, 'LogBegin', {
@@ -162,6 +180,7 @@ contract('ProxyLog', function([_, deployer, user]) {
         '0x0001000000000000000000000000000000000000000000000000000000000000',
         '0x0100000000000000000200ffffffffffffffffffffffffffffffffffffffffff',
       ];
+
       const datas = [
         abi.simpleEncode('bar(address)', this.foo.address),
         abi.simpleEncode('bar1(address,bytes32)', this.foo.address, a),
@@ -171,10 +190,17 @@ contract('ProxyLog', function([_, deployer, user]) {
         getFuncSig(Foo4Handler, 'bar1'),
       ];
 
-      const receipt = await this.proxy.batchExec(tos, configs, datas, {
-        from: user,
-        value: ether('1'),
-      });
+      const ruleIndex = [];
+      const receipt = await this.proxy.batchExec(
+        tos,
+        configs,
+        datas,
+        ruleIndex,
+        {
+          from: user,
+          value: ether('1'),
+        }
+      );
       // Pad the data by replacing the parameter part with r, which is the execution result of the first handler
       const paddedData = '0x' + datas[1].toString('hex', 0, 36) + r.slice(2);
 
@@ -234,10 +260,17 @@ contract('ProxyLog', function([_, deployer, user]) {
       ]);
       const n = secAmt.mul(ratio).div(ether('1'));
 
-      const receipt = await this.proxy.batchExec(tos, configs, datas, {
-        from: user,
-        value: ether('1'),
-      });
+      const ruleIndex = [];
+      const receipt = await this.proxy.batchExec(
+        tos,
+        configs,
+        datas,
+        ruleIndex,
+        {
+          from: user,
+          value: ether('1'),
+        }
+      );
       // Pad the data by replacing the parameter part with 0.7 * the execution result of first handler
       const paddedData =
         '0x' +
@@ -292,10 +325,17 @@ contract('ProxyLog', function([_, deployer, user]) {
         getFuncSig(Foo4Handler, 'bar2'),
       ];
 
-      const receipt = await this.proxy.batchExec(tos, configs, datas, {
-        from: user,
-        value: ether('1'),
-      });
+      const ruleIndex = [];
+      const receipt = await this.proxy.batchExec(
+        tos,
+        configs,
+        datas,
+        ruleIndex,
+        {
+          from: user,
+          value: ether('1'),
+        }
+      );
       // Pad the data by replacing the third parameter part with the execution result of first handler
       const paddedData = '0x' + datas[1].toString('hex', 0, 68) + r.slice(2);
 
@@ -340,10 +380,17 @@ contract('ProxyLog', function([_, deployer, user]) {
         getFuncSig(Foo4Handler, 'barUint1'),
       ];
 
-      const receipt = await this.proxy.batchExec(tos, configs, datas, {
-        from: user,
-        value: ether('1'),
-      });
+      const ruleIndex = [];
+      const receipt = await this.proxy.batchExec(
+        tos,
+        configs,
+        datas,
+        ruleIndex,
+        {
+          from: user,
+          value: ether('1'),
+        }
+      );
       // Pad the data by replacing the parameter part with 0.5 * the execution result of first handler
       const paddedData =
         '0x' +

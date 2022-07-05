@@ -10,7 +10,10 @@ const {
   WETH_TOKEN,
   USDC_TOKEN,
   RecordHandlerResultSig,
-  MAX_EXTERNAL_API_RETRY_TIME,
+  STORAGE_KEY_MSG_SENDER,
+  STORAGE_KEY_CUBE_COUNTER,
+  STORAGE_KEY_FEE_RATE,
+  STORAGE_KEY_FEE_COLLECTOR,
 } = require('./constants');
 
 const { expect } = require('chai');
