@@ -16,8 +16,13 @@ const utils = web3.utils;
 
 const { expect } = require('chai');
 
-const { COMBO_TOKEN, COMBO_PROVIDER } = require('./utils/constants');
-const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
+const { COMBO_TOKEN } = require('./utils/constants');
+const {
+  evmRevert,
+  evmSnapshot,
+  profileGas,
+  tokenProviderUniV2,
+} = require('./utils/utils');
 
 const FeeRuleRegistry = artifacts.require('FeeRuleRegistry');
 const RuleMock1 = artifacts.require('RuleMock1');
@@ -33,8 +38,6 @@ const RULE2_REQUIREMENT = ether('10'); // should match the verify requirement in
 
 contract('FeeRuleRegistry', function([_, feeCollector, user, someone]) {
   const tokenAddress = COMBO_TOKEN; // should match the verify requirement token in RuleMock1 (COMBO)
-  const providerAddress = COMBO_PROVIDER;
-
   let id;
 
   before(async function() {
@@ -42,6 +45,7 @@ contract('FeeRuleRegistry', function([_, feeCollector, user, someone]) {
     this.rule1 = await RuleMock1.new();
     this.rule2 = await RuleMock2.new();
     this.token = await IToken.at(tokenAddress);
+    this.providerAddress = await tokenProviderUniV2(tokenAddress);
   });
 
   beforeEach(async function() {
@@ -211,7 +215,7 @@ contract('FeeRuleRegistry', function([_, feeCollector, user, someone]) {
       expect(await this.registry.rules.call('0')).to.be.eq(this.rule1.address);
       // transfer some token to user to make him qualified for rule1
       await this.token.transfer(user, RULE1_REQUIREMENT, {
-        from: providerAddress,
+        from: this.providerAddress,
       });
       expect(await this.token.balanceOf(user)).to.be.bignumber.eq(
         RULE1_REQUIREMENT
@@ -283,7 +287,7 @@ contract('FeeRuleRegistry', function([_, feeCollector, user, someone]) {
       expect(await this.registry.rules.call('1')).to.be.eq(this.rule2.address);
       // transfer some token to user to make him qualified for rule1
       await this.token.transfer(user, RULE1_REQUIREMENT, {
-        from: providerAddress,
+        from: this.providerAddress,
       });
       expect(await this.token.balanceOf(user)).to.be.bignumber.eq(
         RULE1_REQUIREMENT
@@ -335,7 +339,12 @@ contract('FeeRuleRegistry', function([_, feeCollector, user, someone]) {
 
     it('multiple indexes: not qualified without basis', async function() {
       // empty 'someone' to make him not qualified for rule2
-      await send.ether(someone, ZERO_ADDRESS, ether('99.9'));
+      await send.ether(
+        someone,
+        ZERO_ADDRESS,
+        (await balance.current(someone)).sub(ether('0.1'))
+      );
+
       const queryAddr = someone;
       const indexes = ['0', '1'];
       const rate = await this.registry.calFeeRateMultiWithoutBasis.call(
@@ -347,7 +356,13 @@ contract('FeeRuleRegistry', function([_, feeCollector, user, someone]) {
 
     it('multiple indexes: not qualified with basis', async function() {
       // empty 'someone' to make him not qualified for rule2
-      await send.ether(someone, ZERO_ADDRESS, ether('99.9'));
+      await send.ether(
+        someone,
+        ZERO_ADDRESS,
+        (await balance.current(someone)).sub(ether('0.1'))
+      );
+      balanceUser = await tracker(someone);
+
       const queryAddr = someone;
       const indexes = ['0', '1'];
       const rate = await this.registry.calFeeRateMulti.call(queryAddr, indexes);

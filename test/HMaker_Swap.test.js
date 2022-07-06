@@ -20,7 +20,7 @@ const {
 const { evmRevert, evmSnapshot, tokenProviderUniV2 } = require('./utils/utils');
 
 const HMaker = artifacts.require('HMaker');
-const HUniswap = artifacts.require('HUniswap');
+const HUniswapV2 = artifacts.require('HUniswapV2');
 const FeeRuleRegistry = artifacts.require('FeeRuleRegistry');
 const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('ProxyMock');
@@ -79,7 +79,7 @@ contract('Maker', function([_, user]) {
     this.hUniswap = await HUniswapV2.new();
     await this.registry.register(
       this.hUniswap.address,
-      utils.asciiToHex('Uniswap')
+      utils.asciiToHex('UniswapV2')
     );
     this.dsRegistry = await IDSProxyRegistry.at(MAKER_PROXY_REGISTRY);
     this.cdpManager = await IMakerManager.at(MAKER_CDP_MANAGER);
