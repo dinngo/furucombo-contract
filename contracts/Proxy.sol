@@ -36,7 +36,7 @@ contract Proxy is IProxy, Storage, Config {
         bytes4 indexed selector,
         bytes result
     );
-    event ChargeFee(address indexed tokenIn, uint256 indexed feeAmount);
+    event ChargeFee(address indexed tokenIn, uint256 feeAmount);
 
     modifier isNotBanned() {
         require(registry.bannedAgents(address(this)) == 0, "Banned");
