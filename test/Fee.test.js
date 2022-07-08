@@ -15,17 +15,13 @@ const { expect } = require('chai');
 
 const {
   COMBO_TOKEN,
-  COMBO_PROVIDER,
   DAI_TOKEN,
-  DAI_PROVIDER,
   USDT_TOKEN,
-  // USDT_PROVIDER,
   HBTC_TOKEN,
   HBTC_PROVIDER,
   OMG_TOKEN,
   OMG_PROVIDER,
   KNC_TOKEN,
-  KNC_PROVIDER,
   NATIVE_TOKEN,
 } = require('./utils/constants');
 const {
@@ -55,11 +51,9 @@ const RULE2_REQUIREMENT = ether('10'); // should match the verify requirement in
 
 contract('Fee', function([_, feeCollector, user]) {
   const tokenAddress = DAI_TOKEN;
-  // const providerAddress = DAI_PROVIDER;
   const token2Address = KNC_TOKEN;
-  // const provider2Address = KNC_PROVIDER;
   const rule1TokenAddress = COMBO_TOKEN;
-  // const rule1TokenProviderAddress = COMBO_PROVIDER;
+
   const ethAmount = ether('10');
   const tokenAmount = ether('100');
   const token2Amount = ether('100');
@@ -116,7 +110,6 @@ contract('Fee', function([_, feeCollector, user]) {
     await this.usdt.transfer(user, usdtAmount, { from: USDT_PROVIDER });
     await this.usdt.approve(this.proxy.address, usdtAmount, { from: user });
     this.hbtc = await IToken.at(HBTC_TOKEN);
-    // const HBTC_PROVIDER = await tokenProviderUniV2(this.hbtc.address);
     impersonateAndInjectEther(HBTC_PROVIDER);
     await this.hbtc.transfer(user, hbtcAmount, { from: HBTC_PROVIDER });
     await this.hbtc.approve(this.proxy.address, hbtcAmount, { from: user });
