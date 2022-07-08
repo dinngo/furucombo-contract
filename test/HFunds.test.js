@@ -466,6 +466,7 @@ contract('Funds', function([_, user, someone]) {
         });
         profileGas(receipt);
       });
+
       it('add funds', async function() {
         const token = [this.token0.address, this.token1.address];
         const value = [ether('100'), ether('100')];

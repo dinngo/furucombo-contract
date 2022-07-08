@@ -21,27 +21,26 @@ contract FeeRuleRegistry is IFeeRuleRegistry, Ownable {
     event SetFeeCollector(address feeCollector);
 
     constructor(uint256 _basisFeeRate, address _feeCollector) public {
-        counter = 0;
         if (_basisFeeRate != 0) setBasisFeeRate(_basisFeeRate);
         setFeeCollector(_feeCollector);
     }
 
     function setBasisFeeRate(uint256 _basisFeeRate) public override onlyOwner {
-        require(_basisFeeRate <= BASE, "out of range");
-        require(_basisFeeRate != basisFeeRate, "same as current one");
+        require(_basisFeeRate <= BASE, "Out of range");
+        require(_basisFeeRate != basisFeeRate, "Same as current one");
         basisFeeRate = _basisFeeRate;
         emit SetBasisFeeRate(basisFeeRate);
     }
 
     function setFeeCollector(address _feeCollector) public override onlyOwner {
-        require(_feeCollector != address(0), "zero address");
-        require(_feeCollector != feeCollector, "same as current one");
+        require(_feeCollector != address(0), "Zero address");
+        require(_feeCollector != feeCollector, "Same as current one");
         feeCollector = _feeCollector;
         emit SetFeeCollector(feeCollector);
     }
 
     function registerRule(address _rule) external override onlyOwner {
-        require(_rule != address(0), "not allow to register zero address");
+        require(_rule != address(0), "Not allow to register zero address");
         rules[counter] = _rule;
         emit RegisteredRule(counter, _rule);
         counter = counter.add(1);
@@ -50,7 +49,7 @@ contract FeeRuleRegistry is IFeeRuleRegistry, Ownable {
     function unregisterRule(uint256 _ruleIndex) external override onlyOwner {
         require(
             rules[_ruleIndex] != address(0),
-            "rule not set or unregistered"
+            "Rule not set or unregistered"
         );
         rules[_ruleIndex] = address(0);
         emit UnregisteredRule(_ruleIndex);
@@ -79,7 +78,7 @@ contract FeeRuleRegistry is IFeeRuleRegistry, Ownable {
             for (uint256 i = 1; i < len; i++) {
                 require(
                     _ruleIndexes[i] > _ruleIndexes[i - 1],
-                    "not ascending order"
+                    "Not ascending order"
                 );
 
                 scaledRate = scaledRate
@@ -117,7 +116,7 @@ contract FeeRuleRegistry is IFeeRuleRegistry, Ownable {
     {
         if (_rule != address(0)) {
             discount = IRule(_rule).calDiscount(_usr);
-            require(discount <= BASE, "discount out of range");
+            require(discount <= BASE, "Discount out of range");
         } else {
             discount = BASE;
         }

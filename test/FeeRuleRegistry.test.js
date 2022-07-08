@@ -71,14 +71,14 @@ contract('FeeRuleRegistry', function([_, feeCollector, user, someone]) {
     it('should revert: out of range', async function() {
       await expectRevert(
         this.registry.setBasisFeeRate(ether('2')),
-        'out of range'
+        'Out of range'
       );
     });
 
     it('should revert: same as current one', async function() {
       await expectRevert(
         this.registry.setBasisFeeRate(BASIS_FEE_RATE),
-        'same as current one'
+        'Same as current one'
       );
     });
 
@@ -103,14 +103,14 @@ contract('FeeRuleRegistry', function([_, feeCollector, user, someone]) {
     it('should revert: zero address', async function() {
       await expectRevert(
         this.registry.setFeeCollector(ZERO_ADDRESS),
-        'zero address'
+        'Zero address'
       );
     });
 
     it('should revert: same as current one', async function() {
       await expectRevert(
         this.registry.setFeeCollector(feeCollector),
-        'same as current one'
+        'Same as current one'
       );
     });
 
@@ -149,7 +149,7 @@ contract('FeeRuleRegistry', function([_, feeCollector, user, someone]) {
     it('should revert: rule is zero address', async function() {
       await expectRevert(
         this.registry.registerRule(ZERO_ADDRESS),
-        'not allow to register zero address'
+        'Not allow to register zero address'
       );
     });
 
@@ -189,7 +189,7 @@ contract('FeeRuleRegistry', function([_, feeCollector, user, someone]) {
     it('should revert: index not registered', async function() {
       await expectRevert(
         this.registry.unregisterRule('10'),
-        'rule not set or unregistered'
+        'Rule not set or unregistered'
       );
     });
 
@@ -197,7 +197,7 @@ contract('FeeRuleRegistry', function([_, feeCollector, user, someone]) {
       await this.registry.unregisterRule('0');
       await expectRevert(
         this.registry.unregisterRule('0'),
-        'rule not set or unregistered'
+        'Rule not set or unregistered'
       );
     });
 
@@ -420,7 +420,7 @@ contract('FeeRuleRegistry', function([_, feeCollector, user, someone]) {
       const indexes = ['0', '0'];
       await expectRevert(
         this.registry.calFeeRateMultiWithoutBasis.call(queryAddr, indexes),
-        'not ascending order'
+        'Not ascending order'
       );
     });
 
@@ -429,7 +429,7 @@ contract('FeeRuleRegistry', function([_, feeCollector, user, someone]) {
       const indexes = ['1', '0'];
       await expectRevert(
         this.registry.calFeeRateMultiWithoutBasis.call(queryAddr, indexes),
-        'not ascending order'
+        'Not ascending order'
       );
     });
   });

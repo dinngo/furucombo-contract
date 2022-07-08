@@ -74,6 +74,7 @@ contract('Fee', function([_, feeCollector, user]) {
       this.hFunds.address,
       utils.asciiToHex('Funds')
     );
+
     // Fee related
     this.feeRuleRegistry = await FeeRuleRegistry.new(
       BASIS_FEE_RATE,
@@ -83,11 +84,13 @@ contract('Fee', function([_, feeCollector, user]) {
     this.rule2 = await RuleMock2.new();
     await this.feeRuleRegistry.registerRule(this.rule1.address);
     await this.feeRuleRegistry.registerRule(this.rule2.address);
+
     // Deploy proxy
     this.proxy = await Proxy.new(
       this.registry.address,
       this.feeRuleRegistry.address
     );
+
     // Prepare
     this.token = await IToken.at(tokenAddress);
     const providerAddress = await tokenProviderUniV2(this.token.address);
@@ -100,21 +103,25 @@ contract('Fee', function([_, feeCollector, user]) {
     await this.rule1Token.transfer(user, RULE1_REQUIREMENT, {
       from: rule1TokenProviderAddress,
     });
+
     // Prepare token
     this.token2 = await IToken.at(token2Address);
     const provider2Address = await tokenProviderUniV2(this.token2.address);
     await this.token2.transfer(user, token2Amount, { from: provider2Address });
     await this.token2.approve(this.proxy.address, token2Amount, { from: user });
+
     this.usdt = await IUsdt.at(USDT_TOKEN);
     const USDT_PROVIDER = await tokenProviderUniV2(this.usdt.address);
     await this.usdt.transfer(user, usdtAmount, { from: USDT_PROVIDER });
     await this.usdt.approve(this.proxy.address, usdtAmount, { from: user });
-    this.hbtc = await IToken.at(HBTC_TOKEN);
+
     impersonateAndInjectEther(HBTC_PROVIDER);
+    this.hbtc = await IToken.at(HBTC_TOKEN);
     await this.hbtc.transfer(user, hbtcAmount, { from: HBTC_PROVIDER });
     await this.hbtc.approve(this.proxy.address, hbtcAmount, { from: user });
-    this.omg = await IToken.at(OMG_TOKEN);
+
     impersonateAndInjectEther(OMG_PROVIDER);
+    this.omg = await IToken.at(OMG_TOKEN);
     await this.omg.transfer(user, omgAmount, { from: OMG_PROVIDER });
     await this.omg.approve(this.proxy.address, omgAmount, { from: user });
   });

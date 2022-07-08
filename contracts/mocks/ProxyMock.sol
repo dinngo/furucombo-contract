@@ -29,7 +29,6 @@ contract ProxyMock is Proxy, GasProfiler, IHandlerEvents {
         result = _exec(to, data, 0);
         _setPostProcess(to);
         _deltaGas("Gas");
-
         _postProcess();
         emit RecordHandlerResult(result);
         return result;
