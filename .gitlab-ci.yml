@@ -1,17 +1,33 @@
 image: node:14-buster
 
-cache: &global_cache
-  key: ${CI_PROJECT_PATH_SLUG}
-  paths:
-    - node_modules/
-
-.job_template: &test-configuration
-  stage: test
+default:
   tags:
     - docker
+  cache:
+    key: ${CI_PROJECT_PATH_SLUG}
+    paths:
+      - node_modules/
+      - artifacts/
+      - cache/
   before_script:
-    - apt-get update && apt-get install -y netcat
     - npm install
+
+stages:
+  - build
+  - test
+  - analysis
+  - certora
+
+build:
+  stage: build
+  script:
+    - npm run build
+
+# Test Stage
+.job_template: &test-configuration
+  stage: test
+  script:
+    - apt-get update && apt-get install -y netcat
     - RUNNER_COUNT=16
     - FILES=( $(find -H -L ./test/* -regex "^.*.test.js") )
     - len=${#FILES[@]}
@@ -58,116 +74,96 @@ cache: &global_cache
           RUNNER_TEST_CNTS[$MINIDX]=`expr ${TestCases[$i]} + ${RUNNER_TEST_CNTS[$MINIDX]}`
           MIN=${RUNNER_TEST_CNTS[$MINIDX]}
       done
+    - npm run test ${UNITTEST_FILES[${JOB_INDEX}]}
 
-  dependencies:
-    - build
+test_0:
+  variables:
+    JOB_INDEX: 0
+  <<: *test-configuration
 
+test_1:
+  variables:
+    JOB_INDEX: 1
+  <<: *test-configuration
+
+test_2:
+  variables:
+    JOB_INDEX: 2
+  <<: *test-configuration
+
+test_3:
+  variables:
+    JOB_INDEX: 3
+  <<: *test-configuration
+
+test_4:
+  variables:
+    JOB_INDEX: 4
+  <<: *test-configuration
+
+test_5:
+  variables:
+    JOB_INDEX: 5
+  <<: *test-configuration
+
+test_6:
+  variables:
+    JOB_INDEX: 6
+  <<: *test-configuration
+
+test_7:
+  variables:
+    JOB_INDEX: 7
+  <<: *test-configuration
+
+test_8:
+  variables:
+    JOB_INDEX: 8
+  <<: *test-configuration
+
+test_9:
+  variables:
+    JOB_INDEX: 9
+  <<: *test-configuration
+
+test_10:
+  variables:
+    JOB_INDEX: 10
+  <<: *test-configuration
+
+test_11:
+  variables:
+    JOB_INDEX: 11
+  <<: *test-configuration
+
+test_12:
+  variables:
+    JOB_INDEX: 12
+  <<: *test-configuration
+
+test_13:
+  variables:
+    JOB_INDEX: 13
+  <<: *test-configuration
+
+test_14:
+  variables:
+    JOB_INDEX: 14
+  <<: *test-configuration
+
+test_15:
+  variables:
+    JOB_INDEX: 15
+  <<: *test-configuration
+
+# Certora Prover CI
 .job_template: &certora-configuration
   stage: certora
   image: 376433862203.dkr.ecr.us-east-1.amazonaws.com/certora-ci-base:latest
-  tags:
-    - docker
   allow_failure: true
   before_script:
     - ./specs/scripts/applyHarnesses.sh
-  dependencies:
-    - build
 
-stages:
-  - build
-  - test
-  - certora
-
-build:
-  stage: build
-  tags:
-    - docker
-  script:
-  - npm install
-  - npm run build
-
-# Test Stage
-test_0:
-  <<: *test-configuration
-  script:
-    - npm run test ${UNITTEST_FILES[0]}
-
-test_1:
-  <<: *test-configuration
-  script:
-    - npm run test ${UNITTEST_FILES[1]}
-
-test_2:
-  <<: *test-configuration
-  script:
-    - npm run test ${UNITTEST_FILES[2]}
-
-test_3:
-  <<: *test-configuration
-  script:
-    - npm run test ${UNITTEST_FILES[3]}
-
-test_4:
-  <<: *test-configuration
-  script:
-    - npm run test ${UNITTEST_FILES[4]}
-
-test_5:
-  <<: *test-configuration
-  script:
-    - npm run test ${UNITTEST_FILES[5]}
-
-test_6:
-  <<: *test-configuration
-  script:
-    - npm run test ${UNITTEST_FILES[6]}
-
-test_7:
-  <<: *test-configuration
-  script:
-    - npm run test ${UNITTEST_FILES[7]}
-
-test_8:
-  <<: *test-configuration
-  script:
-    - npm run test ${UNITTEST_FILES[8]}
-
-test_9:
-  <<: *test-configuration
-  script:
-    - npm run test ${UNITTEST_FILES[9]}
-
-test_10:
-  <<: *test-configuration
-  script:
-    - npm run test ${UNITTEST_FILES[10]}
-
-test_11:
-  <<: *test-configuration
-  script:
-    - npm run test ${UNITTEST_FILES[11]}
-
-test_12:
-  <<: *test-configuration
-  script:
-    - npm run test ${UNITTEST_FILES[12]}
-
-test_13:
-  <<: *test-configuration
-  script:
-    - npm run test ${UNITTEST_FILES[13]}
-
-test_14:
-  <<: *test-configuration
-  script:
-    - npm run test ${UNITTEST_FILES[14]}
-
-test_15:
-  <<: *test-configuration
-  script:
-    - npm run test ${UNITTEST_FILES[15]}
-
-# Certora Prover CI
 certora_develop:
   <<: *certora-configuration
   script:
@@ -181,3 +177,11 @@ certora_release:
     - python3 scripts/certora_ci.py -r all
   rules: # Trigger it when checkout release branch
     - if: '$CI_COMMIT_BRANCH =~ /^release/ && $CI_COMMIT_BEFORE_SHA == "0000000000000000000000000000000000000000"'
+
+# Analysis
+analysis_slither:
+  stage: analysis
+  script:
+    - apt-get update && apt-get install -y python3-pip
+    - pip3 install slither-analyzer && pip3 install solc-select
+    - npm run analysis
