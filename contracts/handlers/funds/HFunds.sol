@@ -11,7 +11,7 @@ contract HFunds is HandlerBase {
     using SafeERC20 for IERC20;
     using LibFeeStorage for mapping(bytes32 => bytes32);
 
-    event ChargeFee(address indexed tokenIn, uint256 indexed feeAmount);
+    event ChargeFee(address indexed tokenIn, uint256 feeAmount);
 
     function getContractName() public pure override returns (string memory) {
         return "HFunds";
@@ -150,8 +150,8 @@ contract HFunds is HandlerBase {
             _revertMsg("inject", "token and amount does not match");
         address sender = _getSender();
         uint256 feeRate = cache._getFeeRate();
-
         uint256[] memory amountsInProxy = new uint256[](amounts.length);
+        address collector = cache._getFeeCollector();
 
         for (uint256 i = 0; i < tokens.length; i++) {
             IERC20(tokens[i]).safeTransferFrom(
@@ -161,7 +161,7 @@ contract HFunds is HandlerBase {
             );
             if (feeRate > 0) {
                 uint256 fee = _calFee(amounts[i], feeRate);
-                IERC20(tokens[i]).safeTransfer(cache._getFeeCollector(), fee);
+                IERC20(tokens[i]).safeTransfer(collector, fee);
                 amountsInProxy[i] = amounts[i].sub(fee);
                 emit ChargeFee(tokens[i], fee);
             } else {
@@ -174,7 +174,7 @@ contract HFunds is HandlerBase {
         return amountsInProxy;
     }
 
-    function _calFee(uint256 _amount, uint256 _feeRate)
+    function _calFee(uint256 amount, uint256 feeRate)
         internal
         pure
         returns (uint256)

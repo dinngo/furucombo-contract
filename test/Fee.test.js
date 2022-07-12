@@ -38,6 +38,7 @@ const Registry = artifacts.require('Registry');
 const FeeRuleRegistry = artifacts.require('FeeRuleRegistry');
 const RuleMock1 = artifacts.require('RuleMock1');
 const RuleMock2 = artifacts.require('RuleMock2');
+const FeeCollectorMock = artifacts.require('FeeCollectorMock');
 const HFunds = artifacts.require('HFunds');
 const IToken = artifacts.require('IERC20');
 const IUsdt = artifacts.require('IERC20Usdt');
@@ -82,6 +83,7 @@ contract('Fee', function([_, feeCollector, user]) {
     );
     this.rule1 = await RuleMock1.new();
     this.rule2 = await RuleMock2.new();
+    this.feeCollectorMock = await FeeCollectorMock.new();
     await this.feeRuleRegistry.registerRule(this.rule1.address);
     await this.feeRuleRegistry.registerRule(this.rule2.address);
 
@@ -139,7 +141,7 @@ contract('Fee', function([_, feeCollector, user]) {
   });
 
   describe('single token', function() {
-    it('eth', async function() {
+    it('eth - fee collector (EOA)', async function() {
       const tos = [this.hFunds.address];
       const configs = [ZERO_BYTES32];
       const ruleIndexes = ['0', '1'];
@@ -157,8 +159,49 @@ contract('Fee', function([_, feeCollector, user]) {
         }
       );
       const feeRateUser = BASIS_FEE_RATE.mul(RULE1_DISCOUNT)
-        .mul(RULE2_DISCOUNT)
         .div(BASE)
+        .mul(RULE2_DISCOUNT)
+        .div(BASE);
+      const feeETH = ethAmount.mul(feeRateUser).div(BASE);
+
+      expectEvent(receipt, 'ChargeFee', {
+        tokenIn: NATIVE_TOKEN,
+        feeAmount: feeETH,
+      });
+
+      // Fee collector
+      expect(await balanceFeeCollector.delta()).to.be.bignumber.eq(feeETH);
+      // Proxy
+      expect(await balanceProxy.delta()).to.be.zero;
+      // User
+      expect(await balanceUser.delta()).to.be.bignumber.eq(
+        ether('0').sub(feeETH)
+      );
+    });
+
+    it('eth - fee collector (Contract)', async function() {
+      await this.feeRuleRegistry.setFeeCollector(this.feeCollectorMock.address);
+      balanceFeeCollector = await tracker(this.feeCollectorMock.address);
+
+      const tos = [this.hFunds.address];
+      const configs = [ZERO_BYTES32];
+      const ruleIndexes = ['0', '1'];
+      const datas = [
+        abi.simpleEncode('send(uint256,address)', ether('0'), user),
+      ];
+      const receipt = await this.proxy.batchExec(
+        tos,
+        configs,
+        datas,
+        ruleIndexes,
+        {
+          from: user,
+          value: ethAmount,
+        }
+      );
+      const feeRateUser = BASIS_FEE_RATE.mul(RULE1_DISCOUNT)
+        .div(BASE)
+        .mul(RULE2_DISCOUNT)
         .div(BASE);
       const feeETH = ethAmount.mul(feeRateUser).div(BASE);
 
@@ -198,8 +241,8 @@ contract('Fee', function([_, feeCollector, user]) {
         }
       );
       const feeRateUser = BASIS_FEE_RATE.mul(RULE1_DISCOUNT)
-        .mul(RULE2_DISCOUNT)
         .div(BASE)
+        .mul(RULE2_DISCOUNT)
         .div(BASE);
       const feeToken = tokenAmount.mul(feeRateUser).div(BASE);
 
@@ -292,8 +335,8 @@ contract('Fee', function([_, feeCollector, user]) {
         }
       );
       const feeRateUser = BASIS_FEE_RATE.mul(RULE1_DISCOUNT)
-        .mul(RULE2_DISCOUNT)
         .div(BASE)
+        .mul(RULE2_DISCOUNT)
         .div(BASE);
       const feeToken = hbtcAmount.mul(feeRateUser).div(BASE);
 
@@ -339,8 +382,8 @@ contract('Fee', function([_, feeCollector, user]) {
         }
       );
       const feeRateUser = BASIS_FEE_RATE.mul(RULE1_DISCOUNT)
-        .mul(RULE2_DISCOUNT)
         .div(BASE)
+        .mul(RULE2_DISCOUNT)
         .div(BASE);
       const feeToken = omgAmount.mul(feeRateUser).div(BASE);
 
@@ -443,8 +486,8 @@ contract('Fee', function([_, feeCollector, user]) {
         }
       );
       const feeRateUser = BASIS_FEE_RATE.mul(RULE1_DISCOUNT)
-        .mul(RULE2_DISCOUNT)
         .div(BASE)
+        .mul(RULE2_DISCOUNT)
         .div(BASE);
       const feeETH = ethAmount.mul(feeRateUser).div(BASE);
       const feeToken = tokenAmount.mul(feeRateUser).div(BASE);
@@ -499,8 +542,8 @@ contract('Fee', function([_, feeCollector, user]) {
         }
       );
       const feeRateUser = BASIS_FEE_RATE.mul(RULE1_DISCOUNT)
-        .mul(RULE2_DISCOUNT)
         .div(BASE)
+        .mul(RULE2_DISCOUNT)
         .div(BASE);
       const feeToken = tokenAmount.mul(feeRateUser).div(BASE);
       const feeToken2 = token2Amount.mul(feeRateUser).div(BASE);

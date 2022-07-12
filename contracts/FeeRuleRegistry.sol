@@ -20,102 +20,99 @@ contract FeeRuleRegistry is IFeeRuleRegistry, Ownable {
     event SetBasisFeeRate(uint256 basisFeeRate);
     event SetFeeCollector(address feeCollector);
 
-    constructor(uint256 _basisFeeRate, address _feeCollector) public {
-        if (_basisFeeRate != 0) setBasisFeeRate(_basisFeeRate);
-        setFeeCollector(_feeCollector);
+    constructor(uint256 basisFeeRate_, address feeCollector_) public {
+        if (basisFeeRate_ != 0) setBasisFeeRate(basisFeeRate_);
+        setFeeCollector(feeCollector_);
     }
 
-    function setBasisFeeRate(uint256 _basisFeeRate) public override onlyOwner {
-        require(_basisFeeRate <= BASE, "Out of range");
-        require(_basisFeeRate != basisFeeRate, "Same as current one");
-        basisFeeRate = _basisFeeRate;
+    function setBasisFeeRate(uint256 basisFeeRate_) public override onlyOwner {
+        require(basisFeeRate_ <= BASE, "Out of range");
+        require(basisFeeRate_ != basisFeeRate, "Same as current one");
+        basisFeeRate = basisFeeRate_;
         emit SetBasisFeeRate(basisFeeRate);
     }
 
-    function setFeeCollector(address _feeCollector) public override onlyOwner {
-        require(_feeCollector != address(0), "Zero address");
-        require(_feeCollector != feeCollector, "Same as current one");
-        feeCollector = _feeCollector;
+    function setFeeCollector(address feeCollector_) public override onlyOwner {
+        require(feeCollector_ != address(0), "Zero address");
+        require(feeCollector_ != feeCollector, "Same as current one");
+        feeCollector = feeCollector_;
         emit SetFeeCollector(feeCollector);
     }
 
-    function registerRule(address _rule) external override onlyOwner {
-        require(_rule != address(0), "Not allow to register zero address");
-        rules[counter] = _rule;
-        emit RegisteredRule(counter, _rule);
+    function registerRule(address rule_) external override onlyOwner {
+        require(rule_ != address(0), "Not allow to register zero address");
+        rules[counter] = rule_;
+        emit RegisteredRule(counter, rule_);
         counter = counter.add(1);
     }
 
-    function unregisterRule(uint256 _ruleIndex) external override onlyOwner {
-        require(
-            rules[_ruleIndex] != address(0),
-            "Rule not set or unregistered"
-        );
-        rules[_ruleIndex] = address(0);
-        emit UnregisteredRule(_ruleIndex);
+    function unregisterRule(uint256 ruleIndex) external override onlyOwner {
+        require(rules[ruleIndex] != address(0), "Rule not set or unregistered");
+        rules[ruleIndex] = address(0);
+        emit UnregisteredRule(ruleIndex);
     }
 
-    function calFeeRateMulti(address _usr, uint256[] calldata _ruleIndexes)
+    function calFeeRateMulti(address usr_, uint256[] calldata ruleIndexes)
         external
         view
         override
         returns (uint256 scaledRate)
     {
-        scaledRate = calFeeRateMultiWithoutBasis(_usr, _ruleIndexes)
+        scaledRate = calFeeRateMultiWithoutBasis(usr_, ruleIndexes)
             .mul(basisFeeRate)
             .div(BASE);
     }
 
     function calFeeRateMultiWithoutBasis(
-        address _usr,
-        uint256[] calldata _ruleIndexes
+        address usr_,
+        uint256[] calldata ruleIndexes
     ) public view override returns (uint256 scaledRate) {
-        uint256 len = _ruleIndexes.length;
+        uint256 len = ruleIndexes.length;
         if (len == 0) {
             scaledRate = BASE;
         } else {
-            scaledRate = _calDiscount(_usr, rules[_ruleIndexes[0]]);
+            scaledRate = _calDiscount(usr_, rules[ruleIndexes[0]]);
             for (uint256 i = 1; i < len; i++) {
                 require(
-                    _ruleIndexes[i] > _ruleIndexes[i - 1],
+                    ruleIndexes[i] > ruleIndexes[i - 1],
                     "Not ascending order"
                 );
 
                 scaledRate = scaledRate
-                    .mul(_calDiscount(_usr, rules[_ruleIndexes[i]]))
+                    .mul(_calDiscount(usr_, rules[ruleIndexes[i]]))
                     .div(BASE);
             }
         }
     }
 
-    function calFeeRate(address _usr, uint256 _ruleIndex)
+    function calFeeRate(address usr_, uint256 ruleIndex)
         external
         view
         override
         returns (uint256 scaledRate)
     {
-        scaledRate = calFeeRateWithoutBasis(_usr, _ruleIndex)
+        scaledRate = calFeeRateWithoutBasis(usr_, ruleIndex)
             .mul(basisFeeRate)
             .div(BASE);
     }
 
-    function calFeeRateWithoutBasis(address _usr, uint256 _ruleIndex)
+    function calFeeRateWithoutBasis(address usr_, uint256 ruleIndex)
         public
         view
         override
         returns (uint256 scaledRate)
     {
-        scaledRate = _calDiscount(_usr, rules[_ruleIndex]);
+        scaledRate = _calDiscount(usr_, rules[ruleIndex]);
     }
 
     /* Internal Functions */
-    function _calDiscount(address _usr, address _rule)
+    function _calDiscount(address usr_, address rule_)
         internal
         view
         returns (uint256 discount)
     {
-        if (_rule != address(0)) {
-            discount = IRule(_rule).calDiscount(_usr);
+        if (rule_ != address(0)) {
+            discount = IRule(rule_).calDiscount(usr_);
             require(discount <= BASE, "Discount out of range");
         } else {
             discount = BASE;
