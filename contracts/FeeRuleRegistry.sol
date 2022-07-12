@@ -46,63 +46,66 @@ contract FeeRuleRegistry is IFeeRuleRegistry, Ownable {
         counter = counter.add(1);
     }
 
-    function unregisterRule(uint256 ruleIndex) external override onlyOwner {
-        require(rules[ruleIndex] != address(0), "Rule not set or unregistered");
-        rules[ruleIndex] = address(0);
-        emit UnregisteredRule(ruleIndex);
+    function unregisterRule(uint256 ruleIndex_) external override onlyOwner {
+        require(
+            rules[ruleIndex_] != address(0),
+            "Rule not set or unregistered"
+        );
+        rules[ruleIndex_] = address(0);
+        emit UnregisteredRule(ruleIndex_);
     }
 
-    function calFeeRateMulti(address usr_, uint256[] calldata ruleIndexes)
+    function calFeeRateMulti(address usr_, uint256[] calldata ruleIndexes_)
         external
         view
         override
         returns (uint256 scaledRate)
     {
-        scaledRate = calFeeRateMultiWithoutBasis(usr_, ruleIndexes)
+        scaledRate = calFeeRateMultiWithoutBasis(usr_, ruleIndexes_)
             .mul(basisFeeRate)
             .div(BASE);
     }
 
     function calFeeRateMultiWithoutBasis(
         address usr_,
-        uint256[] calldata ruleIndexes
+        uint256[] calldata ruleIndexes_
     ) public view override returns (uint256 scaledRate) {
-        uint256 len = ruleIndexes.length;
+        uint256 len = ruleIndexes_.length;
         if (len == 0) {
             scaledRate = BASE;
         } else {
-            scaledRate = _calDiscount(usr_, rules[ruleIndexes[0]]);
+            scaledRate = _calDiscount(usr_, rules[ruleIndexes_[0]]);
             for (uint256 i = 1; i < len; i++) {
                 require(
-                    ruleIndexes[i] > ruleIndexes[i - 1],
+                    ruleIndexes_[i] > ruleIndexes_[i - 1],
                     "Not ascending order"
                 );
 
                 scaledRate = scaledRate
-                    .mul(_calDiscount(usr_, rules[ruleIndexes[i]]))
+                    .mul(_calDiscount(usr_, rules[ruleIndexes_[i]]))
                     .div(BASE);
             }
         }
     }
 
-    function calFeeRate(address usr_, uint256 ruleIndex)
+    function calFeeRate(address usr_, uint256 ruleIndex_)
         external
         view
         override
         returns (uint256 scaledRate)
     {
-        scaledRate = calFeeRateWithoutBasis(usr_, ruleIndex)
+        scaledRate = calFeeRateWithoutBasis(usr_, ruleIndex_)
             .mul(basisFeeRate)
             .div(BASE);
     }
 
-    function calFeeRateWithoutBasis(address usr_, uint256 ruleIndex)
+    function calFeeRateWithoutBasis(address usr_, uint256 ruleIndex_)
         public
         view
         override
         returns (uint256 scaledRate)
     {
-        scaledRate = _calDiscount(usr_, rules[ruleIndex]);
+        scaledRate = _calDiscount(usr_, rules[ruleIndex_]);
     }
 
     /* Internal Functions */

@@ -150,8 +150,8 @@ contract HFunds is HandlerBase {
             _revertMsg("inject", "token and amount does not match");
         address sender = _getSender();
         uint256 feeRate = cache._getFeeRate();
-        uint256[] memory amountsInProxy = new uint256[](amounts.length);
         address collector = cache._getFeeCollector();
+        uint256[] memory amountsInProxy = new uint256[](amounts.length);
 
         for (uint256 i = 0; i < tokens.length; i++) {
             IERC20(tokens[i]).safeTransferFrom(
