@@ -53,9 +53,9 @@ contract Proxy is IProxy, Storage, Config {
     IRegistry public immutable registry;
     IFeeRuleRegistry public immutable feeRuleRegistry;
 
-    constructor(address _registry, address _feeRuleRegistry) {
-        registry = IRegistry(_registry);
-        feeRuleRegistry = IFeeRuleRegistry(_feeRuleRegistry);
+    constructor(address registry_, address feeRuleRegistry_) {
+        registry = IRegistry(registry_);
+        feeRuleRegistry = IFeeRuleRegistry(feeRuleRegistry_);
     }
 
     /**
@@ -266,9 +266,9 @@ contract Proxy is IProxy, Storage, Config {
         assembly {
             success := delegatecall(
                 sub(gas(), 5000),
-                _to,
-                add(_data, 0x20),
-                mload(_data),
+                to_,
+                add(data_, 0x20),
+                mload(data_),
                 0,
                 0
             )
@@ -307,9 +307,9 @@ contract Proxy is IProxy, Storage, Config {
 
     /**
      * @notice Setup the post-process.
-     * @param _to The handler of post-process.
+     * @param to_ The handler of post-process.
      */
-    function _setPostProcess(address _to) internal {
+    function _setPostProcess(address to_) internal {
         // If the stack length equals 0, just skip
         // If the top is a custom post-process, replace it with the handler
         // address.
@@ -320,14 +320,14 @@ contract Proxy is IProxy, Storage, Config {
             bytes4(stack.peek(1)) != 0x00000000
         ) {
             stack.pop();
-            stack.setAddress(_to);
+            // Check if the handler is already set.
+            if (bytes4(stack.peek()) != 0x00000000) stack.setAddress(to_);
             stack.setHandlerType(HandlerType.Custom);
         }
     }
 
     /// @notice The pre-process phase.
-
-    function _preProcess(uint256[] memory _ruleIndexes)
+    function _preProcess(uint256[] memory ruleIndexes_)
         internal
         virtual
         isStackEmpty
@@ -341,7 +341,7 @@ contract Proxy is IProxy, Storage, Config {
         // Calculate fee
         uint256 feeRate = feeRuleRegistry.calFeeRateMulti(
             _getSender(),
-            _ruleIndexes
+            ruleIndexes_
         );
         require(feeRate <= PERCENTAGE_BASE, "fee rate out of range");
         cache._setFeeRate(feeRate);
@@ -349,7 +349,7 @@ contract Proxy is IProxy, Storage, Config {
             // Process ether fee
             uint256 feeEth = _calFee(msg.value, feeRate);
 
-            // It will fail if fee collector is gnosis contract, because .transfer() will only consume 23000 gas limit.
+            // It will fail if fee collector is gnosis contract, because .transfer() will only consume 2300 gas limit.
             // Replacing .transfer() with .call('') to avoid out of gas
             address collector = cache._getFeeCollector();
             (bool success, ) = collector.call{value: feeEth}("");
