@@ -128,6 +128,12 @@ function getFuncSig(artifact, name) {
   return web3.eth.abi.encodeFunctionSignature(getAbi(artifact, name));
 }
 
+// Note that should not be used for a contract which is proxy or has fallback function
+async function hasFuncSig(contractAddress, signature) {
+  const code = await web3.eth.getCode(contractAddress);
+  return code.indexOf(signature.slice(2, signature.length)) > 0;
+}
+
 function expectEqWithinBps(actual, expected, bps = 1) {
   const base = new BN('10000');
   const upper = new BN(expected).mul(base.add(new BN(bps))).div(base);
@@ -274,6 +280,7 @@ module.exports = {
   decodeInputData,
   decodeOutputData,
   getFuncSig,
+  hasFuncSig,
   expectEqWithinBps,
   etherProviderWeth,
   tokenProviderUniV2,
