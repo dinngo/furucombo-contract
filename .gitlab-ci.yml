@@ -1,243 +1,190 @@
-variables:
-  DEPLOY_OWNER_PRIVKEY: 0xBF3862CD1EE53F542C483E4F55BEE2D0B13014A7D6AD1B0CA457240C2888C1FB
-
 image: node:14-buster
 
-cache: &global_cache
-  key: ${CI_PROJECT_PATH_SLUG}
-  paths:
-    - node_modules/
-
-before_script:
-  - npm install
-  - RUNNER_COUNT=16
-  - FILES=( $(find -H -L ./test/* -regex "^.*.test.js") )
-  - len=${#FILES[@]}
-  - >
-    for (( i=0; i<${RUNNER_COUNT}; i+=1 )); do
-        RUNNER_TEST_CNTS[$i]=0
-    done
-  - >
-    for (( i=0; i<${len}; i+=1 )); do
-        TestCases[$i]=$(grep -o " it" ${FILES[$i]} | wc -l)
-    done
-  - >
-    for ((i = 0; i<${len}; i++))
-    do
-        for((j = 0; j<${len}-i-1; j++))
-        do
-            if [ ${TestCases[j]} -lt ${TestCases[$((j+1))]} ]
-            then
-                # swap
-                temp=${TestCases[j]}
-                TestCases[$j]=${TestCases[$((j+1))]}
-                TestCases[$((j+1))]=$temp
-
-                temp=${FILES[j]}
-                FILES[$j]=${FILES[$((j+1))]}
-                FILES[$((j+1))]=$temp
-            fi
-        done
-    done
-  - MIN=${RUNNER_TEST_CNTS[0]}
-  - MINIDX=0
-  - >
-    for (( i=0; i<${len}; i+=1 )); do
-        for j in ${!RUNNER_TEST_CNTS[@]};
-        do
-            if [ ${MIN} -gt ${RUNNER_TEST_CNTS[$j]} ]
-            then
-                MIN=${RUNNER_TEST_CNTS[${j}]}
-                MINIDX=${j}
-            fi
-        done
-
-        UNITTEST_FILES[$MINIDX]+=' '"${FILES[$i]}"
-        RUNNER_TEST_CNTS[$MINIDX]=`expr ${TestCases[$i]} + ${RUNNER_TEST_CNTS[$MINIDX]}`
-        MIN=${RUNNER_TEST_CNTS[$MINIDX]}
-    done
+default:
+  tags:
+    - docker
+  cache:
+    key: ${CI_PROJECT_PATH_SLUG}
+    paths:
+      - node_modules/
+      - artifacts/
+      - cache/
+  before_script:
+    - npm install
 
 stages:
   - build
   - test
-  - deploy
+  - analysis
+  - certora
 
 build:
   stage: build
-  tags:
-    - docker
   script:
     - npm run build
     - npm run check
   cache:
     <<: *global_cache
 
-test_0:
+# Test Stage
+.job_template: &test-configuration
   stage: test
-  tags:
-    - docker
   script:
     - apt-get update && apt-get install -y netcat
-    - npm run test ${UNITTEST_FILES[0]}
-  cache:
-    <<: *global_cache
+    - RUNNER_COUNT=16
+    - FILES=( $(find -H -L ./test/* -regex "^.*.test.js") )
+    - len=${#FILES[@]}
+    - >
+      for (( i=0; i<${RUNNER_COUNT}; i+=1 )); do
+          RUNNER_TEST_CNTS[$i]=0
+      done
+    - >
+      for (( i=0; i<${len}; i+=1 )); do
+          TestCases[$i]=$(grep -o " it" ${FILES[$i]} | wc -l)
+      done
+    - >
+      for ((i = 0; i<${len}; i++))
+      do
+          for((j = 0; j<${len}-i-1; j++))
+          do
+              if [ ${TestCases[j]} -lt ${TestCases[$((j+1))]} ]
+              then
+                  # swap
+                  temp=${TestCases[j]}
+                  TestCases[$j]=${TestCases[$((j+1))]}
+                  TestCases[$((j+1))]=$temp
+
+                  temp=${FILES[j]}
+                  FILES[$j]=${FILES[$((j+1))]}
+                  FILES[$((j+1))]=$temp
+              fi
+          done
+      done
+    - MIN=${RUNNER_TEST_CNTS[0]}
+    - MINIDX=0
+    - >
+      for (( i=0; i<${len}; i+=1 )); do
+          for j in ${!RUNNER_TEST_CNTS[@]};
+          do
+              if [ ${MIN} -gt ${RUNNER_TEST_CNTS[$j]} ]
+              then
+                  MIN=${RUNNER_TEST_CNTS[${j}]}
+                  MINIDX=${j}
+              fi
+          done
+
+          UNITTEST_FILES[$MINIDX]+=' '"${FILES[$i]}"
+          RUNNER_TEST_CNTS[$MINIDX]=`expr ${TestCases[$i]} + ${RUNNER_TEST_CNTS[$MINIDX]}`
+          MIN=${RUNNER_TEST_CNTS[$MINIDX]}
+      done
+    - npm run test ${UNITTEST_FILES[${JOB_INDEX}]}
+
+test_0:
+  variables:
+    JOB_INDEX: 0
+  <<: *test-configuration
 
 test_1:
-  stage: test
-  tags:
-    - docker
-  script:
-    - apt-get update && apt-get install -y netcat
-    - npm run test ${UNITTEST_FILES[1]}
-  cache:
-    <<: *global_cache
+  variables:
+    JOB_INDEX: 1
+  <<: *test-configuration
 
 test_2:
-  stage: test
-  tags:
-    - docker
-  script:
-    - apt-get update && apt-get install -y netcat
-    - npm run test ${UNITTEST_FILES[2]}
-  cache:
-    <<: *global_cache
+  variables:
+    JOB_INDEX: 2
+  <<: *test-configuration
 
 test_3:
-  stage: test
-  tags:
-    - docker
-  script:
-    - apt-get update && apt-get install -y netcat
-    - npm run test ${UNITTEST_FILES[3]}
-  cache:
-    <<: *global_cache
+  variables:
+    JOB_INDEX: 3
+  <<: *test-configuration
 
 test_4:
-  stage: test
-  tags:
-    - docker
-  script:
-    - apt-get update && apt-get install -y netcat
-    - npm run test ${UNITTEST_FILES[4]}
-  cache:
-    <<: *global_cache
+  variables:
+    JOB_INDEX: 4
+  <<: *test-configuration
 
 test_5:
-  stage: test
-  tags:
-    - docker
-  script:
-    - apt-get update && apt-get install -y netcat
-    - npm run test ${UNITTEST_FILES[5]}
-  cache:
-    <<: *global_cache
+  variables:
+    JOB_INDEX: 5
+  <<: *test-configuration
 
 test_6:
-  stage: test
-  tags:
-    - docker
-  script:
-    - apt-get update && apt-get install -y netcat
-    - npm run test ${UNITTEST_FILES[6]}
-  cache:
-    <<: *global_cache
+  variables:
+    JOB_INDEX: 6
+  <<: *test-configuration
 
 test_7:
-  stage: test
-  tags:
-    - docker
-  script:
-    - apt-get update && apt-get install -y netcat
-    - npm run test ${UNITTEST_FILES[7]}
-  cache:
-    <<: *global_cache
+  variables:
+    JOB_INDEX: 7
+  <<: *test-configuration
 
 test_8:
-  stage: test
-  tags:
-    - docker
-  script:
-    - apt-get update && apt-get install -y netcat
-    - npm run test ${UNITTEST_FILES[8]}
-  cache:
-    <<: *global_cache
+  variables:
+    JOB_INDEX: 8
+  <<: *test-configuration
 
 test_9:
-  stage: test
-  tags:
-    - docker
-  script:
-    - apt-get update && apt-get install -y netcat
-    - npm run test ${UNITTEST_FILES[9]}
-  cache:
-    <<: *global_cache
+  variables:
+    JOB_INDEX: 9
+  <<: *test-configuration
 
 test_10:
-  stage: test
-  tags:
-    - docker
-  script:
-    - apt-get update && apt-get install -y netcat
-    - npm run test ${UNITTEST_FILES[10]}
-  cache:
-    <<: *global_cache
+  variables:
+    JOB_INDEX: 10
+  <<: *test-configuration
 
 test_11:
-  stage: test
-  tags:
-    - docker
-  script:
-    - apt-get update && apt-get install -y netcat
-    - npm run test ${UNITTEST_FILES[11]}
-  cache:
-    <<: *global_cache
+  variables:
+    JOB_INDEX: 11
+  <<: *test-configuration
 
 test_12:
-  stage: test
-  tags:
-    - docker
-  script:
-    - apt-get update && apt-get install -y netcat
-    - npm run test ${UNITTEST_FILES[12]}
-  cache:
-    <<: *global_cache
+  variables:
+    JOB_INDEX: 12
+  <<: *test-configuration
 
 test_13:
-  stage: test
-  tags:
-    - docker
-  script:
-    - apt-get update && apt-get install -y netcat
-    - npm run test ${UNITTEST_FILES[13]}
-  cache:
-    <<: *global_cache
+  variables:
+    JOB_INDEX: 13
+  <<: *test-configuration
 
 test_14:
-  stage: test
-  tags:
-    - docker
-  script:
-    - apt-get update && apt-get install -y netcat
-    - npm run test ${UNITTEST_FILES[14]}
-  cache:
-    <<: *global_cache
+  variables:
+    JOB_INDEX: 14
+  <<: *test-configuration
 
 test_15:
-  stage: test
-  tags:
-    - docker
-  script:
-    - apt-get update && apt-get install -y netcat
-    - npm run test ${UNITTEST_FILES[15]}
-  cache:
-    <<: *global_cache
+  variables:
+    JOB_INDEX: 15
+  <<: *test-configuration
 
-deploy:
-  stage: deploy
-  tags:
-    - docker
+# Certora Prover CI
+.job_template: &certora-configuration
+  stage: certora
+  image: 376433862203.dkr.ecr.us-east-1.amazonaws.com/certora-ci-base:latest
+  allow_failure: true
+  before_script:
+    - ./specs/scripts/applyHarnesses.sh
+
+certora_develop:
+  <<: *certora-configuration
   script:
-    - apt-get update && apt-get install -y netcat
-    - npm run deploy
-  cache:
-    <<: *global_cache
+    - python3 scripts/certora_ci.py -r diff
+  rules: # Trigger it when merge to develop branch
+    - if: '$CI_COMMIT_TITLE =~ /^Merge branch/ && $CI_COMMIT_BRANCH == "develop"'
+
+certora_release:
+  <<: *certora-configuration
+  script:
+    - python3 scripts/certora_ci.py -r all
+  rules: # Trigger it when checkout release branch
+    - if: '$CI_COMMIT_BRANCH =~ /^release/ && $CI_COMMIT_BEFORE_SHA == "0000000000000000000000000000000000000000"'
+
+# Analysis
+analysis_slither:
+  stage: analysis
+  script:
+    - apt-get update && apt-get install -y python3-pip
+    - pip3 install slither-analyzer && pip3 install solc-select
+    - npm run analysis

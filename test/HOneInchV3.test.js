@@ -22,8 +22,8 @@ const {
   getFuncSig,
   getCallData,
   tokenProviderYearn,
+  callExternalApi,
 } = require('./utils/utils');
-const fetch = require('node-fetch');
 const queryString = require('query-string');
 
 const HOneInch = artifacts.require('HOneInchV3');
@@ -65,7 +65,7 @@ contract('OneInchV3 Swap', function([_, user]) {
 
   before(async function() {
     // ============= 1inch API Health Check =============
-    const healthCkeck = await fetch(URL_1INCH + 'healthcheck');
+    const healthCkeck = await callExternalApi(URL_1INCH + 'healthcheck');
     if (!healthCkeck.ok) {
       console.error(`=====> 1inch API not healthy now, skip the tests`);
       this.skip();
@@ -127,7 +127,7 @@ contract('OneInchV3 Swap', function([_, user]) {
         });
 
         // Call 1inch API
-        const swapResponse = await fetch(swapReq);
+        const swapResponse = await callExternalApi(swapReq);
         expect(swapResponse.ok, '1inch api response not ok').to.be.true;
         const swapData = await swapResponse.json();
         // Verify it's `swap` function call
@@ -160,9 +160,7 @@ contract('OneInchV3 Swap', function([_, user]) {
         // Verify ether balance
         expect(await balanceProxy.get()).to.be.bignumber.zero;
         expect(await balanceUser.delta()).to.be.bignumber.eq(
-          ether('0')
-            .sub(value)
-            .sub(new BN(receipt.receipt.gasUsed))
+          ether('0').sub(value)
         );
 
         profileGas(receipt);
@@ -188,7 +186,7 @@ contract('OneInchV3 Swap', function([_, user]) {
         });
 
         // Call 1inch API
-        const swapResponse = await fetch(swapReq);
+        const swapResponse = await callExternalApi(swapReq);
         expect(swapResponse.ok, '1inch api response not ok').to.be.true;
         const swapData = await swapResponse.json();
         // Verify it's `swap` function call
@@ -221,9 +219,7 @@ contract('OneInchV3 Swap', function([_, user]) {
         // Verify ether balance
         expect(await balanceProxy.get()).to.be.bignumber.zero;
         expect(await balanceUser.delta()).to.be.bignumber.eq(
-          ether('0')
-            .sub(value)
-            .sub(new BN(receipt.receipt.gasUsed))
+          ether('0').sub(value)
         );
 
         profileGas(receipt);
@@ -251,7 +247,7 @@ contract('OneInchV3 Swap', function([_, user]) {
         });
 
         // Call 1inch API
-        const swapResponse = await fetch(swapReq);
+        const swapResponse = await callExternalApi(swapReq);
         expect(swapResponse.ok, '1inch api response not ok').to.be.true;
         const swapData = await swapResponse.json();
         const quote = swapData.toTokenAmount;
@@ -293,9 +289,7 @@ contract('OneInchV3 Swap', function([_, user]) {
         // Verify ether balance
         expect(await balanceProxy.get()).to.be.bignumber.zero;
         expect(await balanceUser.delta()).to.be.bignumber.eq(
-          ether('0')
-            .sub(value)
-            .sub(new BN(receipt.receipt.gasUsed))
+          ether('0').sub(value)
         );
 
         profileGas(receipt);
@@ -320,7 +314,7 @@ contract('OneInchV3 Swap', function([_, user]) {
         });
 
         // Call 1inch API
-        const swapResponse = await fetch(swapReq);
+        const swapResponse = await callExternalApi(swapReq);
         expect(swapResponse.ok, '1inch api response not ok').to.be.true;
         const swapData = await swapResponse.json();
         const quote = swapData.toTokenAmount;
@@ -393,7 +387,7 @@ contract('OneInchV3 Swap', function([_, user]) {
         await this.proxy.updateTokenMock(this.token.address);
 
         // Call 1inch API
-        const swapResponse = await fetch(swapReq);
+        const swapResponse = await callExternalApi(swapReq);
         expect(swapResponse.ok, '1inch api response not ok').to.be.true;
         const swapData = await swapResponse.json();
         // Verify it's `swap` function call
@@ -412,9 +406,7 @@ contract('OneInchV3 Swap', function([_, user]) {
         const handlerReturn = utils.toBN(
           getHandlerReturn(receipt, ['uint256'])[0]
         );
-        expect(handlerReturn).to.be.bignumber.eq(
-          balanceUserDelta.add(new BN(receipt.receipt.gasUsed))
-        );
+        expect(handlerReturn).to.be.bignumber.eq(balanceUserDelta);
 
         // Verify token balance
         expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
@@ -430,7 +422,6 @@ contract('OneInchV3 Swap', function([_, user]) {
           ether('0')
             // sub 1 more percent to tolerate the slippage calculation difference with 1inch
             .add(mulPercent(quote, 100 - slippage - 1))
-            .sub(new BN(receipt.receipt.gasUsed))
         );
 
         profileGas(receipt);
@@ -464,7 +455,7 @@ contract('OneInchV3 Swap', function([_, user]) {
         await this.proxy.updateTokenMock(this.token.address);
 
         // Call 1inch API
-        const swapResponse = await fetch(swapReq);
+        const swapResponse = await callExternalApi(swapReq);
         expect(swapResponse.ok, '1inch api response not ok').to.be.true;
         const swapData = await swapResponse.json();
         const quote = swapData.toTokenAmount;
@@ -492,9 +483,7 @@ contract('OneInchV3 Swap', function([_, user]) {
         const handlerReturn = utils.toBN(
           getHandlerReturn(receipt, ['uint256'])[0]
         );
-        expect(handlerReturn).to.be.bignumber.eq(
-          balanceUserDelta.add(new BN(receipt.receipt.gasUsed))
-        );
+        expect(handlerReturn).to.be.bignumber.eq(balanceUserDelta);
 
         // Verify token balance
         expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
@@ -510,7 +499,6 @@ contract('OneInchV3 Swap', function([_, user]) {
           ether('0')
             // sub 1 more percent to tolerate the slippage calculation difference with 1inch
             .add(mulPercent(quote, 100 - slippage - 1))
-            .sub(new BN(receipt.receipt.gasUsed))
         );
 
         profileGas(receipt);
@@ -574,7 +562,7 @@ contract('OneInchV3 Swap', function([_, user]) {
         await this.proxy.updateTokenMock(this.token0.address);
 
         // Call 1inch API
-        const swapResponse = await fetch(swapReq);
+        const swapResponse = await callExternalApi(swapReq);
         expect(swapResponse.ok, '1inch api response not ok').to.be.true;
         const swapData = await swapResponse.json();
         // Verify it's `swap` function call
@@ -614,9 +602,7 @@ contract('OneInchV3 Swap', function([_, user]) {
 
         // Verify ether balance
         expect(await balanceProxy.get()).to.be.bignumber.zero;
-        expect(await balanceUser.delta()).to.be.bignumber.eq(
-          ether('0').sub(new BN(receipt.receipt.gasUsed))
-        );
+        expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
 
         profileGas(receipt);
       });
@@ -649,7 +635,7 @@ contract('OneInchV3 Swap', function([_, user]) {
         await this.proxy.updateTokenMock(this.token0.address);
 
         // Call 1inch API
-        const swapResponse = await fetch(swapReq);
+        const swapResponse = await callExternalApi(swapReq);
         expect(swapResponse.ok, '1inch api response not ok').to.be.true;
         const swapData = await swapResponse.json();
         const quote = swapData.toTokenAmount;
@@ -698,9 +684,7 @@ contract('OneInchV3 Swap', function([_, user]) {
 
         // Verify ether balance
         expect(await balanceProxy.get()).to.be.bignumber.zero;
-        expect(await balanceUser.delta()).to.be.bignumber.eq(
-          ether('0').sub(new BN(receipt.receipt.gasUsed))
-        );
+        expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
 
         profileGas(receipt);
       });
@@ -731,7 +715,7 @@ contract('OneInchV3 Swap', function([_, user]) {
         await this.proxy.updateTokenMock(this.token0.address);
 
         // Call 1inch API
-        const swapResponse = await fetch(swapReq);
+        const swapResponse = await callExternalApi(swapReq);
         expect(swapResponse.ok, '1inch api response not ok').to.be.true;
         const swapData = await swapResponse.json();
         const quote = swapData.toTokenAmount;
@@ -780,9 +764,7 @@ contract('OneInchV3 Swap', function([_, user]) {
 
         // Verify ether balance
         expect(await balanceProxy.get()).to.be.bignumber.zero;
-        expect(await balanceUser.delta()).to.be.bignumber.eq(
-          ether('0').sub(new BN(receipt.receipt.gasUsed))
-        );
+        expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
 
         profileGas(receipt);
       });
@@ -814,7 +796,7 @@ contract('OneInchV3 Swap', function([_, user]) {
         await this.proxy.updateTokenMock(this.token0.address);
 
         // Call 1inch API
-        const swapResponse = await fetch(swapReq);
+        const swapResponse = await callExternalApi(swapReq);
         expect(swapResponse.ok, '1inch api response not ok').to.be.true;
         const swapData = await swapResponse.json();
         const quote = swapData.toTokenAmount;
@@ -864,9 +846,7 @@ contract('OneInchV3 Swap', function([_, user]) {
 
         // Verify ether balance
         expect(await balanceProxy.get()).to.be.bignumber.zero;
-        expect(await balanceUser.delta()).to.be.bignumber.eq(
-          ether('0').sub(new BN(receipt.receipt.gasUsed))
-        );
+        expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
 
         profileGas(receipt);
       });
@@ -897,7 +877,7 @@ contract('OneInchV3 Swap', function([_, user]) {
         await this.proxy.updateTokenMock(this.token0.address);
 
         // Call 1inch API
-        const swapResponse = await fetch(swapReq);
+        const swapResponse = await callExternalApi(swapReq);
         expect(swapResponse.ok, '1inch api response not ok').to.be.true;
         const swapData = await swapResponse.json();
         const quote = swapData.toTokenAmount;
@@ -946,7 +926,7 @@ contract('OneInchV3 Swap', function([_, user]) {
         await this.proxy.updateTokenMock(this.token0.address);
 
         // Call 1inch API
-        const swapResponse = await fetch(swapReq);
+        const swapResponse = await callExternalApi(swapReq);
         expect(swapResponse.ok, '1inch api response not ok').to.be.true;
         const swapData = await swapResponse.json();
         const quote = swapData.toTokenAmount;
@@ -995,7 +975,7 @@ contract('OneInchV3 Swap', function([_, user]) {
         await this.proxy.updateTokenMock(this.token0.address);
 
         // Call 1inch API
-        const swapResponse = await fetch(swapReq);
+        const swapResponse = await callExternalApi(swapReq);
         expect(swapResponse.ok, '1inch api response not ok').to.be.true;
         const swapData = await swapResponse.json();
         const quote = swapData.toTokenAmount;
@@ -1043,7 +1023,7 @@ contract('OneInchV3 Swap', function([_, user]) {
         await this.proxy.updateTokenMock(this.token0.address);
 
         // Call 1inch API
-        const swapResponse = await fetch(swapReq);
+        const swapResponse = await callExternalApi(swapReq);
         expect(swapResponse.ok, '1inch api response not ok').to.be.true;
         const swapData = await swapResponse.json();
         const quote = swapData.toTokenAmount;
@@ -1092,7 +1072,7 @@ contract('OneInchV3 Swap', function([_, user]) {
         await this.proxy.updateTokenMock(this.token0.address);
 
         // Call 1inch API
-        const swapResponse = await fetch(swapReq);
+        const swapResponse = await callExternalApi(swapReq);
         expect(swapResponse.ok, '1inch api response not ok').to.be.true;
         const swapData = await swapResponse.json();
         const quote = swapData.toTokenAmount;

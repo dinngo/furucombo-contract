@@ -304,7 +304,6 @@ contract('Maker', function([_, user1, user2, someone]) {
 
         it('User has proxy with max amount', async function() {
           const to = this.hMaker.address;
-          const value = ether('20');
           const ilkEth = utils.padRight(
             utils.asciiToHex(makerMcdJoinETHName),
             64
@@ -314,6 +313,7 @@ contract('Maker', function([_, user1, user2, someone]) {
             minCollateral,
           ] = await getGenerateLimitAndMinCollateral(ilkEth);
           const wadD = generateLimit;
+          const value = minCollateral;
           const data = abi.simpleEncode(
             'openLockETHAndDraw(uint256,address,address,bytes32,uint256)',
             MAX_UINT256,
@@ -505,9 +505,7 @@ contract('Maker', function([_, user1, user2, someone]) {
 
         const [ilkEnd, debtEnd, lockEnd] = await getCdpInfo(cdp);
         expect(await balanceUser.delta()).to.be.bignumber.eq(
-          ether('0')
-            .sub(value)
-            .sub(new BN(receipt.receipt.gasUsed))
+          ether('0').sub(value)
         );
         expect(lockEnd.sub(lock)).to.be.bignumber.eq(value);
         profileGas(receipt);
@@ -528,9 +526,7 @@ contract('Maker', function([_, user1, user2, someone]) {
 
         const [ilkEnd, debtEnd, lockEnd] = await getCdpInfo(cdp);
         expect(await balanceUser.delta()).to.be.bignumber.eq(
-          ether('0')
-            .sub(value)
-            .sub(new BN(receipt.receipt.gasUsed))
+          ether('0').sub(value)
         );
         expect(lockEnd.sub(lock)).to.be.bignumber.eq(value);
         profileGas(receipt);
@@ -657,9 +653,7 @@ contract('Maker', function([_, user1, user2, someone]) {
           from: user1,
         });
         const [ilkEnd, debtEnd, lockEnd] = await getCdpInfo(cdp);
-        expect(await balanceUser.delta()).to.be.bignumber.eq(
-          wad.sub(new BN(receipt.receipt.gasUsed))
-        );
+        expect(await balanceUser.delta()).to.be.bignumber.eq(wad);
         expect(lockEnd.sub(lock)).to.be.bignumber.eq(ether('0').sub(wad));
         profileGas(receipt);
       });
@@ -798,7 +792,10 @@ contract('Maker', function([_, user1, user2, someone]) {
       let daiUser;
 
       beforeEach(async function() {
-        const etherAmount = ether('10');
+        const [, minCollateral] = await getGenerateLimitAndMinCollateral(
+          utils.padRight(utils.asciiToHex(makerMcdJoinETHName), 64)
+        );
+        const etherAmount = minCollateral;
         const new1 = abi.simpleEncode(
           'openLockETHAndDraw(address,address,address,address,bytes32,uint256)',
           MAKER_CDP_MANAGER,
@@ -1013,11 +1010,11 @@ contract('Maker', function([_, user1, user2, someone]) {
       let minCollateral;
 
       beforeEach(async function() {
-        const etherAmount = ether('10');
         [generateLimit, minCollateral] = await getGenerateLimitAndMinCollateral(
           utils.padRight(utils.asciiToHex(makerMcdJoinETHName), 64)
         );
         const daiAmount = generateLimit.add(ether('10'));
+        const etherAmount = minCollateral;
         const new1 = abi.simpleEncode(
           'openLockETHAndDraw(address,address,address,address,bytes32,uint256)',
           MAKER_CDP_MANAGER,

@@ -1,6 +1,7 @@
 const { BN, ether, ZERO_ADDRESS } = require('@openzeppelin/test-helpers');
 const fetch = require('node-fetch');
 // const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+const sleep = delay => new Promise(resolve => setTimeout(resolve, delay));
 const {
   UNISWAPV2_FACTORY,
   SUSHISWAP_FACTORY,
@@ -9,6 +10,7 @@ const {
   WETH_TOKEN,
   USDC_TOKEN,
   RecordHandlerResultSig,
+  MAX_EXTERNAL_API_RETRY_TIME,
 } = require('./constants');
 
 const { expect } = require('chai');
@@ -99,10 +101,6 @@ function getHandlerReturn(receipt, dataTypes) {
   return handlerResult;
 }
 
-function errorCompare(a, b, e = new BN('1')) {
-  expect(a.sub(b).abs()).to.be.bignumber.lte(e);
-}
-
 // Only works when one function name matches
 function getAbi(artifact, name) {
   var abi;
@@ -171,7 +169,7 @@ async function _tokenProviderUniLike(token0, token1, factoryAddress) {
   const IUniswapV2Factory = artifacts.require('IUniswapV2Factory');
   const factory = await IUniswapV2Factory.at(factoryAddress);
   const pair = await factory.getPair.call(token0, token1);
-  _impersonateAndInjectEther(pair);
+  impersonateAndInjectEther(pair);
 
   return pair;
 }
@@ -203,7 +201,7 @@ async function tokenProviderCurveGauge(lpToken) {
       break;
     }
   }
-  _impersonateAndInjectEther(gauge);
+  impersonateAndInjectEther(gauge);
 
   return gauge;
 }
@@ -215,12 +213,12 @@ async function tokenProviderYearn(token) {
     YEARN_CONTROLLER
   );
   const vault = await controller.vaults(token);
-  _impersonateAndInjectEther(vault);
+  impersonateAndInjectEther(vault);
 
   return vault;
 }
 
-async function _impersonateAndInjectEther(address) {
+async function impersonateAndInjectEther(address) {
   // Impersonate pair
   await network.provider.send('hardhat_impersonateAccount', [address]);
 
@@ -231,6 +229,38 @@ async function _impersonateAndInjectEther(address) {
   ]);
 }
 
+async function callExternalApi(
+  request,
+  method = 'get',
+  body = '',
+  retryTimes = 5
+) {
+  let resp;
+  let tryTimes = retryTimes;
+  while (tryTimes > 0) {
+    tryTimes--;
+    if (method === 'get') {
+      resp = await fetch(request);
+    } else {
+      resp = await fetch(request, {
+        method: method,
+        body: JSON.stringify(body),
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (resp.ok === true) {
+      return resp;
+    }
+    await sleep(500); // sleep 500ms.
+  }
+  return resp; // return error resp from external api to caller.
+}
+
+function mwei(num) {
+  return new BN(ethers.utils.parseUnits(num, 6).toString());
+}
+
 module.exports = {
   profileGas,
   evmSnapshot,
@@ -239,7 +269,6 @@ module.exports = {
   mulPercent,
   cUnit,
   getHandlerReturn,
-  errorCompare,
   getAbi,
   getCallData,
   decodeInputData,
@@ -251,4 +280,7 @@ module.exports = {
   tokenProviderSushi,
   tokenProviderCurveGauge,
   tokenProviderYearn,
+  impersonateAndInjectEther,
+  callExternalApi,
+  mwei,
 };

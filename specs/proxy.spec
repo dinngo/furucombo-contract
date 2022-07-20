@@ -18,13 +18,16 @@ methods {
     ethBalance(address) returns (uint256) envfree
 
     // registry dispatches
-    handlers(address) returns (bytes32) envfree => DISPATCHER(true)
-    callers(address) returns (bytes32) envfree => DISPATCHER(true)
-    bannedAgents(address) returns (uint256) envfree => DISPATCHER(true)
-    fHalt() returns (bool) envfree => DISPATCHER(true)
-    owner() returns (address) envfree => DISPATCHER(true)
-    isValidCaller(address) returns (bool) envfree => DISPATCHER(true)
+    handlers(address) returns (bytes32) => DISPATCHER(true)
+    callers(address) returns (bytes32) => DISPATCHER(true)
+    bannedAgents(address) returns (uint256) => DISPATCHER(true)
+    fHalt() returns (bool) => DISPATCHER(true)
+    owner() returns (address) => DISPATCHER(true)
+    isValidCaller(address) returns (bool) => DISPATCHER(true)
     isValidHandler(address) returns (bool) => DISPATCHER(true)
+    
+    registry.bannedAgents(address) returns (uint256) envfree
+    registry.fHalt() returns (bool) envfree
 
     // for abstracting exec of handler
     0x12345678 => NONDET
@@ -33,15 +36,19 @@ methods {
     transfer(address,uint256) => DISPATCHER(true)
     transferFrom(address,address,uint256) => DISPATCHER(true)
     approve(address,uint256) => DISPATCHER(true)
-    allowance(address,address) returns (uint) envfree => DISPATCHER(true)
-    balanceOf(address) returns (uint) envfree => DISPATCHER(true)
-    totalSupply() returns (uint) envfree => DISPATCHER(true)
+    allowance(address,address) returns (uint) => DISPATCHER(true)
+    balanceOf(address) returns (uint) => DISPATCHER(true)
+    totalSupply() returns (uint) => DISPATCHER(true)
 
     havocMe(address) => DISPATCHER(true)
     havocMeEth() => DISPATCHER(true)
 
     ETH_ADDRESS() returns (address) => DISPATCHER(false)
     WETH() returns (address) => DISPATCHER(false)
+
+    someToken.balanceOf(address) returns (uint) envfree
+    someToken.allowance(address,address) returns (uint) envfree
+    someToken2.balanceOf(address) returns (uint) envfree
 
     // Summary correctness
     summaryInstance.consumedToken() returns (address) envfree
@@ -88,16 +95,15 @@ methods {
     deposit() => DISPATCHER(true);
 
     // HUniswap
-    addLiquidity(uint256,uint256,uint256) => DISPATCHER(true)
-    removeLiquidity(uint256,uint256,uint256,uint256) => DISPATCHER(true)
-    ethToTokenSwapInput(uint256,uint256) => DISPATCHER(true)
-    ethToTokenSwapOutput(uint256,uint256) => DISPATCHER(true)
-    tokenToEthSwapInput(uint256,uint256,uint256) => DISPATCHER(true)
-    tokenToEthSwapOutput(uint256,uint256,uint256) => DISPATCHER(true)
-    tokenToTokenSwapInput(uint256,uint256,uint256,uint256,address) => DISPATCHER(true)
-    tokenToTokenSwapOutput(uint256,uint256,uint256,uint256,address) => DISPATCHER(true)
-
-    getExchange(address) => NONDET
+    // addLiquidity(uint256,uint256,uint256) => DISPATCHER(true)
+    // removeLiquidity(uint256,uint256,uint256,uint256) => DISPATCHER(true)
+    // ethToTokenSwapInput(uint256,uint256) => DISPATCHER(true)
+    // ethToTokenSwapOutput(uint256,uint256) => DISPATCHER(true)
+    // tokenToEthSwapInput(uint256,uint256,uint256) => DISPATCHER(true)
+    // tokenToEthSwapOutput(uint256,uint256,uint256) => DISPATCHER(true)
+    // tokenToTokenSwapInput(uint256,uint256,uint256,uint256,address) => DISPATCHER(true)
+    // tokenToTokenSwapOutput(uint256,uint256,uint256,uint256,address) => DISPATCHER(true)
+    // getExchange(address) => NONDET
 
     // HUniswapV2
     addLiquidity(
@@ -186,14 +192,25 @@ methods {
     ) => DISPATCHER(true)
 
     factory() => NONDET
+
+    // HUniswapV3
+    exactInputSingle((address,address,uint24,address,uint256,uint256,uint256,uint160))
+        => DISPATCHER(true)
+    exactInput((bytes,address,uint256,uint256,uint256))
+        => DISPATCHER(true)
+    exactOutputSingle((address,address,uint24,address,uint256,uint256,uint256,uint160))
+        => DISPATCHER(true)
+    exactOutput((bytes,address,uint256,uint256,uint256))
+        => DISPATCHER(true)
+    refundETH() => DISPATCHER(true)
     
     // HKyberNetwork
-    swapTokenToToken(address src, uint srcAmount, address dest, uint minConversionRate) 
-        => DISPATCHER(true)
-    swapEtherToToken(address token, uint minConversionRate)
-        => DISPATCHER(true)
-    swapTokenToEther(address token, uint srcAmount, uint minConversionRate)
-        => DISPATCHER(true)
+    // swapTokenToToken(address src, uint srcAmount, address dest, uint minConversionRate) 
+    //     => DISPATCHER(true)
+    // swapEtherToToken(address token, uint minConversionRate)
+    //     => DISPATCHER(true)
+    // swapTokenToEther(address token, uint srcAmount, uint minConversionRate)
+    //     => DISPATCHER(true)
 
     // HBalancer
     exitPool(uint256 poolAmountIn, uint256[] minAmountsOut)
@@ -205,16 +222,17 @@ methods {
     freeFromUpTo(address,uint256) => DISPATCHER(true)
 
     // HMooniswap
-    deposit(uint256[] amounts, uint256[] minAmounts) returns(uint256)
-        => DISPATCHER(true)
-    withdraw(uint256 amount, uint256[] minReturns)
-        => DISPATCHER(true)
-    getTokens() => DISPATCHER(true)
+    // deposit(uint256[] amounts, uint256[] minAmounts) returns(uint256)
+    //     => DISPATCHER(true)
+    // withdraw(uint256 amount, uint256[] minReturns)
+    //     => DISPATCHER(true)
+    // getTokens() => DISPATCHER(true)
     
     pools(address, address) => NONDET
 
-    // HOneInchExchange
-    swap(address,(address,address,address,address,uint256,uint256,uint256,uint256,address,bytes),(uint256,uint256,uint256,bytes)[]) => DISPATCHER(true)
+    // HOneInchV3
+    swap(address,(address,address,address,address,uint256,uint256,uint256,bytes),bytes) => DISPATCHER(true)
+    unoswap(address,uint256,uint256,bytes32[]) => DISPATCHER(true)
     
     // HStakingRewardsToken
     stakingToken() => DISPATCHER(true)
@@ -297,6 +315,15 @@ methods {
     yvault_withdraw(uint256) => DISPATCHER(true)
     withdrawETH(uint256) => DISPATCHER(true)
 
+    // HPolygon
+    depositERC20ForUser(address,address,uint256) => DISPATCHER(true)
+    depositFor(address,address,bytes) => DISPATCHER(true)
+    depositEtherFor(address) => DISPATCHER(true)
+
+    // HGelatoV2LimitOrder
+    encodeEthOrder(address,address,address,address,bytes,bytes32) => DISPATCHER(true)
+    depositEth(bytes) => DISPATCHER(true)
+
     // No-op for receiving funds without havocs
     nop() => NONDET
 }
@@ -375,11 +402,11 @@ rule senderIsAlwaysCleanedUp(method f) {
 
 rule cubeCounterIsAlwaysCleanedUp(method f) {
     requireInvariant cubeCounterGreaterThan0IffSenderInitialized();
-    address before = getCubeCounter();
+    uint256 before = getCubeCounter();
 
     arbitrary(f);
 
-    address after = getCubeCounter();
+    uint256 after = getCubeCounter();
 
     assert before == 0 => after == 0;
 }
@@ -396,15 +423,15 @@ rule cacheIsAlwaysCleanedUp(bytes32 key, method f) {
     assert before == 0 => after == 0;
 }
 
-rule nonExecutableByBannedAgents(method f) {
+rule nonExecutableWhenProxyIsBanned(method f) {
     require !isHandler();
     require !f.isView; // only non-view functions, that may modify the state, are interesting.
     env e;
-    require registry.bannedAgents(e.msg.sender) == 1; // sender is banned
+    require registry.bannedAgents(currentContract) == 1; // proxy contract is banned
 
     calldataarg arg;
     f@withrevert(e, arg);
-    assert lastReverted, "method invocation did not revert despite being called by a banned agent";
+    assert lastReverted, "method invocation did not revert despite the contract has been banned in registry";
 }
 
 rule nonExecutableWhenHalted(method f) {
@@ -431,20 +458,24 @@ rule nonExecutableWithUninitializedSender(method f) {
 }
 
 // if sender was initialized, and we have a callback, which functions fail? If they fail, it means they can't be callbacks
-nonExecutableWithInitializedSender(method f) {
+rule nonExecutableWithInitializedSender(method f) {
     require !isHandler();
     require !f.isView; // only non-view functions, that may modify the state, are interesting.
     require getSender() != 0; // sender is initialized
 
     env e;
+    bool isGoodCaller = registry.isValidCaller(e, e.msg.sender);
     calldataarg arg;
     f@withrevert(e, arg);
-    assert lastReverted; // all non-view functions should revert if sender is already initialized (maybe except for fallback TODO)
+    assert (f.isFallback && !isGoodCaller) => lastReverted; // only valid callers should execute in fallback successfully (would violate since certora prover cannot distinguish between receive and fallback for now)
+    assert (f.selector == execs(address[],bytes32[],bytes[]).selector && e.msg.sender != currentContract) => lastReverted; // `execs` is allowed to be called by proxy itself after initialized
+    assert (!f.isFallback && f.selector != execs(address[],bytes32[],bytes[]).selector) => lastReverted; // all non-view functions other than above ones should revert if sender is already initialized
 }
 
 // small havoc issue in batchExec, but getting coverage from execs() too.
 rule transferredTokensMeanThatStackIsUpdated(method f) {
     require summaryInstance.getEthAddress(currentContract) != someToken; // not an eth transfer
+    require someToken != 0; // not an eth transfer
     require someToken.allowance(currentContract, summaryInstance) == 0; // to make sure we're starting clean as implied by approvedTokensAreTemporary
     uint256 balanceBefore = someToken.balanceOf(currentContract);
     uint256 stackLengthBefore = getStackLength();
@@ -460,6 +491,8 @@ rule transferredTokensMeanThatStackIsUpdated(method f) {
 }
 
 rule approvedTokensAreTemporary(method f, address someAllowed) {
+    require summaryInstance.getEthAddress(currentContract) != someToken; // not an eth transfer
+    require someToken != 0; // not an eth transfer
     require someAllowed == summaryInstance; // narrowing down
     uint256 allowanceBefore = someToken.allowance(currentContract, someAllowed);
 

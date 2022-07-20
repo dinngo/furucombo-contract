@@ -115,8 +115,4 @@ contract HOneInchV3 is HandlerBase {
             }
         }
     }
-
-    function _isNotNativeToken(address token) internal pure returns (bool) {
-        return (token != address(0) && token != NATIVE_TOKEN_ADDRESS);
-    }
 }

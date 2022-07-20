@@ -102,9 +102,7 @@ contract('Aave V2', function([_, user, someone]) {
         ).to.be.bignumber.zero;
         expectEqWithinBps(await this.aweth.balanceOf.call(user), value, 100);
         expect(await balanceUser.delta()).to.be.bignumber.eq(
-          ether('0')
-            .sub(value)
-            .sub(new BN(receipt.receipt.gasUsed))
+          ether('0').sub(value)
         );
         profileGas(receipt);
       });
@@ -124,9 +122,7 @@ contract('Aave V2', function([_, user, someone]) {
         ).to.be.bignumber.zero;
         expectEqWithinBps(await this.aweth.balanceOf.call(user), value, 100);
         expect(await balanceUser.delta()).to.be.bignumber.eq(
-          ether('0')
-            .sub(value)
-            .sub(new BN(receipt.receipt.gasUsed))
+          ether('0').sub(value)
         );
         profileGas(receipt);
       });
@@ -156,9 +152,7 @@ contract('Aave V2', function([_, user, someone]) {
           await this.aToken.balanceOf.call(this.proxy.address)
         ).to.be.bignumber.zero;
         expectEqWithinBps(await this.aToken.balanceOf.call(user), value, 100);
-        expect(await balanceUser.delta()).to.be.bignumber.eq(
-          ether('0').sub(new BN(receipt.receipt.gasUsed))
-        );
+        expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
         profileGas(receipt);
       });
 
@@ -186,9 +180,7 @@ contract('Aave V2', function([_, user, someone]) {
         ).to.be.bignumber.zero;
         expectEqWithinBps(await this.aToken.balanceOf.call(user), value, 100);
 
-        expect(await balanceUser.delta()).to.be.bignumber.eq(
-          ether('0').sub(new BN(receipt.receipt.gasUsed))
-        );
+        expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
         profileGas(receipt);
       });
 
@@ -255,14 +247,14 @@ contract('Aave V2', function([_, user, someone]) {
           await this.aweth.balanceOf.call(this.proxy.address)
         ).to.be.bignumber.zero;
         // Verify user balance
-        // (deposit - withdraw) <= aTokenAfter < (deposit + interestMax - withdraw)
-        expect(aTokenUserAfter).to.be.bignumber.gte(depositAmount.sub(value));
+        // (deposit - withdraw - 1) <= aTokenAfter < (deposit + interestMax - withdraw)
+        expect(aTokenUserAfter).to.be.bignumber.gte(
+          depositAmount.sub(value).sub(new BN(1))
+        );
         expect(aTokenUserAfter).to.be.bignumber.lt(
           depositAmount.add(interestMax).sub(value)
         );
-        expect(await balanceUser.delta()).to.be.bignumber.eq(
-          value.sub(new BN(receipt.receipt.gasUsed))
-        );
+        expect(await balanceUser.delta()).to.be.bignumber.eq(value);
         profileGas(receipt);
       });
 
@@ -363,15 +355,15 @@ contract('Aave V2', function([_, user, someone]) {
         ).to.be.bignumber.zero;
 
         // Verify user balance
-        // (deposit - withdraw) <= aTokenAfter < (deposit + interestMax - withdraw)
-        expect(aTokenUserAfter).to.be.bignumber.gte(depositAmount.sub(value));
+        // (deposit - withdraw - 1) <= aTokenAfter < (deposit + interestMax - withdraw)
+        expect(aTokenUserAfter).to.be.bignumber.gte(
+          depositAmount.sub(value).sub(new BN(1))
+        );
         expect(aTokenUserAfter).to.be.bignumber.lt(
           depositAmount.add(interestMax).sub(value)
         );
         expect(tokenUserAfter).to.be.bignumber.eq(value);
-        expect(await balanceUser.delta()).to.be.bignumber.eq(
-          ether('0').sub(new BN(receipt.receipt.gasUsed))
-        );
+        expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
         profileGas(receipt);
       });
 
@@ -423,9 +415,7 @@ contract('Aave V2', function([_, user, someone]) {
           depositAmount.add(interestMax).sub(handlerReturn)
         );
         expect(tokenUserAfter).to.be.bignumber.eq(handlerReturn);
-        expect(await balanceUser.delta()).to.be.bignumber.eq(
-          ether('0').sub(new BN(receipt.receipt.gasUsed))
-        );
+        expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
         profileGas(receipt);
       });
 
@@ -469,9 +459,7 @@ contract('Aave V2', function([_, user, someone]) {
         // Verify user balance
         expect(aTokenUserAfter).to.be.bignumber.lt(ATOKEN_DUST);
         expect(tokenUserAfter).to.be.bignumber.eq(handlerReturn);
-        expect(await balanceUser.delta()).to.be.bignumber.eq(
-          ether('0').sub(new BN(receipt.receipt.gasUsed))
-        );
+        expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
         profileGas(receipt);
       });
 

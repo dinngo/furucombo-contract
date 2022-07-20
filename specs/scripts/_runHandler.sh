@@ -47,15 +47,15 @@ perl -0777 -i -pe 's/is HandlerBase(, [a-zA-Z0-9]+)* \{/is   HandlerBase\1 {
 
     function getStackLength\(\) external view returns \(uint\) { return stack.length; }
 
-    function getSender\(\) public returns \(address\) { return \_getSender\(\); }
-    function getCubeCounter\(\) public returns \(uint256\) { return \_getCubeCounter\(\); }
+    function getSender\(\) public view returns \(address\) { return \_getSender\(\); }
+    function getCubeCounter\(\) public view returns \(uint256\) { return \_getCubeCounter\(\); }
 
     function ethBalance\(address who\) external view returns \(uint\) {
         return who.balance;
     }
 
     \/\/ to distinguish handlers from proxy
-    function isHandler\(\) public returns \(bool\) { return true; }
+    function isHandler\(\) public view returns \(bool\) { return true; }
 
     function _revertMsg(string memory functionName, string memory reason)
         internal override
@@ -68,6 +68,9 @@ perl -0777 -i -pe 's/SafeERC20.sol/ERC20.sol/g' ${handler_file}
 perl -0777 -i -pe 's/safeA/a/g' ${handler_file}
 perl -0777 -i -pe 's/safeT/t/g' ${handler_file}
 perl -0777 -i -pe 's/address public constant /address public /g' ${handler_file}
+perl -0777 -i -pe 's/address private constant /address public /g' ${handler_file}
+perl -0777 -i -pe 's/public constant /public /g' ${handler_file}
+perl -0777 -i -pe 's/private constant /public /g' ${handler_file}
 perl -0777 -i -pe 's/address payable public constant / address payable public /g' ${handler_file}
 perl -0777 -i -pe 's/dsProxyPayable.transfer\(amount\)/Nothing\(dsProxyPayable\).nop{value:amount}\(\)/g' ${handler_file}
 
@@ -76,20 +79,27 @@ perl -0777 -i -pe 's/address constant ETHADDRESS/address public ETHADDRESS/g' co
 perl -0777 -i -pe 's/ETHADDRESS/ETH_ADDRESS/g' contracts/handlers/aave/FlashLoanReceiverBase.sol
 perl -0777 -i -pe 's/ETHADDRESS/ETH_ADDRESS/g' contracts/handlers/aave/HAaveProtocol.sol
 perl -0777 -i -pe 's/ETHADDRESS/ETH_ADDRESS/g' contracts/handlers/aavev2/HAaveProtocolV2.sol
+perl -0777 -i -pe 's/_ETH_ADDRESS/ETH_ADDRESS/g' contracts/handlers/oneinchV3/HOneInchV3.sol
+# Add ETH_ADDRESS getter for HGelatoV2LimitOrder
+perl -0777 -i -pe 's/immutable GELATO_LIMIT_ORDER_MODULE;/immutable  GELATO_LIMIT_ORDER_MODULE;\n    address public ETH_ADDRESS = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;/g' contracts/handlers/gelatov2/HGelatoV2LimitOrder.sol
 
 # handler specific
 perl -0777 -i -pe 's/function repay\(/function unique_repay\(/g' contracts/handlers/aavev2/HAaveProtocolV2.sol
 perl -0777 -i -pe 's/function claimComp\(/function unique_claimComp\(/g' contracts/handlers/compound/HSCompound.sol
 perl -0777 -i -pe 's/function claimComp\(/function unique_claimComp\(/g' contracts/handlers/compound/HComptroller.sol
-perl -0777 -i -pe 's/function swap\(/function unique_swap\(/g' contracts/handlers/oneinchV2/HOneInchExchange.sol
+perl -0777 -i -pe 's/function swap\(/function unique_swap\(/g' contracts/handlers/oneinchV3/HOneInchV3.sol
+perl -0777 -i -pe 's/function unoswap\(/function unique_unoswap\(/g' contracts/handlers/oneinchV3/HOneInchV3.sol
 perl -0777 -i -pe 's/function withdraw\(/function unique_withdraw\(/g' contracts/handlers/weth/HWeth.sol
 perl -0777 -i -pe 's/function deposit\(/function unique_deposit\(/g' contracts/handlers/weth/HWeth.sol
-perl -0777 -i -pe 's/function swap/function unique_swap/g' contracts/handlers/kybernetwork/HKyberNetwork.sol
 perl -0777 -i -pe 's/function redeemUnderlying/function unique_redeemUnderlying/g' contracts/handlers/compound/HCEther.sol
 perl -0777 -i -pe 's/receiver.transfer\(amount\)/Nothing\(receiver\).nop{value:amount}\(\)/g' contracts/handlers/funds/HFunds.sol
+# perl -0777 -i -pe 's/function swap\(/function unique_swap\(/g' contracts/handlers/oneinchV2/HOneInchExchange.sol
+# perl -0777 -i -pe 's/function swap/function unique_swap/g' contracts/handlers/kybernetwork/HKyberNetwork.sol
+# constant keyword being remove above so change pure to view
+perl -0777 -i -pe 's/function _isNotNativeToken\(address token\) internal pure/function _isNotNativeToken\(address token\) internal view/g' contracts/handlers/oneinchV3/HOneInchV3.sol
 
 # add ABIEncoderV2 to HMooniswap
-perl -0777 -i -pe 's/pragma solidity/pragma experimental ABIEncoderV2; pragma  solidity/g' contracts/handlers/mooniswap/HMooniswap.sol
+# perl -0777 -i -pe 's/pragma solidity/pragma experimental ABIEncoderV2; pragma  solidity/g' contracts/handlers/mooniswap/HMooniswap.sol
 
 # Distinguish redeem of compound and of aave
 perl -0777 -i -pe 's/compound.redeem\(/compound.compoundredeem\(/g' contracts/handlers/compound/HCToken.sol

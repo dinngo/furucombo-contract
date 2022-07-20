@@ -17,7 +17,6 @@ const {
   UNISWAPV2_ROUTER02,
   HBTC_TOKEN,
   HBTC_PROVIDER,
-  WBTC_TOKEN,
   OMG_TOKEN,
   USDT_TOKEN,
 } = require('./utils/constants');
@@ -27,8 +26,8 @@ const {
   mulPercent,
   profileGas,
   getHandlerReturn,
-  tokenProviderUniV2,
   tokenProviderSushi,
+  impersonateAndInjectEther,
 } = require('./utils/utils');
 
 const HUniswapV2 = artifacts.require('HUniswapV2');
@@ -60,15 +59,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
     this.router = await IUniswapV2Router.at(UNISWAPV2_ROUTER02);
     this.proxy = await Proxy.new(this.registry.address);
 
-    // FIXME: static provider and inject native token
-    await network.provider.request({
-      method: 'hardhat_impersonateAccount',
-      params: [HBTC_PROVIDER],
-    });
-    await network.provider.send('hardhat_setBalance', [
-      HBTC_PROVIDER,
-      '0xde0b6b3a7640000',
-    ]);
+    impersonateAndInjectEther(hbtcProviderAddress);
   });
 
   beforeEach(async function() {
@@ -131,9 +122,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
         ).to.be.bignumber.eq(ether('0'));
         expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
         expect(await balanceUser.delta()).to.be.bignumber.eq(
-          ether('0')
-            .sub(ether('1'))
-            .sub(new BN(receipt.receipt.gasUsed))
+          ether('0').sub(ether('1'))
         );
         profileGas(receipt);
       });
@@ -172,9 +161,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
         ).to.be.bignumber.eq(ether('0'));
         expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
         expect(await balanceUser.delta()).to.be.bignumber.eq(
-          ether('0')
-            .sub(ether('1'))
-            .sub(new BN(receipt.receipt.gasUsed))
+          ether('0').sub(ether('1'))
         );
         profileGas(receipt);
       });
@@ -249,9 +236,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
         const userBalanceDelta = await balanceUser.delta();
 
         expect(userBalanceDelta).to.be.bignumber.eq(
-          ether('0')
-            .sub(handlerReturn)
-            .sub(new BN(receipt.receipt.gasUsed))
+          ether('0').sub(handlerReturn)
         );
 
         expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
@@ -261,11 +246,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
           await this.token.balanceOf.call(this.proxy.address)
         ).to.be.bignumber.eq(ether('0'));
         expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
-        expect(userBalanceDelta).to.be.bignumber.eq(
-          ether('0')
-            .sub(result[0])
-            .sub(new BN(receipt.receipt.gasUsed))
-        );
+        expect(userBalanceDelta).to.be.bignumber.eq(ether('0').sub(result[0]));
         profileGas(receipt);
       });
 
@@ -294,9 +275,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
         const userBalanceDelta = await balanceUser.delta();
 
         expect(userBalanceDelta).to.be.bignumber.eq(
-          ether('0')
-            .sub(handlerReturn)
-            .sub(new BN(receipt.receipt.gasUsed))
+          ether('0').sub(handlerReturn)
         );
 
         expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
@@ -306,11 +285,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
           await this.token.balanceOf.call(this.proxy.address)
         ).to.be.bignumber.eq(ether('0'));
         expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
-        expect(userBalanceDelta).to.be.bignumber.eq(
-          ether('0')
-            .sub(result[0])
-            .sub(new BN(receipt.receipt.gasUsed))
-        );
+        expect(userBalanceDelta).to.be.bignumber.eq(ether('0').sub(result[0]));
         profileGas(receipt);
       });
 
@@ -408,9 +383,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
         const userBalanceDelta = await balanceUser.delta();
 
         expect(userBalanceDelta).to.be.bignumber.eq(
-          ether('0')
-            .add(handlerReturn)
-            .sub(new BN(receipt.receipt.gasUsed))
+          ether('0').add(handlerReturn)
         );
 
         expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
@@ -421,9 +394,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
         ).to.be.bignumber.eq(ether('0'));
         expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
         expect(userBalanceDelta).to.be.bignumber.eq(
-          ether('0')
-            .add(result[result.length - 1])
-            .sub(new BN(receipt.receipt.gasUsed))
+          ether('0').add(result[result.length - 1])
         );
         profileGas(receipt);
       });
@@ -455,9 +426,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
         const userBalanceDelta = await balanceUser.delta();
 
         expect(userBalanceDelta).to.be.bignumber.eq(
-          ether('0')
-            .add(handlerReturn)
-            .sub(new BN(receipt.receipt.gasUsed))
+          ether('0').add(handlerReturn)
         );
 
         expect(await this.hbtc.balanceOf.call(user)).to.be.bignumber.eq(
@@ -468,9 +437,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
         ).to.be.bignumber.eq(ether('0'));
         expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
         expect(userBalanceDelta).to.be.bignumber.eq(
-          ether('0')
-            .add(result[result.length - 1])
-            .sub(new BN(receipt.receipt.gasUsed))
+          ether('0').add(result[result.length - 1])
         );
         profileGas(receipt);
       });
@@ -502,9 +469,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
         const userBalanceDelta = await balanceUser.delta();
 
         expect(userBalanceDelta).to.be.bignumber.eq(
-          ether('0')
-            .add(handlerReturn)
-            .sub(new BN(receipt.receipt.gasUsed))
+          ether('0').add(handlerReturn)
         );
 
         expect(await this.omg.balanceOf.call(user)).to.be.bignumber.eq(
@@ -515,9 +480,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
         ).to.be.bignumber.eq(ether('0'));
         expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
         expect(userBalanceDelta).to.be.bignumber.eq(
-          ether('0')
-            .add(result[result.length - 1])
-            .sub(new BN(receipt.receipt.gasUsed))
+          ether('0').add(result[result.length - 1])
         );
         profileGas(receipt);
       });
@@ -550,9 +513,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
         const userBalanceDelta = await balanceUser.delta();
 
         expect(userBalanceDelta).to.be.bignumber.eq(
-          ether('0')
-            .add(handlerReturn)
-            .sub(new BN(receipt.receipt.gasUsed))
+          ether('0').add(handlerReturn)
         );
 
         expect(await this.usdt.balanceOf.call(user)).to.be.bignumber.eq(
@@ -563,9 +524,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
         ).to.be.bignumber.eq(ether('0'));
         expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
         expect(userBalanceDelta).to.be.bignumber.eq(
-          ether('0')
-            .add(result[result.length - 1])
-            .sub(new BN(receipt.receipt.gasUsed))
+          ether('0').add(result[result.length - 1])
         );
         profileGas(receipt);
       });
@@ -595,9 +554,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
         const userBalanceDelta = await balanceUser.delta();
 
         expect(userBalanceDelta).to.be.bignumber.eq(
-          ether('0')
-            .add(handlerReturn)
-            .sub(new BN(receipt.receipt.gasUsed))
+          ether('0').add(handlerReturn)
         );
 
         expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
@@ -608,9 +565,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
         ).to.be.bignumber.eq(ether('0'));
         expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
         expect(userBalanceDelta).to.be.bignumber.eq(
-          ether('0')
-            .add(result[result.length - 1])
-            .sub(new BN(receipt.receipt.gasUsed))
+          ether('0').add(result[result.length - 1])
         );
         profileGas(receipt);
       });
@@ -693,9 +648,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
           await this.token.balanceOf.call(this.proxy.address)
         ).to.be.bignumber.eq(ether('0'));
         expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
-        expect(userBalanceDelta).to.be.bignumber.eq(
-          buyAmt.sub(new BN(receipt.receipt.gasUsed))
-        );
+        expect(userBalanceDelta).to.be.bignumber.eq(buyAmt);
         profileGas(receipt);
       });
 
@@ -735,9 +688,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
           await this.hbtc.balanceOf.call(this.proxy.address)
         ).to.be.bignumber.eq(ether('0'));
         expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
-        expect(userBalanceDelta).to.be.bignumber.eq(
-          buyAmt.sub(new BN(receipt.receipt.gasUsed))
-        );
+        expect(userBalanceDelta).to.be.bignumber.eq(buyAmt);
         profileGas(receipt);
       });
 
@@ -776,9 +727,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
           await this.omg.balanceOf.call(this.proxy.address)
         ).to.be.bignumber.eq(ether('0'));
         expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
-        expect(userBalanceDelta).to.be.bignumber.eq(
-          buyAmt.sub(new BN(receipt.receipt.gasUsed))
-        );
+        expect(userBalanceDelta).to.be.bignumber.eq(buyAmt);
         profileGas(receipt);
       });
 
@@ -817,9 +766,69 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
           await this.usdt.balanceOf.call(this.proxy.address)
         ).to.be.bignumber.eq(ether('0'));
         expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
-        expect(userBalanceDelta).to.be.bignumber.eq(
-          buyAmt.sub(new BN(receipt.receipt.gasUsed))
+        expect(userBalanceDelta).to.be.bignumber.eq(buyAmt);
+        profileGas(receipt);
+      });
+
+      it('allowance is not zero', async function() {
+        const value = ether('1000');
+        const buyAmt = ether('0.1');
+        const to = this.hUniswapV2.address;
+        const path = [OMG_TOKEN, WETH_TOKEN];
+        const data1 = abi.simpleEncode(
+          'swapTokensForExactETH(uint256,uint256,address[]):(uint256[])',
+          buyAmt,
+          value,
+          path
         );
+
+        // First swap to make allowance > 0
+        await this.omg.transfer(this.proxy.address, value, {
+          from: omgProviderAddress,
+        });
+        await this.proxy.updateTokenMock(this.omg.address);
+        await this.omg.transfer(someone, value, { from: omgProviderAddress });
+        await this.proxy.execMock(to, data1, {
+          from: user,
+        });
+        expect(
+          await this.omg.allowance.call(this.proxy.address, UNISWAPV2_ROUTER02)
+        ).to.be.bignumber.gt(ether('0'));
+
+        // Second swap in allowance > 0
+        const result = await this.router.getAmountsIn.call(buyAmt, path, {
+          from: someone,
+        });
+        const data2 = abi.simpleEncode(
+          'swapTokensForExactETH(uint256,uint256,address[]):(uint256[])',
+          buyAmt,
+          mulPercent(result[0], new BN('100').add(slippage)),
+          path
+        );
+        await this.omg.transfer(this.proxy.address, value, {
+          from: omgProviderAddress,
+        });
+        await this.proxy.updateTokenMock(this.omg.address);
+        await this.omg.transfer(someone, value, { from: omgProviderAddress });
+        balanceUser.get();
+        tokenUser = await this.omg.balanceOf.call(user);
+        const receipt = await this.proxy.execMock(to, data2, {
+          from: user,
+        });
+
+        const handlerReturn = utils.toBN(
+          getHandlerReturn(receipt, ['uint256'])[0]
+        );
+        const userBalanceDelta = await balanceUser.delta();
+        expect(handlerReturn).to.be.bignumber.eq(result[0]);
+        expect(await this.omg.balanceOf.call(user)).to.be.bignumber.eq(
+          tokenUser.add(value).sub(result[0])
+        );
+        expect(
+          await this.omg.balanceOf.call(this.proxy.address)
+        ).to.be.bignumber.eq(ether('0'));
+        expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
+        expect(userBalanceDelta).to.be.bignumber.eq(buyAmt);
         profileGas(receipt);
       });
 
@@ -856,9 +865,7 @@ contract('UniswapV2 Swap', function([_, user, someone]) {
           await this.token.balanceOf.call(this.proxy.address)
         ).to.be.bignumber.eq(ether('0'));
         expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
-        expect(userBalanceDelta).to.be.bignumber.eq(
-          buyAmt.sub(new BN(receipt.receipt.gasUsed))
-        );
+        expect(userBalanceDelta).to.be.bignumber.eq(buyAmt);
         profileGas(receipt);
       });
       it('insufficient input token', async function() {

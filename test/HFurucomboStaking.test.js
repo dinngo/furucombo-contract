@@ -99,9 +99,7 @@ contract('Furucombo', function([_, user, someone]) {
       ).to.be.bignumber.zero;
       expect(await balanceProxy.get()).to.be.bignumber.zero;
       expect(await this.token.balanceOf.call(user)).to.be.bignumber.zero;
-      expect(await balanceUser.delta()).to.be.bignumber.eq(
-        ether('0').sub(new BN(receipt.receipt.gasUsed))
-      );
+      expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
       expect(await this.staking.balanceOf(user)).to.be.bignumber.eq(
         stakeAmount
       );
@@ -143,9 +141,7 @@ contract('Furucombo', function([_, user, someone]) {
       ).to.be.bignumber.zero;
       expect(await balanceProxy.get()).to.be.bignumber.zero;
       expect(await this.token.balanceOf.call(user)).to.be.bignumber.zero;
-      expect(await balanceUser.delta()).to.be.bignumber.eq(
-        ether('0').sub(new BN(receipt.receipt.gasUsed))
-      );
+      expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
       expect(await this.staking.balanceOf(user)).to.be.bignumber.eq(
         stakeAmount
       );
@@ -264,9 +260,7 @@ contract('Furucombo', function([_, user, someone]) {
       expect(await this.staking.balanceOf(user)).to.be.bignumber.eq(
         stakeAmount.sub(unstakeAmount)
       );
-      expect(await balanceUser.delta()).to.be.bignumber.eq(
-        ether('0').sub(new BN(receipt.receipt.gasUsed))
-      );
+      expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
 
       // Verify event
       await expectEvent.inTransaction(receipt.tx, this.staking, 'Unstaked', {
@@ -308,9 +302,7 @@ contract('Furucombo', function([_, user, someone]) {
         unstakeAmount
       );
       expect(await this.staking.balanceOf(user)).to.be.bignumber.zero;
-      expect(await balanceUser.delta()).to.be.bignumber.eq(
-        ether('0').sub(new BN(receipt.receipt.gasUsed))
-      );
+      expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
 
       // Verify event
       await expectEvent.inTransaction(receipt.tx, this.staking, 'Unstaked', {
@@ -473,9 +465,7 @@ contract('Furucombo', function([_, user, someone]) {
       expect(
         await this.rewardToken.balanceOf.call(this.proxy.address)
       ).to.be.bignumber.zero;
-      expect(await balanceUser.delta()).to.be.bignumber.eq(
-        ether('0').sub(new BN(receipt.receipt.gasUsed))
-      );
+      expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
       profileGas(receipt);
     });
 
@@ -526,9 +516,7 @@ contract('Furucombo', function([_, user, someone]) {
       expect(
         await this.rewardToken.balanceOf.call(this.proxy.address)
       ).to.be.bignumber.zero;
-      expect(await balanceUser.delta()).to.be.bignumber.eq(
-        ether('0').sub(new BN(receipt.receipt.gasUsed))
-      );
+      expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
       profileGas(receipt);
     });
 

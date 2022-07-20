@@ -128,9 +128,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           ).to.be.bignumber.eq(ether('0'));
           expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
           expect(await balanceUser.delta()).to.be.bignumber.eq(
-            ether('0')
-              .sub(value)
-              .sub(new BN(receipt.receipt.gasUsed))
+            ether('0').sub(value)
           );
         });
 
@@ -185,9 +183,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           ).to.be.bignumber.eq(ether('0'));
           expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
           expect(await balanceUser.delta()).to.be.bignumber.eq(
-            ether('0')
-              .sub(value)
-              .sub(new BN(receipt.receipt.gasUsed))
+            ether('0').sub(value)
           );
         });
 
@@ -270,9 +266,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           expect(handlerReturn).to.be.bignumber.gt(new BN('0'));
           expect(handlerReturn).to.be.bignumber.eq(result);
           expect(userBalanceDelta).to.be.bignumber.eq(
-            ether('0')
-              .add(handlerReturn)
-              .sub(new BN(receipt.receipt.gasUsed))
+            ether('0').add(handlerReturn)
           );
 
           expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
@@ -333,9 +327,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           expect(handlerReturn).to.be.bignumber.gt(new BN('0'));
           expect(handlerReturn).to.be.bignumber.eq(result);
           expect(userBalanceDelta).to.be.bignumber.eq(
-            ether('0')
-              .add(handlerReturn)
-              .sub(new BN(receipt.receipt.gasUsed))
+            ether('0').add(handlerReturn)
           );
 
           expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
@@ -446,9 +438,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           expect(await this.weth.balanceOf.call(user)).to.be.bignumber.eq(
             wethUser.add(result)
           );
-          expect(await balanceUser.delta()).to.be.bignumber.eq(
-            ether('0').sub(new BN(receipt.receipt.gasUsed))
-          );
+          expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
         });
 
         it('max amount', async function() {
@@ -511,9 +501,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           expect(await this.weth.balanceOf.call(user)).to.be.bignumber.eq(
             wethUser.add(result)
           );
-          expect(await balanceUser.delta()).to.be.bignumber.eq(
-            ether('0').sub(new BN(receipt.receipt.gasUsed))
-          );
+          expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
         });
 
         it('insufficient token', async function() {
@@ -600,9 +588,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           ).to.be.bignumber.eq(ether('0'));
           expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
           expect(await balanceUser.delta()).to.be.bignumber.eq(
-            ether('0')
-              .sub(value)
-              .sub(new BN(receipt.receipt.gasUsed))
+            ether('0').sub(value)
           );
         });
 
@@ -648,9 +634,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           ).to.be.bignumber.eq(ether('0'));
           expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
           expect(await balanceUser.delta()).to.be.bignumber.eq(
-            ether('0')
-              .sub(value)
-              .sub(new BN(receipt.receipt.gasUsed))
+            ether('0').sub(value)
           );
         });
 
@@ -721,9 +705,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           expect(handlerReturn).to.be.bignumber.gt(new BN('0'));
           expect(handlerReturn).to.be.bignumber.eq(result);
           expect(userBalanceDelta).to.be.bignumber.eq(
-            ether('0')
-              .add(handlerReturn)
-              .sub(new BN(receipt.receipt.gasUsed))
+            ether('0').add(handlerReturn)
           );
 
           expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
@@ -775,9 +757,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           expect(handlerReturn).to.be.bignumber.eq(result);
           expect(handlerReturn).to.be.bignumber.gt(new BN('0'));
           expect(userBalanceDelta).to.be.bignumber.eq(
-            ether('0')
-              .add(handlerReturn)
-              .sub(new BN(receipt.receipt.gasUsed))
+            ether('0').add(handlerReturn)
           );
 
           expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
@@ -875,9 +855,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           expect(await this.weth.balanceOf.call(user)).to.be.bignumber.eq(
             wethUser.add(result)
           );
-          expect(await balanceUser.delta()).to.be.bignumber.eq(
-            ether('0').sub(new BN(receipt.receipt.gasUsed))
-          );
+          expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
         });
 
         it('max amount', async function() {
@@ -930,9 +908,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           expect(await this.weth.balanceOf.call(user)).to.be.bignumber.eq(
             wethUser.add(result)
           );
-          expect(await balanceUser.delta()).to.be.bignumber.eq(
-            ether('0').sub(new BN(receipt.receipt.gasUsed))
-          );
+          expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
         });
 
         it('insufficient token', async function() {
@@ -1025,9 +1001,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           ).to.be.bignumber.eq(ether('0'));
           expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
           expect(await balanceUser.delta()).to.be.bignumber.eq(
-            ether('0')
-              .sub(result)
-              .sub(new BN(receipt.receipt.gasUsed))
+            ether('0').sub(result)
           );
         });
 
@@ -1081,9 +1055,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           ).to.be.bignumber.eq(ether('0'));
           expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
           expect(await balanceUser.delta()).to.be.bignumber.eq(
-            ether('0')
-              .sub(result)
-              .sub(new BN(receipt.receipt.gasUsed))
+            ether('0').sub(result)
           );
         });
 
@@ -1172,9 +1144,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
             await this.token.balanceOf.call(this.proxy.address)
           ).to.be.bignumber.eq(ether('0'));
           expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
-          expect(userBalanceDelta).to.be.bignumber.eq(
-            amountOut.sub(new BN(receipt.receipt.gasUsed))
-          );
+          expect(userBalanceDelta).to.be.bignumber.eq(amountOut);
         });
 
         it('max amount', async function() {
@@ -1231,9 +1201,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
             await this.token.balanceOf.call(this.proxy.address)
           ).to.be.bignumber.eq(ether('0'));
           expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
-          expect(userBalanceDelta).to.be.bignumber.eq(
-            amountOut.sub(new BN(receipt.receipt.gasUsed))
-          );
+          expect(userBalanceDelta).to.be.bignumber.eq(amountOut);
         });
 
         it('desired amount too high', async function() {
@@ -1331,9 +1299,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           expect(await this.weth.balanceOf.call(user)).to.be.bignumber.eq(
             wethUser.add(amountOut)
           );
-          expect(await balanceUser.delta()).to.be.bignumber.eq(
-            ether('0').sub(new BN(receipt.receipt.gasUsed))
-          );
+          expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
         });
 
         it('max amount', async function() {
@@ -1396,9 +1362,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           expect(await this.weth.balanceOf.call(user)).to.be.bignumber.eq(
             wethUser.add(amountOut)
           );
-          expect(await balanceUser.delta()).to.be.bignumber.eq(
-            ether('0').sub(new BN(receipt.receipt.gasUsed))
-          );
+          expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
         });
 
         it('desired amount too high', async function() {
@@ -1483,9 +1447,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           ).to.be.bignumber.eq(ether('0'));
           expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
           expect(await balanceUser.delta()).to.be.bignumber.eq(
-            ether('0')
-              .sub(result)
-              .sub(new BN(receipt.receipt.gasUsed))
+            ether('0').sub(result)
           );
         });
 
@@ -1533,9 +1495,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           ).to.be.bignumber.eq(ether('0'));
           expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
           expect(await balanceUser.delta()).to.be.bignumber.eq(
-            ether('0')
-              .sub(result)
-              .sub(new BN(receipt.receipt.gasUsed))
+            ether('0').sub(result)
           );
         });
 
@@ -1615,9 +1575,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
             await this.token.balanceOf.call(this.proxy.address)
           ).to.be.bignumber.eq(ether('0'));
           expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
-          expect(userBalanceDelta).to.be.bignumber.eq(
-            amountOut.sub(new BN(receipt.receipt.gasUsed))
-          );
+          expect(userBalanceDelta).to.be.bignumber.eq(amountOut);
         });
 
         it('max amount', async function() {
@@ -1668,9 +1626,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
             await this.token.balanceOf.call(this.proxy.address)
           ).to.be.bignumber.eq(ether('0'));
           expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
-          expect(userBalanceDelta).to.be.bignumber.eq(
-            amountOut.sub(new BN(receipt.receipt.gasUsed))
-          );
+          expect(userBalanceDelta).to.be.bignumber.eq(amountOut);
         });
 
         it('desired amount too high', async function() {
@@ -1758,9 +1714,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           expect(await this.weth.balanceOf.call(user)).to.be.bignumber.eq(
             wethUser.add(amountOut)
           );
-          expect(await balanceUser.delta()).to.be.bignumber.eq(
-            ether('0').sub(new BN(receipt.receipt.gasUsed))
-          );
+          expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
         });
 
         it('max amount', async function() {
@@ -1816,9 +1770,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           expect(await this.weth.balanceOf.call(user)).to.be.bignumber.eq(
             wethUser.add(amountOut)
           );
-          expect(await balanceUser.delta()).to.be.bignumber.eq(
-            ether('0').sub(new BN(receipt.receipt.gasUsed))
-          );
+          expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
         });
 
         it('desired amount too high', async function() {

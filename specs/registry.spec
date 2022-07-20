@@ -5,7 +5,7 @@ methods {
     owner() returns (address) envfree
 }
 
-definition deprecated() returns uint = 0x6465707265636174656400000000000000000000000000000000000000000000;
+definition deprecated() returns bytes32 = 0x6465707265636174656400000000000000000000000000000000000000000000;
 
 function handlerTransition(address handler, bytes32 before, bytes32 after, method f) {
     require before == handlers(handler);

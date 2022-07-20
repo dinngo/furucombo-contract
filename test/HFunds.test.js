@@ -152,9 +152,7 @@ contract('Funds', function([_, user, someone]) {
       expect(handlerReturn[1]).to.be.bignumber.eq(value[1].add(msgValue)); // handlerReturn should include msg.value
       expect(await balanceProxy.get()).to.be.bignumber.zero;
       // user balance will not include msg.value because it is provided by user itself
-      expect(await balanceUser.delta()).to.be.bignumber.eq(
-        value[1].sub(new BN(receipt.receipt.gasUsed))
-      );
+      expect(await balanceUser.delta()).to.be.bignumber.eq(value[1]);
 
       profileGas(receipt);
     });
@@ -192,9 +190,7 @@ contract('Funds', function([_, user, someone]) {
       expect(handlerReturn[1]).to.be.bignumber.eq(value[1].add(msgValue)); // handlerReturn should include msg.value
       expect(await balanceProxy.get()).to.be.bignumber.zero;
       // user balance will not include msg.value because it is provided by user itself
-      expect(await balanceUser.delta()).to.be.bignumber.eq(
-        value[1].sub(new BN(receipt.receipt.gasUsed))
-      );
+      expect(await balanceUser.delta()).to.be.bignumber.eq(value[1]);
 
       profileGas(receipt);
     });
@@ -798,7 +794,7 @@ contract('Funds', function([_, user, someone]) {
         });
         // delta = ether tip + gas fee + block reward
         expect(await this.balanceMiner.delta()).to.be.bignumber.eq(
-          value.add(new BN(receipt.receipt.gasUsed).add(ether(BLOCK_REWARD)))
+          value.add(ether(BLOCK_REWARD))
         );
 
         profileGas(receipt);

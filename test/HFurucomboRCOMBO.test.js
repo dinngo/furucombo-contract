@@ -85,9 +85,7 @@ contract('Furucombo rCOMBO', function([_, user]) {
 
       // Verify
       expect(await balanceProxy.get()).to.be.bignumber.zero;
-      expect(await balanceUser.delta()).to.be.bignumber.eq(
-        ether('0').sub(new BN(receipt.receipt.gasUsed))
-      );
+      expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
       expect(
         await this.rCOMBO.balanceOf.call(this.proxy.address)
       ).to.be.bignumber.zero;
@@ -116,9 +114,7 @@ contract('Furucombo rCOMBO', function([_, user]) {
 
       // Verify
       expect(await balanceProxy.get()).to.be.bignumber.zero;
-      expect(await balanceUser.delta()).to.be.bignumber.eq(
-        ether('0').sub(new BN(receipt.receipt.gasUsed))
-      );
+      expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
       expect(
         await this.rCOMBO.balanceOf.call(this.proxy.address)
       ).to.be.bignumber.zero;
@@ -174,9 +170,7 @@ contract('Furucombo rCOMBO', function([_, user]) {
 
       // Verify
       expect(await balanceProxy.get()).to.be.bignumber.zero;
-      expect(await balanceUser.delta()).to.be.bignumber.eq(
-        ether('0').sub(new BN(receipt.receipt.gasUsed))
-      );
+      expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
       expect(
         await this.combo.balanceOf.call(this.proxy.address)
       ).to.be.bignumber.zero;

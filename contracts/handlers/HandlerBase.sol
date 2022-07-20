@@ -125,4 +125,8 @@ abstract contract HandlerBase is Storage, Config {
             }
         }
     }
+
+    function _isNotNativeToken(address token) internal pure returns (bool) {
+        return (token != address(0) && token != NATIVE_TOKEN_ADDRESS);
+    }
 }

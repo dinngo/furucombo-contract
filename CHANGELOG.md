@@ -4,6 +4,22 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+### Added
+
+- Static analysis tool - slither
+
+## [1.11.1] - 2022-05-27
+
+### Changed
+
+- Archive GasTokens related handlers and tests.
+
+## [1.11.0] - 2022-02-14
+
+### Added
+
+- Support ParaSwapV5.
+
 ### Changed
 
 - Refine token provider for tests.

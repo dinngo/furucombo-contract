@@ -118,9 +118,7 @@ contract('FCompoundActions', function([_, user]) {
       const ethProxyAfter = await balance.current(this.userProxy.address);
       const ethUserAfter = await balance.current(user);
       expect(ethProxyAfter).to.be.bignumber.eq(ethProxyBefore.sub(amount));
-      expect(ethUserAfter).to.be.bignumber.eq(
-        ethUserBefore.add(amount).sub(new BN(receipt.receipt.gasUsed))
-      );
+      expect(ethUserAfter).to.be.bignumber.eq(ethUserBefore.add(amount));
     });
 
     it('withdraw token', async function() {
@@ -283,9 +281,7 @@ contract('FCompoundActions', function([_, user]) {
       const ethProxyAfter = await balance.current(this.userProxy.address);
       const ethUserAfter = await balance.current(user);
       expect(ethProxyAfter).to.be.bignumber.eq(ethProxyBefore.add(amount));
-      expect(ethUserAfter).to.be.bignumber.eq(
-        ethUserBefore.sub(new BN(receipt.receipt.gasUsed))
-      );
+      expect(ethUserAfter).to.be.bignumber.eq(ethUserBefore);
     });
 
     it('borrow token', async function() {
@@ -377,9 +373,7 @@ contract('FCompoundActions', function([_, user]) {
         );
         const borrowBalanceDiff = borrowBalanceBefore.sub(borrowBalanceAfter);
         expect(ethProxyAfter).to.be.bignumber.eq(ethProxyBefore);
-        expect(ethUserAfter).to.be.bignumber.eq(
-          ethUserBefore.sub(amount).sub(new BN(receipt.receipt.gasUsed))
-        );
+        expect(ethUserAfter).to.be.bignumber.eq(ethUserBefore.sub(amount));
         // amount * 0.99 <= borrowBalanceDiff <= amount * 1.01, inaccurateness caused by interest
         expect(borrowBalanceDiff).to.be.bignumber.lte(mulPercent(amount, 101));
         expect(borrowBalanceDiff).to.be.bignumber.gte(mulPercent(amount, 99));
@@ -412,15 +406,11 @@ contract('FCompoundActions', function([_, user]) {
         expect(ethProxyAfter).to.be.bignumber.eq(ethProxyBefore);
         // balance might less than expected since debt might be slightly higher than borrowBalanceStored we got
         expect(ethUserAfter).to.be.bignumber.lte(
-          ethUserBefore
-            .sub(borrowBalanceBefore)
-            .sub(new BN(receipt.receipt.gasUsed))
+          ethUserBefore.sub(borrowBalanceBefore)
         );
         // assume maximum interest is 1% and the balance left after repay should be greater than this
         expect(ethUserAfter).to.be.bignumber.gte(
-          ethUserBefore
-            .sub(mulPercent(borrowBalanceBefore, 101))
-            .sub(new BN(receipt.receipt.gasUsed))
+          ethUserBefore.sub(mulPercent(borrowBalanceBefore, 101))
         );
         expect(borrowBalanceAfter).to.be.bignumber.zero;
       });
@@ -511,9 +501,7 @@ contract('FCompoundActions', function([_, user]) {
         );
         const borrowBalanceDiff = borrowBalanceBefore.sub(borrowBalanceAfter);
         expect(ethProxyAfter).to.be.bignumber.eq(ethProxyBefore);
-        expect(ethUserAfter).to.be.bignumber.eq(
-          ethUserBefore.sub(new BN(receipt.receipt.gasUsed))
-        );
+        expect(ethUserAfter).to.be.bignumber.eq(ethUserBefore);
         expect(tokenProxyAfter).to.be.bignumber.eq(tokenProxyBefore);
         expect(tokenUserAfter).to.be.bignumber.eq(tokenUserBefore.sub(amount));
         // amount * 0.99 <= borrowBalanceDiff <= amount * 1.01, inaccurateness caused by interest
@@ -559,9 +547,7 @@ contract('FCompoundActions', function([_, user]) {
           this.userProxy.address
         );
         expect(ethProxyAfter).to.be.bignumber.eq(ethProxyBefore);
-        expect(ethUserAfter).to.be.bignumber.eq(
-          ethUserBefore.sub(new BN(receipt.receipt.gasUsed))
-        );
+        expect(ethUserAfter).to.be.bignumber.eq(ethUserBefore);
         expect(tokenProxyAfter).to.be.bignumber.eq(tokenProxyBefore);
         // balance might less than expected since debt might be slightly higher than borrowBalanceStored we got
         expect(tokenUserAfter).to.be.bignumber.lte(
@@ -631,9 +617,7 @@ contract('FCompoundActions', function([_, user]) {
           this.userProxy.address
         );
         expect(ethProxyAfter).to.be.bignumber.eq(ethProxyBefore);
-        expect(ethUserAfter).to.be.bignumber.eq(
-          ethUserBefore.sub(new BN(receipt.receipt.gasUsed))
-        );
+        expect(ethUserAfter).to.be.bignumber.eq(ethUserBefore);
         expect(tokenProxyAfter).to.be.bignumber.eq(tokenProxyBefore);
         // balance might less than expected since debt might be slightly higher than borrowBalanceStored we got
         expect(tokenUserAfter).to.be.bignumber.lte(
