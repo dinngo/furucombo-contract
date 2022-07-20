@@ -22,10 +22,7 @@ build:
   stage: build
   script:
     - npm run build
-    - npm run check
-  cache:
-    <<: *global_cache
-
+    
 # Test Stage
 .job_template: &test-configuration
   stage: test
