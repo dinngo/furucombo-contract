@@ -1,3 +1,5 @@
+#!/bin/bash
+
 compile_result=`ls ./artifacts/build-info/*.json`
 for eachfile in $compile_result
 do
