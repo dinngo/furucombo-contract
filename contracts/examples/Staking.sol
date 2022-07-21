@@ -1,20 +1,18 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.6.0;
-pragma experimental ABIEncoderV2;
+pragma solidity 0.8.10;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/math/SafeMath.sol";
-import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
-import "@openzeppelin/contracts/utils/Pausable.sol";
-import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts/security/Pausable.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "./MerkleRedeem.sol";
 
 /**
  * @title The staking contract for Furucombo
  */
 contract Staking is Ownable, Pausable, ReentrancyGuard {
-    using SafeMath for uint256;
+    
     using SafeERC20 for IERC20;
 
     IERC20 public stakingToken;
@@ -47,7 +45,7 @@ contract Staking is Ownable, Pausable, ReentrancyGuard {
     /**
      * @notice The redeem contract owner will be transferred to the deployer.
      */
-    constructor(address _stakingToken, address _rewardToken) public {
+    constructor(address _stakingToken, address _rewardToken) {
         stakingToken = IERC20(_stakingToken);
         redeemable = new MerkleRedeem(_rewardToken);
         redeemable.transferOwnership(msg.sender);
@@ -159,14 +157,14 @@ contract Staking is Ownable, Pausable, ReentrancyGuard {
 
     function _stakeInternal(address user, uint256 amount) internal {
         require(amount > 0, "Furucombo staking: staking 0");
-        _balances[user] = _balances[user].add(amount);
+        _balances[user] = _balances[user] + amount;
         stakingToken.safeTransferFrom(msg.sender, address(this), amount);
         emit Staked(msg.sender, user, amount);
     }
 
     function _unstakeInternal(address user, uint256 amount) internal {
         require(amount > 0, "Furucombo staking: unstaking 0");
-        _balances[user] = _balances[user].sub(amount);
+        _balances[user] = _balances[user] - amount;
         stakingToken.safeTransfer(msg.sender, amount);
         emit Unstaked(msg.sender, user, amount);
     }

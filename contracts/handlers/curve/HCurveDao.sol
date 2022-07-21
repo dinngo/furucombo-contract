@@ -1,14 +1,14 @@
-pragma solidity ^0.6.0;
+// SPDX-License-Identifier: MIT
 
-import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
-import "@openzeppelin/contracts/math/SafeMath.sol";
+pragma solidity 0.8.10;
+
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "../HandlerBase.sol";
 import "./IMinter.sol";
 import "./ILiquidityGauge.sol";
 
 contract HCurveDao is HandlerBase {
     using SafeERC20 for IERC20;
-    using SafeMath for uint256;
 
     // prettier-ignore
     address public constant CURVE_MINTER = 0xd061D61a4d941c39E5453435B6345Dc261C2fcE0;
@@ -23,8 +23,11 @@ contract HCurveDao is HandlerBase {
         IMinter minter = IMinter(CURVE_MINTER);
         address user = _getSender();
         uint256 beforeCRVBalance = IERC20(CRV_TOKEN).balanceOf(user);
-        if (minter.allowed_to_mint_for(address(this), user) == false)
-            _revertMsg("mint", "not allowed to mint");
+        _requireMsg(
+            minter.allowed_to_mint_for(address(this), user),
+            "mint",
+            "not allowed to mint"
+        );
 
         try minter.mint_for(gaugeAddr, user) {} catch Error(
             string memory reason
@@ -36,7 +39,7 @@ contract HCurveDao is HandlerBase {
         uint256 afterCRVBalance = IERC20(CRV_TOKEN).balanceOf(user);
 
         _updateToken(CRV_TOKEN);
-        return afterCRVBalance.sub(beforeCRVBalance);
+        return afterCRVBalance - beforeCRVBalance;
     }
 
     function mintMany(address[] calldata gaugeAddrs)
@@ -47,8 +50,11 @@ contract HCurveDao is HandlerBase {
         IMinter minter = IMinter(CURVE_MINTER);
         address user = _getSender();
         uint256 beforeCRVBalance = IERC20(CRV_TOKEN).balanceOf(user);
-        if (minter.allowed_to_mint_for(address(this), user) == false)
-            _revertMsg("mintMany", "not allowed to mint");
+        _requireMsg(
+            minter.allowed_to_mint_for(address(this), user),
+            "mintMany",
+            "not allowed to mint"
+        );
 
         for (uint256 i = 0; i < gaugeAddrs.length; i++) {
             try minter.mint_for(gaugeAddrs[i], user) {} catch Error(
@@ -67,7 +73,7 @@ contract HCurveDao is HandlerBase {
         }
 
         _updateToken(CRV_TOKEN);
-        return IERC20(CRV_TOKEN).balanceOf(user).sub(beforeCRVBalance);
+        return IERC20(CRV_TOKEN).balanceOf(user) - beforeCRVBalance;
     }
 
     function deposit(address gaugeAddress, uint256 _value) external payable {
@@ -75,7 +81,7 @@ contract HCurveDao is HandlerBase {
         address token = gauge.lp_token();
         address user = _getSender();
 
-        // if amount == uint256(-1) return balance of Proxy
+        // if amount == type(uint256).max return balance of Proxy
         _value = _getBalance(token, _value);
         _tokenApprove(token, gaugeAddress, _value);
 
@@ -84,5 +90,6 @@ contract HCurveDao is HandlerBase {
         } catch {
             _revertMsg("deposit");
         }
+        _tokenApproveZero(token, gaugeAddress);
     }
 }

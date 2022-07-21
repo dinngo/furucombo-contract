@@ -1,7 +1,8 @@
-pragma solidity ^0.6.0;
+// SPDX-License-Identifier: MIT
 
-import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
-import "@openzeppelin/contracts/math/SafeMath.sol";
+pragma solidity 0.8.10;
+
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import "../HandlerBase.sol";
 import "./libraries/UniswapV2Library.sol";
@@ -9,7 +10,6 @@ import "./IUniswapV2Router02.sol";
 
 contract HUniswapV2 is HandlerBase {
     using SafeERC20 for IERC20;
-    using SafeMath for uint256;
 
     // prettier-ignore
     address public constant UNISWAPV2_ROUTER = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D;
@@ -49,7 +49,7 @@ contract HUniswapV2 is HandlerBase {
                 amountTokenMin,
                 amountETHMin,
                 address(this),
-                now + 1
+                block.timestamp
             )
         returns (uint256 ret1, uint256 ret2, uint256 ret3) {
             amountToken = ret1;
@@ -60,6 +60,7 @@ contract HUniswapV2 is HandlerBase {
         } catch {
             _revertMsg("addLiquidityETH");
         }
+        _tokenApproveZero(token, UNISWAPV2_ROUTER);
 
         // Update involved token
         address pair =
@@ -102,7 +103,7 @@ contract HUniswapV2 is HandlerBase {
                 amountAMin,
                 amountBMin,
                 address(this),
-                now + 1
+                block.timestamp
             )
         returns (uint256 ret1, uint256 ret2, uint256 ret3) {
             amountA = ret1;
@@ -113,6 +114,8 @@ contract HUniswapV2 is HandlerBase {
         } catch {
             _revertMsg("addLiquidity");
         }
+        _tokenApproveZero(tokenA, UNISWAPV2_ROUTER);
+        _tokenApproveZero(tokenB, UNISWAPV2_ROUTER);
 
         // Update involved token
         address pair =
@@ -143,7 +146,7 @@ contract HUniswapV2 is HandlerBase {
                 amountTokenMin,
                 amountETHMin,
                 address(this),
-                now + 1
+                block.timestamp
             )
         returns (uint256 ret1, uint256 ret2) {
             amountToken = ret1;
@@ -153,6 +156,7 @@ contract HUniswapV2 is HandlerBase {
         } catch {
             _revertMsg("removeLiquidityETH");
         }
+        _tokenApproveZero(pair, UNISWAPV2_ROUTER);
 
         // Update involved token
         _updateToken(token);
@@ -183,7 +187,7 @@ contract HUniswapV2 is HandlerBase {
                 amountAMin,
                 amountBMin,
                 address(this),
-                now + 1
+                block.timestamp
             )
         returns (uint256 ret1, uint256 ret2) {
             amountA = ret1;
@@ -193,6 +197,7 @@ contract HUniswapV2 is HandlerBase {
         } catch {
             _revertMsg("removeLiquidity");
         }
+        _tokenApproveZero(pair, UNISWAPV2_ROUTER);
 
         // Update involved token
         _updateToken(tokenA);
@@ -204,8 +209,7 @@ contract HUniswapV2 is HandlerBase {
         uint256 amountOutMin,
         address[] calldata path
     ) external payable returns (uint256 amount) {
-        if (path.length < 2)
-            _revertMsg("swapExactETHForTokens", "invalid path");
+        _requireMsg(path.length >= 2, "swapExactETHForTokens", "invalid path");
         address tokenOut = path[path.length - 1];
 
         // Get uniswapV2 router
@@ -216,7 +220,7 @@ contract HUniswapV2 is HandlerBase {
                 amountOutMin,
                 path,
                 address(this),
-                now + 1
+                block.timestamp
             )
         returns (uint256[] memory amounts) {
             amount = amounts[amounts.length - 1];
@@ -234,14 +238,13 @@ contract HUniswapV2 is HandlerBase {
         uint256 amountOut,
         address[] calldata path
     ) external payable returns (uint256 amount) {
-        if (path.length < 2)
-            _revertMsg("swapETHForExactTokens", "invalid path");
+        _requireMsg(path.length >= 2, "swapETHForExactTokens", "invalid path");
         address tokenOut = path[path.length - 1];
 
         // Get uniswapV2 router
         IUniswapV2Router02 router = IUniswapV2Router02(UNISWAPV2_ROUTER);
 
-        // if amount == uint256(-1) return balance of Proxy
+        // if amount == type(uint256).max return balance of Proxy
         value = _getBalance(address(0), value);
 
         try
@@ -249,7 +252,7 @@ contract HUniswapV2 is HandlerBase {
                 amountOut,
                 path,
                 address(this),
-                now + 1
+                block.timestamp
             )
         returns (uint256[] memory amounts) {
             amount = amounts[0];
@@ -267,8 +270,7 @@ contract HUniswapV2 is HandlerBase {
         uint256 amountOutMin,
         address[] calldata path
     ) external payable returns (uint256 amount) {
-        if (path.length < 2)
-            _revertMsg("swapExactTokensForETH", "invalid path");
+        _requireMsg(path.length >= 2, "swapExactTokensForETH", "invalid path");
         address tokenIn = path[0];
 
         // Get uniswapV2 router
@@ -284,7 +286,7 @@ contract HUniswapV2 is HandlerBase {
                 amountOutMin,
                 path,
                 address(this),
-                now + 1
+                block.timestamp
             )
         returns (uint256[] memory amounts) {
             amount = amounts[amounts.length - 1];
@@ -293,6 +295,7 @@ contract HUniswapV2 is HandlerBase {
         } catch {
             _revertMsg("swapExactTokensForETH");
         }
+        _tokenApproveZero(tokenIn, UNISWAPV2_ROUTER);
     }
 
     function swapTokensForExactETH(
@@ -300,26 +303,24 @@ contract HUniswapV2 is HandlerBase {
         uint256 amountInMax,
         address[] calldata path
     ) external payable returns (uint256 amount) {
-        if (path.length < 2)
-            _revertMsg("swapTokensForExactETH", "invalid path");
+        _requireMsg(path.length >= 2, "swapTokensForExactETH", "invalid path");
         address tokenIn = path[0];
 
         // Get uniswapV2 router
         IUniswapV2Router02 router = IUniswapV2Router02(UNISWAPV2_ROUTER);
 
-        // if amount == uint256(-1) return balance of Proxy
+        // if amount == type(uint256).max return balance of Proxy
         amountInMax = _getBalance(tokenIn, amountInMax);
 
         // Approve token
         _tokenApprove(tokenIn, UNISWAPV2_ROUTER, amountInMax);
-
         try
             router.swapTokensForExactETH(
                 amountOut,
                 amountInMax,
                 path,
                 address(this),
-                now + 1
+                block.timestamp
             )
         returns (uint256[] memory amounts) {
             amount = amounts[0];
@@ -328,6 +329,7 @@ contract HUniswapV2 is HandlerBase {
         } catch {
             _revertMsg("swapTokensForExactETH");
         }
+        _tokenApproveZero(tokenIn, UNISWAPV2_ROUTER);
     }
 
     function swapExactTokensForTokens(
@@ -335,8 +337,11 @@ contract HUniswapV2 is HandlerBase {
         uint256 amountOutMin,
         address[] calldata path
     ) external payable returns (uint256 amount) {
-        if (path.length < 2)
-            _revertMsg("swapExactTokensForTokens", "invalid path");
+        _requireMsg(
+            path.length >= 2,
+            "swapExactTokensForTokens",
+            "invalid path"
+        );
         address tokenIn = path[0];
         address tokenOut = path[path.length - 1];
 
@@ -353,7 +358,7 @@ contract HUniswapV2 is HandlerBase {
                 amountOutMin,
                 path,
                 address(this),
-                now + 1
+                block.timestamp
             )
         returns (uint256[] memory amounts) {
             amount = amounts[amounts.length - 1];
@@ -362,7 +367,7 @@ contract HUniswapV2 is HandlerBase {
         } catch {
             _revertMsg("swapExactTokensForTokens");
         }
-
+        _tokenApproveZero(tokenIn, UNISWAPV2_ROUTER);
         _updateToken(tokenOut);
     }
 
@@ -371,15 +376,18 @@ contract HUniswapV2 is HandlerBase {
         uint256 amountInMax,
         address[] calldata path
     ) external payable returns (uint256 amount) {
-        if (path.length < 2)
-            _revertMsg("swapTokensForExactTokens", "invalid path");
+        _requireMsg(
+            path.length >= 2,
+            "swapTokensForExactTokens",
+            "invalid path"
+        );
         address tokenIn = path[0];
         address tokenOut = path[path.length - 1];
 
         // Get uniswapV2 router
         IUniswapV2Router02 router = IUniswapV2Router02(UNISWAPV2_ROUTER);
 
-        // if amount == uint256(-1) return balance of Proxy
+        // if amount == type(uint256).max return balance of Proxy
         amountInMax = _getBalance(tokenIn, amountInMax);
 
         // Approve token
@@ -391,7 +399,7 @@ contract HUniswapV2 is HandlerBase {
                 amountInMax,
                 path,
                 address(this),
-                now + 1
+                block.timestamp
             )
         returns (uint256[] memory amounts) {
             amount = amounts[0];
@@ -400,7 +408,7 @@ contract HUniswapV2 is HandlerBase {
         } catch {
             _revertMsg("swapTokensForExactTokens");
         }
-
+        _tokenApproveZero(tokenIn, UNISWAPV2_ROUTER);
         _updateToken(tokenOut);
     }
 }

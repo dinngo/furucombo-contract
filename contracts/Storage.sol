@@ -1,4 +1,6 @@
-pragma solidity ^0.6.0;
+// SPDX-License-Identifier: MIT
+
+pragma solidity ^0.8.0;
 
 import "./lib/LibCache.sol";
 import "./lib/LibStack.sol";
@@ -15,17 +17,8 @@ contract Storage {
     // prettier-ignore
     bytes32 public constant MSG_SENDER_KEY = 0xb2f2618cecbbb6e7468cc0f2aa43858ad8d153e0280b22285e28e853bb9d453a;
 
-    // keccak256 hash of "cube.counter"
-    // prettier-ignore
-    bytes32 public constant CUBE_COUNTER_KEY = 0xf9543f11459ccccd21306c8881aaab675ff49d988c1162fd1dd9bbcdbe4446be;
-
     modifier isStackEmpty() {
         require(stack.length == 0, "Stack not empty");
-        _;
-    }
-
-    modifier isCubeCounterZero() {
-        require(_getCubeCounter() == 0, "Cube counter not zero");
         _;
     }
 
@@ -49,17 +42,5 @@ contract Storage {
 
     function _getSender() internal view returns (address) {
         return cache.getAddress(MSG_SENDER_KEY);
-    }
-
-    function _addCubeCounter() internal {
-        cache.setUint256(CUBE_COUNTER_KEY, _getCubeCounter() + 1);
-    }
-
-    function _resetCubeCounter() internal {
-        cache.setUint256(CUBE_COUNTER_KEY, 0);
-    }
-
-    function _getCubeCounter() internal view returns (uint256) {
-        return cache.getUint256(CUBE_COUNTER_KEY);
     }
 }

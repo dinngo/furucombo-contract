@@ -1,12 +1,15 @@
-pragma solidity ^0.6.0;
-pragma experimental ABIEncoderV2;
+// SPDX-License-Identifier: MIT
+
+pragma solidity 0.8.10;
 
 import "../Proxy.sol";
 import "./debug/GasProfiler.sol";
 import "./debug/IHandlerEvents.sol";
 
 contract ProxyMock is Proxy, GasProfiler, IHandlerEvents {
-    constructor(address registry) public Proxy(registry) {}
+    using LibStack for bytes32[];
+
+    constructor(address registry) Proxy(registry) {}
 
     event RecordHandlerResult(bytes value);
 
@@ -17,7 +20,7 @@ contract ProxyMock is Proxy, GasProfiler, IHandlerEvents {
     {
         _preProcess();
         _setBase();
-        result = _exec(to, data);
+        result = _exec(to, data, 0);
         _setPostProcess(to);
         _deltaGas("Gas");
         _postProcess();
@@ -25,7 +28,7 @@ contract ProxyMock is Proxy, GasProfiler, IHandlerEvents {
         return result;
     }
 
-    function _preProcess() internal override isCubeCounterZero {
+    function _preProcess() internal override {
         // Set the sender.
         _setSender();
     }

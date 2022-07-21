@@ -1,4 +1,6 @@
-pragma solidity ^0.6.0;
+// SPDX-License-Identifier: MIT
+
+pragma solidity 0.8.10;
 
 import "../HandlerBase.sol";
 import "./IRCOMBO.sol";
@@ -12,9 +14,7 @@ contract HFurucomboRCOMBO is HandlerBase {
 
     function provideFor(uint256 amount) external payable {
         amount = _getBalance(RCOMBO, amount);
-        if (amount <= 0) {
-            _revertMsg("provideFor", "provide 0 amount");
-        }
+        _requireMsg(amount > 0, "provideFor", "provide 0 amount");
         IRCOMBO(RCOMBO).provideFor(_getSender(), amount);
     }
 

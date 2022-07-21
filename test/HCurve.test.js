@@ -6,7 +6,7 @@ const { expect } = require('chai');
 const abi = require('ethereumjs-abi');
 const utils = web3.utils;
 const {
-  ETH_TOKEN,
+  NATIVE_TOKEN_ADDRESS,
   DAI_TOKEN,
   USDT_TOKEN,
   SETH_TOKEN,
@@ -415,7 +415,7 @@ contract('Curve', function([_, user]) {
         const data = abi.simpleEncode(
           'exchange(address,address,address,int128,int128,uint256,uint256)',
           this.sethSwap.address,
-          ETH_TOKEN,
+          NATIVE_TOKEN_ADDRESS,
           this.token.address,
           0,
           1,
@@ -459,7 +459,7 @@ contract('Curve', function([_, user]) {
           'exchange(address,address,address,int128,int128,uint256,uint256)',
           this.sethSwap.address,
           this.token.address,
-          ETH_TOKEN,
+          NATIVE_TOKEN_ADDRESS,
           1,
           0,
           value,
@@ -820,7 +820,7 @@ contract('Curve', function([_, user]) {
       it('add ETH and sETH to pool by addLiquidity', async function() {
         const value = ether('1');
         const tokenAmount = ether('2');
-        const tokens = [ETH_TOKEN, this.token.address];
+        const tokens = [NATIVE_TOKEN_ADDRESS, this.token.address];
         const amounts = [value, tokenAmount];
 
         // Get expected answer
@@ -888,7 +888,7 @@ contract('Curve', function([_, user]) {
       it('add ETH and sETH to pool by addLiquidity with max amount', async function() {
         const value = ether('1');
         const tokenAmount = ether('2');
-        const tokens = [ETH_TOKEN, this.token.address];
+        const tokens = [NATIVE_TOKEN_ADDRESS, this.token.address];
         const amounts = [value, tokenAmount];
 
         // Get expected answer
@@ -967,7 +967,7 @@ contract('Curve', function([_, user]) {
           'removeLiquidityOneCoin(address,address,address,uint256,int128,uint256)',
           this.sethSwap.address,
           this.poolToken.address,
-          ETH_TOKEN,
+          NATIVE_TOKEN_ADDRESS,
           poolTokenUser,
           0,
           minAmount

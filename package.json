@@ -8,6 +8,7 @@
   },
   "scripts": {
     "build": "scripts/build.sh",
+    "check": "scripts/check.sh",
     "compile": "npx hardhat compile",
     "test": "scripts/test.sh",
     "analysis": "scripts/analysis.sh",
@@ -53,9 +54,9 @@
     "web3-provider-engine": "^15.0.12"
   },
   "dependencies": {
-    "@uniswap/v3-core": "^1.0.0",
     "@gelatonetwork/limit-orders-lib": "^0.6.0",
-    "@openzeppelin/contracts": "3.3.0",
+    "@openzeppelin/contracts": "^4.3.2",
+    "@uniswap/v3-core": "^1.0.0",
     "pify": "^5.0.0"
   },
   "husky": {

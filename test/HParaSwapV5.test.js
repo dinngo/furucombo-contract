@@ -12,7 +12,7 @@ const {
   DAI_TOKEN,
   USDC_TOKEN,
   COMBO_TOKEN,
-  NATIVE_TOKEN,
+  NATIVE_TOKEN_ADDRESS,
   NATIVE_TOKEN_DECIMAL,
 } = require('./utils/constants');
 const {
@@ -157,7 +157,7 @@ contract('ParaSwapV5', function([_, user, user2]) {
 
         // Call Paraswap price API
         const priceData = await getPriceData(
-          NATIVE_TOKEN,
+          NATIVE_TOKEN_ADDRESS,
           NATIVE_TOKEN_DECIMAL,
           tokenAddress,
           tokenDecimal,
@@ -176,7 +176,7 @@ contract('ParaSwapV5', function([_, user, user2]) {
 
         // Prepare handler data
         const callData = getCallData(HParaSwapV5, 'swap', [
-          NATIVE_TOKEN,
+          NATIVE_TOKEN_ADDRESS,
           amount,
           tokenAddress,
           txData.data,
@@ -220,7 +220,7 @@ contract('ParaSwapV5', function([_, user, user2]) {
 
         // Call Paraswap price API
         const priceData = await getPriceData(
-          NATIVE_TOKEN,
+          NATIVE_TOKEN_ADDRESS,
           NATIVE_TOKEN_DECIMAL,
           tokenAddress,
           tokenDecimal,
@@ -237,7 +237,7 @@ contract('ParaSwapV5', function([_, user, user2]) {
 
         // Prepare handler data
         const callData = getCallData(HParaSwapV5, 'swap', [
-          NATIVE_TOKEN,
+          NATIVE_TOKEN_ADDRESS,
           amount,
           tokenAddress,
           txData.data,
@@ -278,7 +278,7 @@ contract('ParaSwapV5', function([_, user, user2]) {
 
         // Call Paraswap price API
         const priceData = await getPriceData(
-          NATIVE_TOKEN,
+          NATIVE_TOKEN_ADDRESS,
           NATIVE_TOKEN_DECIMAL,
           tokenAddress,
           tokenDecimal,
@@ -295,7 +295,7 @@ contract('ParaSwapV5', function([_, user, user2]) {
 
         // Prepare handler data
         const callData = getCallData(HParaSwapV5, 'swap', [
-          NATIVE_TOKEN,
+          NATIVE_TOKEN_ADDRESS,
           amount,
           wrongTokenAddress,
           txData.data,
@@ -317,7 +317,7 @@ contract('ParaSwapV5', function([_, user, user2]) {
 
         // Call Paraswap price API
         const priceData = await getPriceData(
-          NATIVE_TOKEN,
+          NATIVE_TOKEN_ADDRESS,
           NATIVE_TOKEN_DECIMAL,
           tokenAddress,
           tokenDecimal,
@@ -334,7 +334,7 @@ contract('ParaSwapV5', function([_, user, user2]) {
 
         // Prepare handler data
         const callData = getCallData(HParaSwapV5, 'swap', [
-          NATIVE_TOKEN,
+          NATIVE_TOKEN_ADDRESS,
           amount.sub(ether('0.05')),
           tokenAddress,
           txData.data,
@@ -377,7 +377,7 @@ contract('ParaSwapV5', function([_, user, user2]) {
       const priceData = await getPriceData(
         tokenAddress,
         tokenDecimal,
-        NATIVE_TOKEN,
+        NATIVE_TOKEN_ADDRESS,
         NATIVE_TOKEN_DECIMAL,
         amount
       );
@@ -396,7 +396,7 @@ contract('ParaSwapV5', function([_, user, user2]) {
       const callData = getCallData(HParaSwapV5, 'swap', [
         tokenAddress,
         amount,
-        NATIVE_TOKEN,
+        NATIVE_TOKEN_ADDRESS,
         txData.data,
       ]);
 
@@ -438,7 +438,7 @@ contract('ParaSwapV5', function([_, user, user2]) {
       const priceData = await getPriceData(
         tokenAddress,
         tokenDecimal,
-        NATIVE_TOKEN,
+        NATIVE_TOKEN_ADDRESS,
         NATIVE_TOKEN_DECIMAL,
         amount
       );
@@ -455,7 +455,7 @@ contract('ParaSwapV5', function([_, user, user2]) {
       const callData = getCallData(HParaSwapV5, 'swap', [
         tokenAddress,
         amount,
-        NATIVE_TOKEN,
+        NATIVE_TOKEN_ADDRESS,
         txData.data,
       ]);
 

@@ -1,20 +1,17 @@
-pragma solidity ^0.6.0;
+// SPDX-License-Identifier: MIT
 
-import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
-import "@openzeppelin/contracts/math/SafeMath.sol";
+pragma solidity 0.8.10;
+
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "../HandlerBase.sol";
 import "./ICurveHandler.sol";
 
 contract HCurve is HandlerBase {
     using SafeERC20 for IERC20;
-    using SafeMath for uint256;
 
     function getContractName() public pure override returns (string memory) {
         return "HCurve";
     }
-
-    // prettier-ignore
-    address public constant ETH_ADDRESS = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
     /// @notice Curve exchange
     function exchange(
@@ -41,7 +38,7 @@ contract HCurve is HandlerBase {
             _revertMsg("exchange");
         }
 
-        return _exchangeAfter(tokenJ, balanceBefore);
+        return _exchangeAfter(handler, tokenI, tokenJ, balanceBefore);
     }
 
     /// @notice Curve exchange with uint256 ij
@@ -69,7 +66,7 @@ contract HCurve is HandlerBase {
             _revertMsg("exchangeUint256");
         }
 
-        return _exchangeAfter(tokenJ, balanceBefore);
+        return _exchangeAfter(handler, tokenI, tokenJ, balanceBefore);
     }
 
     /// @notice Curve exchange with uint256 ij and ether flag
@@ -98,7 +95,7 @@ contract HCurve is HandlerBase {
             _revertMsg("exchangeUint256Ether");
         }
 
-        return _exchangeAfter(tokenJ, balanceBefore);
+        return _exchangeAfter(handler, tokenI, tokenJ, balanceBefore);
     }
 
     /// @notice Curve exchange underlying
@@ -126,7 +123,7 @@ contract HCurve is HandlerBase {
             _revertMsg("exchangeUnderlying");
         }
 
-        return _exchangeAfter(tokenJ, balanceBefore);
+        return _exchangeAfter(handler, tokenI, tokenJ, balanceBefore);
     }
 
     /// @notice Curve exchange underlying with uint256 ij
@@ -154,7 +151,7 @@ contract HCurve is HandlerBase {
             _revertMsg("exchangeUnderlyingUint256");
         }
 
-        return _exchangeAfter(tokenJ, balanceBefore);
+        return _exchangeAfter(handler, tokenI, tokenJ, balanceBefore);
     }
 
     function _exchangeBefore(
@@ -175,7 +172,7 @@ contract HCurve is HandlerBase {
 
         // Approve erc20 token or set eth amount
         uint256 ethAmount;
-        if (tokenI != ETH_ADDRESS) {
+        if (tokenI != NATIVE_TOKEN_ADDRESS) {
             _tokenApprove(tokenI, handler, amount);
         } else {
             ethAmount = amount;
@@ -184,18 +181,24 @@ contract HCurve is HandlerBase {
         return (amount, balanceBefore, ethAmount);
     }
 
-    function _exchangeAfter(address tokenJ, uint256 balanceBefore)
-        internal
-        returns (uint256)
-    {
+    function _exchangeAfter(
+        address handler,
+        address tokenI,
+        address tokenJ,
+        uint256 balanceBefore
+    ) internal returns (uint256) {
         uint256 balance = _getBalance(tokenJ, type(uint256).max);
-        if (balance <= balanceBefore) {
-            _revertMsg("_exchangeAfter", "after <= before");
-        }
+        _requireMsg(
+            balance > balanceBefore,
+            "_exchangeAfter",
+            "after <= before"
+        );
 
-        if (tokenJ != ETH_ADDRESS) _updateToken(tokenJ);
+        if (tokenI != NATIVE_TOKEN_ADDRESS) _tokenApproveZero(tokenI, handler);
 
-        return balance.sub(balanceBefore);
+        if (tokenJ != NATIVE_TOKEN_ADDRESS) _updateToken(tokenJ);
+
+        return balance - balanceBefore;
     }
 
     /// @notice Curve add liquidity
@@ -290,7 +293,8 @@ contract HCurve is HandlerBase {
             _revertMsg("addLiquidity", "invalid amount[] size");
         }
 
-        return _addLiquidityAfter(pool, balanceBefore);
+        return
+            _addLiquidityAfter(handler, pool, tokens, amounts, balanceBefore);
     }
 
     /// @notice Curve add liquidity with underlying true flag
@@ -390,7 +394,8 @@ contract HCurve is HandlerBase {
             _revertMsg("addLiquidityUnderlying", "invalid amount[] size");
         }
 
-        return _addLiquidityAfter(pool, balanceBefore);
+        return
+            _addLiquidityAfter(handler, pool, tokens, amounts, balanceBefore);
     }
 
     /// @notice Curve add liquidity with factory zap
@@ -477,7 +482,8 @@ contract HCurve is HandlerBase {
             _revertMsg("addLiquidityFactoryZap", "invalid amount[] size");
         }
 
-        return _addLiquidityAfter(pool, balanceBefore);
+        return
+            _addLiquidityAfter(handler, pool, tokens, amounts, balanceBefore);
     }
 
     function _addLiquidityBefore(
@@ -500,7 +506,7 @@ contract HCurve is HandlerBase {
         for (uint256 i = 0; i < amounts.length; i++) {
             if (amounts[i] == 0) continue;
             amounts[i] = _getBalance(tokens[i], amounts[i]);
-            if (tokens[i] == ETH_ADDRESS) {
+            if (tokens[i] == NATIVE_TOKEN_ADDRESS) {
                 ethAmount = amounts[i];
                 continue;
             }
@@ -510,19 +516,30 @@ contract HCurve is HandlerBase {
         return (amounts, balanceBefore, ethAmount);
     }
 
-    function _addLiquidityAfter(address pool, uint256 balanceBefore)
-        internal
-        returns (uint256)
-    {
+    function _addLiquidityAfter(
+        address handler,
+        address pool,
+        address[] memory tokens,
+        uint256[] memory amounts,
+        uint256 balanceBefore
+    ) internal returns (uint256) {
         uint256 balance = IERC20(pool).balanceOf(address(this));
-        if (balance <= balanceBefore) {
-            _revertMsg("_addLiquidityAfter", "after <= before");
+        _requireMsg(
+            balance > balanceBefore,
+            "_addLiquidityAfter",
+            "after <= before"
+        );
+
+        for (uint256 i = 0; i < amounts.length; i++) {
+            if (amounts[i] == 0) continue;
+            if (tokens[i] != NATIVE_TOKEN_ADDRESS)
+                _tokenApproveZero(tokens[i], handler);
         }
 
         // Update post process
         _updateToken(address(pool));
 
-        return balance.sub(balanceBefore);
+        return balance - balanceBefore;
     }
 
     /// @notice Curve remove liquidity one coin
@@ -685,15 +702,17 @@ contract HCurve is HandlerBase {
         // Some curve non-underlying pools like 3pool won't consume pool token
         // allowance since pool token was issued by the pool that don't need to
         // call transferFrom(). So set approval to 0 here.
-        IERC20(pool).safeApprove(handler, 0);
+        _tokenApproveZero(pool, handler);
         uint256 balance = _getBalance(tokenI, type(uint256).max);
-        if (balance <= balanceBefore) {
-            _revertMsg("_removeLiquidityOneCoinAfter", "after <= before");
-        }
+        _requireMsg(
+            balance > balanceBefore,
+            "_removeLiquidityOneCoinAfter",
+            "after <= before"
+        );
 
         // Update post process
-        if (tokenI != ETH_ADDRESS) _updateToken(tokenI);
+        if (tokenI != NATIVE_TOKEN_ADDRESS) _updateToken(tokenI);
 
-        return balance.sub(balanceBefore);
+        return balance - balanceBefore;
     }
 }

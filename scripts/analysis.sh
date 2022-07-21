@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Select solc version
-solc_version="0.6.12"
+solc_version="0.8.10"
 solc-select install ${solc_version}
 solc-select use ${solc_version}
 

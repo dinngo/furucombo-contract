@@ -1,10 +1,11 @@
-pragma solidity ^0.6.0;
+// SPDX-License-Identifier: MIT
 
-import "@openzeppelin/contracts/math/Math.sol";
-import "@openzeppelin/contracts/math/SafeMath.sol";
+pragma solidity ^0.8.0;
+
+import "@openzeppelin/contracts/utils/math/Math.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
-import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 // Inheritance
 import "../IStakingRewards.sol";
@@ -17,7 +18,6 @@ contract StakingRewards is
     ReentrancyGuard,
     SynthetixPausable
 {
-    using SafeMath for uint256;
     using SafeERC20 for IERC20;
 
     /* ========== STATE VARIABLES ========== */
@@ -43,7 +43,7 @@ contract StakingRewards is
         address _rewardsDistribution,
         address _rewardsToken,
         address _stakingToken
-    ) public Owned(_owner) {
+    ) Owned(_owner) {
         rewardsToken = IERC20(_rewardsToken);
         stakingToken = IERC20(_stakingToken);
         rewardsDistribution = _rewardsDistribution;
@@ -73,25 +73,21 @@ contract StakingRewards is
             return rewardPerTokenStored;
         }
         return
-            rewardPerTokenStored.add(
-                lastTimeRewardApplicable()
-                    .sub(lastUpdateTime)
-                    .mul(rewardRate)
-                    .mul(1e18)
-                    .div(_totalSupply)
-            );
+            rewardPerTokenStored +
+            (((lastTimeRewardApplicable() - lastUpdateTime) *
+                rewardRate *
+                1e18) / _totalSupply);
     }
 
     function earned(address account) public view override returns (uint256) {
         return
-            _balances[account]
-                .mul(rewardPerToken().sub(userRewardPerTokenPaid[account]))
-                .div(1e18)
-                .add(rewards[account]);
+            ((_balances[account] *
+                (rewardPerToken() - userRewardPerTokenPaid[account])) / 1e18) +
+            rewards[account];
     }
 
     function getRewardForDuration() external view override returns (uint256) {
-        return rewardRate.mul(rewardsDuration);
+        return rewardRate * rewardsDuration;
     }
 
     /* ========== MUTATIVE FUNCTIONS ========== */
@@ -104,8 +100,8 @@ contract StakingRewards is
         updateReward(msg.sender)
     {
         require(amount > 0, "Cannot stake 0");
-        _totalSupply = _totalSupply.add(amount);
-        _balances[msg.sender] = _balances[msg.sender].add(amount);
+        _totalSupply = _totalSupply + amount;
+        _balances[msg.sender] = _balances[msg.sender] + amount;
         stakingToken.safeTransferFrom(msg.sender, address(this), amount);
         emit Staked(msg.sender, amount);
     }
@@ -117,8 +113,8 @@ contract StakingRewards is
         updateReward(msg.sender)
     {
         require(amount > 0, "Cannot withdraw 0");
-        _totalSupply = _totalSupply.sub(amount);
-        _balances[msg.sender] = _balances[msg.sender].sub(amount);
+        _totalSupply = _totalSupply - amount;
+        _balances[msg.sender] = _balances[msg.sender] - amount;
         stakingToken.safeTransfer(msg.sender, amount);
         emit Withdrawn(msg.sender, amount);
     }
@@ -146,11 +142,11 @@ contract StakingRewards is
         updateReward(address(0))
     {
         if (block.timestamp >= periodFinish) {
-            rewardRate = reward.div(rewardsDuration);
+            rewardRate = reward / rewardsDuration;
         } else {
-            uint256 remaining = periodFinish.sub(block.timestamp);
-            uint256 leftover = remaining.mul(rewardRate);
-            rewardRate = reward.add(leftover).div(rewardsDuration);
+            uint256 remaining = periodFinish - block.timestamp;
+            uint256 leftover = remaining * rewardRate;
+            rewardRate = (reward + leftover) / rewardsDuration;
         }
 
         // Ensure the provided reward amount is not more than the balance in the contract.
@@ -159,12 +155,12 @@ contract StakingRewards is
         // Reward + leftover must be less than 2^256 / 10^18 to avoid overflow.
         uint256 balance = rewardsToken.balanceOf(address(this));
         require(
-            rewardRate <= balance.div(rewardsDuration),
+            rewardRate <= balance / rewardsDuration,
             "Provided reward too high"
         );
 
         lastUpdateTime = block.timestamp;
-        periodFinish = block.timestamp.add(rewardsDuration);
+        periodFinish = block.timestamp + rewardsDuration;
         emit RewardAdded(reward);
     }
 

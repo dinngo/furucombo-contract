@@ -1,22 +1,17 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.6.12;
-pragma experimental ABIEncoderV2;
+pragma solidity 0.8.10;
 
-import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
-import "@openzeppelin/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "../HandlerBase.sol";
 
 contract HParaSwapV5 is HandlerBase {
-    using SafeMath for uint256;
     using SafeERC20 for IERC20;
 
     // prettier-ignore
     address public constant AUGUSTUS_SWAPPER = 0xDEF171Fe48CF0115B1d80b88dc8eAB59176FEe57;
     // prettier-ignore
     address public constant TOKEN_TRANSFER_PROXY = 0x216B4B4Ba9F3e719726886d34a177484278Bfcae;
-    // prettier-ignore
-    address private constant NATIVE_TOKEN = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
     function getContractName() public pure override returns (string memory) {
         return "HParaSwapV5";
@@ -42,8 +37,7 @@ contract HParaSwapV5 is HandlerBase {
         uint256 destTokenBalanceAfter =
             _getBalance(destToken, type(uint256).max);
 
-        uint256 destTokenDelta =
-            destTokenBalanceAfter.sub(destTokenBalanceBefore);
+        uint256 destTokenDelta = destTokenBalanceAfter - destTokenBalanceBefore;
 
         if (destTokenDelta == 0) {
             _revertMsg("swap", "Invalid output token amount");
@@ -73,9 +67,5 @@ contract HParaSwapV5 is HandlerBase {
                 _revertMsg("_paraswapCall", abi.decode(returnData, (string)));
             }
         }
-    }
-
-    function _isNotNativeToken(address token) internal pure returns (bool) {
-        return (token != address(0) && token != NATIVE_TOKEN);
     }
 }

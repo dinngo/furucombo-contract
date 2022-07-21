@@ -1,6 +1,8 @@
-pragma solidity ^0.6.0;
+// SPDX-License-Identifier: MIT
 
-import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
+pragma solidity 0.8.10;
+
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "../handlers/HandlerBase.sol";
 
 interface IFaucet {
@@ -25,9 +27,9 @@ contract HMock is HandlerBase {
         address token,
         uint256 amount
     ) external payable {
-        IERC20(token).safeApprove(target, amount);
+        _tokenApprove(token, target, amount);
         IFaucet(target).drainToken(token, amount);
-        IERC20(token).safeApprove(target, 0);
+        _tokenApproveZero(token, target);
         _updateToken(token);
     }
 
@@ -37,9 +39,9 @@ contract HMock is HandlerBase {
         uint256[] calldata amounts
     ) external payable {
         for (uint256 i = 0; i < targets.length; i++) {
-            IERC20(tokens[i]).safeApprove(targets[i], amounts[i]);
+            _tokenApprove(tokens[i], targets[i], amounts[i]);
             IFaucet(targets[i]).drainToken(tokens[i], amounts[i]);
-            IERC20(tokens[i]).safeApprove(targets[i], 0);
+            _tokenApproveZero(tokens[i], targets[i]);
             _updateToken(tokens[i]);
         }
     }

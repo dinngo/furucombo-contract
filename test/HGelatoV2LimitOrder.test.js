@@ -19,7 +19,7 @@ const {
   DAI_TOKEN,
   BAT_TOKEN,
   WETH_TOKEN,
-  ETH_TOKEN,
+  NATIVE_TOKEN_ADDRESS,
   UNISWAPV2_ROUTER02,
 } = require('./utils/constants');
 const {
@@ -124,7 +124,7 @@ contract('GelatoLimitOrder', function([_, user]) {
         'placeLimitOrder(uint256,address,address,address,address,bytes,bytes32)',
         sellAmount,
         GELATOV2_LIMIT_ORDER_MODULE,
-        ETH_TOKEN,
+        NATIVE_TOKEN_ADDRESS,
         user,
         witness,
         encodedData,
@@ -145,7 +145,7 @@ contract('GelatoLimitOrder', function([_, user]) {
       // Check order exists
       const orderExists = await this.gelatoPine.existOrder.call(
         GELATOV2_LIMIT_ORDER_MODULE,
-        ETH_TOKEN,
+        NATIVE_TOKEN_ADDRESS,
         user,
         witness,
         encodedData
@@ -196,7 +196,7 @@ contract('GelatoLimitOrder', function([_, user]) {
       const preTokenBalance = await this.tokenA.balanceOf(user);
       await this.gelatoPine.executeOrder(
         GELATOV2_LIMIT_ORDER_MODULE,
-        ETH_TOKEN,
+        NATIVE_TOKEN_ADDRESS,
         user,
         encodedData,
         sig,
@@ -234,7 +234,7 @@ contract('GelatoLimitOrder', function([_, user]) {
         'placeLimitOrder(uint256,address,address,address,address,bytes,bytes32)',
         sellAmount,
         GELATOV2_LIMIT_ORDER_MODULE,
-        ETH_TOKEN,
+        NATIVE_TOKEN_ADDRESS,
         user,
         witness,
         encodedData,
@@ -272,7 +272,7 @@ contract('GelatoLimitOrder', function([_, user]) {
         'placeLimitOrder(uint256,address,address,address,address,bytes,bytes32)',
         sellAmount,
         GELATOV2_LIMIT_ORDER_MODULE,
-        ETH_TOKEN,
+        NATIVE_TOKEN_ADDRESS,
         user,
         witness,
         encodedData,
@@ -293,7 +293,7 @@ contract('GelatoLimitOrder', function([_, user]) {
       // Check order exists
       const orderExists = await this.gelatoPine.existOrder.call(
         GELATOV2_LIMIT_ORDER_MODULE,
-        ETH_TOKEN,
+        NATIVE_TOKEN_ADDRESS,
         user,
         witness,
         encodedData
@@ -304,7 +304,7 @@ contract('GelatoLimitOrder', function([_, user]) {
       await balanceUser.get();
       const cancelReceipt = await this.gelatoPine.cancelOrder(
         GELATOV2_LIMIT_ORDER_MODULE,
-        ETH_TOKEN,
+        NATIVE_TOKEN_ADDRESS,
         user,
         witness,
         encodedData,
@@ -316,7 +316,7 @@ contract('GelatoLimitOrder', function([_, user]) {
       expect(
         await this.gelatoPine.existOrder.call(
           GELATOV2_LIMIT_ORDER_MODULE,
-          ETH_TOKEN,
+          NATIVE_TOKEN_ADDRESS,
           user,
           witness,
           encodedData
@@ -343,7 +343,7 @@ contract('GelatoLimitOrder', function([_, user]) {
       const encodedData = util.toBuffer(
         web3.eth.abi.encodeParameters(
           ['address', 'uint256'],
-          [ETH_TOKEN, minReturn]
+          [NATIVE_TOKEN_ADDRESS, minReturn]
         )
       );
       const placeOrderData = abi.simpleEncode(
@@ -451,7 +451,7 @@ contract('GelatoLimitOrder', function([_, user]) {
       const encodedData = util.toBuffer(
         web3.eth.abi.encodeParameters(
           ['address', 'uint256'],
-          [ETH_TOKEN, minReturn]
+          [NATIVE_TOKEN_ADDRESS, minReturn]
         )
       );
       const placeOrderData = abi.simpleEncode(
@@ -500,7 +500,7 @@ contract('GelatoLimitOrder', function([_, user]) {
       const encodedData = util.toBuffer(
         web3.eth.abi.encodeParameters(
           ['address', 'uint256'],
-          [ETH_TOKEN, minReturn]
+          [NATIVE_TOKEN_ADDRESS, minReturn]
         )
       );
       const placeOrderData = abi.simpleEncode(
@@ -789,7 +789,7 @@ contract('GelatoLimitOrder', function([_, user]) {
         'placeLimitOrder(uint256,address,address,address,address,bytes,bytes32)',
         sellAmount,
         GELATOV2_LIMIT_ORDER_MODULE,
-        ETH_TOKEN,
+        NATIVE_TOKEN_ADDRESS,
         user,
         witness,
         encodedData,
@@ -812,7 +812,7 @@ contract('GelatoLimitOrder', function([_, user]) {
       // Check order exists
       const orderExists = await this.gelatoPine.existOrder.call(
         GELATOV2_LIMIT_ORDER_MODULE,
-        ETH_TOKEN,
+        NATIVE_TOKEN_ADDRESS,
         user,
         witness,
         encodedData
@@ -867,7 +867,7 @@ contract('GelatoLimitOrder', function([_, user]) {
       const preTokenBalance = await this.tokenA.balanceOf(user);
       await this.gelatoPine.executeOrder(
         GELATOV2_LIMIT_ORDER_MODULE,
-        ETH_TOKEN,
+        NATIVE_TOKEN_ADDRESS,
         user,
         encodedData,
         sig,
@@ -898,7 +898,7 @@ contract('GelatoLimitOrder', function([_, user]) {
       const encodedData = util.toBuffer(
         web3.eth.abi.encodeParameters(
           ['address', 'uint256'],
-          [ETH_TOKEN, minReturn]
+          [NATIVE_TOKEN_ADDRESS, minReturn]
         )
       );
       const placeOrderData = abi.simpleEncode(

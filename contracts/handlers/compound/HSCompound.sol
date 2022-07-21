@@ -1,6 +1,8 @@
-pragma solidity ^0.6.0;
+// SPDX-License-Identifier: MIT
 
-import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
+pragma solidity 0.8.10;
+
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import "../HandlerBase.sol";
 import "../maker/IDSProxy.sol";
@@ -15,8 +17,6 @@ contract HSCompound is HandlerBase {
     // prettier-ignore
     address public constant COMPTROLLER = 0x3d9819210A31b4961b30EF54bE2aeD79B9c9Cd3B;
     // prettier-ignore
-    address public constant ETH_ADDRESS = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
-    // prettier-ignore
     address public constant CETH_ADDRESS = 0x4Ddc2D193948926D02f9B1fE9e1daa0718270ED5;
     // prettier-ignore
     address public constant COMP_ADDRESS = 0xc00e94Cb662C3520282E6f5717214004A7f26888;
@@ -27,8 +27,11 @@ contract HSCompound is HandlerBase {
 
     modifier isDSProxyOwner(address dsProxy) {
         address sender = _getSender();
-        if (IDSProxy(dsProxy).owner() != sender)
-            _revertMsg("General", "Not owner of the DSProxy");
+        _requireMsg(
+            IDSProxy(dsProxy).owner() == sender,
+            "General",
+            "Not owner of the DSProxy"
+        );
         _;
     }
 
@@ -46,7 +49,7 @@ contract HSCompound is HandlerBase {
         uint256 amount
     ) external payable isDSProxyOwner(dsProxy) {
         _withdraw(dsProxy, token, amount);
-        if (token != ETH_ADDRESS) _updateToken(token);
+        if (token != NATIVE_TOKEN_ADDRESS) _updateToken(token);
     }
 
     function borrow(
@@ -55,20 +58,20 @@ contract HSCompound is HandlerBase {
         address cTokenBorrow,
         uint256 cAmountIn,
         uint256 uBorrowAmount,
-        bool enterMarket
+        bool needEnterMarket
     ) external payable isDSProxyOwner(dsProxy) {
         if (cAmountIn > 0) {
             _deposit(dsProxy, cTokenIn, cAmountIn);
         }
 
-        if (enterMarket) {
+        if (needEnterMarket) {
             _enterMarket(dsProxy, cTokenIn);
         }
 
         if (uBorrowAmount > 0) {
             address underlying;
             if (cTokenBorrow == CETH_ADDRESS) {
-                underlying = ETH_ADDRESS;
+                underlying = NATIVE_TOKEN_ADDRESS;
             } else {
                 underlying = _getToken(cTokenBorrow);
             }
@@ -92,7 +95,7 @@ contract HSCompound is HandlerBase {
             _withdraw(dsProxy, underlying, uBorrowAmount);
 
             // Update borrowed token
-            if (underlying != ETH_ADDRESS) _updateToken(underlying);
+            if (underlying != NATIVE_TOKEN_ADDRESS) _updateToken(underlying);
         }
     }
 
@@ -125,7 +128,7 @@ contract HSCompound is HandlerBase {
             } else {
                 // Approve repay token to DSProxy
                 address underlying = _getToken(cTokenRepay);
-                IERC20(underlying).safeApprove(dsProxy, uRepayAmount);
+                _tokenApprove(underlying, dsProxy, uRepayAmount);
                 // Execute token repay
                 try
                     IDSProxy(dsProxy).execute(
@@ -142,7 +145,7 @@ contract HSCompound is HandlerBase {
                 } catch {
                     _revertMsg("repayBorrow");
                 }
-                IERC20(underlying).safeApprove(dsProxy, 0);
+                _tokenApproveZero(underlying, dsProxy);
             }
         }
 
@@ -232,8 +235,8 @@ contract HSCompound is HandlerBase {
         address token,
         uint256 amount
     ) internal {
-        if (token == ETH_ADDRESS) {
-            address payable dsProxyPayable = address(uint160(dsProxy));
+        if (token == NATIVE_TOKEN_ADDRESS) {
+            address payable dsProxyPayable = payable(dsProxy);
             dsProxyPayable.transfer(amount);
         } else {
             IERC20(token).safeTransfer(dsProxy, amount);

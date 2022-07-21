@@ -1,22 +1,20 @@
-pragma solidity ^0.6.0;
+// SPDX-License-Identifier: MIT
 
-import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
-import "@openzeppelin/contracts/math/SafeMath.sol";
+pragma solidity 0.8.10;
+
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "../HandlerBase.sol";
 import "../../staking/IStakingRewardsAdapter.sol";
 import "../../staking/IStakingRewardsAdapterRegistry.sol";
 
 contract HStakingRewardsAdapter is HandlerBase {
     using SafeERC20 for IERC20;
-    using SafeMath for uint256;
 
     // prettier-ignore
     IStakingRewardsAdapterRegistry constant public registry = IStakingRewardsAdapterRegistry(0xCa591346A311A372a20ed69e08bBE5107979e243);
 
     modifier whenAdapterIsValid(address adapter) {
-        if (!registry.isValid(adapter)) {
-            _revertMsg("General", "Invalid adapter");
-        }
+        _requireMsg(registry.isValid(adapter), "General", "Invalid adapter");
         _;
     }
 
@@ -33,7 +31,7 @@ contract HStakingRewardsAdapter is HandlerBase {
         IStakingRewardsAdapter adapter = IStakingRewardsAdapter(adapterAddr);
         IERC20 token = adapter.stakingToken();
 
-        token.safeApprove(address(adapter), amount);
+        _tokenApprove(address(token), address(adapter), amount);
 
         try adapter.stakeFor(_getSender(), amount) {} catch Error(
             string memory reason
@@ -42,8 +40,7 @@ contract HStakingRewardsAdapter is HandlerBase {
         } catch {
             _revertMsg("stake");
         }
-
-        token.safeApprove(address(adapter), 0);
+        _tokenApproveZero(address(token), address(adapter));
     }
 
     // Stake for account
@@ -55,7 +52,7 @@ contract HStakingRewardsAdapter is HandlerBase {
         IStakingRewardsAdapter adapter = IStakingRewardsAdapter(adapterAddr);
         IERC20 token = adapter.stakingToken();
 
-        token.safeApprove(address(adapter), amount);
+        _tokenApprove(address(token), address(adapter), amount);
 
         try adapter.stakeFor(account, amount) {} catch Error(
             string memory reason
@@ -64,8 +61,7 @@ contract HStakingRewardsAdapter is HandlerBase {
         } catch {
             _revertMsg("stakeFor");
         }
-
-        token.safeApprove(address(adapter), 0);
+        _tokenApproveZero(address(token), address(adapter));
     }
 
     // Only withdraw for msg.sender
@@ -110,12 +106,12 @@ contract HStakingRewardsAdapter is HandlerBase {
         _updateToken(address(rewardsToken));
 
         // Calculate return amounts
-        withdrawAmount = stakingToken.balanceOf(address(this)).sub(
-            stakingTokenBalance
-        );
-        rewardsAmount = rewardsToken.balanceOf(address(this)).sub(
-            rewardsTokenBalance
-        );
+        withdrawAmount =
+            stakingToken.balanceOf(address(this)) -
+            stakingTokenBalance;
+        rewardsAmount =
+            rewardsToken.balanceOf(address(this)) -
+            rewardsTokenBalance;
     }
 
     // Only getReward for msg.sender
@@ -140,8 +136,8 @@ contract HStakingRewardsAdapter is HandlerBase {
         _updateToken(address(rewardsToken));
 
         // Calculate return amount
-        rewardsAmount = rewardsToken.balanceOf(address(this)).sub(
-            rewardsTokenBalance
-        );
+        rewardsAmount =
+            rewardsToken.balanceOf(address(this)) -
+            rewardsTokenBalance;
     }
 }

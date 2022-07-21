@@ -1,14 +1,13 @@
-pragma solidity ^0.6.0;
+// SPDX-License-Identifier: MIT
 
-import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
+pragma solidity 0.8.10;
+
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import "../HandlerBase.sol";
 
 contract HFunds is HandlerBase {
     using SafeERC20 for IERC20;
-
-    // prettier-ignore
-    address public constant ETH_ADDRESS = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
     function getContractName() public pure override returns (string memory) {
         return "HFunds";
@@ -22,11 +21,11 @@ contract HFunds is HandlerBase {
         uint256[] memory balances = new uint256[](tokens.length);
         for (uint256 i = 0; i < tokens.length; i++) {
             address token = tokens[i];
-            if (token != address(0) && token != ETH_ADDRESS) {
+            if (token != address(0) && token != NATIVE_TOKEN_ADDRESS) {
                 // Update involved token
                 _updateToken(token);
             }
-            balances[i] = _getBalance(token, uint256(-1));
+            balances[i] = _getBalance(token, type(uint256).max);
         }
         return balances;
     }
@@ -36,8 +35,11 @@ contract HFunds is HandlerBase {
         payable
         returns (uint256[] memory)
     {
-        if (tokens.length != amounts.length)
-            _revertMsg("inject", "token and amount does not match");
+        _requireMsg(
+            tokens.length == amounts.length,
+            "inject",
+            "token and amount does not match"
+        );
         address sender = _getSender();
         for (uint256 i = 0; i < tokens.length; i++) {
             IERC20(tokens[i]).safeTransferFrom(
@@ -61,7 +63,9 @@ contract HFunds is HandlerBase {
             uint256 amount = _getBalance(tokens[i], amounts[i]);
             if (amount > 0) {
                 // ETH case
-                if (tokens[i] == address(0) || tokens[i] == ETH_ADDRESS) {
+                if (
+                    tokens[i] == address(0) || tokens[i] == NATIVE_TOKEN_ADDRESS
+                ) {
                     receiver.transfer(amount);
                 } else {
                     IERC20(tokens[i]).safeTransfer(receiver, amount);
@@ -101,9 +105,11 @@ contract HFunds is HandlerBase {
         address[] calldata tokens,
         uint256[] calldata amounts
     ) external payable {
-        if (tokens.length != amounts.length) {
-            _revertMsg("checkSlippage", "token and amount do not match");
-        }
+        _requireMsg(
+            tokens.length == amounts.length,
+            "checkSlippage",
+            "token and amount do not match"
+        );
 
         for (uint256 i = 0; i < tokens.length; i++) {
             if (tokens[i] == address(0)) {
@@ -140,6 +146,6 @@ contract HFunds is HandlerBase {
     }
 
     function getBalance(address token) external payable returns (uint256) {
-        return _getBalance(token, uint256(-1));
+        return _getBalance(token, type(uint256).max);
     }
 }

@@ -1,12 +1,15 @@
-pragma solidity ^0.6.0;
+// SPDX-License-Identifier: MIT
 
-import "@openzeppelin/contracts/math/Math.sol";
-import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
+pragma solidity 0.8.9;
+
+import "@openzeppelin/contracts/utils/math/Math.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "../HandlerBase.sol";
 import "./IGasTokens.sol";
 
 contract HGasTokens is HandlerBase {
     using SafeERC20 for IERC20;
+    using LibStack for bytes32[];
 
     // prettier-ignore
     address public constant CHI_TOKEN = 0x0000000000004946c0e9F43F4Dee607b0eF1fA1c;

@@ -1,4 +1,6 @@
-pragma solidity ^0.6.0;
+// SPDX-License-Identifier: MIT
+
+pragma solidity 0.8.10;
 
 import "../handlers/HandlerBase.sol";
 
@@ -13,6 +15,8 @@ interface IFoo3 {
 }
 
 contract Foo3Handler is HandlerBase {
+    using LibStack for bytes32[];
+    
     function getContractName() public pure override returns (string memory) {
         return "Foo3Handler";
     }

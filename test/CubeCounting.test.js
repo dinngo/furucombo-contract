@@ -1,192 +1,253 @@
 const {
-  balance,
   BN,
   constants,
   ether,
   expectRevert,
-  time,
 } = require('@openzeppelin/test-helpers');
-const { tracker } = balance;
 const { ZERO_BYTES32 } = constants;
-const { latest } = time;
-const abi = require('ethereumjs-abi');
 const utils = web3.utils;
-
 const {
-  DAI_TOKEN,
+  AAVEPROTOCOL_V2_PROVIDER,
+  AAVE_RATEMODE,
   WETH_TOKEN,
-  UNISWAPV2_ROUTER02,
-  CDAI,
 } = require('./utils/constants');
-const { evmRevert, evmSnapshot } = require('./utils/utils');
+const { evmRevert, evmSnapshot, getCallData } = require('./utils/utils');
 
-const HUniswapV2 = artifacts.require('HUniswapV2');
-const HCToken = artifacts.require('HCToken');
 const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('Proxy');
-const IToken = artifacts.require('IERC20');
-const ICToken = artifacts.require('ICToken');
-const IUniswapV2Router = artifacts.require('IUniswapV2Router02');
-const Foo = artifacts.require('Foo4');
-const FooHandler = artifacts.require('Foo4Handler');
+const HAaveV2 = artifacts.require('HAaveProtocolV2');
+const HWrapper = artifacts.require('HWeth');
+const ILendingPoolV2 = artifacts.require('ILendingPoolV2');
+const IProviderV2 = artifacts.require('ILendingPoolAddressesProviderV2');
 
 contract('CubeCounting', function([_, user]) {
-  const tokenAddress = DAI_TOKEN;
+  const wrappedTokenAddress = WETH_TOKEN;
 
   let id;
 
   before(async function() {
     this.registry = await Registry.new();
     this.proxy = await Proxy.new(this.registry.address);
+
+    // Register wrapper handler
+    this.hWrapper = await HWrapper.new();
+    await this.registry.register(
+      this.hWrapper.address,
+      utils.asciiToHex('HWrapper')
+    );
+
+    // Register aave v2 handler and caller
+    this.hAaveV2 = await HAaveV2.new();
+    await this.registry.register(
+      this.hAaveV2.address,
+      utils.asciiToHex('HAaveProtocolV2')
+    );
+    this.provider = await IProviderV2.at(AAVEPROTOCOL_V2_PROVIDER);
+    const lendingPoolAddress = await this.provider.getLendingPool.call();
+    await this.registry.registerCaller(
+      lendingPoolAddress,
+      this.hAaveV2.address
+    );
   });
 
   beforeEach(async function() {
     id = await evmSnapshot();
-    balanceUser = await tracker(user);
-    balanceProxy = await tracker(this.proxy.address);
   });
 
   afterEach(async function() {
     await evmRevert(id);
   });
 
-  describe('Uniswap Swap', function() {
-    before(async function() {
-      this.hUniswap = await HUniswapV2.new();
-      await this.registry.register(
-        this.hUniswap.address,
-        utils.asciiToHex('UniswapV2')
+  describe('Wrapper', function() {
+    it('simply revert', async function() {
+      const value = ether('1');
+      const to = [this.hWrapper.address];
+      const config = [ZERO_BYTES32];
+      const data = [getCallData(HWrapper, 'deposit', [value])];
+      await expectRevert(
+        this.proxy.batchExec(to, config, data, {
+          from: user,
+          value: 0, // Insufficient native token
+        }),
+        '0_HWeth_deposit: Unspecified'
       );
-      this.token = await IToken.at(tokenAddress);
-      this.router = await IUniswapV2Router.at(UNISWAPV2_ROUTER02);
-      this.foo = await Foo.new();
-      this.fooHandler = await FooHandler.new();
-      await this.registry.register(
-        this.fooHandler.address,
-        utils.asciiToHex('Foo')
+    });
+  });
+
+  describe('FlashLoan', function() {
+    it('silently revert', async function() {
+      // FlashLoan with invalid callback data
+      const value = ether('1');
+      const to = [this.hAaveV2.address];
+      const config = [ZERO_BYTES32];
+
+      // Prepare data
+      const flashLoanData = web3.eth.abi.encodeParameters(['bytes'], ['0x']);
+      const data = [
+        getCallData(HAaveV2, 'flashLoan', [
+          [wrappedTokenAddress],
+          [value],
+          [AAVE_RATEMODE.NODEBT],
+          flashLoanData,
+        ]),
+      ];
+
+      await expectRevert(
+        this.proxy.batchExec(to, config, data, {
+          from: user,
+        }),
+        '0_HAaveProtocolV2_flashLoan: _exec'
       );
     });
 
-    describe('Compound Token Lending', function() {
-      const cTokenAddress = CDAI;
+    it('insufficient fee revert', async function() {
+      // FlashLoan with empty callback data
+      const value = ether('1');
+      const to = [this.hAaveV2.address];
+      const config = [ZERO_BYTES32];
 
-      before(async function() {
-        this.hCToken = await HCToken.new();
-        await this.registry.register(
-          this.hCToken.address,
-          utils.asciiToHex('CToken')
-        );
-        this.cToken = await ICToken.at(cTokenAddress);
-      });
+      // Prepare data
+      const flashLoanData = web3.eth.abi.encodeParameters(
+        ['address[]', 'bytes32[]', 'bytes[]'],
+        [[], [], []]
+      );
+      const data = [
+        getCallData(HAaveV2, 'flashLoan', [
+          [wrappedTokenAddress],
+          [value],
+          [AAVE_RATEMODE.NODEBT],
+          flashLoanData,
+        ]),
+      ];
 
-      it('revert on 1st cube', async function() {
-        let value = [ether('10'), ether('0')];
-        const deadline = (await latest()).add(new BN('100'));
-        const path = [WETH_TOKEN, tokenAddress];
-        const retUniV2 = await this.router.getAmountsOut.call(value[0], path, {
+      await expectRevert(
+        this.proxy.batchExec(to, config, data, {
           from: user,
-        });
-        value[1] = retUniV2[1];
-        const to = [this.hUniswap.address, this.hCToken.address];
-        const config = [ZERO_BYTES32, ZERO_BYTES32];
-        const data = [
-          abi.simpleEncode(
-            'swapExactETHForTokens(uint256,uint256,address[]):(uint256[])',
-            value[0],
-            new BN('1'),
-            path
-          ),
-          abi.simpleEncode(
-            'mint(address,uint256)',
-            cTokenAddress,
-            value[1].add(ether('10'))
-          ),
-        ];
-        const rate = await this.cToken.exchangeRateStored.call();
-        const result = value[1].mul(ether('1')).div(rate);
-        await expectRevert(
-          this.proxy.batchExec(to, config, data, {
-            from: user,
-            value: ether('1'),
-          }),
-          '1_HUniswapV2_swapExactETHForTokens: Unspecified'
-        );
-      });
+        }),
+        '0_HAaveProtocolV2_flashLoan: SafeERC20: low-level call failed'
+      );
+    });
 
-      /// Note: skip these tests since it will cause `re-entered` in ganache-cli@6.11.0, the test will resume as long as ganache-cli fix the issue.
+    it('0 -> 0 revert', async function() {
+      // FlashLoan wrapped token -> withdraw revert
+      const value = ether('1');
+      const to = [this.hAaveV2.address];
+      const config = [ZERO_BYTES32];
 
-      // it('revert on 2nd cube', async function() {
-      //   let value = [ether('0.1'), ether('0')];
-      //   const deadline = (await latest()).add(new BN('100'));
-      //   value[1] = await this.swap.ethToTokenSwapInput.call(
-      //     new BN('1'),
-      //     deadline,
-      //     { from: user, value: value[0] }
-      //   );
-      //   const to = [this.hUniswap.address, this.hCToken.address];
-      //   const config = [ZERO_BYTES32, ZERO_BYTES32];
-      //   const data = [
-      //     abi.simpleEncode(
-      //       'ethToTokenSwapInput(uint256,address,uint256):(uint256)',
-      //       value[0],
-      //       tokenAddress,
-      //       new BN('1')
-      //     ),
-      //     abi.simpleEncode(
-      //       'mint(address,uint256)',
-      //       cTokenAddress,
-      //       value[1].add(ether('10'))
-      //     ),
-      //   ];
-      //   const rate = await this.cToken.exchangeRateStored.call();
-      //   const result = value[1].mul(ether('1')).div(rate);
-      //   await expectRevert(
-      //     this.proxy.batchExec(to, config, data, {
-      //       from: user,
-      //       value: ether('1'),
-      //     }),
-      //     '2_HCToken_mint: Dai/insufficient-balance'
-      //   );
-      // });
+      // Prepare data
+      const withdrawData = getCallData(HWrapper, 'withdraw', [
+        value.mul(new BN('2')), // Excess withdraw
+      ]);
+      const flashLoanData = web3.eth.abi.encodeParameters(
+        ['address[]', 'bytes32[]', 'bytes[]'],
+        [[this.hWrapper.address], [ZERO_BYTES32], [withdrawData]]
+      );
+      const data = [
+        getCallData(HAaveV2, 'flashLoan', [
+          [wrappedTokenAddress],
+          [value],
+          [AAVE_RATEMODE.NODEBT],
+          flashLoanData,
+        ]),
+      ];
 
-      // it('revert on 3rd cube', async function() {
-      //   let value = [ether('0.1'), ether('0')];
-      //   const deadline = (await latest()).add(new BN('100'));
-      //   value[1] = await this.swap.ethToTokenSwapInput.call(
-      //     new BN('1'),
-      //     deadline,
-      //     { from: user, value: value[0] }
-      //   );
-      //   const to = [
-      //     this.hUniswap.address,
-      //     this.fooHandler.address,
-      //     this.hCToken.address,
-      //   ];
-      //   const config = [ZERO_BYTES32, ZERO_BYTES32, ZERO_BYTES32];
-      //   const data = [
-      //     abi.simpleEncode(
-      //       'ethToTokenSwapInput(uint256,address,uint256):(uint256)',
-      //       value[0],
-      //       tokenAddress,
-      //       new BN('1')
-      //     ),
-      //     abi.simpleEncode('bar(address)', this.foo.address),
-      //     abi.simpleEncode(
-      //       'mint(address,uint256)',
-      //       cTokenAddress,
-      //       value[1].add(ether('10'))
-      //     ),
-      //   ];
-      //   const rate = await this.cToken.exchangeRateStored.call();
-      //   const result = value[1].mul(ether('1')).div(rate);
-      //   await expectRevert(
-      //     this.proxy.batchExec(to, config, data, {
-      //       from: user,
-      //       value: ether('1'),
-      //     }),
-      //     '3_HCToken_mint: Dai/insufficient-balance'
-      //   );
-      // });
+      await expectRevert(
+        this.proxy.batchExec(to, config, data, {
+          from: user,
+        }),
+        '0_HAaveProtocolV2_flashLoan: 0_HWeth_withdraw: Unspecified'
+      );
+    });
+
+    it('0 -> 1 revert', async function() {
+      // FlashLoan wrapped token -> withdraw -> deposit revert
+      const value = ether('1');
+      const to = [this.hAaveV2.address];
+      const config = [ZERO_BYTES32];
+
+      // Prepare data
+      const withdrawData = getCallData(HWrapper, 'withdraw', [value]);
+      const depositData = getCallData(HWrapper, 'deposit', [
+        value.mul(new BN('2')), // Excess deposit
+      ]);
+      const flashLoanData = web3.eth.abi.encodeParameters(
+        ['address[]', 'bytes32[]', 'bytes[]'],
+        [
+          [this.hWrapper.address, this.hWrapper.address],
+          [ZERO_BYTES32, ZERO_BYTES32],
+          [withdrawData, depositData],
+        ]
+      );
+      const data = [
+        getCallData(HAaveV2, 'flashLoan', [
+          [wrappedTokenAddress],
+          [value],
+          [AAVE_RATEMODE.NODEBT],
+          flashLoanData,
+        ]),
+      ];
+
+      await expectRevert(
+        this.proxy.batchExec(to, config, data, {
+          from: user,
+        }),
+        '0_HAaveProtocolV2_flashLoan: 1_HWeth_deposit: Unspecified'
+      );
+    });
+
+    it('1 -> 0 revert', async function() {
+      // Dummy deposit -> FlashLoan wrapped token -> withdraw revert
+      const value = ether('1');
+      const to = [this.hWrapper.address, this.hAaveV2.address];
+      const config = [ZERO_BYTES32, ZERO_BYTES32];
+
+      // Prepare data
+      const withdrawData = getCallData(HWrapper, 'withdraw', [
+        value.mul(new BN('2')), // Excess withdraw
+      ]);
+      const flashLoanData = web3.eth.abi.encodeParameters(
+        ['address[]', 'bytes32[]', 'bytes[]'],
+        [[this.hWrapper.address], [ZERO_BYTES32], [withdrawData]]
+      );
+      const data = [
+        getCallData(HWrapper, 'deposit', [ether('0')]), // Dummy cube
+        getCallData(HAaveV2, 'flashLoan', [
+          [wrappedTokenAddress],
+          [value],
+          [AAVE_RATEMODE.NODEBT],
+          flashLoanData,
+        ]),
+      ];
+
+      await expectRevert(
+        this.proxy.batchExec(to, config, data, {
+          from: user,
+        }),
+        '1_HAaveProtocolV2_flashLoan: 0_HWeth_withdraw: Unspecified'
+      );
+    });
+  });
+
+  describe('Existing handler', function() {
+    it('0_0 revert', async function() {
+      // Register existing wrapper
+      const existingWrapper = '0x9e2Ba701cf5Dc47096060BB0a773e732BEE68dE6';
+      await this.registry.register(
+        existingWrapper,
+        utils.asciiToHex('HWrapper')
+      );
+
+      const value = ether('1');
+      const to = [existingWrapper];
+      const config = [ZERO_BYTES32];
+      const data = [getCallData(HWrapper, 'deposit', [value])];
+      await expectRevert(
+        this.proxy.batchExec(to, config, data, {
+          from: user,
+          value: 0, // Insufficient native token
+        }),
+        '0_0_HWeth_deposit: Unspecified'
+      );
     });
   });
 });

@@ -1,17 +1,20 @@
-pragma solidity ^0.6.0;
+// SPDX-License-Identifier: MIT
 
-import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
-import "@openzeppelin/contracts/math/SafeMath.sol";
+pragma solidity 0.8.10;
+
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 contract Faucet {
     using SafeERC20 for IERC20;
-    using SafeMath for uint256;
+    
 
     fallback() external payable {}
 
+    receive() external payable {}
+
     function drain() external payable {
-        uint256 give = msg.value.mul(2);
-        msg.sender.call.value(give)("");
+        uint256 give = msg.value * 2;
+        payable(msg.sender).transfer(give);
     }
 
     function drainToken(address token, uint256 amount) external {

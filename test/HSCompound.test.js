@@ -14,7 +14,7 @@ const utils = web3.utils;
 const { expect } = require('chai');
 
 const {
-  ETH_TOKEN,
+  NATIVE_TOKEN_ADDRESS,
   COMP_TOKEN,
   DAI_TOKEN,
   CDAI,
@@ -104,7 +104,7 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
       const data = abi.simpleEncode(
         'deposit(address,address,uint256)',
         this.userProxy.address,
-        ETH_TOKEN,
+        NATIVE_TOKEN_ADDRESS,
         amount
       );
       const ethUserBefore = await balance.current(user);
@@ -185,7 +185,7 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
       const data = abi.simpleEncode(
         'withdraw(address,address,uint256)',
         this.userProxy.address,
-        ETH_TOKEN,
+        NATIVE_TOKEN_ADDRESS,
         amount
       );
       // Transfer ether to DSProxy for withdrawal

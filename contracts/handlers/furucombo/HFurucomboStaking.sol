@@ -1,7 +1,8 @@
-pragma solidity ^0.6.0;
-pragma experimental ABIEncoderV2;
+// SPDX-License-Identifier: MIT
 
-import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
+pragma solidity 0.8.10;
+
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import "../HandlerBase.sol";
 import "./IStaking.sol";
@@ -20,9 +21,9 @@ contract HFurucomboStaking is HandlerBase {
         amount = _getBalance(stakeToken, amount);
         require(amount > 0, "HFurucombo: stake amount = 0");
 
-        IERC20(stakeToken).safeApprove(pool, amount);
+        _tokenApprove(stakeToken, pool, amount);
         staking.stakeFor(_getSender(), amount);
-        IERC20(stakeToken).safeApprove(pool, 0);
+        _tokenApproveZero(stakeToken, pool);
     }
 
     function unstake(address pool, uint256 amount) external payable {

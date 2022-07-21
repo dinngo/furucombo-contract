@@ -1,4 +1,6 @@
-pragma solidity ^0.6.0;
+// SPDX-License-Identifier: MIT
+
+pragma solidity 0.8.10;
 
 import "../HandlerBase.sol";
 import "./IRootChainManager.sol";
@@ -15,8 +17,6 @@ contract HPolygon is HandlerBase {
     address public constant POS_PREDICATE_ERC20 = 0x40ec5B33f54e0E8A33A975908C5BA1c14e5BbbDf;
     // prettier-ignore
     address public constant MATIC_ADDRESS = 0x7D1AfA7B718fb893dB30A3aBc0Cfc608AaCfeBB0;
-    // prettier-ignore
-    address public constant ETH_ADDRESS = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
     event PolygonBridged(
         address indexed sender,
@@ -41,7 +41,7 @@ contract HPolygon is HandlerBase {
             _revertMsg("depositEther");
         }
 
-        emit PolygonBridged(user, ETH_ADDRESS, value);
+        emit PolygonBridged(user, NATIVE_TOKEN_ADDRESS, value);
     }
 
     function depositERC20(address token, uint256 amount) external payable {
@@ -58,6 +58,7 @@ contract HPolygon is HandlerBase {
             } catch {
                 _revertMsg("depositERC20");
             }
+            _tokenApproveZero(token, address(PLASMA_MANAGER));
         } else {
             // Use PoS bridge for other tokens
             bytes memory depositData = abi.encodePacked(amount);
@@ -69,6 +70,7 @@ contract HPolygon is HandlerBase {
             } catch {
                 _revertMsg("depositERC20");
             }
+            _tokenApproveZero(token, POS_PREDICATE_ERC20);
         }
 
         emit PolygonBridged(user, token, amount);

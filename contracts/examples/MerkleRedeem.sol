@@ -1,7 +1,8 @@
-pragma solidity ^0.6.0;
-pragma experimental ABIEncoderV2;
+// SPDX-License-Identifier: MIT
 
-import "@openzeppelin/contracts/cryptography/MerkleProof.sol";
+pragma solidity 0.8.10;
+
+import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
@@ -14,7 +15,7 @@ contract MerkleRedeem is Ownable {
     mapping(uint256 => bytes32) public weekMerkleRoots;
     mapping(uint256 => mapping(address => bool)) public claimed;
 
-    constructor(address _token) public {
+    constructor(address _token) {
         token = IERC20(_token);
     }
 

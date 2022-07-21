@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GNU-3
 // guard.sol -- simple whitelist implementation of DSAuthority
 
 // Copyright (C) 2017  DappHub, LLC
@@ -34,7 +35,7 @@ contract DSGuardEvents {
 }
 
 contract DSGuard is DSAuth, DSAuthority, DSGuardEvents {
-    bytes32 public constant ANY = bytes32(uint256(-1));
+    bytes32 public constant ANY = bytes32(type(uint256).max);
 
     mapping(bytes32 => mapping(bytes32 => mapping(bytes32 => bool))) acl;
 

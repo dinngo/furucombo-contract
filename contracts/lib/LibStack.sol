@@ -1,4 +1,6 @@
-pragma solidity ^0.6.0;
+// SPDX-License-Identifier: MIT
+
+pragma solidity ^0.8.0;
 
 import "../Config.sol";
 
@@ -40,7 +42,19 @@ library LibStack {
         view
         returns (bytes32 ret)
     {
-        require(_stack.length > 0, "stack empty");
-        ret = _stack[_stack.length - 1];
+        uint256 length = _stack.length;
+        require(length > 0, "stack empty");
+        ret = _stack[length - 1];
+    }
+
+    function peek(bytes32[] storage _stack, uint256 _index)
+        internal
+        view
+        returns (bytes32 ret)
+    {
+        uint256 length = _stack.length;
+        require(length > 0, "stack empty");
+        require(length > _index, "not enough elements in stack");
+        ret = _stack[length - _index - 1];
     }
 }

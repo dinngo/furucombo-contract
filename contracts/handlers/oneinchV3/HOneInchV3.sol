@@ -1,19 +1,14 @@
-pragma solidity ^0.6.0;
-pragma experimental ABIEncoderV2;
+// SPDX-License-Identifier: MIT
 
-import "@openzeppelin/contracts/math/SafeMath.sol";
+pragma solidity 0.8.10;
 
 import "../HandlerBase.sol";
 import "./IAggregationExecutor.sol";
 import "./IAggregationRouterV3.sol";
 
 contract HOneInchV3 is HandlerBase {
-    using SafeMath for uint256;
-
     // prettier-ignore
     address private constant _ONEINCH_SPENDER = 0x11111112542D85B3EF69AE05771c2dCCff4fAa26;
-    // prettier-ignore
-    address private constant _ETH_ADDRESS = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
     function getContractName() public pure override returns (string memory) {
         return "HOneInchV3";
@@ -39,6 +34,7 @@ contract HOneInchV3 is HandlerBase {
             } catch {
                 _revertMsg("swap");
             }
+            _tokenApproveZero(address(desc.srcToken), _ONEINCH_SPENDER);
         } else {
             try
                 IAggregationRouterV3(_ONEINCH_SPENDER).swap{value: desc.amount}(
@@ -75,6 +71,7 @@ contract HOneInchV3 is HandlerBase {
             // ERC20 token need to approve before unoswap
             _tokenApprove(address(srcToken), _ONEINCH_SPENDER, amount);
             returnAmount = _unoswapCall(0, data);
+            _tokenApproveZero(address(srcToken), _ONEINCH_SPENDER);
         } else {
             returnAmount = _unoswapCall(amount, data);
         }
@@ -82,9 +79,11 @@ contract HOneInchV3 is HandlerBase {
         // Check, dstToken balance should be increased
         uint256 dstTokenBalanceAfter =
             _getBalance(address(dstToken), type(uint256).max);
-        if (dstTokenBalanceAfter.sub(dstTokenBalanceBefore) != returnAmount) {
-            _revertMsg("unoswap", "Invalid output token amount");
-        }
+        _requireMsg(
+            dstTokenBalanceAfter - dstTokenBalanceBefore == returnAmount,
+            "unoswap",
+            "Invalid output token amount"
+        );
 
         // Update involved token
         if (_isNotNativeToken(address(dstToken))) {
@@ -115,9 +114,5 @@ contract HOneInchV3 is HandlerBase {
                 _revertMsg("unoswap", abi.decode(returnData, (string)));
             }
         }
-    }
-
-    function _isNotNativeToken(address token) internal pure returns (bool) {
-        return (token != address(0) && token != _ETH_ADDRESS);
     }
 }

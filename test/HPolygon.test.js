@@ -15,6 +15,7 @@ const {
   POLYGON_POS_PREDICATE_ERC20,
   POLYGON_POS_PREDICATE_ETH,
   POLYGON_PLASMA_DEPOSIT_MANAGER,
+  NATIVE_TOKEN_ADDRESS,
 } = require('./utils/constants');
 const {
   evmRevert,
@@ -97,7 +98,7 @@ contract('Polygon Token Bridge', function([_, user]) {
           'PolygonBridged',
           {
             sender: user,
-            token: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
+            token: NATIVE_TOKEN_ADDRESS,
             amount: value,
           }
         );
@@ -139,7 +140,7 @@ contract('Polygon Token Bridge', function([_, user]) {
           'PolygonBridged',
           {
             sender: user,
-            token: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
+            token: NATIVE_TOKEN_ADDRESS,
             amount: value,
           }
         );

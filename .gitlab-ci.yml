@@ -22,7 +22,7 @@ build:
   stage: build
   script:
     - npm run build
-
+    
 # Test Stage
 .job_template: &test-configuration
   stage: test

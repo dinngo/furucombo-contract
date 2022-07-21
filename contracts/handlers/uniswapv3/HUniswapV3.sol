@@ -1,8 +1,8 @@
-pragma solidity ^0.6.0;
-pragma experimental ABIEncoderV2;
+// SPDX-License-Identifier: MIT
 
-import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
-import "@openzeppelin/contracts/math/SafeMath.sol";
+pragma solidity 0.8.10;
+
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import "../HandlerBase.sol";
 import "../weth/IWETH9.sol";
@@ -11,7 +11,6 @@ import "./libraries/BytesLib.sol";
 
 contract HUniswapV3 is HandlerBase {
     using SafeERC20 for IERC20;
-    using SafeMath for uint256;
     using BytesLib for bytes;
 
     // prettier-ignore
@@ -66,6 +65,7 @@ contract HUniswapV3 is HandlerBase {
         // Approve token
         _tokenApprove(tokenIn, address(ROUTER), params.amountIn);
         amountOut = _exactInputSingle(0, params);
+        _tokenApproveZero(tokenIn, address(ROUTER));
         WETH.withdraw(amountOut);
     }
 
@@ -89,7 +89,7 @@ contract HUniswapV3 is HandlerBase {
         // Approve token
         _tokenApprove(tokenIn, address(ROUTER), params.amountIn);
         amountOut = _exactInputSingle(0, params);
-
+        _tokenApproveZero(tokenIn, address(ROUTER));
         _updateToken(tokenOut);
     }
 
@@ -102,8 +102,11 @@ contract HUniswapV3 is HandlerBase {
         address tokenIn = _getFirstToken(path);
         address tokenOut = _getLastToken(path);
         // Input token must be WETH
-        if (tokenIn != address(WETH))
-            _revertMsg("exactInputFromEther", "Input not WETH");
+        _requireMsg(
+            tokenIn == address(WETH),
+            "exactInputFromEther",
+            "Input not WETH"
+        );
         // Build params for router call
         ISwapRouter.ExactInputParams memory params;
         params.path = path;
@@ -124,8 +127,11 @@ contract HUniswapV3 is HandlerBase {
         address tokenIn = _getFirstToken(path);
         address tokenOut = _getLastToken(path);
         // Output token must be WETH
-        if (tokenOut != address(WETH))
-            _revertMsg("exactInputToEther", "Output not WETH");
+        _requireMsg(
+            tokenOut == address(WETH),
+            "exactInputToEther",
+            "Output not WETH"
+        );
         // Build params for router call
         ISwapRouter.ExactInputParams memory params;
         params.path = path;
@@ -135,7 +141,7 @@ contract HUniswapV3 is HandlerBase {
         // Approve token
         _tokenApprove(tokenIn, address(ROUTER), params.amountIn);
         amountOut = _exactInput(0, params);
-
+        _tokenApproveZero(tokenIn, address(ROUTER));
         WETH.withdraw(amountOut);
     }
 
@@ -156,7 +162,7 @@ contract HUniswapV3 is HandlerBase {
         // Approve token
         _tokenApprove(tokenIn, address(ROUTER), params.amountIn);
         amountOut = _exactInput(0, params);
-
+        _tokenApproveZero(tokenIn, address(ROUTER));
         _updateToken(tokenOut);
     }
 
@@ -173,7 +179,7 @@ contract HUniswapV3 is HandlerBase {
         params.tokenOut = tokenOut;
         params.fee = fee;
         params.amountOut = amountOut;
-        // if amount == uint256(-1) return balance of Proxy
+        // if amount == type(uint256).max return balance of Proxy
         params.amountInMaximum = _getBalance(address(0), amountInMaximum);
         params.sqrtPriceLimitX96 = sqrtPriceLimitX96;
 
@@ -196,13 +202,14 @@ contract HUniswapV3 is HandlerBase {
         params.tokenOut = address(WETH);
         params.fee = fee;
         params.amountOut = amountOut;
-        // if amount == uint256(-1) return balance of Proxy
+        // if amount == type(uint256).max return balance of Proxy
         params.amountInMaximum = _getBalance(tokenIn, amountInMaximum);
         params.sqrtPriceLimitX96 = sqrtPriceLimitX96;
 
         // Approve token
         _tokenApprove(params.tokenIn, address(ROUTER), params.amountInMaximum);
         amountIn = _exactOutputSingle(0, params);
+        _tokenApproveZero(params.tokenIn, address(ROUTER));
         WETH.withdraw(params.amountOut);
     }
 
@@ -220,14 +227,14 @@ contract HUniswapV3 is HandlerBase {
         params.tokenOut = tokenOut;
         params.fee = fee;
         params.amountOut = amountOut;
-        // if amount == uint256(-1) return balance of Proxy
+        // if amount == type(uint256).max return balance of Proxy
         params.amountInMaximum = _getBalance(tokenIn, amountInMaximum);
         params.sqrtPriceLimitX96 = sqrtPriceLimitX96;
 
         // Approve token
         _tokenApprove(params.tokenIn, address(ROUTER), params.amountInMaximum);
         amountIn = _exactOutputSingle(0, params);
-
+        _tokenApproveZero(params.tokenIn, address(ROUTER));
         _updateToken(params.tokenOut);
     }
 
@@ -241,8 +248,11 @@ contract HUniswapV3 is HandlerBase {
         address tokenIn = _getLastToken(path);
         address tokenOut = _getFirstToken(path);
         // Input token must be WETH
-        if (tokenIn != address(WETH))
-            _revertMsg("exactOutputFromEther", "Input not WETH");
+        _requireMsg(
+            tokenIn == address(WETH),
+            "exactOutputFromEther",
+            "Input not WETH"
+        );
         // Build params for router call
         ISwapRouter.ExactOutputParams memory params;
         params.path = path;
@@ -265,19 +275,22 @@ contract HUniswapV3 is HandlerBase {
         address tokenIn = _getLastToken(path);
         address tokenOut = _getFirstToken(path);
         // Out token must be WETH
-        if (tokenOut != address(WETH))
-            _revertMsg("exactOutputToEther", "Output not WETH");
+        _requireMsg(
+            tokenOut == address(WETH),
+            "exactOutputToEther",
+            "Output not WETH"
+        );
         // Build params for router call
         ISwapRouter.ExactOutputParams memory params;
         params.path = path;
         params.amountOut = amountOut;
-        // if amount == uint256(-1) return balance of Proxy
+        // if amount == type(uint256).max return balance of Proxy
         params.amountInMaximum = _getBalance(tokenIn, amountInMaximum);
 
         // Approve token
         _tokenApprove(tokenIn, address(ROUTER), params.amountInMaximum);
         amountIn = _exactOutput(0, params);
-
+        _tokenApproveZero(tokenIn, address(ROUTER));
         WETH.withdraw(amountOut);
     }
 
@@ -294,13 +307,13 @@ contract HUniswapV3 is HandlerBase {
         ISwapRouter.ExactOutputParams memory params;
         params.path = path;
         params.amountOut = amountOut;
-        // if amount == uint256(-1) return balance of Proxy
+        // if amount == type(uint256).max return balance of Proxy
         params.amountInMaximum = _getBalance(tokenIn, amountInMaximum);
 
         // Approve token
         _tokenApprove(tokenIn, address(ROUTER), params.amountInMaximum);
         amountIn = _exactOutput(0, params);
-
+        _tokenApproveZero(tokenIn, address(ROUTER));
         _updateToken(tokenOut);
     }
 
@@ -308,9 +321,8 @@ contract HUniswapV3 is HandlerBase {
         return path.toAddress(0);
     }
 
-    function _getLastToken(bytes memory path) internal view returns (address) {
-        if (path.length < PATH_SIZE)
-            _revertMsg("General", "Path size too small");
+    function _getLastToken(bytes memory path) internal pure returns (address) {
+        _requireMsg(path.length >= PATH_SIZE, "General", "Path size too small");
         return path.toAddress(path.length - ADDRESS_SIZE);
     }
 
@@ -318,7 +330,7 @@ contract HUniswapV3 is HandlerBase {
         uint256 value,
         ISwapRouter.ExactInputSingleParams memory params
     ) internal returns (uint256) {
-        params.deadline = now;
+        params.deadline = block.timestamp;
         params.recipient = address(this);
 
         try ROUTER.exactInputSingle{value: value}(params) returns (
@@ -336,7 +348,7 @@ contract HUniswapV3 is HandlerBase {
         uint256 value,
         ISwapRouter.ExactInputParams memory params
     ) internal returns (uint256) {
-        params.deadline = now;
+        params.deadline = block.timestamp;
         params.recipient = address(this);
 
         try ROUTER.exactInput{value: value}(params) returns (
@@ -354,7 +366,7 @@ contract HUniswapV3 is HandlerBase {
         uint256 value,
         ISwapRouter.ExactOutputSingleParams memory params
     ) internal returns (uint256) {
-        params.deadline = now;
+        params.deadline = block.timestamp;
         params.recipient = address(this);
 
         try ROUTER.exactOutputSingle{value: value}(params) returns (
@@ -372,7 +384,7 @@ contract HUniswapV3 is HandlerBase {
         uint256 value,
         ISwapRouter.ExactOutputParams memory params
     ) internal returns (uint256) {
-        params.deadline = now;
+        params.deadline = block.timestamp;
         params.recipient = address(this);
 
         try ROUTER.exactOutput{value: value}(params) returns (
