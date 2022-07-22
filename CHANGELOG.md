@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 - Static analysis tool - slither
+- Support Curve withdraw to gauges in `HCurveDao`.
 
 ### Changed
 

@@ -15,6 +15,8 @@ const {
   CURVE_YCRV_GAUGE,
   CURVE_TCRV,
   CURVE_TCRV_GAUGE,
+  CURVE_AAVECRV,
+  CURVE_AAVE_GAUGE,
   CURVE_MINTER,
 } = require('./utils/constants');
 const {
@@ -22,6 +24,7 @@ const {
   evmSnapshot,
   profileGas,
   getHandlerReturn,
+  hasFuncSig,
   tokenProviderCurveGauge,
 } = require('./utils/utils');
 
@@ -37,17 +40,25 @@ contract('Curve DAO', function([_, user]) {
   // Wait for the gaude to be ready
   const token0Address = CURVE_YCRV;
   const token1Address = CURVE_TCRV;
+  const token2Address = CURVE_AAVECRV;
   const gauge0Address = CURVE_YCRV_GAUGE;
   const gauge1Address = CURVE_TCRV_GAUGE;
+  const gauge2Address = CURVE_AAVE_GAUGE;
   const gauge0Amount = ether('0.1');
   const gauge1Amount = ether('0.1');
+  const gauge2Amount = ether('0.1');
+  const setApproveDepositSig = web3.eth.abi.encodeFunctionSignature(
+    'set_approve_deposit(address,bool)'
+  );
 
   let token0Provider;
   let token1Provider;
+  let token2Provider;
 
   before(async function() {
     token0Provider = await tokenProviderCurveGauge(token0Address);
     token1Provider = await tokenProviderCurveGauge(token1Address);
+    token2Provider = await tokenProviderCurveGauge(token2Address);
 
     this.minter = await IMinter.at(CURVE_MINTER);
     this.registry = await Registry.new();
@@ -59,8 +70,10 @@ contract('Curve DAO', function([_, user]) {
     this.crv = await IToken.at(CRV_TOKEN);
     this.token0 = await IToken.at(token0Address);
     this.token1 = await IToken.at(token1Address);
+    this.token2 = await IToken.at(token2Address);
     this.gauge0 = await ILiquidityGauge.at(gauge0Address);
     this.gauge1 = await ILiquidityGauge.at(gauge1Address);
+    this.gauge2 = await ILiquidityGauge.at(gauge2Address);
     this.proxy = await Proxy.new(this.registry.address);
   });
 
@@ -83,9 +96,13 @@ contract('Curve DAO', function([_, user]) {
         this.gauge0.address,
         gauge0Amount
       );
-      await this.gauge0.set_approve_deposit(this.proxy.address, true, {
-        from: user,
-      });
+
+      if (await hasFuncSig(this.gauge0.address, setApproveDepositSig)) {
+        // Only v1 and v2 gauges need deposit approval
+        await this.gauge0.set_approve_deposit(this.proxy.address, true, {
+          from: user,
+        });
+      }
 
       const depositUser = await this.gauge0.balanceOf.call(user);
       const receipt = await this.proxy.execMock(to, data, {
@@ -111,9 +128,13 @@ contract('Curve DAO', function([_, user]) {
         this.gauge0.address,
         MAX_UINT256
       );
-      await this.gauge0.set_approve_deposit(this.proxy.address, true, {
-        from: user,
-      });
+
+      if (await hasFuncSig(this.gauge0.address, setApproveDepositSig)) {
+        // Only v1 and v2 gauges need deposit approval
+        await this.gauge0.set_approve_deposit(this.proxy.address, true, {
+          from: user,
+        });
+      }
 
       const depositUser = await this.gauge0.balanceOf.call(user);
       const receipt = await this.proxy.execMock(to, data, {
@@ -130,6 +151,11 @@ contract('Curve DAO', function([_, user]) {
     });
 
     it('without approval', async function() {
+      if (!(await hasFuncSig(this.gauge0.address, setApproveDepositSig))) {
+        // V3 gauges afterwards skip this
+        this.skip();
+      }
+
       await this.token0.transfer(this.proxy.address, gauge0Amount, {
         from: token0Provider,
       });
@@ -146,6 +172,81 @@ contract('Curve DAO', function([_, user]) {
         }),
         'HCurveDao_deposit: Not approved'
       );
+    });
+  });
+
+  describe('Withdraw lp token from v2 gauge afterwards', function() {
+    let withdrawUser;
+    let receipt;
+
+    beforeEach(async function() {
+      // Transfer gauge token to furucombo proxy
+      await this.token2.transfer(user, gauge2Amount, {
+        from: token2Provider,
+      });
+      await this.token2.approve(this.gauge2.address, gauge2Amount, {
+        from: user,
+      });
+      await this.gauge2.deposit(gauge2Amount, user, {
+        from: user,
+      });
+      await this.gauge2.transfer(this.proxy.address, gauge2Amount, {
+        from: user,
+      });
+    });
+
+    it('normal', async function() {
+      const to = this.hCurveDao.address;
+      const data = abi.simpleEncode(
+        'withdraw(address,uint256)',
+        this.gauge2.address,
+        gauge2Amount
+      );
+      withdrawUser = await this.token2.balanceOf(user);
+      receipt = await this.proxy.execMock(to, data, {
+        from: user,
+        value: ether('0.1'),
+      });
+    });
+
+    it('max amount', async function() {
+      const to = this.hCurveDao.address;
+      const data = abi.simpleEncode(
+        'withdraw(address,uint256)',
+        this.gauge2.address,
+        MAX_UINT256
+      );
+      withdrawUser = await this.token2.balanceOf(user);
+      receipt = await this.proxy.execMock(to, data, {
+        from: user,
+        value: ether('0.1'),
+      });
+    });
+
+    afterEach(async function() {
+      const withdrawUserEnd = await this.token2.balanceOf(user);
+
+      // Check handler return
+      const handlerReturn = utils.toBN(
+        getHandlerReturn(receipt, ['uint256'])[0]
+      );
+      expect(handlerReturn).to.be.bignumber.eq(gauge2Amount);
+
+      // Check lp amount
+      expect(withdrawUserEnd.sub(withdrawUser)).to.be.bignumber.eq(
+        gauge2Amount
+      );
+      expect(
+        await this.token2.balanceOf(this.proxy.address)
+      ).to.be.bignumber.eq(ether('0'));
+
+      // Check gauge token amount
+      expect(await this.gauge2.balanceOf(user)).to.be.bignumber.eq(ether('0'));
+      expect(
+        await this.gauge2.balanceOf(this.proxy.address)
+      ).to.be.bignumber.eq(ether('0'));
+
+      profileGas(receipt);
     });
   });
 

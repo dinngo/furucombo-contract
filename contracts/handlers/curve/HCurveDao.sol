@@ -92,4 +92,25 @@ contract HCurveDao is HandlerBase {
         }
         _tokenApproveZero(token, gaugeAddress);
     }
+
+    function withdraw(address gaugeAddress, uint256 _value)
+        external
+        payable
+        returns (uint256)
+    {
+        ILiquidityGauge gauge = ILiquidityGauge(gaugeAddress);
+        address token = gauge.lp_token();
+
+        _value = _getBalance(gaugeAddress, _value);
+
+        try gauge.withdraw(_value) {} catch Error(string memory reason) {
+            _revertMsg("withdraw", reason);
+        } catch {
+            _revertMsg("withdraw");
+        }
+
+        _updateToken(token);
+
+        return _value;
+    }
 }
