@@ -1,13 +1,12 @@
-pragma solidity ^0.6.0;
+// SPDX-License-Identifier: MIT
 
-import "@openzeppelin/contracts/math/SafeMath.sol";
+pragma solidity 0.8.10;
+
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./interface/IFeeRuleRegistry.sol";
 import "./interface/IRule.sol";
 
 contract FeeRuleRegistry is IFeeRuleRegistry, Ownable {
-    using SafeMath for uint256;
-
     mapping(uint256 => address) public override rules;
 
     uint256 public override counter;
@@ -20,7 +19,7 @@ contract FeeRuleRegistry is IFeeRuleRegistry, Ownable {
     event SetBasisFeeRate(uint256 basisFeeRate);
     event SetFeeCollector(address feeCollector);
 
-    constructor(uint256 basisFeeRate_, address feeCollector_) public {
+    constructor(uint256 basisFeeRate_, address feeCollector_) {
         if (basisFeeRate_ != 0) setBasisFeeRate(basisFeeRate_);
         setFeeCollector(feeCollector_);
     }
@@ -43,7 +42,7 @@ contract FeeRuleRegistry is IFeeRuleRegistry, Ownable {
         require(rule_ != address(0), "Not allow to register zero address");
         rules[counter] = rule_;
         emit RegisteredRule(counter, rule_);
-        counter = counter.add(1);
+        counter = counter + 1;
     }
 
     function unregisterRule(uint256 ruleIndex_) external override onlyOwner {
@@ -61,9 +60,9 @@ contract FeeRuleRegistry is IFeeRuleRegistry, Ownable {
         override
         returns (uint256 scaledRate)
     {
-        scaledRate = calFeeRateMultiWithoutBasis(usr_, ruleIndexes_)
-            .mul(basisFeeRate)
-            .div(BASE);
+        scaledRate =
+            (calFeeRateMultiWithoutBasis(usr_, ruleIndexes_) * basisFeeRate) /
+            BASE;
     }
 
     function calFeeRateMultiWithoutBasis(
@@ -81,9 +80,9 @@ contract FeeRuleRegistry is IFeeRuleRegistry, Ownable {
                     "Not ascending order"
                 );
 
-                scaledRate = scaledRate
-                    .mul(_calDiscount(usr_, rules[ruleIndexes_[i]]))
-                    .div(BASE);
+                scaledRate =
+                    (scaledRate * _calDiscount(usr_, rules[ruleIndexes_[i]])) /
+                    BASE;
             }
         }
     }
@@ -94,9 +93,9 @@ contract FeeRuleRegistry is IFeeRuleRegistry, Ownable {
         override
         returns (uint256 scaledRate)
     {
-        scaledRate = calFeeRateWithoutBasis(usr_, ruleIndex_)
-            .mul(basisFeeRate)
-            .div(BASE);
+        scaledRate =
+            (calFeeRateWithoutBasis(usr_, ruleIndex_) * basisFeeRate) /
+            BASE;
     }
 
     function calFeeRateWithoutBasis(address usr_, uint256 ruleIndex_)

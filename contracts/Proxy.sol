@@ -20,7 +20,6 @@ import "./lib/LibFeeStorage.sol";
 contract Proxy is IProxy, Storage, Config {
     using Address for address;
     using SafeERC20 for IERC20;
-    using SafeMath for uint256;
     using LibParam for bytes32;
     using LibStack for bytes32[];
     using Strings for uint256;
@@ -252,16 +251,16 @@ contract Proxy is IProxy, Storage, Config {
 
     /**
      * @notice The execution of a single cube.
-     * @param _to The handler of cube.
-     * @param _data The cube execution data.
-     * @param _counter The current counter of the cube.
+     * @param to_ The handler of cube.
+     * @param data_ The cube execution data.
+     * @param counter_ The current counter of the cube.
      */
     function _exec(
-        address _to,
-        bytes memory _data,
-        uint256 _counter
+        address to_,
+        bytes memory data_,
+        uint256 counter_
     ) internal returns (bytes memory result) {
-        require(_isValidHandler(_to), "Invalid handler");
+        require(_isValidHandler(to_), "Invalid handler");
         bool success;
         assembly {
             success := delegatecall(
@@ -289,13 +288,13 @@ contract Proxy is IProxy, Storage, Config {
                 result := add(result, 0x04)
             }
 
-            if (_counter == type(uint256).max) {
+            if (counter_ == type(uint256).max) {
                 revert(abi.decode(result, (string))); // Don't prepend counter
             } else {
                 revert(
                     string(
                         abi.encodePacked(
-                            _counter.toString(),
+                            counter_.toString(),
                             "_",
                             abi.decode(result, (string))
                         )
@@ -320,8 +319,7 @@ contract Proxy is IProxy, Storage, Config {
             bytes4(stack.peek(1)) != 0x00000000
         ) {
             stack.pop();
-            // Check if the handler is already set.
-            if (bytes4(stack.peek()) != 0x00000000) stack.setAddress(to_);
+            stack.setAddress(to_);
             stack.setHandlerType(HandlerType.Custom);
         }
     }
@@ -331,7 +329,6 @@ contract Proxy is IProxy, Storage, Config {
         internal
         virtual
         isStackEmpty
-        isFeeRateZero
     {
         // Set the sender.
         _setSender();
@@ -339,10 +336,8 @@ contract Proxy is IProxy, Storage, Config {
         cache._setFeeCollector(feeRuleRegistry.feeCollector());
 
         // Calculate fee
-        uint256 feeRate = feeRuleRegistry.calFeeRateMulti(
-            _getSender(),
-            ruleIndexes_
-        );
+        uint256 feeRate =
+            feeRuleRegistry.calFeeRateMulti(_getSender(), ruleIndexes_);
         require(feeRate <= PERCENTAGE_BASE, "fee rate out of range");
         cache._setFeeRate(feeRate);
         if (msg.value > 0 && feeRate > 0) {
@@ -421,6 +416,6 @@ contract Proxy is IProxy, Storage, Config {
         pure
         returns (uint256)
     {
-        return amount.mul(feeRate).div(PERCENTAGE_BASE);
+        return (amount * feeRate) / PERCENTAGE_BASE;
     }
 }

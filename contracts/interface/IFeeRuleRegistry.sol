@@ -1,4 +1,5 @@
-pragma solidity ^0.6.0;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
 
 interface IFeeRuleRegistry {
     /* State Variables Getter */
@@ -13,7 +14,7 @@ interface IFeeRuleRegistry {
     function setFeeCollector(address) external;
     function registerRule(address rule) external;
     function unregisterRule(uint256 ruleIndex) external;
-    
+
     /* View Functions */
     function calFeeRateMulti(address usr, uint256[] calldata ruleIndexes) external view returns (uint256 scaledRate);
     function calFeeRate(address usr, uint256 ruleIndex) external view returns (uint256 scaledRate);

@@ -10,9 +10,9 @@ import "../lib/LibFeeStorage.sol";
 
 contract ProxyMock is Proxy, GasProfiler, IHandlerEvents {
     using LibStack for bytes32[];
+    using LibFeeStorage for mapping(bytes32 => bytes32);
 
     constructor(address registry, address feeRuleRegistry)
-        public
         Proxy(registry, feeRuleRegistry)
     {}
 
@@ -34,11 +34,7 @@ contract ProxyMock is Proxy, GasProfiler, IHandlerEvents {
         return result;
     }
 
-    function _preProcess(uint256[] memory _rules)
-        internal
-        override
-        isFeeRateZero
-    {
+    function _preProcess(uint256[] memory _rules) internal override {
         // Set the sender.
         _setSender();
         // Calculate fee

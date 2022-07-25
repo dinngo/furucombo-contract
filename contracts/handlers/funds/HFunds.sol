@@ -3,9 +3,8 @@
 pragma solidity 0.8.10;
 
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-
-import "../HandlerBase.sol";
 import "../../lib/LibFeeStorage.sol";
+import "../HandlerBase.sol";
 
 contract HFunds is HandlerBase {
     using SafeERC20 for IERC20;
@@ -111,27 +110,31 @@ contract HFunds is HandlerBase {
         for (uint256 i = 0; i < tokens.length; i++) {
             if (tokens[i] == address(0)) {
                 if (address(this).balance < amounts[i]) {
-                    string memory errMsg = string(
-                        abi.encodePacked(
-                            "error: ",
-                            _uint2String(i),
-                            "_",
-                            _uint2String(address(this).balance)
-                        )
-                    );
+                    string memory errMsg =
+                        string(
+                            abi.encodePacked(
+                                "error: ",
+                                _uint2String(i),
+                                "_",
+                                _uint2String(address(this).balance)
+                            )
+                        );
                     _revertMsg("checkSlippage", errMsg);
                 }
             } else if (
                 IERC20(tokens[i]).balanceOf(address(this)) < amounts[i]
             ) {
-                string memory errMsg = string(
-                    abi.encodePacked(
-                        "error: ",
-                        _uint2String(i),
-                        "_",
-                        _uint2String(IERC20(tokens[i]).balanceOf(address(this)))
-                    )
-                );
+                string memory errMsg =
+                    string(
+                        abi.encodePacked(
+                            "error: ",
+                            _uint2String(i),
+                            "_",
+                            _uint2String(
+                                IERC20(tokens[i]).balanceOf(address(this))
+                            )
+                        )
+                    );
 
                 _revertMsg("checkSlippage", errMsg);
             }
@@ -146,8 +149,11 @@ contract HFunds is HandlerBase {
         internal
         returns (uint256[] memory)
     {
-        if (tokens.length != amounts.length)
-            _revertMsg("inject", "token and amount does not match");
+        _requireMsg(
+            tokens.length == amounts.length,
+            "inject",
+            "token and amount does not match"
+        );
         address sender = _getSender();
         uint256 feeRate = cache._getFeeRate();
         address collector = cache._getFeeCollector();
@@ -162,7 +168,7 @@ contract HFunds is HandlerBase {
             if (feeRate > 0) {
                 uint256 fee = _calFee(amounts[i], feeRate);
                 IERC20(tokens[i]).safeTransfer(collector, fee);
-                amountsInProxy[i] = amounts[i].sub(fee);
+                amountsInProxy[i] = amounts[i] - fee;
                 emit ChargeFee(tokens[i], fee);
             } else {
                 amountsInProxy[i] = amounts[i];
@@ -179,7 +185,6 @@ contract HFunds is HandlerBase {
         pure
         returns (uint256)
     {
-        require(_feeRate <= PERCENTAGE_BASE, "fee rate out of range");
-        return (_amount * _feeRate) / PERCENTAGE_BASE;
+        return (amount * feeRate) / PERCENTAGE_BASE;
     }
 }

@@ -22,7 +22,7 @@ const {
   OMG_TOKEN,
   OMG_PROVIDER,
   KNC_TOKEN,
-  NATIVE_TOKEN,
+  NATIVE_TOKEN_ADDRESS,
 } = require('./utils/constants');
 const {
   evmRevert,
@@ -165,7 +165,7 @@ contract('Fee', function([_, feeCollector, user]) {
       const feeETH = ethAmount.mul(feeRateUser).div(BASE);
 
       expectEvent(receipt, 'ChargeFee', {
-        tokenIn: NATIVE_TOKEN,
+        tokenIn: NATIVE_TOKEN_ADDRESS,
         feeAmount: feeETH,
       });
 
@@ -206,7 +206,7 @@ contract('Fee', function([_, feeCollector, user]) {
       const feeETH = ethAmount.mul(feeRateUser).div(BASE);
 
       expectEvent(receipt, 'ChargeFee', {
-        tokenIn: NATIVE_TOKEN,
+        tokenIn: NATIVE_TOKEN_ADDRESS,
         feeAmount: feeETH,
       });
 
@@ -437,7 +437,7 @@ contract('Fee', function([_, feeCollector, user]) {
 
       // Verify event
       await expectEvent.inTransaction(receipt.tx, this.proxy, 'ChargeFee', {
-        tokenIn: NATIVE_TOKEN,
+        tokenIn: NATIVE_TOKEN_ADDRESS,
         feeAmount: feeETH,
       });
 
@@ -494,7 +494,7 @@ contract('Fee', function([_, feeCollector, user]) {
 
       // Verify event
       await expectEvent.inTransaction(receipt.tx, this.proxy, 'ChargeFee', {
-        tokenIn: NATIVE_TOKEN,
+        tokenIn: NATIVE_TOKEN_ADDRESS,
         feeAmount: feeETH,
       });
 
