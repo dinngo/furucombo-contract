@@ -163,7 +163,7 @@ contract('Funds', function([_, user, someone]) {
     });
 
     it('native token - 0xEEEE', async function() {
-      const token = [this.token0.address, NATIVE_TOKEN];
+      const token = [this.token0.address, NATIVE_TOKEN_ADDRESS];
       const msgValue = ether('0.1');
       const value = [ether('200'), ether('1')];
       const to = this.hFunds.address;

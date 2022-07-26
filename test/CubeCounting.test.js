@@ -73,7 +73,7 @@ contract('CubeCounting', function([_, user]) {
       const config = [ZERO_BYTES32];
       const data = [getCallData(HWrapper, 'deposit', [value])];
       await expectRevert(
-        this.proxy.batchExec(to, config, data, {
+        this.proxy.batchExec(to, config, data, [], {
           from: user,
           value: 0, // Insufficient native token
         }),
@@ -101,7 +101,7 @@ contract('CubeCounting', function([_, user]) {
       ];
 
       await expectRevert(
-        this.proxy.batchExec(to, config, data, {
+        this.proxy.batchExec(to, config, data, [], {
           from: user,
         }),
         '0_HAaveProtocolV2_flashLoan: _exec'
@@ -129,7 +129,7 @@ contract('CubeCounting', function([_, user]) {
       ];
 
       await expectRevert(
-        this.proxy.batchExec(to, config, data, {
+        this.proxy.batchExec(to, config, data, [], {
           from: user,
         }),
         '0_HAaveProtocolV2_flashLoan: SafeERC20: low-level call failed'
@@ -160,7 +160,7 @@ contract('CubeCounting', function([_, user]) {
       ];
 
       await expectRevert(
-        this.proxy.batchExec(to, config, data, {
+        this.proxy.batchExec(to, config, data, [], {
           from: user,
         }),
         '0_HAaveProtocolV2_flashLoan: 0_HWeth_withdraw: Unspecified'
@@ -196,7 +196,7 @@ contract('CubeCounting', function([_, user]) {
       ];
 
       await expectRevert(
-        this.proxy.batchExec(to, config, data, {
+        this.proxy.batchExec(to, config, data, [], {
           from: user,
         }),
         '0_HAaveProtocolV2_flashLoan: 1_HWeth_deposit: Unspecified'
@@ -228,7 +228,7 @@ contract('CubeCounting', function([_, user]) {
       ];
 
       await expectRevert(
-        this.proxy.batchExec(to, config, data, {
+        this.proxy.batchExec(to, config, data, [], {
           from: user,
         }),
         '1_HAaveProtocolV2_flashLoan: 0_HWeth_withdraw: Unspecified'
@@ -250,7 +250,7 @@ contract('CubeCounting', function([_, user]) {
       const config = [ZERO_BYTES32];
       const data = [getCallData(HWrapper, 'deposit', [value])];
       await expectRevert(
-        this.proxy.batchExec(to, config, data, {
+        this.proxy.batchExec(to, config, data, [], {
           from: user,
           value: 0, // Insufficient native token
         }),
