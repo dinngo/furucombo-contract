@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+## [1.12.0] - 2022-07-27
+
 ### Added
 
 - Static analysis tool - slither
