@@ -9,24 +9,27 @@ especially important if they didn't participate in the discussion.
 
 -->
 
-
 ## MR acceptance checklist
 
 These checklists encourage us to confirm any changes have been analyzed to reduce risks in quality, security, and maintainability.
 
-
 ### Quality
-* [ ] Implementation follows the [guidelines](GUIDELINES.md)  of the project.
-* [ ] Unit test is provided and passed.
 
+- [ ] Implementation follows the [guidelines](GUIDELINES.md) of the project.
+- [ ] Coding style follows the [Coding Style](https://app.asana.com/0/1110393615095724/1202201092359525/f).
+- [ ] Unit test is provided and passed.
+- [ ] All the reverted path are tested.
+- [ ] Most of the unused code are removed.
 
 ### Security
-* [ ] Certora rule is provided and passed.
 
+- [ ] Certora rule is provided and passed.
 
 ### Documentation
-* [ ] Changes are noted in the change log.
 
+- [ ] Changes are noted in the change log.
+- [ ] Functions has written with comments.
 
 ### Deployment
-* [ ] Migration file is provided.
+
+- [ ] Deployment file is provided.
