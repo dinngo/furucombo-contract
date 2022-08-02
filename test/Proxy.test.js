@@ -394,7 +394,7 @@ contract('Proxy', function([_, deployer, user]) {
     it('should revert: with other handler type', async function() {
       this.proxy.setHandlerType(HANDLER_TYPE.OTHERS);
       await expectRevert(
-        this.proxy.batchExec([], [], [], { from: user }),
+        this.proxy.batchExec([], [], [], [], { from: user }),
         'Invalid handler type'
       );
     });

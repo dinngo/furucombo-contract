@@ -7,13 +7,13 @@ import "../Storage.sol";
 library LibFeeStorage {
     using LibCache for mapping(bytes32 => bytes32);
 
-    // keccak256 hash of "fee.rate"
+    // keccak256 hash of "furucombo.fee.rate"
     // prettier-ignore
-    bytes32 public constant FEE_RATE_KEY = 0x515323fd14ae1d8e2508b9830a3e80e1a884361823ecf1c0f4d3f345ad226225;
+    bytes32 public constant FEE_RATE_KEY = 0x142183525227cae0e4300fd0fc77d7f3b08ceb0fd9cb2a6c5488668fa0ea5ffa;
 
-    // keccak256 hash of "fee.collector"
+    // keccak256 hash of "furucombo.fee.collector"
     // prettier-ignore
-    bytes32 public constant FEE_COLLECTOR_KEY = 0x0efe2dc3698afe8504a41468034ba33d504aa66b651e1d37f230a3ca6ee9dc72;
+    bytes32 public constant FEE_COLLECTOR_KEY = 0x60d7a7cc0a45d852bd613e4f527aaa2e4b81fff918a69a2aab88b6458751d614;
 
     function _setFeeRate(
         mapping(bytes32 => bytes32) storage _cache,
