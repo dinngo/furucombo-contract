@@ -23,7 +23,7 @@ These checklists encourage us to confirm any changes have been analyzed to reduc
 
 ### Security
 
-- [ ] Certora rule is provided and passed.
+- [ ] Code coverage report is provided.
 
 ### Documentation
 
