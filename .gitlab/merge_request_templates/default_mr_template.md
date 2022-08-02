@@ -3,10 +3,9 @@
 _Describe in detail what your merge request does and why._
 
 <!--
-Please keep this description updated with any discussion that takes place so
-that reviewers can understand your intent. Keeping the description updated is
+Please keep this description updated. Any discussion that related to this merge request
+are useful for reviewers better understand your changes. Keeping the description updated is
 especially important if they didn't participate in the discussion.
-
 -->
 
 ## MR acceptance checklist
