@@ -78,12 +78,10 @@ module.exports = {
       initialBaseFeePerGas: 0,
     },
     prod: {
-      url: process.env.PRODUCTION_URL || '',
-      chainId: PRODUCTION_CHAIN_ID,
+      url: process.env.PROD_URL || 'https://rpc.ankr.com/eth',
+      chainId: process.env.PROD_CHAIN_ID || 1,
       accounts:
-        process.env.PRODUCTION_SECRET !== undefined
-          ? [process.env.PRODUCTION_SECRET]
-          : [],
+        process.env.PROD_SECRET !== undefined ? [process.env.PROD_SECRET] : [],
     },
     // Due to "evm_snapshot/evm_revert" JSON-RPC method used in tests
     // we have to launch hardhat network at localhost:8545(like ganache)
