@@ -16,9 +16,9 @@ These checklists encourage us to confirm any changes have been analyzed to reduc
 
 - [ ] Implementation follows the [guidelines](GUIDELINES.md) of the project.
 - [ ] Coding style follows the [Coding Style](https://app.asana.com/0/1110393615095724/1202201092359525/f).
-- [ ] Unit test is provided and passed.
-- [ ] All the reverted path are tested.
-- [ ] Most of the unused code are removed.
+- [ ] Unit tests(include all reverted cases) are provided and passed.
+- [ ] Unused code are removed.
+- [ ] Functions are written with comments.
 
 ### Security
 
@@ -27,7 +27,7 @@ These checklists encourage us to confirm any changes have been analyzed to reduc
 ### Documentation
 
 - [ ] Changes are noted in the change log.
-- [ ] Functions has written with comments.
+- [ ] Add the new document if needed(optional).
 
 ### Deployment
 
