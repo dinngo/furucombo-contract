@@ -16,13 +16,14 @@ These checklists encourage us to confirm any changes have been analyzed to reduc
 
 - [ ] Implementation follows the [guidelines](GUIDELINES.md) of the project.
 - [ ] Coding style follows the [Coding Style](https://app.asana.com/0/1110393615095724/1202201092359525/f).
-- [ ] Unit tests(include all reverted cases) are provided and passed.
 - [ ] Unused code are removed.
 - [ ] Functions are written with comments.
 
 ### Security
 
+- [ ] Unit tests(include all reverted cases) are provided and passed.
 - [ ] Code coverage report is provided.
+- [ ] Static analysis report is reviewed.
 
 ### Documentation
 
