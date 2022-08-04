@@ -10,7 +10,8 @@
     "build": "scripts/build.sh",
     "check": "scripts/check.sh",
     "compile": "npx hardhat compile",
-    "test": "scripts/test.sh",
+    "test": "npx hardhat test",
+    "coverage": "npx hardhat coverage",
     "analysis": "scripts/analysis.sh",
     "lint:solhint": "solhint \"contracts/**/*.sol\"",
     "lint:prettier": "scripts/prettier.sh",
@@ -39,7 +40,7 @@
     "ethereumjs-util": "^6.2.0",
     "ethers": "^5.4.7",
     "ganache-cli": "6.11.0",
-    "hardhat": "^2.8.0",
+    "hardhat": "2.10.1",
     "hardhat-deploy": "^0.9.0",
     "hardhat-deploy-ethers": "^0.3.0-beta.10",
     "husky": "^4.2.5",
@@ -50,6 +51,7 @@
     "query-string": "^6.13.1",
     "solc": "0.6.12",
     "solhint": "^3.0.0",
+    "solidity-coverage": "^0.7.13",
     "truffle": "5.1.60",
     "web3": "^1.5.2",
     "web3-provider-engine": "^15.0.12"
@@ -58,6 +60,7 @@
     "@gelatonetwork/limit-orders-lib": "^0.6.0",
     "@openzeppelin/contracts": "^4.3.2",
     "@uniswap/v3-core": "^1.0.0",
+    "dotenv": "^16.0.1",
     "pify": "^5.0.0"
   },
   "husky": {

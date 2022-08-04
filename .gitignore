@@ -20,3 +20,5 @@ deployments/
 # certora
 .certora_*
 .last_confs
+coverage
+coverage.json
