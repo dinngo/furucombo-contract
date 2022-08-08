@@ -5,6 +5,7 @@ require('hardhat-deploy-ethers');
 // Truffle and Web3.js plugin
 require('@nomiclabs/hardhat-web3');
 require('@nomiclabs/hardhat-truffle5');
+require('@nomiclabs/hardhat-etherscan');
 
 const fs = require('fs');
 let key_beta;
@@ -76,6 +77,12 @@ module.exports = {
       },
       initialBaseFeePerGas: 0,
     },
+    prod: {
+      url: process.env.PROD_URL || 'https://rpc.ankr.com/eth',
+      chainId: process.env.PROD_CHAIN_ID || 1,
+      accounts:
+        process.env.PROD_SECRET !== undefined ? [process.env.PROD_SECRET] : [],
+    },
     // Due to "evm_snapshot/evm_revert" JSON-RPC method used in tests
     // we have to launch hardhat network at localhost:8545(like ganache)
     // and use "--network localhost" parameter to connect to localhost:8545.
@@ -89,5 +96,8 @@ module.exports = {
   },
   mocha: {
     timeout: 900000,
+  },
+  etherscan: {
+    apiKey: process.env.ETHERSCAN_KEY || '',
   },
 };
