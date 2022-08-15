@@ -28,6 +28,7 @@ const Foo4Handler = artifacts.require('Foo4Handler');
 const Foo5Handler = artifacts.require('Foo5Handler');
 const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('ProxyMock');
+const HMock = artifacts.require('HMock');
 
 contract('Proxy', function([_, deployer, user]) {
   let id;
@@ -347,6 +348,12 @@ contract('Proxy', function([_, deployer, user]) {
         this.fooHandler.address,
         utils.asciiToHex('foo3')
       );
+
+      this.hMock = await HMock.new();
+      await this.registry.register(
+        this.hMock.address,
+        utils.asciiToHex('HMock')
+      );
     });
 
     beforeEach(async function() {
@@ -373,6 +380,15 @@ contract('Proxy', function([_, deployer, user]) {
       await expectRevert(
         this.proxy.batchExec([], [], [], { from: user }),
         'Invalid handler type'
+      );
+    });
+
+    it('should revert: Invalid post process', async function() {
+      const to = this.hMock.address;
+      const data = abi.simpleEncode('updatePostProcess(bytes32[])', []);
+      await expectRevert(
+        this.proxy.execMock(to, data, { value: ether('1') }),
+        'Invalid post process'
       );
     });
   });

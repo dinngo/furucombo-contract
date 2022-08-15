@@ -45,4 +45,8 @@ contract HMock is HandlerBase {
             _updateToken(tokens[i]);
         }
     }
+
+    function updatePostProcess(bytes32[] memory params) external payable {
+        _updatePostProcess(params);
+    }
 }
