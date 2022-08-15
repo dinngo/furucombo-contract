@@ -13,6 +13,7 @@ const utils = web3.utils;
 const { expect } = require('chai');
 
 const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
+const { HANDLER_TYPE } = require('./utils/constants');
 
 const Foo = artifacts.require('Foo');
 const FooFactory = artifacts.require('FooFactory');
@@ -365,6 +366,14 @@ contract('Proxy', function([_, deployer, user]) {
       const data = abi.simpleEncode('bar2(address)', this.foo.address);
       await this.proxy.execMock(to, data, { value: ether('1') });
       expect(await this.foo.num.call()).to.be.bignumber.eq(new BN('2'));
+    });
+
+    it('should revert: with other handler type', async function() {
+      this.proxy.setHandlerType(HANDLER_TYPE.OTHERS);
+      await expectRevert(
+        this.proxy.batchExec([], [], [], { from: user }),
+        'Invalid handler type'
+      );
     });
   });
 
