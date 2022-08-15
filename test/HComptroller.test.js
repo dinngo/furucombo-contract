@@ -86,9 +86,7 @@ contract('Comptroller', function([_, user, someone]) {
     await evmRevert(id);
   });
 
-  // NOTE: Because COMP Hack event, compound stop to issue $COMP now.
-  // Remove `skip` when compound issue $COMP again.
-  describe.skip('Claim COMP', function() {
+  describe('Claim COMP', function() {
     before(async function() {
       await this.comptroller.claimComp(user);
     });
