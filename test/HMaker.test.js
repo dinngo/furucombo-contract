@@ -1201,4 +1201,20 @@ contract('Maker', function([_, user1, user2, someone]) {
       });
     });
   });
+
+  describe('postProcess', function() {
+    describe('Invalid postProcess', function() {
+      it('invalid postProcess sig', async function() {
+        this.proxy.setPostProcess(
+          this.hMaker.address,
+          utils.asciiToHex('fakeSign'),
+          []
+        );
+        await expectRevert(
+          this.proxy.batchExec([], [], [], { from: user1 }),
+          'Invalid post process'
+        );
+      });
+    });
+  });
 });

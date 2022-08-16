@@ -41,4 +41,17 @@ contract ProxyMock is Proxy, GasProfiler, IHandlerEvents {
     function setHandlerType(Config.HandlerType handlerType) public {
         stack.setHandlerType(handlerType);
     }
+
+    function setPostProcess(
+        address to,
+        bytes32 sig,
+        bytes32[] memory params
+    ) public {
+        for (uint256 i = params.length; i > 0; i--) {
+            stack.set(params[i - 1]);
+        }
+        stack.set(sig);
+        stack.setAddress(to);
+        stack.setHandlerType(HandlerType.Custom);
+    }
 }
