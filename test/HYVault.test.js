@@ -355,5 +355,140 @@ contract('YVault', function([_, user]) {
 
       profileGas(receipt);
     });
+
+    it('yCRV vault', async function() {
+      const vault = await IYVault.at(YEARN_YCRV_VAULT);
+      const token = await IToken.at(CURVE_YCRV);
+
+      // User deposits CRV to get yCRV
+      const amountDeposit = ether('1');
+      await token.transfer(user, amountDeposit, {
+        from: yCrvProviderAddress,
+      });
+      await token.approve(vault.address, amountDeposit, {
+        from: user,
+      });
+      await vault.deposit(amountDeposit, {
+        from: user,
+      });
+
+      // User withdraws ETH by yWETH
+      const amount = await vault.balanceOf.call(user);
+      const data = abi.simpleEncode(
+        'withdraw(address,uint256)',
+        vault.address,
+        amount
+      );
+      await vault.transfer(this.proxy.address, amount, {
+        from: user,
+      });
+      await this.proxy.updateTokenMock(vault.address);
+      const ratio = await vault.getPricePerFullShare.call();
+      const balanceUser = await tracker(user);
+      const tokenBalanceUser = await token.balanceOf.call(user);
+      const receipt = await this.proxy.execMock(this.hYVault.address, data, {
+        from: user,
+        value: ether('0.1'),
+      });
+
+      // Get handler return result
+      const handlerReturn = utils.toBN(
+        getHandlerReturn(receipt, ['uint256'])[0]
+      );
+      const delta = (await token.balanceOf.call(user)).sub(tokenBalanceUser);
+      // const tokenBalanceUser = await token.balanceOf.call(user);
+      expect(delta).to.be.bignumber.eq(handlerReturn);
+
+      // Check proxy balance
+      expect(await balance.current(this.proxy.address)).to.be.bignumber.zero;
+      expect(
+        await vault.balanceOf.call(this.proxy.address)
+      ).to.be.bignumber.zero;
+      expect(
+        await token.balanceOf.call(this.proxy.address)
+      ).to.be.bignumber.zero;
+
+      // Check user vault balance
+      expect(await vault.balanceOf.call(user)).to.be.bignumber.zero;
+
+      // Check user eth balance <= 100.1% expected result
+      expect(delta).to.be.bignumber.gte(amount.mul(ratio).div(ether('1')));
+      expect(delta).to.be.bignumber.lte(
+        amount
+          .mul(ratio)
+          .div(ether('1'))
+          .mul(new BN('1001'))
+          .div(new BN('1000'))
+      );
+
+      profileGas(receipt);
+    });
+    it('yCRV vault with max amount', async function() {
+      const vault = await IYVault.at(YEARN_YCRV_VAULT);
+      const token = await IToken.at(CURVE_YCRV);
+
+      // User deposits CRV to get yCRV
+      const amountDeposit = ether('1');
+      await token.transfer(user, amountDeposit, {
+        from: yCrvProviderAddress,
+      });
+      await token.approve(vault.address, amountDeposit, {
+        from: user,
+      });
+      await vault.deposit(amountDeposit, {
+        from: user,
+      });
+
+      // User withdraws ETH by yWETH
+      const amount = await vault.balanceOf.call(user);
+      const data = abi.simpleEncode(
+        'withdraw(address,uint256)',
+        vault.address,
+        MAX_UINT256
+      );
+      await vault.transfer(this.proxy.address, amount, {
+        from: user,
+      });
+      await this.proxy.updateTokenMock(vault.address);
+      const ratio = await vault.getPricePerFullShare.call();
+      const balanceUser = await tracker(user);
+      const tokenBalanceUser = await token.balanceOf.call(user);
+      const receipt = await this.proxy.execMock(this.hYVault.address, data, {
+        from: user,
+        value: ether('0.1'),
+      });
+
+      // Get handler return result
+      const handlerReturn = utils.toBN(
+        getHandlerReturn(receipt, ['uint256'])[0]
+      );
+      const delta = (await token.balanceOf.call(user)).sub(tokenBalanceUser);
+      // const tokenBalanceUser = await token.balanceOf.call(user);
+      expect(delta).to.be.bignumber.eq(handlerReturn);
+
+      // Check proxy balance
+      expect(await balance.current(this.proxy.address)).to.be.bignumber.zero;
+      expect(
+        await vault.balanceOf.call(this.proxy.address)
+      ).to.be.bignumber.zero;
+      expect(
+        await token.balanceOf.call(this.proxy.address)
+      ).to.be.bignumber.zero;
+
+      // Check user vault balance
+      expect(await vault.balanceOf.call(user)).to.be.bignumber.zero;
+
+      // Check user eth balance <= 100.1% expected result
+      expect(delta).to.be.bignumber.gte(amount.mul(ratio).div(ether('1')));
+      expect(delta).to.be.bignumber.lte(
+        amount
+          .mul(ratio)
+          .div(ether('1'))
+          .mul(new BN('1001'))
+          .div(new BN('1000'))
+      );
+
+      profileGas(receipt);
+    });
   });
 });
