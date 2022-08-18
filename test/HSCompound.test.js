@@ -1151,9 +1151,7 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
       );
     });
 
-    // NOTE: Because COMP Hack event, compound stop to issue $COMP now.
-    // Remove `skip` when compound issue $COMP again.
-    it.skip('normal', async function() {
+    it('normal', async function() {
       const to = this.hsCompound.address;
       const data = abi.simpleEncode(
         'claimComp(address)',

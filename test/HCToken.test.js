@@ -24,6 +24,7 @@ const {
   profileGas,
   getHandlerReturn,
   tokenProviderUniV2,
+  expectEqWithinBps,
 } = require('./utils/utils');
 
 const HCToken = artifacts.require('HCToken');
@@ -357,14 +358,16 @@ contract('CToken', function([_, user]) {
   });
 
   describe('Repay Borrow Behalf', function() {
+    let borrowAmount;
     before(async function() {
       this.comptroller = await IComptroller.at(COMPOUND_COMPTROLLER);
       this.cether = await await ICEther.at(CETHER);
       await this.comptroller.enterMarkets([CETHER], { from: user });
     });
     beforeEach(async function() {
+      borrowAmount = ether('1');
       await this.cether.mint({ from: user, value: ether('1') });
-      await this.cToken.borrow(ether('1'), { from: user });
+      await this.cToken.borrow(borrowAmount, { from: user });
     });
 
     it('normal', async function() {
@@ -396,6 +399,39 @@ contract('CToken', function([_, user]) {
       expect(
         await this.cToken.borrowBalanceCurrent.call(user)
       ).to.be.bignumber.eq(ether('0'));
+    });
+
+    it('partial', async function() {
+      const value = borrowAmount.div(new BN(2));
+      const remainBorrowAmount = borrowAmount.sub(value);
+      const to = this.hCToken.address;
+      const data = abi.simpleEncode(
+        'repayBorrowBehalf(address,address,uint256)',
+        this.cToken.address,
+        user,
+        value
+      );
+      await this.token.transfer(this.proxy.address, value, {
+        from: providerAddress,
+      });
+      await this.proxy.updateTokenMock(this.token.address);
+      const receipt = await this.proxy.execMock(to, data, {
+        from: user,
+        value: ether('0.1'),
+      });
+      // Get handler return result
+      const handlerReturn = utils.toBN(
+        getHandlerReturn(receipt, ['uint256'])[0]
+      );
+
+      expect(
+        await this.cToken.borrowBalanceCurrent.call(user)
+      ).to.be.bignumber.eq(handlerReturn);
+
+      expectEqWithinBps(
+        await this.cToken.borrowBalanceCurrent.call(user),
+        remainBorrowAmount
+      );
     });
 
     it('insufficient token', async function() {

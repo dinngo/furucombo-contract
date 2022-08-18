@@ -25,6 +25,7 @@ const {
   profileGas,
   getHandlerReturn,
   tokenProviderUniV2,
+  expectEqWithinBps,
 } = require('./utils/utils');
 
 const HCEther = artifacts.require('HCEther');
@@ -285,6 +286,7 @@ contract('CEther', function([_, user]) {
   });
 
   describe('Repay Borrow Behalf', function() {
+    let borrowAmount;
     before(async function() {
       this.comptroller = await IComptroller.at(COMPOUND_COMPTROLLER);
       this.cDai = await ICToken.at(CDAI);
@@ -292,10 +294,11 @@ contract('CEther', function([_, user]) {
       this.dai = await IToken.at(DAI_TOKEN);
     });
     beforeEach(async function() {
+      borrowAmount = ether('0.1');
       await this.dai.transfer(user, ether('1000'), { from: providerAddress });
       await this.dai.approve(this.cDai.address, ether('1000'), { from: user });
       await this.cDai.mint(ether('1000'), { from: user });
-      await this.cEther.borrow(ether('0.1'), { from: user });
+      await this.cEther.borrow(borrowAmount, { from: user });
     });
 
     it('normal', async function() {
@@ -324,6 +327,37 @@ contract('CEther', function([_, user]) {
       expect(
         await this.cEther.borrowBalanceCurrent.call(user)
       ).to.be.bignumber.eq(ether('0'));
+      profileGas(receipt);
+    });
+
+    it.only('partial', async function() {
+      const value = borrowAmount.div(new BN(2));
+      const remainBorrowAmount = borrowAmount.sub(value);
+      const to = this.hCEther.address;
+      const data = abi.simpleEncode(
+        'repayBorrowBehalf(uint256,address)',
+        value,
+        user
+      );
+
+      const receipt = await this.proxy.execMock(to, data, {
+        from: user,
+        value: value,
+      });
+
+      // Get handler return result
+      const handlerReturn = utils.toBN(
+        getHandlerReturn(receipt, ['uint256'])[0]
+      );
+
+      expect(
+        await this.cEther.borrowBalanceCurrent.call(user)
+      ).to.be.bignumber.eq(handlerReturn);
+      expectEqWithinBps(
+        await this.cEther.borrowBalanceCurrent.call(user),
+        remainBorrowAmount
+      );
+
       profileGas(receipt);
     });
 
