@@ -25,6 +25,7 @@ const {
   profileGas,
   getHandlerReturn,
   tokenProviderUniV2,
+  expectEqWithinBps,
 } = require('./utils/utils');
 
 const HCEther = artifacts.require('HCEther');
@@ -352,10 +353,11 @@ contract('CEther', function([_, user]) {
       expect(
         await this.cEther.borrowBalanceCurrent.call(user)
       ).to.be.bignumber.eq(handlerReturn);
+      expectEqWithinBps(
+        await this.cEther.borrowBalanceCurrent.call(user),
+        remainBorrowAmount
+      );
 
-      expect(
-        await this.cEther.borrowBalanceCurrent.call(user)
-      ).to.be.bignumber.gte(remainBorrowAmount);
       profileGas(receipt);
     });
 

@@ -24,6 +24,7 @@ const {
   profileGas,
   getHandlerReturn,
   tokenProviderUniV2,
+  expectEqWithinBps,
 } = require('./utils/utils');
 
 const HCToken = artifacts.require('HCToken');
@@ -427,9 +428,10 @@ contract('CToken', function([_, user]) {
         await this.cToken.borrowBalanceCurrent.call(user)
       ).to.be.bignumber.eq(handlerReturn);
 
-      expect(
-        await this.cToken.borrowBalanceCurrent.call(user)
-      ).to.be.bignumber.gte(remainBorrowAmount);
+      expectEqWithinBps(
+        await this.cToken.borrowBalanceCurrent.call(user),
+        remainBorrowAmount
+      );
     });
 
     it('insufficient token', async function() {

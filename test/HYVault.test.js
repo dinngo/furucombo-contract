@@ -291,8 +291,8 @@ contract('YVault', function([_, user]) {
       expect(delta).to.be.bignumber.lte(
         amount
           .mul(ratio)
-          .div(ether('1'))
           .mul(new BN('1001'))
+          .div(ether('1'))
           .div(new BN('1000'))
       );
 
@@ -348,8 +348,8 @@ contract('YVault', function([_, user]) {
       expect(delta).to.be.bignumber.lte(
         amount
           .mul(ratio)
-          .div(ether('1'))
           .mul(new BN('1001'))
+          .div(ether('1'))
           .div(new BN('1000'))
       );
 
@@ -414,8 +414,8 @@ contract('YVault', function([_, user]) {
       expect(delta).to.be.bignumber.lte(
         amount
           .mul(ratio)
-          .div(ether('1'))
           .mul(new BN('1001'))
+          .div(ether('1'))
           .div(new BN('1000'))
       );
 
@@ -480,8 +480,8 @@ contract('YVault', function([_, user]) {
       expect(delta).to.be.bignumber.lte(
         amount
           .mul(ratio)
-          .div(ether('1'))
           .mul(new BN('1001'))
+          .div(ether('1'))
           .div(new BN('1000'))
       );
 
