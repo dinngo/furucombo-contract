@@ -372,7 +372,7 @@ contract('YVault', function([_, user]) {
         from: user,
       });
 
-      // User withdraws ETH by yWETH
+      // User withdraws token by yToken
       const amount = await vault.balanceOf.call(user);
       const data = abi.simpleEncode(
         'withdraw(address,uint256)',
@@ -384,7 +384,6 @@ contract('YVault', function([_, user]) {
       });
       await this.proxy.updateTokenMock(vault.address);
       const ratio = await vault.getPricePerFullShare.call();
-      const balanceUser = await tracker(user);
       const tokenBalanceUser = await token.balanceOf.call(user);
       const receipt = await this.proxy.execMock(this.hYVault.address, data, {
         from: user,
@@ -396,7 +395,6 @@ contract('YVault', function([_, user]) {
         getHandlerReturn(receipt, ['uint256'])[0]
       );
       const delta = (await token.balanceOf.call(user)).sub(tokenBalanceUser);
-      // const tokenBalanceUser = await token.balanceOf.call(user);
       expect(delta).to.be.bignumber.eq(handlerReturn);
 
       // Check proxy balance
@@ -411,7 +409,7 @@ contract('YVault', function([_, user]) {
       // Check user vault balance
       expect(await vault.balanceOf.call(user)).to.be.bignumber.zero;
 
-      // Check user eth balance <= 100.1% expected result
+      // Check user token balance <= 100.1% expected result
       expect(delta).to.be.bignumber.gte(amount.mul(ratio).div(ether('1')));
       expect(delta).to.be.bignumber.lte(
         amount
@@ -439,7 +437,7 @@ contract('YVault', function([_, user]) {
         from: user,
       });
 
-      // User withdraws ETH by yWETH
+      // User withdraws token by yToken
       const amount = await vault.balanceOf.call(user);
       const data = abi.simpleEncode(
         'withdraw(address,uint256)',
@@ -451,7 +449,7 @@ contract('YVault', function([_, user]) {
       });
       await this.proxy.updateTokenMock(vault.address);
       const ratio = await vault.getPricePerFullShare.call();
-      const balanceUser = await tracker(user);
+
       const tokenBalanceUser = await token.balanceOf.call(user);
       const receipt = await this.proxy.execMock(this.hYVault.address, data, {
         from: user,
@@ -463,7 +461,6 @@ contract('YVault', function([_, user]) {
         getHandlerReturn(receipt, ['uint256'])[0]
       );
       const delta = (await token.balanceOf.call(user)).sub(tokenBalanceUser);
-      // const tokenBalanceUser = await token.balanceOf.call(user);
       expect(delta).to.be.bignumber.eq(handlerReturn);
 
       // Check proxy balance
@@ -478,7 +475,7 @@ contract('YVault', function([_, user]) {
       // Check user vault balance
       expect(await vault.balanceOf.call(user)).to.be.bignumber.zero;
 
-      // Check user eth balance <= 100.1% expected result
+      // Check user token balance <= 100.1% expected result
       expect(delta).to.be.bignumber.gte(amount.mul(ratio).div(ether('1')));
       expect(delta).to.be.bignumber.lte(
         amount

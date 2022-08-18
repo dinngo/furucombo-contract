@@ -402,6 +402,7 @@ contract('CToken', function([_, user]) {
 
     it('partial', async function() {
       const value = borrowAmount.div(new BN(2));
+      const remainBorrowAmount = borrowAmount.sub(value);
       const to = this.hCToken.address;
       const data = abi.simpleEncode(
         'repayBorrowBehalf(address,address,uint256)',
@@ -428,7 +429,7 @@ contract('CToken', function([_, user]) {
 
       expect(
         await this.cToken.borrowBalanceCurrent.call(user)
-      ).to.be.bignumber.gte(value);
+      ).to.be.bignumber.gte(remainBorrowAmount);
     });
 
     it('insufficient token', async function() {

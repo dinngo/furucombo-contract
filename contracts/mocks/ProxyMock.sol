@@ -44,7 +44,7 @@ contract ProxyMock is Proxy, GasProfiler, IHandlerEvents {
 
     function setPostProcess(
         address to,
-        bytes32 sig,
+        bytes4 sig,
         bytes32[] memory params
     ) public {
         for (uint256 i = params.length; i > 0; i--) {

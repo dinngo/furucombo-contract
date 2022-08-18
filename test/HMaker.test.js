@@ -1207,7 +1207,7 @@ contract('Maker', function([_, user1, user2, someone]) {
       it('invalid postProcess sig', async function() {
         this.proxy.setPostProcess(
           this.hMaker.address,
-          utils.asciiToHex('fakeSign'),
+          '0x12345678', // fake function selector
           []
         );
         await expectRevert(

@@ -329,8 +329,9 @@ contract('CEther', function([_, user]) {
       profileGas(receipt);
     });
 
-    it('partial', async function() {
+    it.only('partial', async function() {
       const value = borrowAmount.div(new BN(2));
+      const remainBorrowAmount = borrowAmount.sub(value);
       const to = this.hCEther.address;
       const data = abi.simpleEncode(
         'repayBorrowBehalf(uint256,address)',
@@ -354,7 +355,7 @@ contract('CEther', function([_, user]) {
 
       expect(
         await this.cEther.borrowBalanceCurrent.call(user)
-      ).to.be.bignumber.gte(value);
+      ).to.be.bignumber.gte(remainBorrowAmount);
       profileGas(receipt);
     });
 
