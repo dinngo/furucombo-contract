@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+## [2.0.0] - 2022-08-26
+
 ### Added
 
 - Add fee flow for ether and token in `Proxy` and `HFunds` respectively.
