@@ -32,6 +32,7 @@ const {
 } = require('./utils/utils');
 
 const HMooniswap = artifacts.require('HMooniswap');
+const FeeRuleRegistry = artifacts.require('FeeRuleRegistry');
 const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('ProxyMock');
 const IToken = artifacts.require('IERC20');
@@ -57,7 +58,11 @@ contract('Mooniswap', function([_, user]) {
       this.hMooniswap.address,
       utils.asciiToHex('Mooniswap')
     );
-    this.proxy = await Proxy.new(this.registry.address);
+    this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);
+    this.proxy = await Proxy.new(
+      this.registry.address,
+      this.feeRuleRegistry.address
+    );
 
     // Setup and transfer token to user
     this.tokenA = await IToken.at(tokenAAddress);
@@ -67,7 +72,7 @@ contract('Mooniswap', function([_, user]) {
     this.moonPoolA = await IMoonPool.at(moonPoolAAddress);
     this.moonPoolB = await IMoonPool.at(moonPoolBAddress);
 
-    await this.tokenA.transfer(user, ether('900'), {
+    await this.tokenA.transfer(user, ether('50'), {
       from: tokenAProviderAddress,
     });
     await this.tokenB.transfer(user, ether('900'), {

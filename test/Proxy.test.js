@@ -11,9 +11,13 @@ const abi = require('ethereumjs-abi');
 const utils = web3.utils;
 
 const { expect } = require('chai');
-
-const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
 const { HANDLER_TYPE, OMG_TOKEN } = require('./utils/constants');
+const {
+  evmRevert,
+  evmSnapshot,
+  profileGas,
+  checkCacheClean,
+} = require('./utils/utils');
 
 const Foo = artifacts.require('Foo');
 const FooFactory = artifacts.require('FooFactory');
@@ -30,6 +34,7 @@ const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('ProxyMock');
 const HMock = artifacts.require('HMock');
 const IToken = artifacts.require('IERC20');
+const FeeRuleRegistry = artifacts.require('FeeRuleRegistry');
 
 contract('Proxy', function([_, deployer, user]) {
   let id;
@@ -38,7 +43,11 @@ contract('Proxy', function([_, deployer, user]) {
 
   before(async function() {
     this.registry = await Registry.new();
-    this.proxy = await Proxy.new(this.registry.address);
+    this.feeRuleRegistry = await FeeRuleRegistry.new('1', _); // intentionally set fee rate to non-zero to make FEE_RATE slot change while processing tx
+    this.proxy = await Proxy.new(
+      this.registry.address,
+      this.feeRuleRegistry.address
+    );
   });
 
   beforeEach(async function() {
@@ -46,6 +55,7 @@ contract('Proxy', function([_, deployer, user]) {
   });
 
   afterEach(async function() {
+    await checkCacheClean(this.proxy.address);
     await evmRevert(id);
   });
 
@@ -90,11 +100,12 @@ contract('Proxy', function([_, deployer, user]) {
       const num = new BN('25');
       const to = [this.fooHandler2.address];
       const config = [ZERO_BYTES32];
+      const ruleIndex = [];
       const data = [
         abi.simpleEncode('bar(uint256,uint256):(uint256)', index, num),
       ];
       await expectRevert(
-        this.proxy.batchExec(to, config, data),
+        this.proxy.batchExec(to, config, data, ruleIndex),
         'Invalid handler'
       );
     });
@@ -135,11 +146,12 @@ contract('Proxy', function([_, deployer, user]) {
       const num = new BN('25');
       const to = [this.fooHandler.address];
       const config = [ZERO_BYTES32];
+      const ruleIndex = [];
       const data = [
         abi.simpleEncode('bar(uint256,uint256):(uint256)', index, num),
       ];
       await expectRevert(
-        this.proxy.batchExec(to, config, data, { from: user }),
+        this.proxy.batchExec(to, config, data, ruleIndex, { from: user }),
         'Banned'
       );
     });
@@ -178,11 +190,12 @@ contract('Proxy', function([_, deployer, user]) {
       const num = new BN('25');
       const to = [this.fooHandler.address];
       const config = [ZERO_BYTES32];
+      const ruleIndex = [];
       const data = [
         abi.simpleEncode('bar(uint256,uint256):(uint256)', index, num),
       ];
       await expectRevert(
-        this.proxy.batchExec(to, config, data, { from: user }),
+        this.proxy.batchExec(to, config, data, ruleIndex, { from: user }),
         'Halted'
       );
     });
@@ -224,12 +237,13 @@ contract('Proxy', function([_, deployer, user]) {
         this.fooHandler.address,
       ];
       const config = [ZERO_BYTES32, ZERO_BYTES32, ZERO_BYTES32];
+      const ruleIndex = [];
       const data = [
         abi.simpleEncode('bar(uint256,uint256):(uint256)', index[0], num[0]),
         abi.simpleEncode('bar(uint256,uint256):(uint256)', index[1], num[1]),
         abi.simpleEncode('bar(uint256,uint256):(uint256)', index[2], num[2]),
       ];
-      await this.proxy.batchExec(to, config, data);
+      await this.proxy.batchExec(to, config, data, ruleIndex);
       const result = [
         await this.foo0.accounts.call(this.proxy.address),
         await this.foo1.accounts.call(this.proxy.address),
@@ -289,12 +303,13 @@ contract('Proxy', function([_, deployer, user]) {
         this.fooHandler.address,
       ];
       const config = [ZERO_BYTES32, ZERO_BYTES32, ZERO_BYTES32];
+      const ruleIndex = [];
       const data = [
         abi.simpleEncode('bar(uint256,uint256):(uint256)', value[0], index[0]),
         abi.simpleEncode('bar(uint256,uint256):(uint256)', value[1], index[1]),
         abi.simpleEncode('bar(uint256,uint256):(uint256)', value[2], index[2]),
       ];
-      const receipt = await this.proxy.batchExec(to, config, data, {
+      const receipt = await this.proxy.batchExec(to, config, data, ruleIndex, {
         from: user,
         value: ether('1'),
       });
@@ -379,7 +394,7 @@ contract('Proxy', function([_, deployer, user]) {
     it('should revert: with other handler type', async function() {
       this.proxy.setHandlerType(HANDLER_TYPE.OTHERS);
       await expectRevert(
-        this.proxy.batchExec([], [], [], { from: user }),
+        this.proxy.batchExec([], [], [], [], { from: user }),
         'Invalid handler type'
       );
     });
@@ -411,11 +426,12 @@ contract('Proxy', function([_, deployer, user]) {
       const configs = [
         '0x0000000000000000000000000000000000000000000000000000000000000000',
       ];
+      const ruleIndex = [];
       const datas = [
         abi.simpleEncode('bar1(address,bytes32)', this.foo.address, a),
       ];
 
-      await this.proxy.batchExec(tos, configs, datas, {
+      await this.proxy.batchExec(tos, configs, datas, ruleIndex, {
         from: user,
         value: ether('1'),
       });
@@ -433,12 +449,13 @@ contract('Proxy', function([_, deployer, user]) {
         '0x0001000000000000000000000000000000000000000000000000000000000000',
         '0x0100000000000000000200ffffffffffffffffffffffffffffffffffffffffff',
       ];
+      const ruleIndex = [];
       const datas = [
         abi.simpleEncode('bar(address)', this.foo.address),
         abi.simpleEncode('bar1(address,bytes32)', this.foo.address, a),
       ];
 
-      await this.proxy.batchExec(tos, configs, datas, {
+      await this.proxy.batchExec(tos, configs, datas, ruleIndex, {
         from: user,
         value: ether('1'),
       });
@@ -458,7 +475,7 @@ contract('Proxy', function([_, deployer, user]) {
         '0x0005000000000000000000000000000000000000000000000000000000000000', // be referenced
         '0x0100000000000000000203ffffffffffffffffffffffffffffffffffffffffff', //replace params[1] -> local stack[3]
       ];
-
+      const ruleIndex = [];
       const datas = [
         abi.simpleEncode(
           'barUList(address,uint256,uint256,uint256)',
@@ -470,10 +487,16 @@ contract('Proxy', function([_, deployer, user]) {
         abi.simpleEncode('barUint1(address,uint256)', this.foo.address, ratio),
       ];
 
-      const receipt = await this.proxy.batchExec(tos, configs, datas, {
-        from: user,
-        value: ether('1'),
-      });
+      const receipt = await this.proxy.batchExec(
+        tos,
+        configs,
+        datas,
+        ruleIndex,
+        {
+          from: user,
+          value: ether('1'),
+        }
+      );
 
       expect(await this.foo.nValue.call()).to.be.bignumber.eq(
         secAmt.mul(ratio).div(ether('1'))
@@ -491,6 +514,7 @@ contract('Proxy', function([_, deployer, user]) {
         '0x0001000000000000000000000000000000000000000000000000000000000000',
         '0x0100000000000000000400ffffffffffffffffffffffffffffffffffffffffff',
       ];
+      const ruleIndex = [];
       const datas = [
         abi.simpleEncode('bar(address)', this.foo.address),
         abi.simpleEncode(
@@ -501,7 +525,7 @@ contract('Proxy', function([_, deployer, user]) {
         ),
       ];
 
-      await this.proxy.batchExec(tos, configs, datas, {
+      await this.proxy.batchExec(tos, configs, datas, ruleIndex, {
         from: user,
         value: ether('1'),
       });
@@ -517,12 +541,13 @@ contract('Proxy', function([_, deployer, user]) {
         '0x0001000000000000000000000000000000000000000000000000000000000000',
         '0x0100000000000000000200ffffffffffffffffffffffffffffffffffffffffff',
       ];
+      const ruleIndex = [];
       const datas = [
         abi.simpleEncode('barUint(address)', this.foo.address),
         abi.simpleEncode('barUint1(address,uint256)', this.foo.address, a),
       ];
 
-      await this.proxy.batchExec(tos, configs, datas, {
+      await this.proxy.batchExec(tos, configs, datas, ruleIndex, {
         from: user,
         value: ether('1'),
       });
@@ -542,13 +567,14 @@ contract('Proxy', function([_, deployer, user]) {
         '0x0001000000000000000000000000000000000000000000000000000000000000',
         '0x010000000000000000020000ffffffffffffffffffffffffffffffffffffffff', // (locCount, refCount) = (1, 2)
       ];
+      const ruleIndex = [];
       const datas = [
         abi.simpleEncode('bar(address)', this.foo.address),
         abi.simpleEncode('bar1(address,bytes32)', this.foo.address, a),
       ];
 
       await expectRevert(
-        this.proxy.batchExec(tos, configs, datas, {
+        this.proxy.batchExec(tos, configs, datas, ruleIndex, {
           from: user,
           value: ether('1'),
         }),
@@ -566,13 +592,14 @@ contract('Proxy', function([_, deployer, user]) {
         '0x0001000000000000000000000000000000000000000000000000000000000000',
         '0x0100000000000000000300ffffffffffffffffffffffffffffffffffffffffff', // (locCount, refCount) = (2, 1)
       ];
+      const ruleIndex = [];
       const datas = [
         abi.simpleEncode('bar(address)', this.foo.address),
         abi.simpleEncode('bar1(address,bytes32)', this.foo.address, a),
       ];
 
       await expectRevert(
-        this.proxy.batchExec(tos, configs, datas, {
+        this.proxy.batchExec(tos, configs, datas, ruleIndex, {
           from: user,
           value: ether('1'),
         }),
@@ -590,13 +617,14 @@ contract('Proxy', function([_, deployer, user]) {
         '0x0001000000000000000000000000000000000000000000000000000000000000', // set localStack[0]
         '0x0100000000000000000201ffffffffffffffffffffffffffffffffffffffffff', // ref to localStack[1]
       ];
+      const ruleIndex = [];
       const datas = [
         abi.simpleEncode('bar(address)', this.foo.address),
         abi.simpleEncode('bar1(address,bytes32)', this.foo.address, a),
       ];
 
       await expectRevert(
-        this.proxy.batchExec(tos, configs, datas, {
+        this.proxy.batchExec(tos, configs, datas, ruleIndex, {
           from: user,
           value: ether('1'),
         }),
@@ -614,13 +642,14 @@ contract('Proxy', function([_, deployer, user]) {
         '0x0002000000000000000000000000000000000000000000000000000000000000',
         '0x0100000000000000000200ffffffffffffffffffffffffffffffffffffffffff',
       ];
+      const ruleIndex = [];
       const datas = [
         abi.simpleEncode('bar(address)', this.foo.address),
         abi.simpleEncode('bar1(address,bytes32)', this.foo.address, a),
       ];
 
       await expectRevert(
-        this.proxy.batchExec(tos, configs, datas, {
+        this.proxy.batchExec(tos, configs, datas, ruleIndex, {
           from: user,
           value: ether('1'),
         }),
@@ -636,13 +665,14 @@ contract('Proxy', function([_, deployer, user]) {
         '0x0001000000000000000000000000000000000000000000000000000000000000',
         '0x0100000000000000000200ffffffffffffffffffffffffffffffffffffffffff',
       ];
+      const ruleIndex = [];
       const datas = [
         abi.simpleEncode('barUint(address)', this.foo.address),
         abi.simpleEncode('barUint1(address,uint256)', this.foo.address, a),
       ];
 
       await expectRevert.unspecified(
-        this.proxy.batchExec(tos, configs, datas, {
+        this.proxy.batchExec(tos, configs, datas, ruleIndex, {
           from: user,
           value: ether('1'),
         })

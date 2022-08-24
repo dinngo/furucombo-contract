@@ -20,6 +20,7 @@ const {
   tokenProviderCurveGauge,
 } = require('./utils/utils');
 
+const FeeRuleRegistry = artifacts.require('FeeRuleRegistry');
 const Proxy = artifacts.require('ProxyMock');
 const Registry = artifacts.require('Registry');
 const HCurve = artifacts.require('HCurve');
@@ -36,7 +37,11 @@ contract('Curve Factory Meta', function([_, user]) {
       this.hCurve.address,
       utils.asciiToHex('HCurve')
     );
-    this.proxy = await Proxy.new(this.registry.address);
+    this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);
+    this.proxy = await Proxy.new(
+      this.registry.address,
+      this.feeRuleRegistry.address
+    );
     this.zap3Pool = await ICurveHandler.at(CURVE_FACTORY_ZAP_3POOL);
   });
 

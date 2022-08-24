@@ -21,6 +21,7 @@ const {
 } = require('./utils/utils');
 
 const HFurucomboRCOMBO = artifacts.require('HFurucomboRCOMBO');
+const FeeRuleRegistry = artifacts.require('FeeRuleRegistry');
 const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('ProxyMock');
 const IToken = artifacts.require('IERC20');
@@ -32,7 +33,11 @@ contract('Furucombo rCOMBO', function([_, user]) {
 
   before(async function() {
     this.registry = await Registry.new();
-    this.proxy = await Proxy.new(this.registry.address);
+    this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);
+    this.proxy = await Proxy.new(
+      this.registry.address,
+      this.feeRuleRegistry.address
+    );
     this.hFurucomboRCOMBO = await HFurucomboRCOMBO.new();
     await this.registry.register(
       this.hFurucomboRCOMBO.address,

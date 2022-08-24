@@ -17,6 +17,7 @@ const {
   tokenProviderCurveGauge,
 } = require('./utils/utils');
 
+const FeeRuleRegistry = artifacts.require('FeeRuleRegistry');
 const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('ProxyMock');
 const HYVault = artifacts.require('HYVault');
@@ -31,7 +32,11 @@ contract('YVault', function([_, user]) {
     yCrvProviderAddress = await tokenProviderCurveGauge(CURVE_YCRV);
 
     this.registry = await Registry.new();
-    this.proxy = await Proxy.new(this.registry.address);
+    this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);
+    this.proxy = await Proxy.new(
+      this.registry.address,
+      this.feeRuleRegistry.address
+    );
     this.hYVault = await HYVault.new();
     await this.registry.register(
       this.hYVault.address,

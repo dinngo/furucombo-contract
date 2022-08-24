@@ -28,6 +28,7 @@ const {
   tokenProviderYearn,
 } = require('./utils/utils');
 
+const FeeRuleRegistry = artifacts.require('FeeRuleRegistry');
 const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('ProxyMock');
 const HStakingRewardsAdapter = artifacts.require('HStakingRewardsAdapter');
@@ -61,7 +62,11 @@ contract('StakingRewardsLegacyAdapter - Handler', function([_, user, someone]) {
     rtProviderAddress = await tokenProviderUniV2(rtAddress);
 
     this.registry = await Registry.new();
-    this.proxy = await Proxy.new(this.registry.address);
+    this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);
+    this.proxy = await Proxy.new(
+      this.registry.address,
+      this.feeRuleRegistry.address
+    );
     this.hAdapter = await HStakingRewardsAdapter.new();
     await this.registry.register(
       this.hAdapter.address,

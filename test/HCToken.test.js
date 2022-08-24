@@ -28,6 +28,7 @@ const {
 } = require('./utils/utils');
 
 const HCToken = artifacts.require('HCToken');
+const FeeRuleRegistry = artifacts.require('FeeRuleRegistry');
 const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('ProxyMock');
 const IToken = artifacts.require('IERC20');
@@ -50,7 +51,11 @@ contract('CToken', function([_, user]) {
     providerAddress = await tokenProviderUniV2(tokenAddress);
 
     this.registry = await Registry.new();
-    this.proxy = await Proxy.new(this.registry.address);
+    this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);
+    this.proxy = await Proxy.new(
+      this.registry.address,
+      this.feeRuleRegistry.address
+    );
     this.hCToken = await HCToken.new();
     await this.registry.register(
       this.hCToken.address,

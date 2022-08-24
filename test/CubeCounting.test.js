@@ -13,6 +13,9 @@ const {
 } = require('./utils/constants');
 const { evmRevert, evmSnapshot, getCallData } = require('./utils/utils');
 
+const HUniswapV2 = artifacts.require('HUniswapV2');
+const HCToken = artifacts.require('HCToken');
+const FeeRuleRegistry = artifacts.require('FeeRuleRegistry');
 const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('Proxy');
 const HAaveV2 = artifacts.require('HAaveProtocolV2');
@@ -27,7 +30,12 @@ contract('CubeCounting', function([_, user]) {
 
   before(async function() {
     this.registry = await Registry.new();
-    this.proxy = await Proxy.new(this.registry.address);
+
+    this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);
+    this.proxy = await Proxy.new(
+      this.registry.address,
+      this.feeRuleRegistry.address
+    );
 
     // Register wrapper handler
     this.hWrapper = await HWrapper.new();
@@ -65,7 +73,7 @@ contract('CubeCounting', function([_, user]) {
       const config = [ZERO_BYTES32];
       const data = [getCallData(HWrapper, 'deposit', [value])];
       await expectRevert(
-        this.proxy.batchExec(to, config, data, {
+        this.proxy.batchExec(to, config, data, [], {
           from: user,
           value: 0, // Insufficient native token
         }),
@@ -93,7 +101,7 @@ contract('CubeCounting', function([_, user]) {
       ];
 
       await expectRevert(
-        this.proxy.batchExec(to, config, data, {
+        this.proxy.batchExec(to, config, data, [], {
           from: user,
         }),
         '0_HAaveProtocolV2_flashLoan: _exec'
@@ -121,7 +129,7 @@ contract('CubeCounting', function([_, user]) {
       ];
 
       await expectRevert(
-        this.proxy.batchExec(to, config, data, {
+        this.proxy.batchExec(to, config, data, [], {
           from: user,
         }),
         '0_HAaveProtocolV2_flashLoan: SafeERC20: low-level call failed'
@@ -152,7 +160,7 @@ contract('CubeCounting', function([_, user]) {
       ];
 
       await expectRevert(
-        this.proxy.batchExec(to, config, data, {
+        this.proxy.batchExec(to, config, data, [], {
           from: user,
         }),
         '0_HAaveProtocolV2_flashLoan: 0_HWeth_withdraw: Unspecified'
@@ -188,7 +196,7 @@ contract('CubeCounting', function([_, user]) {
       ];
 
       await expectRevert(
-        this.proxy.batchExec(to, config, data, {
+        this.proxy.batchExec(to, config, data, [], {
           from: user,
         }),
         '0_HAaveProtocolV2_flashLoan: 1_HWeth_deposit: Unspecified'
@@ -220,7 +228,7 @@ contract('CubeCounting', function([_, user]) {
       ];
 
       await expectRevert(
-        this.proxy.batchExec(to, config, data, {
+        this.proxy.batchExec(to, config, data, [], {
           from: user,
         }),
         '1_HAaveProtocolV2_flashLoan: 0_HWeth_withdraw: Unspecified'
@@ -242,7 +250,7 @@ contract('CubeCounting', function([_, user]) {
       const config = [ZERO_BYTES32];
       const data = [getCallData(HWrapper, 'deposit', [value])];
       await expectRevert(
-        this.proxy.batchExec(to, config, data, {
+        this.proxy.batchExec(to, config, data, [], {
           from: user,
           value: 0, // Insufficient native token
         }),

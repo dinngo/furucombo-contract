@@ -27,6 +27,7 @@ const {
 } = require('./utils/utils');
 
 const HKyberNetwork = artifacts.require('HKyberNetwork');
+const FeeRuleRegistry = artifacts.require('FeeRuleRegistry');
 const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('ProxyMock');
 const IToken = artifacts.require('IERC20');
@@ -46,7 +47,11 @@ contract('KyberNetwork Swap', function([_, user]) {
     providerAddress = await tokenProviderYearn(tokenAddress);
 
     this.registry = await Registry.new();
-    this.proxy = await Proxy.new(this.registry.address);
+    this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);
+    this.proxy = await Proxy.new(
+      this.registry.address,
+      this.feeRuleRegistry.address
+    );
     this.hKyberNetwork = await HKyberNetwork.new();
     await this.registry.register(
       this.hKyberNetwork.address,

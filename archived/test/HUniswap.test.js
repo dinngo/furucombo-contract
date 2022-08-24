@@ -29,6 +29,7 @@ const {
 } = require('./utils/utils');
 
 const HUniswap = artifacts.require('HUniswap');
+const FeeRuleRegistry = artifacts.require('FeeRuleRegistry');
 const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('ProxyMock');
 const IToken = artifacts.require('IERC20');
@@ -44,7 +45,11 @@ contract('Uniswap Swap', function([_, user, someone]) {
       this.hUniswap.address,
       utils.asciiToHex('Uniswap')
     );
-    this.proxy = await Proxy.new(this.registry.address);
+    this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);
+    this.proxy = await Proxy.new(
+      this.registry.address,
+      this.feeRuleRegistry.address
+    );
   });
 
   beforeEach(async function() {

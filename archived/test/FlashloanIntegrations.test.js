@@ -23,10 +23,12 @@ const {
   UNISWAPV2_ROUTER02,
 } = require('./utils/constants');
 const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
+const { ZERO_ADDRESS } = require('@openzeppelin/test-helpers/src/constants');
 
 const HAave = artifacts.require('HAaveProtocol');
 const HMock = artifacts.require('HMock');
 const HUniswapV2 = artifacts.require('HUniswapV2');
+const FeeRuleRegistry = artifacts.require('FeeRuleRegistry');
 const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('ProxyMock');
 const IToken = artifacts.require('IERC20');
@@ -40,7 +42,11 @@ contract('Aave flashloan', function([_, user]) {
 
   before(async function() {
     this.registry = await Registry.new();
-    this.proxy = await Proxy.new(this.registry.address);
+    this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);
+    this.proxy = await Proxy.new(
+      this.registry.address,
+      this.feeRuleRegistry.address
+    );
     this.hAave = await HAave.new();
     this.hMock = await HMock.new();
     await this.registry.register(

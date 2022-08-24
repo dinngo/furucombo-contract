@@ -29,6 +29,7 @@ const {
 } = require('./utils/utils');
 
 const HCEther = artifacts.require('HCEther');
+const FeeRuleRegistry = artifacts.require('FeeRuleRegistry');
 const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('ProxyMock');
 const IToken = artifacts.require('IERC20');
@@ -55,7 +56,11 @@ contract('CEther', function([_, user]) {
       utils.asciiToHex('CEther')
     );
     this.cEther = await ICEther.at(CETHER);
-    this.proxy = await Proxy.new(this.registry.address);
+    this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);
+    this.proxy = await Proxy.new(
+      this.registry.address,
+      this.feeRuleRegistry.address
+    );
   });
 
   beforeEach(async function() {

@@ -7,9 +7,11 @@ import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "./interface/IProxy.sol";
 import "./interface/IRegistry.sol";
+import "./interface/IFeeRuleRegistry.sol";
 import "./Config.sol";
 import "./Storage.sol";
 import "./lib/LibParam.sol";
+import "./lib/LibFeeStorage.sol";
 
 /**
  * @title The entrance of Furucombo
@@ -21,6 +23,7 @@ contract Proxy is IProxy, Storage, Config {
     using LibParam for bytes32;
     using LibStack for bytes32[];
     using Strings for uint256;
+    using LibFeeStorage for mapping(bytes32 => bytes32);
 
     event LogBegin(
         address indexed handler,
@@ -32,6 +35,7 @@ contract Proxy is IProxy, Storage, Config {
         bytes4 indexed selector,
         bytes result
     );
+    event ChargeFee(address indexed tokenIn, uint256 feeAmount);
 
     modifier isNotBanned() {
         require(registry.bannedAgents(address(this)) == 0, "Banned");
@@ -43,10 +47,14 @@ contract Proxy is IProxy, Storage, Config {
         _;
     }
 
+    address private constant NATIVE_TOKEN =
+        0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
     IRegistry public immutable registry;
+    IFeeRuleRegistry public immutable feeRuleRegistry;
 
-    constructor(address _registry) {
-        registry = IRegistry(_registry);
+    constructor(address registry_, address feeRuleRegistry_) {
+        registry = IRegistry(registry_);
+        feeRuleRegistry = IFeeRuleRegistry(feeRuleRegistry_);
     }
 
     /**
@@ -84,13 +92,15 @@ contract Proxy is IProxy, Storage, Config {
      * @param tos The handlers of combo.
      * @param configs The configurations of executing cubes.
      * @param datas The combo datas.
+     * @param ruleIndexes The indexes of rules.
      */
     function batchExec(
         address[] calldata tos,
         bytes32[] calldata configs,
-        bytes[] memory datas
+        bytes[] memory datas,
+        uint256[] calldata ruleIndexes
     ) external payable override isNotHalted isNotBanned {
-        _preProcess();
+        _preProcess(ruleIndexes);
         _execs(tos, configs, datas);
         _postProcess();
     }
@@ -241,23 +251,23 @@ contract Proxy is IProxy, Storage, Config {
 
     /**
      * @notice The execution of a single cube.
-     * @param _to The handler of cube.
-     * @param _data The cube execution data.
-     * @param _counter The current counter of the cube.
+     * @param to_ The handler of cube.
+     * @param data_ The cube execution data.
+     * @param counter_ The current counter of the cube.
      */
     function _exec(
-        address _to,
-        bytes memory _data,
-        uint256 _counter
+        address to_,
+        bytes memory data_,
+        uint256 counter_
     ) internal returns (bytes memory result) {
-        require(_isValidHandler(_to), "Invalid handler");
+        require(_isValidHandler(to_), "Invalid handler");
         bool success;
         assembly {
             success := delegatecall(
                 sub(gas(), 5000),
-                _to,
-                add(_data, 0x20),
-                mload(_data),
+                to_,
+                add(data_, 0x20),
+                mload(data_),
                 0,
                 0
             )
@@ -278,13 +288,13 @@ contract Proxy is IProxy, Storage, Config {
                 result := add(result, 0x04)
             }
 
-            if (_counter == type(uint256).max) {
+            if (counter_ == type(uint256).max) {
                 revert(abi.decode(result, (string))); // Don't prepend counter
             } else {
                 revert(
                     string(
                         abi.encodePacked(
-                            _counter.toString(),
+                            counter_.toString(),
                             "_",
                             abi.decode(result, (string))
                         )
@@ -296,9 +306,9 @@ contract Proxy is IProxy, Storage, Config {
 
     /**
      * @notice Setup the post-process.
-     * @param _to The handler of post-process.
+     * @param to_ The handler of post-process.
      */
-    function _setPostProcess(address _to) internal {
+    function _setPostProcess(address to_) internal {
         // If the stack length equals 0, just skip
         // If the top is a custom post-process, replace it with the handler
         // address.
@@ -309,15 +319,38 @@ contract Proxy is IProxy, Storage, Config {
             bytes4(stack.peek(1)) != 0x00000000
         ) {
             stack.pop();
-            stack.setAddress(_to);
+            stack.setAddress(to_);
             stack.setHandlerType(HandlerType.Custom);
         }
     }
 
     /// @notice The pre-process phase.
-    function _preProcess() internal virtual isStackEmpty {
+    function _preProcess(uint256[] memory ruleIndexes_)
+        internal
+        virtual
+        isStackEmpty
+    {
         // Set the sender.
         _setSender();
+        // Set the fee collector
+        cache._setFeeCollector(feeRuleRegistry.feeCollector());
+
+        // Calculate fee
+        uint256 feeRate =
+            feeRuleRegistry.calFeeRateMulti(_getSender(), ruleIndexes_);
+        require(feeRate <= PERCENTAGE_BASE, "fee rate out of range");
+        cache._setFeeRate(feeRate);
+        if (msg.value > 0 && feeRate > 0) {
+            // Process ether fee
+            uint256 feeEth = _calFee(msg.value, feeRate);
+
+            // It will fail if fee collector is gnosis contract, because .transfer() will only consume 2300 gas limit.
+            // Replacing .transfer() with .call('') to avoid out of gas
+            address collector = cache._getFeeCollector();
+            (bool success, ) = collector.call{value: feeEth}("");
+            require(success, "Send fee to collector failed");
+            emit ChargeFee(NATIVE_TOKEN, feeEth);
+        }
     }
 
     /// @notice The post-process phase.
@@ -349,8 +382,9 @@ contract Proxy is IProxy, Storage, Config {
         // Balance should also be returned to user
         uint256 amount = address(this).balance;
         if (amount > 0) payable(msg.sender).transfer(amount);
-
-        // Reset the msg.sender
+        // Reset cached datas
+        cache._resetFeeCollector();
+        cache._resetFeeRate();
         _resetSender();
     }
 
@@ -375,5 +409,13 @@ contract Proxy is IProxy, Storage, Config {
             (bytes4(payload[1]) >> 8) |
             (bytes4(payload[2]) >> 16) |
             (bytes4(payload[3]) >> 24);
+    }
+
+    function _calFee(uint256 amount, uint256 feeRate)
+        internal
+        pure
+        returns (uint256)
+    {
+        return (amount * feeRate) / PERCENTAGE_BASE;
     }
 }

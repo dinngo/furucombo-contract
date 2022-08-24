@@ -20,6 +20,7 @@ const { evmRevert, evmSnapshot, profileGas } = require('./utils/utils');
 
 const HUniswap = artifacts.require('HUniswap');
 const HCToken = artifacts.require('HCToken');
+const FeeRuleRegistry = artifacts.require('FeeRuleRegistry');
 const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('Proxy');
 const IToken = artifacts.require('IERC20');
@@ -35,7 +36,11 @@ contract('SwapIntegration', function([_, user]) {
 
   before(async function() {
     this.registry = await Registry.new();
-    this.proxy = await Proxy.new(this.registry.address);
+    this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);
+    this.proxy = await Proxy.new(
+      this.registry.address,
+      this.feeRuleRegistry.address
+    );
   });
 
   beforeEach(async function() {
@@ -72,6 +77,7 @@ contract('SwapIntegration', function([_, user]) {
         );
         const to = [this.hUniswap.address, this.hUniswap.address];
         const config = [ZERO_BYTES32, ZERO_BYTES32];
+        const ruleIndex = [];
         const data = [
           abi.simpleEncode(
             'ethToTokenSwapInput(uint256,address,uint256):(uint256)',
@@ -86,10 +92,16 @@ contract('SwapIntegration', function([_, user]) {
             maxToken
           ),
         ];
-        const receipt = await this.proxy.batchExec(to, config, data, {
-          from: user,
-          value: ether('1'),
-        });
+        const receipt = await this.proxy.batchExec(
+          to,
+          config,
+          data,
+          ruleIndex,
+          {
+            from: user,
+            value: ether('1'),
+          }
+        );
         expect(await balanceUser.delta()).to.be.bignumber.eq(
           ether('0')
             .sub(value[0])
@@ -124,6 +136,7 @@ contract('SwapIntegration', function([_, user]) {
         );
         const to = [this.hUniswap.address, this.hCToken.address];
         const config = [ZERO_BYTES32, ZERO_BYTES32];
+        const ruleIndex = [];
         const data = [
           abi.simpleEncode(
             'ethToTokenSwapInput(uint256,address,uint256):(uint256)',
@@ -135,10 +148,16 @@ contract('SwapIntegration', function([_, user]) {
         ];
         const rate = await this.cToken.exchangeRateStored.call();
         const result = value[1].mul(ether('1')).div(rate);
-        const receipt = await this.proxy.batchExec(to, config, data, {
-          from: user,
-          value: ether('1'),
-        });
+        const receipt = await this.proxy.batchExec(
+          to,
+          config,
+          data,
+          ruleIndex,
+          {
+            from: user,
+            value: ether('1'),
+          }
+        );
         const cTokenUser = await this.cToken.balanceOf.call(user);
         expect(
           cTokenUser.mul(new BN('1000')).divRound(result)

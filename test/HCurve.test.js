@@ -38,6 +38,7 @@ const {
   impersonateAndInjectEther,
 } = require('./utils/utils');
 
+const FeeRuleRegistry = artifacts.require('FeeRuleRegistry');
 const Proxy = artifacts.require('ProxyMock');
 const Registry = artifacts.require('Registry');
 const HCurve = artifacts.require('HCurve');
@@ -55,7 +56,11 @@ contract('Curve', function([_, user]) {
       this.hCurve.address,
       utils.asciiToHex('HCurve')
     );
-    this.proxy = await Proxy.new(this.registry.address);
+    this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);
+    this.proxy = await Proxy.new(
+      this.registry.address,
+      this.feeRuleRegistry.address
+    );
     this.ySwap = await ICurveHandler.at(CURVE_Y_SWAP);
     this.yDeposit = await ICurveHandler.at(CURVE_Y_DEPOSIT);
     this.threeSwap = await ICurveHandler.at(CURVE_3POOL_SWAP);

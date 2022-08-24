@@ -3,11 +3,14 @@
 pragma solidity 0.8.10;
 
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-
+import "../../lib/LibFeeStorage.sol";
 import "../HandlerBase.sol";
 
 contract HFunds is HandlerBase {
     using SafeERC20 for IERC20;
+    using LibFeeStorage for mapping(bytes32 => bytes32);
+
+    event ChargeFee(address indexed tokenIn, uint256 feeAmount);
 
     function getContractName() public pure override returns (string memory) {
         return "HFunds";
@@ -35,23 +38,16 @@ contract HFunds is HandlerBase {
         payable
         returns (uint256[] memory)
     {
-        _requireMsg(
-            tokens.length == amounts.length,
-            "inject",
-            "token and amount does not match"
-        );
-        address sender = _getSender();
-        for (uint256 i = 0; i < tokens.length; i++) {
-            IERC20(tokens[i]).safeTransferFrom(
-                sender,
-                address(this),
-                amounts[i]
-            );
+        return _inject(tokens, amounts);
+    }
 
-            // Update involved token
-            _updateToken(tokens[i]);
-        }
-        return amounts;
+    // Same as inject() and just to make another interface for different use case
+    function addFunds(address[] calldata tokens, uint256[] calldata amounts)
+        external
+        payable
+        returns (uint256[] memory)
+    {
+        return _inject(tokens, amounts);
     }
 
     function sendTokens(
@@ -147,5 +143,48 @@ contract HFunds is HandlerBase {
 
     function getBalance(address token) external payable returns (uint256) {
         return _getBalance(token, type(uint256).max);
+    }
+
+    function _inject(address[] calldata tokens, uint256[] calldata amounts)
+        internal
+        returns (uint256[] memory)
+    {
+        _requireMsg(
+            tokens.length == amounts.length,
+            "inject",
+            "token and amount does not match"
+        );
+        address sender = _getSender();
+        uint256 feeRate = cache._getFeeRate();
+        address collector = cache._getFeeCollector();
+        uint256[] memory amountsInProxy = new uint256[](amounts.length);
+
+        for (uint256 i = 0; i < tokens.length; i++) {
+            IERC20(tokens[i]).safeTransferFrom(
+                sender,
+                address(this),
+                amounts[i]
+            );
+            if (feeRate > 0) {
+                uint256 fee = _calFee(amounts[i], feeRate);
+                IERC20(tokens[i]).safeTransfer(collector, fee);
+                amountsInProxy[i] = amounts[i] - fee;
+                emit ChargeFee(tokens[i], fee);
+            } else {
+                amountsInProxy[i] = amounts[i];
+            }
+
+            // Update involved token
+            _updateToken(tokens[i]);
+        }
+        return amountsInProxy;
+    }
+
+    function _calFee(uint256 amount, uint256 feeRate)
+        internal
+        pure
+        returns (uint256)
+    {
+        return (amount * feeRate) / PERCENTAGE_BASE;
     }
 }
