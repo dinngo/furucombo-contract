@@ -71,7 +71,7 @@ module.exports = {
     },
     hardhat: {
       forking: {
-        url: process.env.ETH_MAINNET_NODE,
+        url: process.env.ETH_MAINNET_NODE || '',
       },
       chainId: 1, // hardhat sets 31337 as chainId rather than a forked chainId, so we set here.
       accounts: {
@@ -86,7 +86,7 @@ module.exports = {
     },
     prod: {
       url: process.env.PROD_URL || 'https://rpc.ankr.com/eth',
-      chainId: process.env.PROD_CHAIN_ID || 1,
+      chainId: parseInt(process.env.PROD_CHAIN_ID) || 1,
       accounts:
         process.env.PROD_SECRET !== undefined ? [process.env.PROD_SECRET] : [],
     },

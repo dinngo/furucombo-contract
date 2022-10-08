@@ -8,6 +8,10 @@ All notable changes to this project will be documented in this file.
 
 - Upgrade CI node image from node 14 to node 18.
 
+### Added
+
+- Add cube nft fee rule
+
 ## [2.0.0] - 2022-08-26
 
 ### Added
