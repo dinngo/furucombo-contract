@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+## [2.1.0] - 2022-10-08
+
 ### Changed
 
 - Upgrade CI node image from node 14 to node 18.
