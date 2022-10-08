@@ -68,15 +68,9 @@ contract('RCubeNFT', function([_, feeCollector, user, someone]) {
     await this.diamond.mint(user, CID, {
       from: diamondOwner,
     });
-    expect(await this.wooden.balanceOf(user)).to.be.bignumber.eq(
-      this.woodenTokenID
-    );
-    expect(await this.metal.balanceOf(user)).to.be.bignumber.eq(
-      this.metalTokenID
-    );
-    expect(await this.diamond.balanceOf(user)).to.be.bignumber.eq(
-      this.diamondTokenID
-    );
+    expect(await this.wooden.balanceOf(user)).to.be.bignumber.gte(new BN(1));
+    expect(await this.metal.balanceOf(user)).to.be.bignumber.gte(new BN(1));
+    expect(await this.diamond.balanceOf(user)).to.be.bignumber.gte(new BN(1));
     expect(await this.wooden.balanceOf(someone)).to.be.bignumber.zero;
     expect(await this.wooden.balanceOf(someone)).to.be.bignumber.zero;
     expect(await this.wooden.balanceOf(someone)).to.be.bignumber.zero;
