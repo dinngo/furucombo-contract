@@ -335,7 +335,7 @@ contract('CEther', function([_, user]) {
       profileGas(receipt);
     });
 
-    it.only('partial', async function() {
+    it('partial', async function() {
       const value = borrowAmount.div(new BN(2));
       const remainBorrowAmount = borrowAmount.sub(value);
       const to = this.hCEther.address;
