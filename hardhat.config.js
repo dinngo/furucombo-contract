@@ -9,21 +9,6 @@ require('@nomiclabs/hardhat-etherscan');
 
 require('dotenv').config();
 
-const fs = require('fs');
-let key_beta;
-
-try {
-  key_beta = fs
-    .readFileSync('.secret_beta')
-    .toString()
-    .trim();
-} catch (err) {
-  console.log('No available .secret_beta');
-}
-
-/**
- * @type import('hardhat/config').HardhatUserConfig
- */
 module.exports = {
   solidity: {
     compilers: [
@@ -64,16 +49,11 @@ module.exports = {
     },
   },
   networks: {
-    beta: {
-      accounts: key_beta ? [key_beta] : [],
-      chainId: 1,
-      url: 'https://geth-beta.furucombo.app/',
-    },
     hardhat: {
       forking: {
         url: process.env.ETH_MAINNET_NODE,
       },
-      chainId: 1, // hardhat sets 31337 as chainId rather than a forked chainId, so we set here.
+      chainId: Number(process.env.CHAIN_ID),
       accounts: {
         mnemonic:
           'dice shove sheriff police boss indoor hospital vivid tenant method game matter',
@@ -84,11 +64,13 @@ module.exports = {
       gasPrice: 0,
       gas: 30000000,
     },
-    prod: {
-      url: process.env.PROD_URL || 'https://rpc.ankr.com/eth',
-      chainId: process.env.PROD_CHAIN_ID || 1,
-      accounts:
-        process.env.PROD_SECRET !== undefined ? [process.env.PROD_SECRET] : [],
+    ethBeta: {
+      url: process.env.ETH_BETA_URL || 'https://geth-beta.furucombo.app',
+      accounts: accounts(process.env.ETH_BETA_SECRET),
+    },
+    eth: {
+      url: process.env.ETH_URL || 'https://rpc.ankr.com/eth',
+      accounts: accounts(process.env.ETH_SECRET),
     },
   },
   mocha: {
@@ -98,3 +80,7 @@ module.exports = {
     apiKey: process.env.ETHERSCAN_KEY || '',
   },
 };
+
+function accounts(envKey) {
+  return envKey !== undefined ? [envKey] : [];
+}

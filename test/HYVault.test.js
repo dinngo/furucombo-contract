@@ -1,3 +1,9 @@
+if (network.config.chainId == 1) {
+  // This test supports to run on these chains.
+} else {
+  return;
+}
+
 const { balance, BN, ether, constants } = require('@openzeppelin/test-helpers');
 const { MAX_UINT256 } = constants;
 const { tracker } = balance;

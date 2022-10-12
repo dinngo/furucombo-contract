@@ -9,7 +9,7 @@ const utils = web3.utils;
 const {
   AAVEPROTOCOL_V2_PROVIDER,
   AAVE_RATEMODE,
-  WETH_TOKEN,
+  WRAPPED_TOKEN,
 } = require('./utils/constants');
 const { evmRevert, evmSnapshot, getCallData } = require('./utils/utils');
 
@@ -24,7 +24,7 @@ const ILendingPoolV2 = artifacts.require('ILendingPoolV2');
 const IProviderV2 = artifacts.require('ILendingPoolAddressesProviderV2');
 
 contract('CubeCounting', function([_, user]) {
-  const wrappedTokenAddress = WETH_TOKEN;
+  const wrappedTokenAddress = WRAPPED_TOKEN;
 
   let id;
 

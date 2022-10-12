@@ -1,3 +1,9 @@
+if (network.config.chainId == 1) {
+  // This test supports to run on these chains.
+} else {
+  return;
+}
+
 const {
   balance,
   BN,
@@ -335,7 +341,7 @@ contract('CEther', function([_, user]) {
       profileGas(receipt);
     });
 
-    it.only('partial', async function() {
+    it('partial', async function() {
       const value = borrowAmount.div(new BN(2));
       const remainBorrowAmount = borrowAmount.sub(value);
       const to = this.hCEther.address;

@@ -16,12 +16,12 @@ const utils = web3.utils;
 
 const { expect } = require('chai');
 
-const { COMBO_TOKEN } = require('./utils/constants');
+const { LINK_TOKEN } = require('./utils/constants');
 const {
   evmRevert,
   evmSnapshot,
   profileGas,
-  tokenProviderUniV2,
+  tokenProviderBalancerV2,
 } = require('./utils/utils');
 
 const FeeRuleRegistry = artifacts.require('FeeRuleRegistry');
@@ -37,15 +37,15 @@ const RULE1_REQUIREMENT = ether('50'); // should match the verify requirement in
 const RULE2_REQUIREMENT = ether('10'); // should match the verify requirement in RuleMock2 (ETH)
 
 contract('FeeRuleRegistry', function([_, feeCollector, user, someone]) {
-  const tokenAddress = COMBO_TOKEN; // should match the verify requirement token in RuleMock1 (COMBO)
+  const tokenAddress = LINK_TOKEN; // should match the verify requirement token in RuleMock1
   let id;
 
   before(async function() {
     this.registry = await FeeRuleRegistry.new(BASIS_FEE_RATE, feeCollector);
-    this.rule1 = await RuleMock1.new();
+    this.rule1 = await RuleMock1.new(tokenAddress);
     this.rule2 = await RuleMock2.new();
     this.token = await IToken.at(tokenAddress);
-    this.providerAddress = await tokenProviderUniV2(tokenAddress);
+    this.providerAddress = await tokenProviderBalancerV2();
   });
 
   beforeEach(async function() {

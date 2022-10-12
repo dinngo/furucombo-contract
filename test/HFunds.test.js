@@ -17,7 +17,7 @@ const { expect } = require('chai');
 const {
   BLOCK_REWARD,
   DAI_TOKEN,
-  BAT_TOKEN,
+  WETH_TOKEN,
   USDT_TOKEN,
   NATIVE_TOKEN_ADDRESS,
 } = require('./utils/constants');
@@ -28,7 +28,7 @@ const {
   getHandlerReturn,
   getCallData,
   etherProviderWeth,
-  tokenProviderUniV2,
+  tokenProviderBalancerV2,
 } = require('./utils/utils');
 
 const HFunds = artifacts.require('HFunds');
@@ -43,7 +43,7 @@ contract('Funds', function([_, user, someone]) {
   let balanceUser;
   let balanceProxy;
   const token0Address = DAI_TOKEN;
-  const token1Address = BAT_TOKEN;
+  const token1Address = WETH_TOKEN;
 
   let provider0Address;
   let provider1Address;
@@ -51,9 +51,9 @@ contract('Funds', function([_, user, someone]) {
   let ethProviderAddress;
 
   before(async function() {
-    provider0Address = await tokenProviderUniV2(token0Address);
-    provider1Address = await tokenProviderUniV2(token1Address);
-    usdtProviderAddress = await tokenProviderUniV2(USDT_TOKEN);
+    provider0Address = await tokenProviderBalancerV2();
+    provider1Address = await tokenProviderBalancerV2();
+    usdtProviderAddress = await tokenProviderBalancerV2();
     ethProviderAddress = await etherProviderWeth();
 
     this.registry = await Registry.new();

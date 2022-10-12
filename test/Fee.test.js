@@ -14,22 +14,21 @@ const utils = web3.utils;
 const { expect } = require('chai');
 
 const {
-  COMBO_TOKEN,
   DAI_TOKEN,
   USDT_TOKEN,
+  WETH_TOKEN,
+  LINK_TOKEN,
   HBTC_TOKEN,
   HBTC_PROVIDER,
   OMG_TOKEN,
   OMG_PROVIDER,
-  KNC_TOKEN,
   NATIVE_TOKEN_ADDRESS,
 } = require('./utils/constants');
 const {
   evmRevert,
   evmSnapshot,
-  profileGas,
   checkCacheClean,
-  tokenProviderUniV2,
+  tokenProviderBalancerV2,
   impersonateAndInjectEther,
 } = require('./utils/utils');
 
@@ -52,8 +51,8 @@ const RULE2_REQUIREMENT = ether('10'); // should match the verify requirement in
 
 contract('Fee', function([_, feeCollector, user]) {
   const tokenAddress = DAI_TOKEN;
-  const token2Address = KNC_TOKEN;
-  const rule1TokenAddress = COMBO_TOKEN;
+  const token2Address = WETH_TOKEN;
+  const rule1TokenAddress = LINK_TOKEN;
 
   const ethAmount = ether('10');
   const tokenAmount = ether('100');
@@ -81,7 +80,7 @@ contract('Fee', function([_, feeCollector, user]) {
       BASIS_FEE_RATE,
       feeCollector
     );
-    this.rule1 = await RuleMock1.new();
+    this.rule1 = await RuleMock1.new(rule1TokenAddress);
     this.rule2 = await RuleMock2.new();
     this.feeCollectorMock = await FeeCollectorMock.new();
     await this.feeRuleRegistry.registerRule(this.rule1.address);
@@ -95,37 +94,37 @@ contract('Fee', function([_, feeCollector, user]) {
 
     // Prepare
     this.token = await IToken.at(tokenAddress);
-    const providerAddress = await tokenProviderUniV2(this.token.address);
+    const providerAddress = await tokenProviderBalancerV2();
     await this.token.transfer(user, tokenAmount, { from: providerAddress });
     await this.token.approve(this.proxy.address, tokenAmount, { from: user });
     this.rule1Token = await IToken.at(rule1TokenAddress);
-    const rule1TokenProviderAddress = await tokenProviderUniV2(
-      this.rule1Token.address
-    );
+    const rule1TokenProviderAddress = await tokenProviderBalancerV2();
     await this.rule1Token.transfer(user, RULE1_REQUIREMENT, {
       from: rule1TokenProviderAddress,
     });
 
     // Prepare token
     this.token2 = await IToken.at(token2Address);
-    const provider2Address = await tokenProviderUniV2(this.token2.address);
+    const provider2Address = await tokenProviderBalancerV2();
     await this.token2.transfer(user, token2Amount, { from: provider2Address });
     await this.token2.approve(this.proxy.address, token2Amount, { from: user });
 
     this.usdt = await IUsdt.at(USDT_TOKEN);
-    const USDT_PROVIDER = await tokenProviderUniV2(this.usdt.address);
+    const USDT_PROVIDER = await tokenProviderBalancerV2();
     await this.usdt.transfer(user, usdtAmount, { from: USDT_PROVIDER });
     await this.usdt.approve(this.proxy.address, usdtAmount, { from: user });
 
-    impersonateAndInjectEther(HBTC_PROVIDER);
-    this.hbtc = await IToken.at(HBTC_TOKEN);
-    await this.hbtc.transfer(user, hbtcAmount, { from: HBTC_PROVIDER });
-    await this.hbtc.approve(this.proxy.address, hbtcAmount, { from: user });
+    if (network.config.chainId == 1) {
+      impersonateAndInjectEther(HBTC_PROVIDER);
+      this.hbtc = await IToken.at(HBTC_TOKEN);
+      await this.hbtc.transfer(user, hbtcAmount, { from: HBTC_PROVIDER });
+      await this.hbtc.approve(this.proxy.address, hbtcAmount, { from: user });
 
-    impersonateAndInjectEther(OMG_PROVIDER);
-    this.omg = await IToken.at(OMG_TOKEN);
-    await this.omg.transfer(user, omgAmount, { from: OMG_PROVIDER });
-    await this.omg.approve(this.proxy.address, omgAmount, { from: user });
+      impersonateAndInjectEther(OMG_PROVIDER);
+      this.omg = await IToken.at(OMG_TOKEN);
+      await this.omg.transfer(user, omgAmount, { from: OMG_PROVIDER });
+      await this.omg.approve(this.proxy.address, omgAmount, { from: user });
+    }
   });
 
   beforeEach(async function() {
@@ -314,99 +313,101 @@ contract('Fee', function([_, feeCollector, user]) {
       );
     });
 
-    it('HBTC', async function() {
-      const tos = [this.hFunds.address];
-      const configs = [ZERO_BYTES32];
-      const ruleIndexes = ['0', '1'];
-      const datas = [
-        abi.simpleEncode(
-          'inject(address[],uint256[])',
-          [HBTC_TOKEN],
-          [hbtcAmount]
-        ),
-      ];
-      const receipt = await this.proxy.batchExec(
-        tos,
-        configs,
-        datas,
-        ruleIndexes,
-        {
-          from: user,
-        }
-      );
-      const feeRateUser = BASIS_FEE_RATE.mul(RULE1_DISCOUNT)
-        .div(BASE)
-        .mul(RULE2_DISCOUNT)
-        .div(BASE);
-      const feeToken = hbtcAmount.mul(feeRateUser).div(BASE);
+    if (network.config.chainId == 1) {
+      it('HBTC', async function() {
+        const tos = [this.hFunds.address];
+        const configs = [ZERO_BYTES32];
+        const ruleIndexes = ['0', '1'];
+        const datas = [
+          abi.simpleEncode(
+            'inject(address[],uint256[])',
+            [HBTC_TOKEN],
+            [hbtcAmount]
+          ),
+        ];
+        const receipt = await this.proxy.batchExec(
+          tos,
+          configs,
+          datas,
+          ruleIndexes,
+          {
+            from: user,
+          }
+        );
+        const feeRateUser = BASIS_FEE_RATE.mul(RULE1_DISCOUNT)
+          .div(BASE)
+          .mul(RULE2_DISCOUNT)
+          .div(BASE);
+        const feeToken = hbtcAmount.mul(feeRateUser).div(BASE);
 
-      // Verify event
-      await expectEvent.inTransaction(receipt.tx, this.proxy, 'ChargeFee', {
-        tokenIn: HBTC_TOKEN,
-        feeAmount: feeToken,
+        // Verify event
+        await expectEvent.inTransaction(receipt.tx, this.proxy, 'ChargeFee', {
+          tokenIn: HBTC_TOKEN,
+          feeAmount: feeToken,
+        });
+
+        // Fee collector
+        expect(await balanceFeeCollector.delta()).to.be.zero;
+        expect(await this.hbtc.balanceOf.call(feeCollector)).to.be.bignumber.eq(
+          feeToken
+        );
+        // Proxy
+        expect(await balanceProxy.delta()).to.be.zero;
+        expect(await this.hbtc.balanceOf.call(this.proxy.address)).to.be.zero;
+        // User
+        expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
+        expect(await this.hbtc.balanceOf.call(user)).to.be.bignumber.eq(
+          hbtcAmount.sub(feeToken)
+        );
       });
 
-      // Fee collector
-      expect(await balanceFeeCollector.delta()).to.be.zero;
-      expect(await this.hbtc.balanceOf.call(feeCollector)).to.be.bignumber.eq(
-        feeToken
-      );
-      // Proxy
-      expect(await balanceProxy.delta()).to.be.zero;
-      expect(await this.hbtc.balanceOf.call(this.proxy.address)).to.be.zero;
-      // User
-      expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
-      expect(await this.hbtc.balanceOf.call(user)).to.be.bignumber.eq(
-        hbtcAmount.sub(feeToken)
-      );
-    });
+      it('OMG', async function() {
+        const tos = [this.hFunds.address];
+        const configs = [ZERO_BYTES32];
+        const ruleIndexes = ['0', '1'];
+        const datas = [
+          abi.simpleEncode(
+            'inject(address[],uint256[])',
+            [OMG_TOKEN],
+            [omgAmount]
+          ),
+        ];
+        const receipt = await this.proxy.batchExec(
+          tos,
+          configs,
+          datas,
+          ruleIndexes,
+          {
+            from: user,
+          }
+        );
+        const feeRateUser = BASIS_FEE_RATE.mul(RULE1_DISCOUNT)
+          .div(BASE)
+          .mul(RULE2_DISCOUNT)
+          .div(BASE);
+        const feeToken = omgAmount.mul(feeRateUser).div(BASE);
 
-    it('OMG', async function() {
-      const tos = [this.hFunds.address];
-      const configs = [ZERO_BYTES32];
-      const ruleIndexes = ['0', '1'];
-      const datas = [
-        abi.simpleEncode(
-          'inject(address[],uint256[])',
-          [OMG_TOKEN],
-          [omgAmount]
-        ),
-      ];
-      const receipt = await this.proxy.batchExec(
-        tos,
-        configs,
-        datas,
-        ruleIndexes,
-        {
-          from: user,
-        }
-      );
-      const feeRateUser = BASIS_FEE_RATE.mul(RULE1_DISCOUNT)
-        .div(BASE)
-        .mul(RULE2_DISCOUNT)
-        .div(BASE);
-      const feeToken = omgAmount.mul(feeRateUser).div(BASE);
+        // Verify event
+        await expectEvent.inTransaction(receipt.tx, this.proxy, 'ChargeFee', {
+          tokenIn: OMG_TOKEN,
+          feeAmount: feeToken,
+        });
 
-      // Verify event
-      await expectEvent.inTransaction(receipt.tx, this.proxy, 'ChargeFee', {
-        tokenIn: OMG_TOKEN,
-        feeAmount: feeToken,
+        // Fee collector
+        expect(await balanceFeeCollector.delta()).to.be.zero;
+        expect(await this.omg.balanceOf.call(feeCollector)).to.be.bignumber.eq(
+          feeToken
+        );
+        // Proxy
+        expect(await balanceProxy.delta()).to.be.zero;
+        expect(await this.omg.balanceOf.call(this.proxy.address)).to.be.zero;
+        // User
+        expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
+        expect(await this.omg.balanceOf.call(user)).to.be.bignumber.eq(
+          omgAmount.sub(feeToken)
+        );
       });
-
-      // Fee collector
-      expect(await balanceFeeCollector.delta()).to.be.zero;
-      expect(await this.omg.balanceOf.call(feeCollector)).to.be.bignumber.eq(
-        feeToken
-      );
-      // Proxy
-      expect(await balanceProxy.delta()).to.be.zero;
-      expect(await this.omg.balanceOf.call(this.proxy.address)).to.be.zero;
-      // User
-      expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
-      expect(await this.omg.balanceOf.call(user)).to.be.bignumber.eq(
-        omgAmount.sub(feeToken)
-      );
-    });
+    }
   });
 
   describe('multiple token', function() {

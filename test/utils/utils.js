@@ -3,6 +3,7 @@ const fetch = require('node-fetch');
 // const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 const sleep = delay => new Promise(resolve => setTimeout(resolve, delay));
 const {
+  BALANCER_V2_VAULT,
   UNISWAPV2_FACTORY,
   SUSHISWAP_FACTORY,
   CURVE_ADDRESS_PROVIDER,
@@ -120,6 +121,13 @@ async function etherProviderWeth() {
   await network.provider.send('hardhat_impersonateAccount', [WETH_TOKEN]);
 
   return WETH_TOKEN;
+}
+
+async function tokenProviderBalancerV2() {
+  const vault = BALANCER_V2_VAULT;
+  impersonateAndInjectEther(vault);
+
+  return vault;
 }
 
 async function tokenProviderUniV2(
@@ -267,6 +275,7 @@ module.exports = {
   hasFuncSig,
   expectEqWithinBps,
   etherProviderWeth,
+  tokenProviderBalancerV2,
   tokenProviderUniV2,
   tokenProviderSushi,
   tokenProviderCurveGauge,

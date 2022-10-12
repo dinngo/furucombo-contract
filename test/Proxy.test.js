@@ -689,32 +689,34 @@ contract('Proxy', function([_, deployer, user]) {
       );
     });
 
-    it('token approve', async function() {
-      const token = await IToken.at(OMG_TOKEN);
-      const allowance1 = ether('1');
-      const to = this.hMock.address;
-      const data = abi.simpleEncode(
-        'tokenApprove(address,address,uint256)',
-        token.address,
-        user,
-        allowance1
-      );
-      await this.proxy.execMock(to, data, { value: ether('1') });
-      expect(
-        await token.allowance.call(this.proxy.address, user)
-      ).to.be.bignumber.eq(allowance1);
+    if (network.config.chainId == 1) {
+      it('token approve', async function() {
+        const token = await IToken.at(OMG_TOKEN);
+        const allowance1 = ether('1');
+        const to = this.hMock.address;
+        const data = abi.simpleEncode(
+          'tokenApprove(address,address,uint256)',
+          token.address,
+          user,
+          allowance1
+        );
+        await this.proxy.execMock(to, data, { value: ether('1') });
+        expect(
+          await token.allowance.call(this.proxy.address, user)
+        ).to.be.bignumber.eq(allowance1);
 
-      const allowance2 = ether('2');
-      const data2 = abi.simpleEncode(
-        'tokenApprove(address,address,uint256)',
-        token.address,
-        user,
-        allowance2
-      );
-      await this.proxy.execMock(to, data2, { value: ether('1') });
-      expect(
-        await token.allowance.call(this.proxy.address, user)
-      ).to.be.bignumber.eq(allowance2);
-    });
+        const allowance2 = ether('2');
+        const data2 = abi.simpleEncode(
+          'tokenApprove(address,address,uint256)',
+          token.address,
+          user,
+          allowance2
+        );
+        await this.proxy.execMock(to, data2, { value: ether('1') });
+        expect(
+          await token.allowance.call(this.proxy.address, user)
+        ).to.be.bignumber.eq(allowance2);
+      });
+    }
   });
 });
