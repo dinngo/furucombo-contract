@@ -1,3 +1,9 @@
+if (network.config.chainId == 1 || network.config.chainId == 42161) {
+  // This test supports to run on these chains.
+} else {
+  return;
+}
+
 const { balance, BN, ether } = require('@openzeppelin/test-helpers');
 const { tracker } = balance;
 const abi = require('ethereumjs-abi');
@@ -10,7 +16,7 @@ const {
   evmRevert,
   evmSnapshot,
   profileGas,
-  tokenProviderUniV2,
+  tokenProviderBalancerV2,
 } = require('./utils/utils');
 
 const HWeth = artifacts.require('HWeth');
@@ -26,7 +32,7 @@ contract('Weth', function([_, user]) {
   let tokenProviderAddress;
 
   before(async function() {
-    tokenProviderAddress = await tokenProviderUniV2(tokenAddress);
+    tokenProviderAddress = await tokenProviderBalancerV2(tokenAddress);
 
     this.token = await IToken.at(tokenAddress);
     this.registry = await Registry.new();
@@ -35,7 +41,7 @@ contract('Weth', function([_, user]) {
       this.registry.address,
       this.feeRuleRegistry.address
     );
-    this.hWeth = await HWeth.new();
+    this.hWeth = await HWeth.new(WETH_TOKEN);
     await this.registry.register(this.hWeth.address, utils.asciiToHex('Weth'));
   });
 

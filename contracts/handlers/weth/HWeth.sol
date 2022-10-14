@@ -8,25 +8,31 @@ import "./IWETH9.sol";
 
 contract HWeth is HandlerBase {
     // prettier-ignore
-    address public constant WETH = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
+    address public immutable WRAPPED_NATIVE;
+
+    constructor(address wrappedNative_) {
+        WRAPPED_NATIVE = wrappedNative_;
+    }
 
     function getContractName() public pure override returns (string memory) {
         return "HWeth";
     }
 
     function deposit(uint256 value) external payable {
-        try IWETH9(WETH).deposit{value: value}() {} catch Error(
+        try IWETH9(WRAPPED_NATIVE).deposit{value: value}() {} catch Error(
             string memory reason
         ) {
             _revertMsg("deposit", reason);
         } catch {
             _revertMsg("deposit");
         }
-        _updateToken(WETH);
+        _updateToken(WRAPPED_NATIVE);
     }
 
     function withdraw(uint256 wad) external payable {
-        try IWETH9(WETH).withdraw(wad) {} catch Error(string memory reason) {
+        try IWETH9(WRAPPED_NATIVE).withdraw(wad) {} catch Error(
+            string memory reason
+        ) {
             _revertMsg("withdraw", reason);
         } catch {
             _revertMsg("withdraw");

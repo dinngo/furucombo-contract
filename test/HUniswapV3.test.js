@@ -1,3 +1,9 @@
+if (network.config.chainId == 1 || network.config.chainId == 42161) {
+  // This test supports to run on these chains.
+} else {
+  return;
+}
+
 const {
   balance,
   BN,
@@ -22,7 +28,7 @@ const {
   profileGas,
   getHandlerReturn,
   getCallData,
-  tokenProviderUniV2,
+  tokenProviderBalancerV2,
 } = require('./utils/utils');
 
 const FeeRuleRegistry = artifacts.require('FeeRuleRegistry');
@@ -46,10 +52,10 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
   let tokenProvider;
 
   before(async function() {
-    tokenProvider = await tokenProviderUniV2(tokenAddress);
+    tokenProvider = await tokenProviderBalancerV2(tokenAddress);
 
     this.registry = await Registry.new();
-    this.hUniswapV3 = await HUniswapV3.new();
+    this.hUniswapV3 = await HUniswapV3.new(WETH_TOKEN);
     await this.registry.register(
       this.hUniswapV3.address,
       utils.asciiToHex('UniswapV3')
