@@ -3,7 +3,7 @@ const chainId = network.config.chainId;
 if (chainId == 1 || chainId == 42161 || chainId == 10) {
   // This test supports to run on these chains.
 } else {
-  console.log('Not support chainId:' + chainId);
+  console.log('Unsupported chainId:' + chainId);
   return;
 }
 
@@ -57,7 +57,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
     tokenProvider = await getTokenProvider(tokenAddress);
 
     this.registry = await Registry.new();
-    this.hUniswapV3 = await HUniswapV3.new(WETH_TOKEN);
+    this.hUniswapV3 = await HUniswapV3.new(WRAPPED_NATIVE_TOKEN);
     await this.registry.register(
       this.hUniswapV3.address,
       utils.asciiToHex('UniswapV3')
