@@ -14,12 +14,12 @@ const utils = web3.utils;
 
 const { expect } = require('chai');
 
-const { WETH_TOKEN } = require('./utils/constants');
+const { WETH_TOKEN, WAVAX_TOKEN } = require('./utils/constants');
 const {
   evmRevert,
   evmSnapshot,
   profileGas,
-  tokenProviderBalancerV2,
+  getTokenProvider,
 } = require('./utils/utils');
 
 const HWeth = artifacts.require('HWeth');
@@ -29,22 +29,22 @@ const Proxy = artifacts.require('ProxyMock');
 const IToken = artifacts.require('IERC20');
 
 contract('Weth', function([_, user]) {
-  const tokenAddress = WETH_TOKEN;
+  const wrappedNativeToken = chainId == 43114 ? WAVAX_TOKEN : WETH_TOKEN;
 
   let id;
   let tokenProviderAddress;
 
   before(async function() {
-    tokenProviderAddress = await tokenProviderBalancerV2(tokenAddress);
+    tokenProviderAddress = await getTokenProvider(wrappedNativeToken);
 
-    this.token = await IToken.at(tokenAddress);
+    this.token = await IToken.at(wrappedNativeToken);
     this.registry = await Registry.new();
     this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);
     this.proxy = await Proxy.new(
       this.registry.address,
       this.feeRuleRegistry.address
     );
-    this.hWeth = await HWeth.new(WETH_TOKEN);
+    this.hWeth = await HWeth.new(wrappedNativeToken);
     await this.registry.register(this.hWeth.address, utils.asciiToHex('Weth'));
   });
 
@@ -96,7 +96,7 @@ contract('Weth', function([_, user]) {
 
   describe('withdraw', function() {
     beforeEach(async function() {
-      this.token = await IToken.at(tokenAddress);
+      this.token = await IToken.at(wrappedNativeToken);
       tokenUserAmount = await this.token.balanceOf.call(user);
       balanceProxy = await tracker(this.proxy.address);
       balanceUser = await tracker(user);

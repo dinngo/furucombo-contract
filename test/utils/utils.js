@@ -6,6 +6,7 @@ const {
   BALANCER_V2_VAULT,
   UNISWAPV2_FACTORY,
   SUSHISWAP_FACTORY,
+  JOE_FACTORY,
   CURVE_ADDRESS_PROVIDER,
   YEARN_CONTROLLER,
   WETH_TOKEN,
@@ -121,6 +122,23 @@ async function etherProviderWeth() {
   await network.provider.send('hardhat_impersonateAccount', [WETH_TOKEN]);
 
   return WETH_TOKEN;
+}
+
+async function getTokenProvider(token0 = USDC_TOKEN, token1 = WETH_TOKEN) {
+  const chainId = network.config.chainId;
+
+  if (chainId == 1 || chainId == 42161 || chainId == 10) {
+    return tokenProviderBalancerV2();
+  } else if (chainId == 43114) {
+    return tokenProviderTraderJoe(token0, token1);
+  }
+}
+
+async function tokenProviderTraderJoe(
+  token0 = USDC_TOKEN,
+  token1 = WETH_TOKEN
+) {
+  return tokenProviderUniV2(token0, token1, JOE_FACTORY);
 }
 
 async function tokenProviderBalancerV2() {
@@ -275,11 +293,13 @@ module.exports = {
   hasFuncSig,
   expectEqWithinBps,
   etherProviderWeth,
+  getTokenProvider,
   tokenProviderBalancerV2,
   tokenProviderUniV2,
   tokenProviderSushi,
   tokenProviderCurveGauge,
   tokenProviderYearn,
+  tokenProviderTraderJoe,
   impersonateAndInjectEther,
   callExternalApi,
   mwei,

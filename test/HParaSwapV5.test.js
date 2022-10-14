@@ -29,7 +29,7 @@ const {
   mulPercent,
   getHandlerReturn,
   getCallData,
-  tokenProviderBalancerV2,
+  getTokenProvider,
   callExternalApi,
   mwei,
 } = require('./utils/utils');
@@ -372,7 +372,7 @@ contract('ParaSwapV5', function([_, user, user2]) {
     let userBalance, proxyBalance;
 
     before(async function() {
-      providerAddress = await tokenProviderBalancerV2(tokenAddress);
+      providerAddress = await getTokenProvider(tokenAddress);
       this.token = await IToken.at(tokenAddress);
     });
 
@@ -487,21 +487,21 @@ contract('ParaSwapV5', function([_, user, user2]) {
   }); // describe('token to ether') end
 
   describe('token to token', function() {
-    const token1Address = DAI_TOKEN;
-    const token1Decimal = 18;
-    const token2Address = USDC_TOKEN;
+    const token1Address = USDC_TOKEN;
+    const token1Decimal = 6;
+    const token2Address = DAI_TOKEN;
     const token2Decimal = 18;
     const slippageInBps = 100; // 1%
     let providerAddress;
 
     before(async function() {
-      providerAddress = await tokenProviderBalancerV2(token1Address);
+      providerAddress = await getTokenProvider(token1Address);
       this.token = await IToken.at(token1Address);
       this.token2 = await IToken.at(token2Address);
     });
 
     it('normal', async function() {
-      const amount = ether('500');
+      const amount = mwei('500');
       const to = this.hParaSwap.address;
 
       // Call Paraswap price API

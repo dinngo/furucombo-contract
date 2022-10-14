@@ -44,6 +44,7 @@ module.exports = {
 
   /* Services */
   AAVEPROTOCOL_V3_PROVIDER: '0xa97684ead0e402dC232d5A977953DF7ECBaB3CDb',
+  JOE_FACTORY: '0x9Ad6C38BE94206cA50bb0d90783181662f0Cfa10',
 
   /* Event Signature */
   RecordHandlerResultSig:
