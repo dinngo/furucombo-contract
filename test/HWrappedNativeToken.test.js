@@ -22,13 +22,13 @@ const {
   getTokenProvider,
 } = require('./utils/utils');
 
-const HWeth = artifacts.require('HWeth');
+const HWrappedNativeToken = artifacts.require('HWrappedNativeToken');
 const FeeRuleRegistry = artifacts.require('FeeRuleRegistry');
 const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('ProxyMock');
 const IToken = artifacts.require('IERC20');
 
-contract('Weth', function([_, user]) {
+contract('WrappedNativeToken', function([_, user]) {
   const wrappedNativeToken = chainId == 43114 ? WAVAX_TOKEN : WETH_TOKEN;
 
   let id;
@@ -44,8 +44,13 @@ contract('Weth', function([_, user]) {
       this.registry.address,
       this.feeRuleRegistry.address
     );
-    this.hWeth = await HWeth.new(wrappedNativeToken);
-    await this.registry.register(this.hWeth.address, utils.asciiToHex('Weth'));
+    this.hWrappedNativeToken = await HWrappedNativeToken.new(
+      wrappedNativeToken
+    );
+    await this.registry.register(
+      this.hWrappedNativeToken.address,
+      utils.asciiToHex('WrappedNativeToken')
+    );
   });
 
   beforeEach(async function() {
@@ -67,7 +72,7 @@ contract('Weth', function([_, user]) {
       // Prepare handler data
       const token = this.token.address;
       const value = ether('10');
-      const to = this.hWeth.address;
+      const to = this.hWrappedNativeToken.address;
       const data = abi.simpleEncode('deposit(uint256)', value);
 
       // Send tokens to proxy
@@ -106,7 +111,7 @@ contract('Weth', function([_, user]) {
       // Prepare handler data
       const token = this.token.address;
       const value = ether('10');
-      const to = this.hWeth.address;
+      const to = this.hWrappedNativeToken.address;
       const data = abi.simpleEncode('withdraw(uint256)', value);
 
       // Send WETH to proxy and prepare handler data
