@@ -12,6 +12,7 @@ const {
   YEARN_CONTROLLER,
   WETH_TOKEN,
   USDC_TOKEN,
+  WAVAX_TOKEN,
   RecordHandlerResultSig,
   STORAGE_KEY_MSG_SENDER,
   STORAGE_KEY_CUBE_COUNTER,
@@ -131,7 +132,7 @@ async function getTokenProvider(token0 = USDC_TOKEN, token1 = WETH_TOKEN) {
   if (chainId == 1 || chainId == 10 || chainId == 42161) {
     return tokenProviderUniV3(token0, token1);
   } else if (chainId == 43114) {
-    return tokenProviderTraderJoe(token0, token1);
+    return tokenProviderTraderJoe(token0, WAVAX_TOKEN);
   }
 }
 
@@ -152,16 +153,13 @@ async function tokenProviderUniV3(token0 = USDC_TOKEN, token1 = WETH_TOKEN) {
 
 async function tokenProviderTraderJoe(
   token0 = USDC_TOKEN,
-  token1 = WETH_TOKEN
+  token1 = WAVAX_TOKEN,
+  factoryAddress = JOE_FACTORY
 ) {
-  return tokenProviderUniV2(token0, token1, JOE_FACTORY);
-}
-
-async function tokenProviderBalancerV2() {
-  const vault = BALANCER_V2_VAULT;
-  impersonateAndInjectEther(vault);
-
-  return vault;
+  if (token0 === WAVAX_TOKEN) {
+    token1 = USDC_TOKEN;
+  }
+  return _tokenProviderUniLike(token0, token1, factoryAddress);
 }
 
 async function tokenProviderUniV2(
@@ -311,12 +309,11 @@ module.exports = {
   etherProviderWeth,
   getTokenProvider,
   tokenProviderUniV3,
-  tokenProviderBalancerV2,
+  tokenProviderTraderJoe,
   tokenProviderUniV2,
   tokenProviderSushi,
   tokenProviderCurveGauge,
   tokenProviderYearn,
-  tokenProviderTraderJoe,
   impersonateAndInjectEther,
   callExternalApi,
   mwei,
