@@ -20,10 +20,10 @@ default:
 
 stages:
   - build
-  - test-mainnet
-  - test-optimism
   - test-arbitrum
   - test-avalanche
+  - test-mainnet
+  - test-optimism
   - analysis
   - certora
 

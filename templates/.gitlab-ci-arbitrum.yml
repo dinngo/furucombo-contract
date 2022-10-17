@@ -1,6 +1,8 @@
 # Test Template
 .job_template: &test-arbitrum-configuration
   stage: test-arbitrum
+  before_script:
+    - npx patch-package --patch-dir patch
   script:
     - apt-get update && apt-get install -y netcat
     - RUNNER_COUNT=16

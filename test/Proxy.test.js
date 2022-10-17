@@ -62,15 +62,12 @@ contract('Proxy', function([_, deployer, user]) {
   describe('execute', function() {
     beforeEach(async function() {
       this.fooFactory = await FooFactory.new({ from: deployer });
-      expect(this.fooFactory.address).to.be.eq(
-        '0xFdd454EA7BF7ca88C1B7a824c3FB0951Fb8a1318'
-      );
       await this.fooFactory.createFoo();
       await this.fooFactory.createFoo();
       this.foo0 = await Foo.at(await this.fooFactory.addressOf.call(0));
       this.foo1 = await Foo.at(await this.fooFactory.addressOf.call(1));
       this.foo2 = await Foo.at(await this.fooFactory.addressOf.call(2));
-      this.fooHandler = await FooHandler.new();
+      this.fooHandler = await FooHandler.new(this.fooFactory.address);
       await this.registry.register(
         this.fooHandler.address,
         utils.asciiToHex('foo')
@@ -91,7 +88,7 @@ contract('Proxy', function([_, deployer, user]) {
     });
 
     it('should revert: caller as handler', async function() {
-      this.fooHandler2 = await FooHandler.new();
+      this.fooHandler2 = await FooHandler.new(this.fooFactory.address);
       await this.registry.registerCaller(
         this.fooHandler2.address,
         utils.asciiToHex('foo')
@@ -259,15 +256,12 @@ contract('Proxy', function([_, deployer, user]) {
     beforeEach(async function() {
       await FooFactory.new({ from: deployer }); // dummy
       this.fooFactory = await Foo2Factory.new({ from: deployer });
-      expect(this.fooFactory.address).to.be.eq(
-        '0xaB7D1E16d471065629431aeABED38880170876f2'
-      );
       await this.fooFactory.createFoo();
       await this.fooFactory.createFoo();
       this.foo0 = await Foo2.at(await this.fooFactory.addressOf.call(0));
       this.foo1 = await Foo2.at(await this.fooFactory.addressOf.call(1));
       this.foo2 = await Foo2.at(await this.fooFactory.addressOf.call(2));
-      this.fooHandler = await Foo2Handler.new();
+      this.fooHandler = await Foo2Handler.new(this.fooFactory.address);
       await this.registry.register(
         this.fooHandler.address,
         utils.asciiToHex('foo2')
