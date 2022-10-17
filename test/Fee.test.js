@@ -28,7 +28,7 @@ const {
   evmRevert,
   evmSnapshot,
   checkCacheClean,
-  tokenProviderBalancerV2,
+  getTokenProvider,
   impersonateAndInjectEther,
 } = require('./utils/utils');
 
@@ -94,23 +94,25 @@ contract('Fee', function([_, feeCollector, user]) {
 
     // Prepare
     this.token = await IToken.at(tokenAddress);
-    const providerAddress = await tokenProviderBalancerV2();
+    const providerAddress = await getTokenProvider(this.token.address);
     await this.token.transfer(user, tokenAmount, { from: providerAddress });
     await this.token.approve(this.proxy.address, tokenAmount, { from: user });
     this.rule1Token = await IToken.at(rule1TokenAddress);
-    const rule1TokenProviderAddress = await tokenProviderBalancerV2();
+    const rule1TokenProviderAddress = await getTokenProvider(
+      this.rule1Token.address
+    );
     await this.rule1Token.transfer(user, RULE1_REQUIREMENT, {
       from: rule1TokenProviderAddress,
     });
 
     // Prepare token
     this.token2 = await IToken.at(token2Address);
-    const provider2Address = await tokenProviderBalancerV2();
+    const provider2Address = await getTokenProvider(this.token2.address);
     await this.token2.transfer(user, token2Amount, { from: provider2Address });
     await this.token2.approve(this.proxy.address, token2Amount, { from: user });
 
     this.usdt = await IUsdt.at(USDT_TOKEN);
-    const USDT_PROVIDER = await tokenProviderBalancerV2();
+    const USDT_PROVIDER = await getTokenProvider(this.usdt.address);
     await this.usdt.transfer(user, usdtAmount, { from: USDT_PROVIDER });
     await this.usdt.approve(this.proxy.address, usdtAmount, { from: user });
 

@@ -18,6 +18,7 @@ const { MAX_UINT256 } = constants;
 const utils = web3.utils;
 const { expect } = require('chai');
 const {
+  WRAPPED_NATIVE_TOKEN,
   DAI_TOKEN,
   WETH_TOKEN,
   UNISWAPV3_ROUTER,

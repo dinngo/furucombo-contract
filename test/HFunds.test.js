@@ -28,7 +28,7 @@ const {
   getHandlerReturn,
   getCallData,
   etherProviderWeth,
-  tokenProviderBalancerV2,
+  getTokenProvider,
 } = require('./utils/utils');
 
 const HFunds = artifacts.require('HFunds');
@@ -51,9 +51,9 @@ contract('Funds', function([_, user, someone]) {
   let ethProviderAddress;
 
   before(async function() {
-    provider0Address = await tokenProviderBalancerV2();
-    provider1Address = await tokenProviderBalancerV2();
-    usdtProviderAddress = await tokenProviderBalancerV2();
+    provider0Address = await getTokenProvider(token0Address);
+    provider1Address = await getTokenProvider(token1Address);
+    usdtProviderAddress = await getTokenProvider(USDT_TOKEN);
     ethProviderAddress = await etherProviderWeth();
 
     this.registry = await Registry.new();

@@ -5,6 +5,7 @@ const sleep = delay => new Promise(resolve => setTimeout(resolve, delay));
 const {
   BALANCER_V2_VAULT,
   UNISWAPV2_FACTORY,
+  UNISWAPV3_FACTORY,
   SUSHISWAP_FACTORY,
   JOE_FACTORY,
   CURVE_ADDRESS_PROVIDER,
@@ -127,11 +128,26 @@ async function etherProviderWeth() {
 async function getTokenProvider(token0 = USDC_TOKEN, token1 = WETH_TOKEN) {
   const chainId = network.config.chainId;
 
-  if (chainId == 1 || chainId == 42161 || chainId == 10) {
-    return tokenProviderBalancerV2();
+  if (chainId == 1 || chainId == 10 || chainId == 42161) {
+    return tokenProviderUniV3(token0, token1);
   } else if (chainId == 43114) {
     return tokenProviderTraderJoe(token0, token1);
   }
+}
+
+async function tokenProviderUniV3(token0 = USDC_TOKEN, token1 = WETH_TOKEN) {
+  if (token0 === WETH_TOKEN) {
+    token1 = USDC_TOKEN;
+  }
+
+  const uniswapV3Factory = await ethers.getContractAt(
+    ['function getPool(address,address,uint24) view returns (address)'],
+    UNISWAPV3_FACTORY
+  );
+  const pool = await uniswapV3Factory.getPool(token0, token1, 500); // fee 0.05%
+  impersonateAndInjectEther(pool);
+
+  return pool;
 }
 
 async function tokenProviderTraderJoe(
@@ -294,6 +310,7 @@ module.exports = {
   expectEqWithinBps,
   etherProviderWeth,
   getTokenProvider,
+  tokenProviderUniV3,
   tokenProviderBalancerV2,
   tokenProviderUniV2,
   tokenProviderSushi,
