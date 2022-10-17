@@ -18,6 +18,7 @@ const {
   STORAGE_KEY_CUBE_COUNTER,
   STORAGE_KEY_FEE_RATE,
   STORAGE_KEY_FEE_COLLECTOR,
+  WRAPPED_NATIVE_TOKEN,
 } = require('./constants');
 
 const { expect } = require('chai');
@@ -124,6 +125,15 @@ async function etherProviderWeth() {
   await network.provider.send('hardhat_impersonateAccount', [WETH_TOKEN]);
 
   return WETH_TOKEN;
+}
+
+async function etherProviderWNative() {
+  // Impersonate weth
+  await network.provider.send('hardhat_impersonateAccount', [
+    WRAPPED_NATIVE_TOKEN,
+  ]);
+
+  return WRAPPED_NATIVE_TOKEN;
 }
 
 async function getTokenProvider(token0 = USDC_TOKEN, token1 = WETH_TOKEN) {
@@ -307,6 +317,7 @@ module.exports = {
   hasFuncSig,
   expectEqWithinBps,
   etherProviderWeth,
+  etherProviderWNative,
   getTokenProvider,
   tokenProviderUniV3,
   tokenProviderTraderJoe,

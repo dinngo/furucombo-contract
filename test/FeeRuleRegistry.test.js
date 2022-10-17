@@ -6,23 +6,14 @@ const {
   send,
   expectEvent,
   expectRevert,
-  time,
 } = require('@openzeppelin/test-helpers');
 const { tracker } = balance;
-const { latest } = time;
 const { ZERO_ADDRESS } = constants;
-const abi = require('ethereumjs-abi');
-const utils = web3.utils;
 
 const { expect } = require('chai');
 
-const { LINK_TOKEN } = require('./utils/constants');
-const {
-  evmRevert,
-  evmSnapshot,
-  profileGas,
-  getTokenProvider,
-} = require('./utils/utils');
+const { DAI_TOKEN, USDCe_TOKEN, USDC_TOKEN } = require('./utils/constants');
+const { evmRevert, evmSnapshot, getTokenProvider } = require('./utils/utils');
 
 const FeeRuleRegistry = artifacts.require('FeeRuleRegistry');
 const RuleMock1 = artifacts.require('RuleMock1');
@@ -33,11 +24,12 @@ const BASE = ether('1');
 const BASIS_FEE_RATE = ether('0.01'); // 1%
 const RULE1_DISCOUNT = ether('0.9'); // should match DISCOUNT of RuleMock1
 const RULE2_DISCOUNT = ether('0.8'); // should match DISCOUNT of RuleMock2
-const RULE1_REQUIREMENT = ether('50'); // should match the verify requirement in RuleMock1
-const RULE2_REQUIREMENT = ether('10'); // should match the verify requirement in RuleMock2
+const RULE1_REQUIREMENT = ether('50'); // should match the verify requirement in RuleMock1 (COMBO)
 
 contract('FeeRuleRegistry', function([_, feeCollector, user, someone]) {
-  const tokenAddress = LINK_TOKEN; // should match the verify requirement token in RuleMock1
+  const tokenAddress = DAI_TOKEN; // should match the verify requirement token in RuleMock1
+  const token1 = network.config.chainId == 43114 ? USDCe_TOKEN : USDC_TOKEN;
+
   let id;
 
   before(async function() {
@@ -45,7 +37,7 @@ contract('FeeRuleRegistry', function([_, feeCollector, user, someone]) {
     this.rule1 = await RuleMock1.new(tokenAddress);
     this.rule2 = await RuleMock2.new();
     this.token = await IToken.at(tokenAddress);
-    this.providerAddress = await getTokenProvider(this.token.address);
+    this.providerAddress = await getTokenProvider(tokenAddress, token1);
   });
 
   beforeEach(async function() {
@@ -214,11 +206,12 @@ contract('FeeRuleRegistry', function([_, feeCollector, user, someone]) {
       const receipt = await this.registry.registerRule(this.rule1.address);
       expect(await this.registry.rules.call('0')).to.be.eq(this.rule1.address);
       // transfer some token to user to make him qualified for rule1
+      tokenUserBalanceBefore = await this.token.balanceOf(user);
       await this.token.transfer(user, RULE1_REQUIREMENT, {
         from: this.providerAddress,
       });
       expect(await this.token.balanceOf(user)).to.be.bignumber.eq(
-        RULE1_REQUIREMENT
+        tokenUserBalanceBefore + RULE1_REQUIREMENT
       );
     });
 

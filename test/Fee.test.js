@@ -4,10 +4,9 @@ const {
   constants,
   ether,
   expectEvent,
-  expectRevert,
 } = require('@openzeppelin/test-helpers');
 const { tracker } = balance;
-const { ZERO_BYTES32, MAX_UINT256 } = constants;
+const { ZERO_BYTES32 } = constants;
 const abi = require('ethereumjs-abi');
 const utils = web3.utils;
 
@@ -18,11 +17,15 @@ const {
   USDT_TOKEN,
   WETH_TOKEN,
   LINK_TOKEN,
+  IB_TOKEN,
   HBTC_TOKEN,
   HBTC_PROVIDER,
   OMG_TOKEN,
   OMG_PROVIDER,
+  USDC_TOKEN,
+  USDCe_TOKEN,
   NATIVE_TOKEN_ADDRESS,
+  WRAPPED_NATIVE_TOKEN,
 } = require('./utils/constants');
 const {
   evmRevert,
@@ -30,7 +33,10 @@ const {
   checkCacheClean,
   getTokenProvider,
   impersonateAndInjectEther,
+  getTokenProvider,
 } = require('./utils/utils');
+const { WAVAX_TOKEN } = require('./utils/constants-avalanche');
+const { network } = require('hardhat');
 
 const Proxy = artifacts.require('Proxy');
 const Registry = artifacts.require('Registry');
@@ -47,16 +53,25 @@ const BASIS_FEE_RATE = ether('0.01'); // 1%
 const RULE1_DISCOUNT = ether('0.9'); // should match DISCOUNT of RuleMock1
 const RULE2_DISCOUNT = ether('0.8'); // should match DISCOUNT of RuleMock2
 const RULE1_REQUIREMENT = ether('50'); // should match the verify requirement in RuleMock1
-const RULE2_REQUIREMENT = ether('10'); // should match the verify requirement in RuleMock2
 
 contract('Fee', function([_, feeCollector, user]) {
   const tokenAddress = DAI_TOKEN;
   const token2Address = WETH_TOKEN;
-  const rule1TokenAddress = LINK_TOKEN;
+  const token1 = network.config.chainId == 43114 ? USDCe_TOKEN : USDC_TOKEN;
+
+  // Different token balance in different chain
+  const rule1TokenAddress =
+    network.config.chainId == 1
+      ? LINK_TOKEN
+      : network.config.chainId == 42161
+      ? LINK_TOKEN
+      : network.config.chainId == 43114
+      ? LINK_TOKEN
+      : IB_TOKEN;
 
   const ethAmount = ether('10');
   const tokenAmount = ether('100');
-  const token2Amount = ether('100');
+  const token2Amount = ether('10');
   const usdtAmount = new BN('100000000'); // 100 usdt
   const hbtcAmount = ether('1');
   const omgAmount = ether('10');
@@ -94,12 +109,13 @@ contract('Fee', function([_, feeCollector, user]) {
 
     // Prepare
     this.token = await IToken.at(tokenAddress);
-    const providerAddress = await getTokenProvider(this.token.address);
+    const providerAddress = await getTokenProvider(this.token.address, token1);
     await this.token.transfer(user, tokenAmount, { from: providerAddress });
     await this.token.approve(this.proxy.address, tokenAmount, { from: user });
     this.rule1Token = await IToken.at(rule1TokenAddress);
     const rule1TokenProviderAddress = await getTokenProvider(
-      this.rule1Token.address
+      rule1TokenAddress,
+      token1
     );
     await this.rule1Token.transfer(user, RULE1_REQUIREMENT, {
       from: rule1TokenProviderAddress,
@@ -107,12 +123,18 @@ contract('Fee', function([_, feeCollector, user]) {
 
     // Prepare token
     this.token2 = await IToken.at(token2Address);
-    const provider2Address = await getTokenProvider(this.token2.address);
+    const provider2Address = await getTokenProvider(
+      this.token2.address,
+      token1
+    );
     await this.token2.transfer(user, token2Amount, { from: provider2Address });
     await this.token2.approve(this.proxy.address, token2Amount, { from: user });
 
     this.usdt = await IUsdt.at(USDT_TOKEN);
-    const USDT_PROVIDER = await getTokenProvider(this.usdt.address);
+    const USDT_PROVIDER = await getTokenProvider(
+      this.usdt.address,
+      WAVAX_TOKEN
+    );
     await this.usdt.transfer(user, usdtAmount, { from: USDT_PROVIDER });
     await this.usdt.approve(this.proxy.address, usdtAmount, { from: user });
 

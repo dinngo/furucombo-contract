@@ -17,9 +17,12 @@ const { expect } = require('chai');
 const {
   BLOCK_REWARD,
   DAI_TOKEN,
-  WETH_TOKEN,
   USDT_TOKEN,
+  USDC_TOKEN,
+  USDCe_TOKEN,
   NATIVE_TOKEN_ADDRESS,
+  WRAPPED_NATIVE_TOKEN,
+  WAVAX_TOKEN,
 } = require('./utils/constants');
 const {
   evmRevert,
@@ -27,8 +30,8 @@ const {
   profileGas,
   getHandlerReturn,
   getCallData,
-  etherProviderWeth,
   getTokenProvider,
+  etherProviderWNative,
 } = require('./utils/utils');
 
 const HFunds = artifacts.require('HFunds');
@@ -43,7 +46,8 @@ contract('Funds', function([_, user, someone]) {
   let balanceUser;
   let balanceProxy;
   const token0Address = DAI_TOKEN;
-  const token1Address = WETH_TOKEN;
+  const token1Address = WRAPPED_NATIVE_TOKEN;
+  const token1 = network.config.chainId == 43114 ? USDCe_TOKEN : USDC_TOKEN;
 
   let provider0Address;
   let provider1Address;
@@ -51,10 +55,10 @@ contract('Funds', function([_, user, someone]) {
   let ethProviderAddress;
 
   before(async function() {
-    provider0Address = await getTokenProvider(token0Address);
-    provider1Address = await getTokenProvider(token1Address);
-    usdtProviderAddress = await getTokenProvider(USDT_TOKEN);
-    ethProviderAddress = await etherProviderWeth();
+    provider0Address = await getTokenProvider(token0Address, token1);
+    provider1Address = await getTokenProvider(token1Address, token1);
+    usdtProviderAddress = await getTokenProvider(USDT_TOKEN, WAVAX_TOKEN);
+    ethProviderAddress = await etherProviderWNative();
 
     this.registry = await Registry.new();
     this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);

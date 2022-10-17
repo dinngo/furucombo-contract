@@ -24,6 +24,7 @@ const {
   UNISWAPV3_ROUTER,
   UNISWAPV3_QUOTER,
   USDT_TOKEN,
+  WRAPPED_NATIVE_TOKEN,
 } = require('./utils/constants');
 const {
   evmRevert,

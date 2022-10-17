@@ -42,7 +42,7 @@ contract('ProxyLog', function([_, deployer, user]) {
     await evmRevert(id);
   });
 
-  describe('execute', function() {
+  describe.skip('execute', function() {
     beforeEach(async function() {
       this.fooFactory = await FooFactory.new({ from: deployer });
       expect(this.fooFactory.address).to.be.eq(
