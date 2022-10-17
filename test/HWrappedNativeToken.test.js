@@ -3,7 +3,6 @@ const chainId = network.config.chainId;
 if (chainId == 1 || chainId == 42161 || chainId == 10 || chainId == 43114) {
   // This test supports to run on these chains.
 } else {
-  console.log('Unsupported chainId:' + chainId);
   return;
 }
 
@@ -14,7 +13,7 @@ const utils = web3.utils;
 
 const { expect } = require('chai');
 
-const { WETH_TOKEN, WAVAX_TOKEN } = require('./utils/constants');
+const { WRAPPED_NATIVE_TOKEN } = require('./utils/constants');
 const {
   evmRevert,
   evmSnapshot,
@@ -29,7 +28,7 @@ const Proxy = artifacts.require('ProxyMock');
 const IToken = artifacts.require('IERC20');
 
 contract('WrappedNativeToken', function([_, user]) {
-  const wrappedNativeToken = chainId == 43114 ? WAVAX_TOKEN : WETH_TOKEN;
+  const wrappedNativeToken = WRAPPED_NATIVE_TOKEN;
 
   let id;
   let tokenProviderAddress;

@@ -5,7 +5,7 @@ pragma solidity 0.8.10;
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "../../interface/IProxy.sol";
 import "../HandlerBase.sol";
-import "../weth/IWrappedNativeToken.sol";
+import "../wrappednativetoken/IWrappedNativeToken.sol";
 import "./ILendingPoolV2.sol";
 import "./IFlashLoanReceiver.sol";
 import "./ILendingPoolAddressesProviderV2.sol";
