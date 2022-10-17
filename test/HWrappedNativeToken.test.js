@@ -1,3 +1,11 @@
+const chainId = network.config.chainId;
+
+if (chainId == 1 || chainId == 42161 || chainId == 10 || chainId == 43114) {
+  // This test supports to run on these chains.
+} else {
+  return;
+}
+
 const { balance, BN, ether } = require('@openzeppelin/test-helpers');
 const { tracker } = balance;
 const abi = require('ethereumjs-abi');
@@ -5,38 +13,43 @@ const utils = web3.utils;
 
 const { expect } = require('chai');
 
-const { WETH_TOKEN } = require('./utils/constants');
+const { WRAPPED_NATIVE_TOKEN } = require('./utils/constants');
 const {
   evmRevert,
   evmSnapshot,
   profileGas,
-  tokenProviderUniV2,
+  getTokenProvider,
 } = require('./utils/utils');
 
-const HWeth = artifacts.require('HWeth');
+const HWrappedNativeToken = artifacts.require('HWrappedNativeToken');
 const FeeRuleRegistry = artifacts.require('FeeRuleRegistry');
 const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('ProxyMock');
 const IToken = artifacts.require('IERC20');
 
-contract('Weth', function([_, user]) {
-  const tokenAddress = WETH_TOKEN;
+contract('WrappedNativeToken', function([_, user]) {
+  const wrappedNativeToken = WRAPPED_NATIVE_TOKEN;
 
   let id;
   let tokenProviderAddress;
 
   before(async function() {
-    tokenProviderAddress = await tokenProviderUniV2(tokenAddress);
+    tokenProviderAddress = await getTokenProvider(wrappedNativeToken);
 
-    this.token = await IToken.at(tokenAddress);
+    this.token = await IToken.at(wrappedNativeToken);
     this.registry = await Registry.new();
     this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);
     this.proxy = await Proxy.new(
       this.registry.address,
       this.feeRuleRegistry.address
     );
-    this.hWeth = await HWeth.new();
-    await this.registry.register(this.hWeth.address, utils.asciiToHex('Weth'));
+    this.hWrappedNativeToken = await HWrappedNativeToken.new(
+      wrappedNativeToken
+    );
+    await this.registry.register(
+      this.hWrappedNativeToken.address,
+      utils.asciiToHex('WrappedNativeToken')
+    );
   });
 
   beforeEach(async function() {
@@ -58,7 +71,7 @@ contract('Weth', function([_, user]) {
       // Prepare handler data
       const token = this.token.address;
       const value = ether('10');
-      const to = this.hWeth.address;
+      const to = this.hWrappedNativeToken.address;
       const data = abi.simpleEncode('deposit(uint256)', value);
 
       // Send tokens to proxy
@@ -87,7 +100,7 @@ contract('Weth', function([_, user]) {
 
   describe('withdraw', function() {
     beforeEach(async function() {
-      this.token = await IToken.at(tokenAddress);
+      this.token = await IToken.at(wrappedNativeToken);
       tokenUserAmount = await this.token.balanceOf.call(user);
       balanceProxy = await tracker(this.proxy.address);
       balanceUser = await tracker(user);
@@ -97,7 +110,7 @@ contract('Weth', function([_, user]) {
       // Prepare handler data
       const token = this.token.address;
       const value = ether('10');
-      const to = this.hWeth.address;
+      const to = this.hWrappedNativeToken.address;
       const data = abi.simpleEncode('withdraw(uint256)', value);
 
       // Send WETH to proxy and prepare handler data

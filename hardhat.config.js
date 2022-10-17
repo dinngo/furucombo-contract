@@ -52,6 +52,7 @@ module.exports = {
     hardhat: {
       forking: {
         url: process.env.ETH_MAINNET_NODE,
+        ignoreUnknownTxType: true,
       },
       chainId: Number(process.env.CHAIN_ID),
       accounts: {

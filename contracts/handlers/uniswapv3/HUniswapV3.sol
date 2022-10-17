@@ -5,7 +5,7 @@ pragma solidity 0.8.10;
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import "../HandlerBase.sol";
-import "../weth/IWETH9.sol";
+import "../wrappednativetoken/IWrappedNativeToken.sol";
 import "./ISwapRouter.sol";
 import "./libraries/BytesLib.sol";
 
@@ -16,10 +16,14 @@ contract HUniswapV3 is HandlerBase {
     // prettier-ignore
     ISwapRouter public constant ROUTER = ISwapRouter(0xE592427A0AEce92De3Edee1F18E0157C05861564);
     // prettier-ignore
-    IWETH9 public constant WETH = IWETH9(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2);
+    IWrappedNativeToken public immutable wrappedNativeToken;
 
     uint256 private constant PATH_SIZE = 43; // address + address + uint24
     uint256 private constant ADDRESS_SIZE = 20;
+
+    constructor(address wrappedNativeToken_) {
+        wrappedNativeToken = IWrappedNativeToken(wrappedNativeToken_);
+    }
 
     function getContractName() public pure override returns (string memory) {
         return "HUniswapV3";
@@ -34,7 +38,7 @@ contract HUniswapV3 is HandlerBase {
     ) external payable returns (uint256 amountOut) {
         // Build params for router call
         ISwapRouter.ExactInputSingleParams memory params;
-        params.tokenIn = address(WETH);
+        params.tokenIn = address(wrappedNativeToken);
         params.tokenOut = tokenOut;
         params.fee = fee;
         params.amountIn = _getBalance(address(0), amountIn);
@@ -56,7 +60,7 @@ contract HUniswapV3 is HandlerBase {
         // Build params for router call
         ISwapRouter.ExactInputSingleParams memory params;
         params.tokenIn = tokenIn;
-        params.tokenOut = address(WETH);
+        params.tokenOut = address(wrappedNativeToken);
         params.fee = fee;
         params.amountIn = _getBalance(tokenIn, amountIn);
         params.amountOutMinimum = amountOutMinimum;
@@ -66,7 +70,7 @@ contract HUniswapV3 is HandlerBase {
         _tokenApprove(tokenIn, address(ROUTER), params.amountIn);
         amountOut = _exactInputSingle(0, params);
         _tokenApproveZero(tokenIn, address(ROUTER));
-        WETH.withdraw(amountOut);
+        wrappedNativeToken.withdraw(amountOut);
     }
 
     function exactInputSingle(
@@ -103,9 +107,9 @@ contract HUniswapV3 is HandlerBase {
         address tokenOut = _getLastToken(path);
         // Input token must be WETH
         _requireMsg(
-            tokenIn == address(WETH),
+            tokenIn == address(wrappedNativeToken),
             "exactInputFromEther",
-            "Input not WETH"
+            "Input not wrapped native token"
         );
         // Build params for router call
         ISwapRouter.ExactInputParams memory params;
@@ -128,9 +132,9 @@ contract HUniswapV3 is HandlerBase {
         address tokenOut = _getLastToken(path);
         // Output token must be WETH
         _requireMsg(
-            tokenOut == address(WETH),
+            tokenOut == address(wrappedNativeToken),
             "exactInputToEther",
-            "Output not WETH"
+            "Output not wrapped native token"
         );
         // Build params for router call
         ISwapRouter.ExactInputParams memory params;
@@ -142,7 +146,7 @@ contract HUniswapV3 is HandlerBase {
         _tokenApprove(tokenIn, address(ROUTER), params.amountIn);
         amountOut = _exactInput(0, params);
         _tokenApproveZero(tokenIn, address(ROUTER));
-        WETH.withdraw(amountOut);
+        wrappedNativeToken.withdraw(amountOut);
     }
 
     function exactInput(
@@ -175,7 +179,7 @@ contract HUniswapV3 is HandlerBase {
     ) external payable returns (uint256 amountIn) {
         // Build params for router call
         ISwapRouter.ExactOutputSingleParams memory params;
-        params.tokenIn = address(WETH);
+        params.tokenIn = address(wrappedNativeToken);
         params.tokenOut = tokenOut;
         params.fee = fee;
         params.amountOut = amountOut;
@@ -199,7 +203,7 @@ contract HUniswapV3 is HandlerBase {
         // Build params for router call
         ISwapRouter.ExactOutputSingleParams memory params;
         params.tokenIn = tokenIn;
-        params.tokenOut = address(WETH);
+        params.tokenOut = address(wrappedNativeToken);
         params.fee = fee;
         params.amountOut = amountOut;
         // if amount == type(uint256).max return balance of Proxy
@@ -210,7 +214,7 @@ contract HUniswapV3 is HandlerBase {
         _tokenApprove(params.tokenIn, address(ROUTER), params.amountInMaximum);
         amountIn = _exactOutputSingle(0, params);
         _tokenApproveZero(params.tokenIn, address(ROUTER));
-        WETH.withdraw(params.amountOut);
+        wrappedNativeToken.withdraw(params.amountOut);
     }
 
     function exactOutputSingle(
@@ -249,9 +253,9 @@ contract HUniswapV3 is HandlerBase {
         address tokenOut = _getFirstToken(path);
         // Input token must be WETH
         _requireMsg(
-            tokenIn == address(WETH),
+            tokenIn == address(wrappedNativeToken),
             "exactOutputFromEther",
-            "Input not WETH"
+            "Input not wrapped native token"
         );
         // Build params for router call
         ISwapRouter.ExactOutputParams memory params;
@@ -276,9 +280,9 @@ contract HUniswapV3 is HandlerBase {
         address tokenOut = _getFirstToken(path);
         // Out token must be WETH
         _requireMsg(
-            tokenOut == address(WETH),
+            tokenOut == address(wrappedNativeToken),
             "exactOutputToEther",
-            "Output not WETH"
+            "Output not wrapped native token"
         );
         // Build params for router call
         ISwapRouter.ExactOutputParams memory params;
@@ -291,7 +295,7 @@ contract HUniswapV3 is HandlerBase {
         _tokenApprove(tokenIn, address(ROUTER), params.amountInMaximum);
         amountIn = _exactOutput(0, params);
         _tokenApproveZero(tokenIn, address(ROUTER));
-        WETH.withdraw(amountOut);
+        wrappedNativeToken.withdraw(amountOut);
     }
 
     function exactOutput(

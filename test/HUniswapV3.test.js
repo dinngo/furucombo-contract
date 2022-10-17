@@ -1,3 +1,11 @@
+const chainId = network.config.chainId;
+
+if (chainId == 1 || chainId == 42161 || chainId == 10) {
+  // This test supports to run on these chains.
+} else {
+  return;
+}
+
 const {
   balance,
   BN,
@@ -22,7 +30,7 @@ const {
   profileGas,
   getHandlerReturn,
   getCallData,
-  tokenProviderUniV2,
+  getTokenProvider,
 } = require('./utils/utils');
 
 const FeeRuleRegistry = artifacts.require('FeeRuleRegistry');
@@ -41,15 +49,14 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
   let balanceUser;
   let balanceProxy;
   let tokenUser;
-  let token2User;
   let wethUser;
   let tokenProvider;
 
   before(async function() {
-    tokenProvider = await tokenProviderUniV2(tokenAddress);
+    tokenProvider = await getTokenProvider(tokenAddress);
 
     this.registry = await Registry.new();
-    this.hUniswapV3 = await HUniswapV3.new();
+    this.hUniswapV3 = await HUniswapV3.new(WRAPPED_NATIVE_TOKEN);
     await this.registry.register(
       this.hUniswapV3.address,
       utils.asciiToHex('UniswapV3')
@@ -1071,7 +1078,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           const tokenIn = WETH_TOKEN;
           const tokenOut = tokenAddress;
           const fee = new BN('3000');
-          const amountOut = ether('100000');
+          const amountOut = ether('30000');
           const amountInMaximum = value;
           const sqrtPriceLimitX96 = new BN('0');
 
@@ -1216,8 +1223,8 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           const tokenIn = tokenAddress;
           const tokenOut = WETH_TOKEN;
           const fee = new BN('3000');
-          const amountOut = ether('100');
-          const amountInMaximum = ether('10000');
+          const amountOut = ether('20');
+          const amountInMaximum = ether('5000');
           const sqrtPriceLimitX96 = new BN('0');
           await this.token.transfer(this.proxy.address, amountInMaximum, {
             from: tokenProvider,
@@ -1505,13 +1512,13 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
         });
 
         it('desired amount too high', async function() {
-          const value = ether('1');
+          const value = ether('0.25');
           const to = this.hUniswapV3.address;
           // Set swap info
           const tokens = [tokenAddress, token2Address, WETH_TOKEN];
           const fees = [new BN('500'), new BN('3000')];
           const path = encodePath(tokens, fees);
-          const amountOut = ether('200000');
+          const amountOut = ether('5000');
           const amountInMaximum = value;
 
           // Execution
@@ -1641,8 +1648,8 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           const tokens = [WETH_TOKEN, token2Address, tokenAddress];
           const fees = [new BN('3000'), new BN('500')];
           const path = encodePath(tokens, fees);
-          const amountOut = ether('100');
-          const amountInMaximum = ether('10000');
+          const amountOut = ether('10');
+          const amountInMaximum = ether('2500');
           await this.token.transfer(this.proxy.address, amountInMaximum, {
             from: tokenProvider,
           });
@@ -1785,8 +1792,8 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           const tokens = [WETH_TOKEN, token2Address, tokenAddress];
           const fees = [new BN('3000'), new BN('500')];
           const path = encodePath(tokens, fees);
-          const amountOut = ether('100');
-          const amountInMaximum = ether('10000');
+          const amountOut = ether('20');
+          const amountInMaximum = ether('5000');
           await this.token.transfer(this.proxy.address, amountInMaximum, {
             from: tokenProvider,
           });

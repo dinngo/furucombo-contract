@@ -5,7 +5,7 @@ pragma solidity 0.8.10;
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "../../interface/IProxy.sol";
 import "../HandlerBase.sol";
-import "../weth/IWETH9.sol";
+import "../wrappednativetoken/IWrappedNativeToken.sol";
 import "./ILendingPoolV2.sol";
 import "./IFlashLoanReceiver.sol";
 import "./ILendingPoolAddressesProviderV2.sol";
@@ -32,7 +32,7 @@ contract HAaveProtocolV2 is HandlerBase, IFlashLoanReceiver {
 
     function depositETH(uint256 amount) external payable {
         amount = _getBalance(NATIVE_TOKEN_ADDRESS, amount);
-        IWETH9(WETH).deposit{value: amount}();
+        IWrappedNativeToken(WETH).deposit{value: amount}();
         _deposit(WETH, amount);
 
         _updateToken(WETH);
@@ -54,7 +54,7 @@ contract HAaveProtocolV2 is HandlerBase, IFlashLoanReceiver {
         returns (uint256 withdrawAmount)
     {
         withdrawAmount = _withdraw(WETH, amount);
-        IWETH9(WETH).withdraw(withdrawAmount);
+        IWrappedNativeToken(WETH).withdraw(withdrawAmount);
     }
 
     function repay(
@@ -71,7 +71,7 @@ contract HAaveProtocolV2 is HandlerBase, IFlashLoanReceiver {
         uint256 rateMode,
         address onBehalfOf
     ) external payable returns (uint256 remainDebt) {
-        IWETH9(WETH).deposit{value: amount}();
+        IWrappedNativeToken(WETH).deposit{value: amount}();
         remainDebt = _repay(WETH, amount, rateMode, onBehalfOf);
 
         _updateToken(WETH);
@@ -90,7 +90,7 @@ contract HAaveProtocolV2 is HandlerBase, IFlashLoanReceiver {
     function borrowETH(uint256 amount, uint256 rateMode) external payable {
         address onBehalfOf = _getSender();
         _borrow(WETH, amount, rateMode, onBehalfOf);
-        IWETH9(WETH).withdraw(amount);
+        IWrappedNativeToken(WETH).withdraw(amount);
     }
 
     function flashLoan(
