@@ -1,3 +1,9 @@
+if (network.config.chainId == 1) {
+  // This test supports to run on these chains.
+} else {
+  return;
+}
+
 const {
   BN,
   constants,
@@ -19,7 +25,7 @@ const FeeRuleRegistry = artifacts.require('FeeRuleRegistry');
 const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('Proxy');
 const HAaveV2 = artifacts.require('HAaveProtocolV2');
-const HWrapper = artifacts.require('HWeth');
+const HWrapper = artifacts.require('HWrappedNativeToken');
 const ILendingPoolV2 = artifacts.require('ILendingPoolV2');
 const IProviderV2 = artifacts.require('ILendingPoolAddressesProviderV2');
 
@@ -38,7 +44,7 @@ contract('CubeCounting', function([_, user]) {
     );
 
     // Register wrapper handler
-    this.hWrapper = await HWrapper.new();
+    this.hWrapper = await HWrapper.new(wrappedTokenAddress);
     await this.registry.register(
       this.hWrapper.address,
       utils.asciiToHex('HWrapper')

@@ -1222,7 +1222,7 @@ contract('Maker', function([_, user1, user2, someone]) {
           []
         );
         await expectRevert(
-          this.proxy.batchExec([], [], [], { from: user1 }),
+          this.proxy.batchExec([], [], [], [], { from: user1 }),
           'Invalid post process'
         );
       });
