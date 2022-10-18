@@ -110,8 +110,9 @@ contract('Aave V3', function([_, user, someone]) {
       await this.pool.supply(this.token.address, supplyAmount, user, 0, {
         from: providerAddress,
       });
-      expect(await this.aToken.balanceOf(user)).to.be.bignumber.eq(
-        supplyAmount
+      // For 1 wei tolerance
+      expect(await this.aToken.balanceOf(user)).to.be.bignumber.gte(
+        supplyAmount - 1
       );
 
       borrowTokenUserBefore = await this.borrowToken.balanceOf(user);

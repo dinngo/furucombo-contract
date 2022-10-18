@@ -33,7 +33,6 @@ const {
   checkCacheClean,
   getTokenProvider,
   impersonateAndInjectEther,
-  getTokenProvider,
 } = require('./utils/utils');
 const { WAVAX_TOKEN } = require('./utils/constants-avalanche');
 const { network } = require('hardhat');
