@@ -23,7 +23,6 @@ const {
   WRAPPED_NATIVE_TOKEN,
   DAI_TOKEN,
   AAVEPROTOCOL_V3_PROVIDER,
-  USDCe_TOKEN,
   USDC_TOKEN,
   AWRAPPED_NATIVE_V3_TOKEN,
   ADAI_V3_DEBT_STABLE,
@@ -75,7 +74,7 @@ contract('AaveV3 flashloan', function([_, user, someone]) {
 
     this.faucet = await Faucet.new();
     this.tokenA = await IToken.at(DAI_TOKEN);
-    this.token1 = network.config.chainId == 43114 ? USDCe_TOKEN : USDC_TOKEN;
+    this.token1 = USDC_TOKEN;
     this.tokenB = await IToken.at(WRAPPED_NATIVE_TOKEN);
     this.tokenAProvider = await getTokenProvider(
       this.tokenA.address,

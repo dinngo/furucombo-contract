@@ -12,7 +12,7 @@ const { ZERO_ADDRESS } = constants;
 
 const { expect } = require('chai');
 
-const { DAI_TOKEN, USDCe_TOKEN, USDC_TOKEN } = require('./utils/constants');
+const { DAI_TOKEN, USDC_TOKEN } = require('./utils/constants');
 const { evmRevert, evmSnapshot, getTokenProvider } = require('./utils/utils');
 
 const FeeRuleRegistry = artifacts.require('FeeRuleRegistry');
@@ -28,7 +28,7 @@ const RULE1_REQUIREMENT = ether('50'); // should match the verify requirement in
 
 contract('FeeRuleRegistry', function([_, feeCollector, user, someone]) {
   const tokenAddress = DAI_TOKEN; // should match the verify requirement token in RuleMock1
-  const token1 = network.config.chainId == 43114 ? USDCe_TOKEN : USDC_TOKEN;
+  const token1 = USDC_TOKEN;
 
   let id;
 
@@ -206,12 +206,12 @@ contract('FeeRuleRegistry', function([_, feeCollector, user, someone]) {
       const receipt = await this.registry.registerRule(this.rule1.address);
       expect(await this.registry.rules.call('0')).to.be.eq(this.rule1.address);
       // transfer some token to user to make him qualified for rule1
-      tokenUserBalanceBefore = await this.token.balanceOf(user);
+      const tokenUserBalanceBefore = await this.token.balanceOf(user);
       await this.token.transfer(user, RULE1_REQUIREMENT, {
         from: this.providerAddress,
       });
       expect(await this.token.balanceOf(user)).to.be.bignumber.eq(
-        tokenUserBalanceBefore + RULE1_REQUIREMENT
+        tokenUserBalanceBefore.add(RULE1_REQUIREMENT)
       );
     });
 
@@ -279,11 +279,13 @@ contract('FeeRuleRegistry', function([_, feeCollector, user, someone]) {
       const receipt2 = await this.registry.registerRule(this.rule2.address);
       expect(await this.registry.rules.call('1')).to.be.eq(this.rule2.address);
       // transfer some token to user to make him qualified for rule1
+      const tokenUserBalanceBefore = await this.token.balanceOf(user);
+
       await this.token.transfer(user, RULE1_REQUIREMENT, {
         from: this.providerAddress,
       });
       expect(await this.token.balanceOf(user)).to.be.bignumber.eq(
-        RULE1_REQUIREMENT
+        tokenUserBalanceBefore.add(RULE1_REQUIREMENT)
       );
     });
 

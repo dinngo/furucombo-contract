@@ -19,7 +19,6 @@ const { expect } = require('chai');
 const {
   DAI_TOKEN,
   USDC_TOKEN,
-  USDCe_TOKEN,
   ADAI_V3_TOKEN,
   WRAPPED_NATIVE_TOKEN,
   AAVEPROTOCOL_V3_PROVIDER,
@@ -50,7 +49,7 @@ const SimpleToken = artifacts.require('SimpleToken');
 contract('Aave V3', function([_, user]) {
   const aTokenAddress = ADAI_V3_TOKEN;
   const tokenAddress = DAI_TOKEN;
-  const token1 = network.config.chainId == 43114 ? USDCe_TOKEN : USDC_TOKEN;
+  const token1 = USDC_TOKEN;
 
   let id;
   let balanceUser;
@@ -75,7 +74,6 @@ contract('Aave V3', function([_, user]) {
     this.pool = await IPool.at(this.poolAddress);
     this.token = await IToken.at(tokenAddress);
     this.aToken = await IAToken.at(aTokenAddress);
-    // this.weth = await IToken.at(WETH_TOKEN);
     this.wNativeToken = await IToken.at(WRAPPED_NATIVE_TOKEN);
 
     this.mockToken = await SimpleToken.new();

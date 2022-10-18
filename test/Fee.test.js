@@ -16,16 +16,12 @@ const {
   DAI_TOKEN,
   USDT_TOKEN,
   WETH_TOKEN,
-  LINK_TOKEN,
-  IB_TOKEN,
   HBTC_TOKEN,
   HBTC_PROVIDER,
   OMG_TOKEN,
   OMG_PROVIDER,
   USDC_TOKEN,
-  USDCe_TOKEN,
   NATIVE_TOKEN_ADDRESS,
-  WRAPPED_NATIVE_TOKEN,
 } = require('./utils/constants');
 const {
   evmRevert,
@@ -34,7 +30,6 @@ const {
   getTokenProvider,
   impersonateAndInjectEther,
 } = require('./utils/utils');
-const { WAVAX_TOKEN } = require('./utils/constants-avalanche');
 const { network } = require('hardhat');
 
 const Proxy = artifacts.require('Proxy');
@@ -56,17 +51,10 @@ const RULE1_REQUIREMENT = ether('50'); // should match the verify requirement in
 contract('Fee', function([_, feeCollector, user]) {
   const tokenAddress = DAI_TOKEN;
   const token2Address = WETH_TOKEN;
-  const token1 = network.config.chainId == 43114 ? USDCe_TOKEN : USDC_TOKEN;
+  const token1 = USDC_TOKEN;
 
   // Different token balance in different chain
-  const rule1TokenAddress =
-    network.config.chainId == 1
-      ? LINK_TOKEN
-      : network.config.chainId == 42161
-      ? LINK_TOKEN
-      : network.config.chainId == 43114
-      ? LINK_TOKEN
-      : IB_TOKEN;
+  const rule1TokenAddress = WETH_TOKEN;
 
   const ethAmount = ether('10');
   const tokenAmount = ether('100');
@@ -114,7 +102,8 @@ contract('Fee', function([_, feeCollector, user]) {
     this.rule1Token = await IToken.at(rule1TokenAddress);
     const rule1TokenProviderAddress = await getTokenProvider(
       rule1TokenAddress,
-      token1
+      token1,
+      3000 // 0.3 %
     );
     await this.rule1Token.transfer(user, RULE1_REQUIREMENT, {
       from: rule1TokenProviderAddress,
@@ -130,10 +119,7 @@ contract('Fee', function([_, feeCollector, user]) {
     await this.token2.approve(this.proxy.address, token2Amount, { from: user });
 
     this.usdt = await IUsdt.at(USDT_TOKEN);
-    const USDT_PROVIDER = await getTokenProvider(
-      this.usdt.address,
-      WAVAX_TOKEN
-    );
+    const USDT_PROVIDER = await getTokenProvider(this.usdt.address, token1);
     await this.usdt.transfer(user, usdtAmount, { from: USDT_PROVIDER });
     await this.usdt.approve(this.proxy.address, usdtAmount, { from: user });
 
@@ -556,6 +542,9 @@ contract('Fee', function([_, feeCollector, user]) {
           [tokenAmount, token2Amount]
         ),
       ];
+
+      const token2UserBalanceBefore = await this.token2.balanceOf.call(user);
+
       const receipt = await this.proxy.batchExec(
         tos,
         configs,
@@ -565,6 +554,7 @@ contract('Fee', function([_, feeCollector, user]) {
           from: user,
         }
       );
+
       const feeRateUser = BASIS_FEE_RATE.mul(RULE1_DISCOUNT)
         .div(BASE)
         .mul(RULE2_DISCOUNT)
@@ -599,9 +589,9 @@ contract('Fee', function([_, feeCollector, user]) {
       expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
         tokenAmount.sub(feeToken)
       );
-      expect(await this.token2.balanceOf.call(user)).to.be.bignumber.eq(
-        token2Amount.sub(feeToken2)
-      );
+      expect(
+        (await this.token2.balanceOf.call(user)).add(feeToken2)
+      ).to.be.bignumber.eq(token2UserBalanceBefore);
     });
 
     it('zero fee', async function() {

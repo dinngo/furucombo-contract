@@ -19,7 +19,6 @@ const {
   DAI_TOKEN,
   USDT_TOKEN,
   USDC_TOKEN,
-  USDCe_TOKEN,
   NATIVE_TOKEN_ADDRESS,
   WRAPPED_NATIVE_TOKEN,
   WAVAX_TOKEN,
@@ -47,7 +46,7 @@ contract('Funds', function([_, user, someone]) {
   let balanceProxy;
   const token0Address = DAI_TOKEN;
   const token1Address = WRAPPED_NATIVE_TOKEN;
-  const token1 = network.config.chainId == 43114 ? USDCe_TOKEN : USDC_TOKEN;
+  const token1 = USDC_TOKEN;
 
   let provider0Address;
   let provider1Address;

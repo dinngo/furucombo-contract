@@ -24,7 +24,6 @@ const {
   WRAPPED_NATIVE_TOKEN,
   AAVEPROTOCOL_V3_PROVIDER,
   USDC_TOKEN,
-  USDCe_TOKEN,
   AWRAPPED_NATIVE_V3_TOKEN,
 } = require('./utils/constants');
 const {
@@ -51,7 +50,7 @@ contract('Aave V3', function([_, user]) {
   const aTokenAddress = ADAI_V3_TOKEN;
   const tokenAddress = DAI_TOKEN;
   const aNativeTokenAddress = AWRAPPED_NATIVE_V3_TOKEN;
-  const token1 = network.config.chainId == 43114 ? USDCe_TOKEN : USDC_TOKEN;
+  const token1 = USDC_TOKEN;
 
   let id;
   let balanceUser;

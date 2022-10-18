@@ -136,17 +136,25 @@ async function etherProviderWNative() {
   return WRAPPED_NATIVE_TOKEN;
 }
 
-async function getTokenProvider(token0 = USDC_TOKEN, token1 = WETH_TOKEN) {
+async function getTokenProvider(
+  token0 = USDC_TOKEN,
+  token1 = WETH_TOKEN,
+  fee = 500
+) {
   const chainId = network.config.chainId;
 
   if (chainId == 1 || chainId == 10 || chainId == 42161) {
-    return tokenProviderUniV3(token0, token1);
+    return tokenProviderUniV3(token0, token1, fee);
   } else if (chainId == 43114) {
     return tokenProviderTraderJoe(token0, WAVAX_TOKEN);
   }
 }
 
-async function tokenProviderUniV3(token0 = USDC_TOKEN, token1 = WETH_TOKEN) {
+async function tokenProviderUniV3(
+  token0 = USDC_TOKEN,
+  token1 = WETH_TOKEN,
+  fee = 500 // 0.05%
+) {
   if (token0 === WETH_TOKEN) {
     token1 = USDC_TOKEN;
   }
@@ -155,7 +163,7 @@ async function tokenProviderUniV3(token0 = USDC_TOKEN, token1 = WETH_TOKEN) {
     ['function getPool(address,address,uint24) view returns (address)'],
     UNISWAPV3_FACTORY
   );
-  const pool = await uniswapV3Factory.getPool(token0, token1, 500); // fee 0.05%
+  const pool = await uniswapV3Factory.getPool(token0, token1, fee);
   impersonateAndInjectEther(pool);
 
   return pool;

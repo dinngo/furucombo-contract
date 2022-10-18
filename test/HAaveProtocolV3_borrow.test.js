@@ -4,7 +4,12 @@ if (network.config.chainId == 1) {
   // This test supports to run on these chains.
 }
 
-const { balance, ether, expectRevert } = require('@openzeppelin/test-helpers');
+const {
+  balance,
+  ether,
+  expectRevert,
+  BN,
+} = require('@openzeppelin/test-helpers');
 const { tracker } = balance;
 const abi = require('ethereumjs-abi');
 const utils = web3.utils;
@@ -14,7 +19,6 @@ const { expect } = require('chai');
 const {
   DAI_TOKEN,
   USDC_TOKEN,
-  USDCe_TOKEN,
   WETH_TOKEN,
   COMP_TOKEN,
   ADAI_V3_TOKEN,
@@ -48,7 +52,7 @@ const IVariableDebtToken = artifacts.require('IVariableDebtTokenV3');
 contract('Aave V3', function([_, user, someone]) {
   const aTokenAddress = ADAI_V3_TOKEN;
   const tokenAddress = DAI_TOKEN;
-  const token1 = network.config.chainId == 43114 ? USDCe_TOKEN : USDC_TOKEN;
+  const token1 = USDC_TOKEN;
 
   let id;
   let balanceUser;
@@ -112,7 +116,7 @@ contract('Aave V3', function([_, user, someone]) {
       });
       // For 1 wei tolerance
       expect(await this.aToken.balanceOf(user)).to.be.bignumber.gte(
-        supplyAmount - 1
+        new BN(supplyAmount).sub(new BN('1'))
       );
 
       borrowTokenUserBefore = await this.borrowToken.balanceOf(user);
