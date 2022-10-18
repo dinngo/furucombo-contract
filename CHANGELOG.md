@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - Add multi-chain stages in CI.
+- Add free pass fee rule test cases
 
 ## [2.1.0] - 2022-10-08
 

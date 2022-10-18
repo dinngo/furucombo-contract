@@ -64,4 +64,7 @@ module.exports = {
     '0x142183525227cae0e4300fd0fc77d7f3b08ceb0fd9cb2a6c5488668fa0ea5ffa',
   STORAGE_KEY_FEE_COLLECTOR:
     '0x60d7a7cc0a45d852bd613e4f527aaa2e4b81fff918a69a2aab88b6458751d614',
+
+  // Free Pass
+  FREE_PASS: '0x87C277Fa828b69Bd62d642Ba310448Cd9C12dfF4',
 };
