@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+### Added
+
+- Support Aave Protocol V3.
+
+### Changed
+
+- Add multi-chain stages in CI.
+
 ## [2.1.0] - 2022-10-08
 
 ### Changed

@@ -32,7 +32,7 @@ const {
   evmRevert,
   evmSnapshot,
   mulPercent,
-  etherProviderWeth,
+  etherProviderWrappedNativeToken,
   tokenProviderSushi,
 } = require('./utils/utils');
 
@@ -62,7 +62,7 @@ contract('GelatoLimitOrder', function([_, user]) {
 
   before(async function() {
     tokenAProviderAddress = await tokenProviderSushi(tokenAAddress);
-    tokenBProviderAddress = await etherProviderWeth();
+    tokenBProviderAddress = await etherProviderWrappedNativeToken();
     tokenCProviderAddress = await tokenProviderSushi(tokenCAddress);
 
     this.registry = await Registry.new();

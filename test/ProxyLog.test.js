@@ -1,5 +1,4 @@
 const {
-  balance,
   BN,
   constants,
   ether,
@@ -45,15 +44,12 @@ contract('ProxyLog', function([_, deployer, user]) {
   describe('execute', function() {
     beforeEach(async function() {
       this.fooFactory = await FooFactory.new({ from: deployer });
-      expect(this.fooFactory.address).to.be.eq(
-        '0xFdd454EA7BF7ca88C1B7a824c3FB0951Fb8a1318'
-      );
       await this.fooFactory.createFoo();
       await this.fooFactory.createFoo();
       this.foo0 = await Foo.at(await this.fooFactory.addressOf.call(0));
       this.foo1 = await Foo.at(await this.fooFactory.addressOf.call(1));
       this.foo2 = await Foo.at(await this.fooFactory.addressOf.call(2));
-      this.fooHandler = await FooHandler.new();
+      this.fooHandler = await FooHandler.new(this.fooFactory.address);
       await this.registry.register(
         this.fooHandler.address,
         utils.asciiToHex('foo')
