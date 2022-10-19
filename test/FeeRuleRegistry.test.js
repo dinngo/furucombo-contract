@@ -12,7 +12,7 @@ const { ZERO_ADDRESS } = constants;
 
 const { expect } = require('chai');
 
-const { DAI_TOKEN, USDC_TOKEN } = require('./utils/constants');
+const { DAI_TOKEN } = require('./utils/constants');
 const { evmRevert, evmSnapshot, getTokenProvider } = require('./utils/utils');
 
 const FeeRuleRegistry = artifacts.require('FeeRuleRegistry');
@@ -24,11 +24,10 @@ const BASE = ether('1');
 const BASIS_FEE_RATE = ether('0.01'); // 1%
 const RULE1_DISCOUNT = ether('0.9'); // should match DISCOUNT of RuleMock1
 const RULE2_DISCOUNT = ether('0.8'); // should match DISCOUNT of RuleMock2
-const RULE1_REQUIREMENT = ether('50'); // should match the verify requirement in RuleMock1 (COMBO)
+const RULE1_REQUIREMENT = ether('50'); // should match the verify requirement in RuleMock1
 
 contract('FeeRuleRegistry', function([_, feeCollector, user, someone]) {
   const tokenAddress = DAI_TOKEN; // should match the verify requirement token in RuleMock1
-  const token1 = USDC_TOKEN;
 
   let id;
 
@@ -37,7 +36,7 @@ contract('FeeRuleRegistry', function([_, feeCollector, user, someone]) {
     this.rule1 = await RuleMock1.new(tokenAddress);
     this.rule2 = await RuleMock2.new();
     this.token = await IToken.at(tokenAddress);
-    this.providerAddress = await getTokenProvider(tokenAddress, token1);
+    this.providerAddress = await getTokenProvider(tokenAddress);
   });
 
   beforeEach(async function() {

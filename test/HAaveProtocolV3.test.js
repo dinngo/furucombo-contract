@@ -1,7 +1,9 @@
-if (network.config.chainId == 1) {
-  return;
-} else {
+const chainId = network.config.chainId;
+
+if (chainId == 10 || chainId == 42161 || chainId == 43114) {
   // This test supports to run on these chains.
+} else {
+  return;
 }
 
 const {
@@ -23,7 +25,6 @@ const {
   ADAI_V3_TOKEN,
   WRAPPED_NATIVE_TOKEN,
   AAVEPROTOCOL_V3_PROVIDER,
-  USDC_TOKEN,
   AWRAPPED_NATIVE_V3_TOKEN,
 } = require('./utils/constants');
 const {
@@ -49,19 +50,18 @@ const ATOKEN_DUST = ether('0.00001');
 contract('Aave V3', function([_, user]) {
   const aTokenAddress = ADAI_V3_TOKEN;
   const tokenAddress = DAI_TOKEN;
-  const aNativeTokenAddress = AWRAPPED_NATIVE_V3_TOKEN;
-  const token1 = USDC_TOKEN;
+  const aWrappedNativeTokenAddress = AWRAPPED_NATIVE_V3_TOKEN;
 
   let id;
   let balanceUser;
   let balanceProxy;
   let providerAddress;
+  let wrappedNativeTokenProviderAddress;
 
   before(async function() {
-    providerAddress = await getTokenProvider(tokenAddress, token1);
-    wNativeTokenProviderAddress = await getTokenProvider(
-      WRAPPED_NATIVE_TOKEN,
-      DAI_TOKEN
+    providerAddress = await getTokenProvider(tokenAddress);
+    wrappedNativeTokenProviderAddress = await getTokenProvider(
+      WRAPPED_NATIVE_TOKEN
     );
 
     this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);
@@ -81,8 +81,8 @@ contract('Aave V3', function([_, user]) {
     this.pool = await IPool.at(this.poolAddress);
     this.token = await IToken.at(tokenAddress);
     this.aToken = await IAToken.at(aTokenAddress);
-    this.wNativeToken = await IToken.at(WRAPPED_NATIVE_TOKEN);
-    this.aNativeToken = await IAToken.at(aNativeTokenAddress);
+    this.wrappedNativeToken = await IToken.at(WRAPPED_NATIVE_TOKEN);
+    this.aWrappedNativeToken = await IAToken.at(aWrappedNativeTokenAddress);
     this.mockToken = await SimpleToken.new();
   });
 
@@ -109,9 +109,13 @@ contract('Aave V3', function([_, user]) {
         });
         expect(await balanceProxy.get()).to.be.bignumber.zero;
         expect(
-          await this.aNativeToken.balanceOf(this.proxy.address)
+          await this.aWrappedNativeToken.balanceOf(this.proxy.address)
         ).to.be.bignumber.zero;
-        expectEqWithinBps(await this.aNativeToken.balanceOf(user), value, 1);
+        expectEqWithinBps(
+          await this.aWrappedNativeToken.balanceOf(user),
+          value,
+          1
+        );
         expect(await balanceUser.delta()).to.be.bignumber.eq(
           ether('0').sub(value)
         );
@@ -129,9 +133,13 @@ contract('Aave V3', function([_, user]) {
         });
         expect(await balanceProxy.get()).to.be.bignumber.zero;
         expect(
-          await this.aNativeToken.balanceOf(this.proxy.address)
+          await this.aWrappedNativeToken.balanceOf(this.proxy.address)
         ).to.be.bignumber.zero;
-        expectEqWithinBps(await this.aNativeToken.balanceOf(user), value, 1);
+        expectEqWithinBps(
+          await this.aWrappedNativeToken.balanceOf(user),
+          value,
+          1
+        );
         expect(await balanceUser.delta()).to.be.bignumber.eq(
           ether('0').sub(value)
         );
@@ -216,30 +224,30 @@ contract('Aave V3', function([_, user]) {
 
     describe('Eth', function() {
       beforeEach(async function() {
-        await this.wNativeToken.approve(this.pool.address, supplyAmount, {
-          from: wNativeTokenProviderAddress,
+        await this.wrappedNativeToken.approve(this.pool.address, supplyAmount, {
+          from: wrappedNativeTokenProviderAddress,
         });
         await this.pool.supply(
-          this.wNativeToken.address,
+          this.wrappedNativeToken.address,
           supplyAmount,
           user,
           0,
           {
-            from: wNativeTokenProviderAddress,
+            from: wrappedNativeTokenProviderAddress,
           }
         );
 
-        supplyAmount = await this.aNativeToken.balanceOf(user);
+        supplyAmount = await this.aWrappedNativeToken.balanceOf(user);
       });
 
       it('partial', async function() {
         const value = supplyAmount.div(new BN(2));
         const to = this.hAaveV3.address;
         const data = abi.simpleEncode('withdrawETH(uint256)', value);
-        await this.aNativeToken.transfer(this.proxy.address, value, {
+        await this.aWrappedNativeToken.transfer(this.proxy.address, value, {
           from: user,
         });
-        await this.proxy.updateTokenMock(this.aNativeToken.address);
+        await this.proxy.updateTokenMock(this.aWrappedNativeToken.address);
         await balanceUser.get();
 
         const receipt = await this.proxy.execMock(to, data, {
@@ -257,12 +265,12 @@ contract('Aave V3', function([_, user]) {
 
         // Verify proxy balance
         expect(
-          await this.aNativeToken.balanceOf(this.proxy.address)
+          await this.aWrappedNativeToken.balanceOf(this.proxy.address)
         ).to.be.bignumber.zero;
 
         // Verify user balance
         expectEqWithinBps(
-          await this.aNativeToken.balanceOf(user),
+          await this.aWrappedNativeToken.balanceOf(user),
           supplyAmount.sub(value),
           1
         );
@@ -274,10 +282,10 @@ contract('Aave V3', function([_, user]) {
         const value = supplyAmount.div(new BN(2));
         const to = this.hAaveV3.address;
         const data = abi.simpleEncode('withdrawETH(uint256)', MAX_UINT256);
-        await this.aNativeToken.transfer(this.proxy.address, value, {
+        await this.aWrappedNativeToken.transfer(this.proxy.address, value, {
           from: user,
         });
-        await this.proxy.updateTokenMock(this.aNativeToken.address);
+        await this.proxy.updateTokenMock(this.aWrappedNativeToken.address);
         await balanceUser.get();
 
         const receipt = await this.proxy.execMock(to, data, {
@@ -295,12 +303,12 @@ contract('Aave V3', function([_, user]) {
 
         // Verify proxy balance
         expect(
-          await this.aNativeToken.balanceOf(this.proxy.address)
+          await this.aWrappedNativeToken.balanceOf(this.proxy.address)
         ).to.be.bignumber.zero;
 
         // Verify user balance
         expectEqWithinBps(
-          await this.aNativeToken.balanceOf(user),
+          await this.aWrappedNativeToken.balanceOf(user),
           supplyAmount.sub(handlerReturn),
           1
         );

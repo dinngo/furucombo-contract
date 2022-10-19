@@ -1,7 +1,9 @@
-if (network.config.chainId == 1) {
-  return;
-} else {
+const chainId = network.config.chainId;
+
+if (chainId == 10 || chainId == 42161 || chainId == 43114) {
   // This test supports to run on these chains.
+} else {
+  return;
 }
 
 const {
@@ -52,7 +54,6 @@ const IVariableDebtToken = artifacts.require('IVariableDebtTokenV3');
 contract('Aave V3', function([_, user, someone]) {
   const aTokenAddress = ADAI_V3_TOKEN;
   const tokenAddress = DAI_TOKEN;
-  const token1 = USDC_TOKEN;
 
   let id;
   let balanceUser;
@@ -60,7 +61,7 @@ contract('Aave V3', function([_, user, someone]) {
   let providerAddress;
 
   before(async function() {
-    providerAddress = await getTokenProvider(tokenAddress, token1);
+    providerAddress = await getTokenProvider(tokenAddress);
 
     this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);
     this.registry = await Registry.new();
@@ -299,7 +300,7 @@ contract('Aave V3', function([_, user, someone]) {
 
     let borrowTokenUserBefore;
     let debtTokenUserBefore;
-    let debtWNativeTokenUserBefore;
+    let debtWrappedNativeTokenUserBefore;
 
     before(async function() {
       this.borrowToken = await IToken.at(borrowTokenAddr);
@@ -323,12 +324,12 @@ contract('Aave V3', function([_, user, someone]) {
 
       borrowTokenUserBefore = await this.borrowToken.balanceOf(user);
       debtTokenUserBefore = await this.debtToken.balanceOf(user);
-      debtWNativeTokenUserBefore = await this.debtWrappedNativeToken.balanceOf(
+      debtWrappedNativeTokenUserBefore = await this.debtWrappedNativeToken.balanceOf(
         user
       );
     });
 
-    it('borrow weth', async function() {
+    it('borrow token', async function() {
       const borrowAmount = ether('1');
       const to = this.hAaveV3.address;
       const data = abi.simpleEncode(
@@ -392,7 +393,7 @@ contract('Aave V3', function([_, user, someone]) {
         value: ether('0.1'),
       });
       const balancerUserAfter = await balanceUser.get();
-      const debtWETHUserAfter = await this.debtWrappedNativeToken.balanceOf(
+      const debtWrappedNativeTokenUserAfter = await this.debtWrappedNativeToken.balanceOf(
         user
       );
 
@@ -407,7 +408,7 @@ contract('Aave V3', function([_, user, someone]) {
         borrowAmount
       );
       expectEqWithinBps(
-        debtWETHUserAfter.sub(debtWNativeTokenUserBefore),
+        debtWrappedNativeTokenUserAfter.sub(debtWrappedNativeTokenUserBefore),
         borrowAmount,
         1
       );

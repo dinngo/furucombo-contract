@@ -20,7 +20,6 @@ const {
   HBTC_PROVIDER,
   OMG_TOKEN,
   OMG_PROVIDER,
-  USDC_TOKEN,
   NATIVE_TOKEN_ADDRESS,
 } = require('./utils/constants');
 const {
@@ -51,9 +50,7 @@ const RULE1_REQUIREMENT = ether('50'); // should match the verify requirement in
 contract('Fee', function([_, feeCollector, user]) {
   const tokenAddress = DAI_TOKEN;
   const token2Address = WETH_TOKEN;
-  const token1 = USDC_TOKEN;
 
-  // Different token balance in different chain
   const rule1TokenAddress = WETH_TOKEN;
 
   const ethAmount = ether('10');
@@ -96,30 +93,23 @@ contract('Fee', function([_, feeCollector, user]) {
 
     // Prepare
     this.token = await IToken.at(tokenAddress);
-    const providerAddress = await getTokenProvider(this.token.address, token1);
+    const providerAddress = await getTokenProvider(this.token.address);
     await this.token.transfer(user, tokenAmount, { from: providerAddress });
     await this.token.approve(this.proxy.address, tokenAmount, { from: user });
     this.rule1Token = await IToken.at(rule1TokenAddress);
-    const rule1TokenProviderAddress = await getTokenProvider(
-      rule1TokenAddress,
-      token1,
-      3000 // 0.3 %
-    );
+    const rule1TokenProviderAddress = await getTokenProvider(rule1TokenAddress);
     await this.rule1Token.transfer(user, RULE1_REQUIREMENT, {
       from: rule1TokenProviderAddress,
     });
 
     // Prepare token
     this.token2 = await IToken.at(token2Address);
-    const provider2Address = await getTokenProvider(
-      this.token2.address,
-      token1
-    );
+    const provider2Address = await getTokenProvider(this.token2.address);
     await this.token2.transfer(user, token2Amount, { from: provider2Address });
     await this.token2.approve(this.proxy.address, token2Amount, { from: user });
 
     this.usdt = await IUsdt.at(USDT_TOKEN);
-    const USDT_PROVIDER = await getTokenProvider(this.usdt.address, token1);
+    const USDT_PROVIDER = await getTokenProvider(this.usdt.address);
     await this.usdt.transfer(user, usdtAmount, { from: USDT_PROVIDER });
     await this.usdt.approve(this.proxy.address, usdtAmount, { from: user });
 

@@ -18,10 +18,8 @@ const {
   BLOCK_REWARD,
   DAI_TOKEN,
   USDT_TOKEN,
-  USDC_TOKEN,
   NATIVE_TOKEN_ADDRESS,
   WRAPPED_NATIVE_TOKEN,
-  WAVAX_TOKEN,
 } = require('./utils/constants');
 const {
   evmRevert,
@@ -30,7 +28,7 @@ const {
   getHandlerReturn,
   getCallData,
   getTokenProvider,
-  etherProviderWNative,
+  etherProviderWrappedNativeToken,
 } = require('./utils/utils');
 
 const HFunds = artifacts.require('HFunds');
@@ -46,18 +44,18 @@ contract('Funds', function([_, user, someone]) {
   let balanceProxy;
   const token0Address = DAI_TOKEN;
   const token1Address = WRAPPED_NATIVE_TOKEN;
-  const token1 = USDC_TOKEN;
 
   let provider0Address;
   let provider1Address;
   let usdtProviderAddress;
-  let ethProviderAddress;
+  let wrappedNativeTokenProviderAddress;
 
   before(async function() {
-    provider0Address = await getTokenProvider(token0Address, token1);
-    provider1Address = await getTokenProvider(token1Address, token1);
-    usdtProviderAddress = await getTokenProvider(USDT_TOKEN, WAVAX_TOKEN);
-    ethProviderAddress = await etherProviderWNative();
+    provider0Address = await getTokenProvider(token0Address);
+    provider1Address = await getTokenProvider(token1Address);
+    usdtProviderAddress = await getTokenProvider(USDT_TOKEN);
+
+    wrappedNativeTokenProviderAddress = await etherProviderWrappedNativeToken();
 
     this.registry = await Registry.new();
     this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);
@@ -138,7 +136,11 @@ contract('Funds', function([_, user, someone]) {
         from: provider0Address,
       });
       // Proxy does not allow transfer ether from EOA so we use provider contract
-      await send.ether(ethProviderAddress, this.proxy.address, value[1]);
+      await send.ether(
+        wrappedNativeTokenProviderAddress,
+        this.proxy.address,
+        value[1]
+      );
       await balanceUser.get();
 
       const receipt = await this.proxy.execMock(to, data, {
@@ -176,7 +178,11 @@ contract('Funds', function([_, user, someone]) {
         from: provider0Address,
       });
       // Proxy does not allow transfer ether from EOA so we use provider contract
-      await send.ether(ethProviderAddress, this.proxy.address, value[1]);
+      await send.ether(
+        wrappedNativeTokenProviderAddress,
+        this.proxy.address,
+        value[1]
+      );
       await balanceUser.get();
 
       const receipt = await this.proxy.execMock(to, data, {
@@ -965,8 +971,8 @@ contract('Funds', function([_, user, someone]) {
       before(async function() {
         // send dummy tx to get miner address
         const receipt = await send.ether(
-          ethProviderAddress,
-          ethProviderAddress,
+          wrappedNativeTokenProviderAddress,
+          wrappedNativeTokenProviderAddress,
           0
         );
         const block = await web3.eth.getBlock(receipt.blockNumber);

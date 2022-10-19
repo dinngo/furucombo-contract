@@ -1,7 +1,9 @@
-if (network.config.chainId == 1) {
-  return;
-} else {
+const chainId = network.config.chainId;
+
+if (chainId == 10 || chainId == 42161 || chainId == 43114) {
   // This test supports to run on these chains.
+} else {
+  return;
 }
 
 const {
@@ -23,11 +25,11 @@ const {
   WRAPPED_NATIVE_TOKEN,
   DAI_TOKEN,
   AAVEPROTOCOL_V3_PROVIDER,
-  USDC_TOKEN,
-  AWRAPPED_NATIVE_V3_TOKEN,
   ADAI_V3_DEBT_STABLE,
   ADAI_V3_DEBT_VARIABLE,
   AAVE_RATEMODE,
+  WETH_TOKEN,
+  AWETH_V3_TOKEN,
 } = require('./utils/constants');
 const { evmRevert, evmSnapshot, getTokenProvider } = require('./utils/utils');
 
@@ -74,17 +76,12 @@ contract('AaveV3 flashloan', function([_, user, someone]) {
 
     this.faucet = await Faucet.new();
     this.tokenA = await IToken.at(DAI_TOKEN);
-    this.token1 = USDC_TOKEN;
-    this.tokenB = await IToken.at(WRAPPED_NATIVE_TOKEN);
-    this.tokenAProvider = await getTokenProvider(
-      this.tokenA.address,
-      this.token1
-    );
-    this.tokenBProvider = await getTokenProvider(
-      this.tokenB.address,
-      DAI_TOKEN
-    );
-    this.aTokenB = await IToken.at(AWRAPPED_NATIVE_V3_TOKEN);
+    this.tokenB = await IToken.at(WETH_TOKEN);
+    this.aTokenB = await IToken.at(AWETH_V3_TOKEN);
+
+    this.tokenAProvider = await getTokenProvider(this.tokenA.address);
+    this.tokenBProvider = await getTokenProvider(this.tokenB.address);
+
     this.stableDebtTokenA = await IStableDebtToken.at(ADAI_V3_DEBT_STABLE);
     this.variableDebtTokenA = await IVariableDebtToken.at(
       ADAI_V3_DEBT_VARIABLE

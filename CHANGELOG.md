@@ -6,11 +6,11 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
-- Aave ProtocolV3 handler.
+- Support Aave Protocol V3.
 
 ### Changed
 
-- CI to support multi-chain.
+- Add multi-chain stages in CI.
 
 ## [2.1.0] - 2022-10-08
 

@@ -39,9 +39,6 @@ module.exports = {
   /* COMP */
   COMP_TOKEN: '0xc00e94Cb662C3520282E6f5717214004A7f26888',
 
-  /* IRON BANK */
-  IB_TOKEN: '0x00a35fd824c717879bf370e70ac6868b95870dfb',
-
   /* AAVE Interest Rate Mode */
   AAVE_RATEMODE: { NODEBT: 0, STABLE: 1, VARIABLE: 2 },
 

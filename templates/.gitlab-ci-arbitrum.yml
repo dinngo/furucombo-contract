@@ -5,7 +5,7 @@
     - npx patch-package --patch-dir patch
   script:
     - apt-get update && apt-get install -y netcat
-    - RUNNER_COUNT=16
+    - RUNNER_COUNT=4
     - FILES=( $(find -H -L ./test/* -regex "^.*.test.js") )
     - len=${#FILES[@]}
     - >

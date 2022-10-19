@@ -1,9 +1,8 @@
-const { BN, ether, ZERO_ADDRESS } = require('@openzeppelin/test-helpers');
+const { BN, ZERO_ADDRESS } = require('@openzeppelin/test-helpers');
 const fetch = require('node-fetch');
 // const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 const sleep = delay => new Promise(resolve => setTimeout(resolve, delay));
 const {
-  BALANCER_V2_VAULT,
   UNISWAPV2_FACTORY,
   UNISWAPV3_FACTORY,
   SUSHISWAP_FACTORY,
@@ -120,15 +119,8 @@ function expectEqWithinBps(actual, expected, bps = 1) {
   expect(actual).to.be.bignumber.gte(lower);
 }
 
-async function etherProviderWeth() {
-  // Impersonate weth
-  await network.provider.send('hardhat_impersonateAccount', [WETH_TOKEN]);
-
-  return WETH_TOKEN;
-}
-
-async function etherProviderWNative() {
-  // Impersonate weth
+async function etherProviderWrappedNativeToken() {
+  // Impersonate wrapped native token
   await network.provider.send('hardhat_impersonateAccount', [
     WRAPPED_NATIVE_TOKEN,
   ]);
@@ -324,8 +316,7 @@ module.exports = {
   getFuncSig,
   hasFuncSig,
   expectEqWithinBps,
-  etherProviderWeth,
-  etherProviderWNative,
+  etherProviderWrappedNativeToken,
   getTokenProvider,
   tokenProviderUniV3,
   tokenProviderTraderJoe,

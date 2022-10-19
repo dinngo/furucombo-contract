@@ -31,7 +31,6 @@ contract HAaveProtocolV3 is HandlerBase, IFlashLoanReceiver {
 
     function supplyETH(uint256 amount) external payable {
         amount = _getBalance(NATIVE_TOKEN_ADDRESS, amount);
-        // IWETH and IAVAX share the same interface
         IWrappedNativeToken(wrappedNativeToken).deposit{value: amount}();
 
         _supply(wrappedNativeToken, amount);

@@ -6,6 +6,10 @@
   "directories": {
     "test": "test"
   },
+  "engines": {
+    "node": "^16.13.1",
+    "npm": "^8.1.2"
+  },
   "scripts": {
     "build": "scripts/build.sh",
     "check": "scripts/check.sh",
