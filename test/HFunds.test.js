@@ -48,14 +48,14 @@ contract('Funds', function([_, user, someone]) {
   let provider0Address;
   let provider1Address;
   let usdtProviderAddress;
-  let wrappedNativeTokenProviderAddress;
+  let etherProviderAddress;
 
   before(async function() {
     provider0Address = await getTokenProvider(token0Address);
     provider1Address = await getTokenProvider(token1Address);
     usdtProviderAddress = await getTokenProvider(USDT_TOKEN);
 
-    wrappedNativeTokenProviderAddress = await etherProviderWrappedNativeToken();
+    etherProviderAddress = await etherProviderWrappedNativeToken();
 
     this.registry = await Registry.new();
     this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);
@@ -136,11 +136,7 @@ contract('Funds', function([_, user, someone]) {
         from: provider0Address,
       });
       // Proxy does not allow transfer ether from EOA so we use provider contract
-      await send.ether(
-        wrappedNativeTokenProviderAddress,
-        this.proxy.address,
-        value[1]
-      );
+      await send.ether(etherProviderAddress, this.proxy.address, value[1]);
       await balanceUser.get();
 
       const receipt = await this.proxy.execMock(to, data, {
@@ -178,11 +174,7 @@ contract('Funds', function([_, user, someone]) {
         from: provider0Address,
       });
       // Proxy does not allow transfer ether from EOA so we use provider contract
-      await send.ether(
-        wrappedNativeTokenProviderAddress,
-        this.proxy.address,
-        value[1]
-      );
+      await send.ether(etherProviderAddress, this.proxy.address, value[1]);
       await balanceUser.get();
 
       const receipt = await this.proxy.execMock(to, data, {
@@ -971,8 +963,8 @@ contract('Funds', function([_, user, someone]) {
       before(async function() {
         // send dummy tx to get miner address
         const receipt = await send.ether(
-          wrappedNativeTokenProviderAddress,
-          wrappedNativeTokenProviderAddress,
+          etherProviderAddress,
+          etherProviderAddress,
           0
         );
         const block = await web3.eth.getBlock(receipt.blockNumber);

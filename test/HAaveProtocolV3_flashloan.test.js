@@ -150,8 +150,9 @@ contract('AaveV3 flashloan', function([_, user, someone]) {
       await this.pool.supply(this.tokenB.address, supplyAmount, user, 0, {
         from: this.tokenBProvider,
       });
-      expect(await this.aTokenB.balanceOf(user)).to.be.bignumber.eq(
-        supplyAmount
+      // For 1 wei tolerance
+      expect(await this.aTokenB.balanceOf(user)).to.be.bignumber.gte(
+        new BN(supplyAmount).sub(new BN('1'))
       );
     });
 

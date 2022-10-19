@@ -12,7 +12,7 @@ const { ZERO_ADDRESS } = constants;
 
 const { expect } = require('chai');
 
-const { DAI_TOKEN } = require('./utils/constants');
+const { LINK_TOKEN } = require('./utils/constants');
 const { evmRevert, evmSnapshot, getTokenProvider } = require('./utils/utils');
 
 const FeeRuleRegistry = artifacts.require('FeeRuleRegistry');
@@ -27,7 +27,7 @@ const RULE2_DISCOUNT = ether('0.8'); // should match DISCOUNT of RuleMock2
 const RULE1_REQUIREMENT = ether('50'); // should match the verify requirement in RuleMock1
 
 contract('FeeRuleRegistry', function([_, feeCollector, user, someone]) {
-  const tokenAddress = DAI_TOKEN; // should match the verify requirement token in RuleMock1
+  const tokenAddress = LINK_TOKEN; // should match the verify requirement token in RuleMock1
 
   let id;
 

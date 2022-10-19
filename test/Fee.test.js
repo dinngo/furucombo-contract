@@ -21,6 +21,7 @@ const {
   OMG_TOKEN,
   OMG_PROVIDER,
   NATIVE_TOKEN_ADDRESS,
+  LINK_TOKEN,
 } = require('./utils/constants');
 const {
   evmRevert,
@@ -51,7 +52,7 @@ contract('Fee', function([_, feeCollector, user]) {
   const tokenAddress = DAI_TOKEN;
   const token2Address = WETH_TOKEN;
 
-  const rule1TokenAddress = WETH_TOKEN;
+  const rule1TokenAddress = LINK_TOKEN;
 
   const ethAmount = ether('10');
   const tokenAmount = ether('100');
@@ -98,6 +99,7 @@ contract('Fee', function([_, feeCollector, user]) {
     await this.token.approve(this.proxy.address, tokenAmount, { from: user });
     this.rule1Token = await IToken.at(rule1TokenAddress);
     const rule1TokenProviderAddress = await getTokenProvider(rule1TokenAddress);
+
     await this.rule1Token.transfer(user, RULE1_REQUIREMENT, {
       from: rule1TokenProviderAddress,
     });

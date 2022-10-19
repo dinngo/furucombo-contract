@@ -16,18 +16,18 @@ const { expect } = require('chai');
 const {
   ETH_TOKEN,
   DAI_TOKEN,
-  WRAPPED_NATIVE_TOKEN,
   AAVEPROTOCOL_PROVIDER,
 } = require('./utils/constants');
 const {
   evmRevert,
   evmSnapshot,
+  etherProviderWeth,
   tokenProviderUniV2,
-  getTokenProvider,
 } = require('./utils/utils');
 
 const HAave = artifacts.require('HAaveProtocol');
 const HMock = artifacts.require('HMock');
+const HUniswap = artifacts.require('HUniswap');
 const FeeRuleRegistry = artifacts.require('FeeRuleRegistry');
 const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('ProxyMock');
@@ -66,11 +66,9 @@ contract('Aave flashloan', function([_, user]) {
     await this.registry.registerCaller(lendingPoolAddress, this.hAave.address);
     this.faucet = await Faucet.new();
 
-    const wrappedNativeTokenProvider = await getTokenProvider(
-      WRAPPED_NATIVE_TOKEN
-    );
+    const etherProvider = await etherProviderWeth();
     await web3.eth.sendTransaction({
-      from: wrappedNativeTokenProvider,
+      from: etherProvider,
       to: this.faucet.address,
       value: ether('1000'),
     });
