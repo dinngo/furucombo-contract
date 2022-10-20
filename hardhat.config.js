@@ -51,10 +51,10 @@ module.exports = {
   networks: {
     hardhat: {
       forking: {
-        url: process.env.ETH_MAINNET_NODE || '',
+        url: process.env.ETH_MAINNET_NODE || 'https://rpc.ankr.com/eth',
         ignoreUnknownTxType: true,
       },
-      chainId: Number(process.env.CHAIN_ID),
+      chainId: Number(process.env.CHAIN_ID) || 1,
       accounts: {
         mnemonic:
           'dice shove sheriff police boss indoor hospital vivid tenant method game matter',
@@ -72,6 +72,18 @@ module.exports = {
     eth: {
       url: process.env.ETH_URL || 'https://rpc.ankr.com/eth',
       accounts: accounts(process.env.ETH_SECRET),
+    },
+    optimism: {
+      url: process.env.OPTIMISM_URL || 'https://rpc.ankr.com/optimism',
+      accounts: accounts(process.env.OPTIMISM_SECRET),
+    },
+    arbitrum: {
+      url: process.env.ARBITRUM_URL || 'https://rpc.ankr.com/arbitrum',
+      accounts: accounts(process.env.ARBITRUM_SECRET),
+    },
+    avalanche: {
+      url: process.env.AVALANCHE_URL || 'https://api.avax.network/ext/bc/C/rpc',
+      accounts: accounts(process.env.AVALANCHE_SECRET),
     },
   },
   mocha: {
