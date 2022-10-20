@@ -1,6 +1,6 @@
 # Test Template
-.job_template: &test-mainnet-configuration
-  stage: test-mainnet
+.job_template: &test-eth-configuration
+  stage: test-eth
   script:
     - apt-get update && apt-get install -y netcat
     - RUNNER_COUNT=16
@@ -51,82 +51,82 @@
       done
     - ETH_MAINNET_NODE=https://rpc.ankr.com/eth CHAIN_ID=1 npm run test ${UNITTEST_FILES[${JOB_INDEX}]}
 
-mainnet_test_0:
+eth_test_0:
   variables:
     JOB_INDEX: 0
-  <<: *test-mainnet-configuration
+  <<: *test-eth-configuration
 
-mainnet_test_1:
+eth_test_1:
   variables:
     JOB_INDEX: 1
-  <<: *test-mainnet-configuration
+  <<: *test-eth-configuration
 
-mainnet_test_2:
+eth_test_2:
   variables:
     JOB_INDEX: 2
-  <<: *test-mainnet-configuration
+  <<: *test-eth-configuration
 
-mainnet_test_3:
+eth_test_3:
   variables:
     JOB_INDEX: 3
-  <<: *test-mainnet-configuration
+  <<: *test-eth-configuration
 
-mainnet_test_4:
+eth_test_4:
   variables:
     JOB_INDEX: 4
-  <<: *test-mainnet-configuration
+  <<: *test-eth-configuration
 
-mainnet_test_5:
+eth_test_5:
   variables:
     JOB_INDEX: 5
-  <<: *test-mainnet-configuration
+  <<: *test-eth-configuration
 
-mainnet_test_6:
+eth_test_6:
   variables:
     JOB_INDEX: 6
-  <<: *test-mainnet-configuration
+  <<: *test-eth-configuration
 
-mainnet_test_7:
+eth_test_7:
   variables:
     JOB_INDEX: 7
-  <<: *test-mainnet-configuration
+  <<: *test-eth-configuration
 
-mainnet_test_8:
+eth_test_8:
   variables:
     JOB_INDEX: 8
-  <<: *test-mainnet-configuration
+  <<: *test-eth-configuration
 
-mainnet_test_9:
+eth_test_9:
   variables:
     JOB_INDEX: 9
-  <<: *test-mainnet-configuration
+  <<: *test-eth-configuration
 
-mainnet_test_10:
+eth_test_10:
   variables:
     JOB_INDEX: 10
-  <<: *test-mainnet-configuration
+  <<: *test-eth-configuration
 
-mainnet_test_11:
+eth_test_11:
   variables:
     JOB_INDEX: 11
-  <<: *test-mainnet-configuration
+  <<: *test-eth-configuration
 
-mainnet_test_12:
+eth_test_12:
   variables:
     JOB_INDEX: 12
-  <<: *test-mainnet-configuration
+  <<: *test-eth-configuration
 
-mainnet_test_13:
+eth_test_13:
   variables:
     JOB_INDEX: 13
-  <<: *test-mainnet-configuration
+  <<: *test-eth-configuration
 
-mainnet_test_14:
+eth_test_14:
   variables:
     JOB_INDEX: 14
-  <<: *test-mainnet-configuration
+  <<: *test-eth-configuration
 
-mainnet_test_15:
+eth_test_15:
   variables:
     JOB_INDEX: 15
-  <<: *test-mainnet-configuration
+  <<: *test-eth-configuration
