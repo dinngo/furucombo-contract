@@ -83,7 +83,7 @@ contract('CubeCounting', function([_, user]) {
           from: user,
           value: 0, // Insufficient native token
         }),
-        '0_HWeth_deposit: Unspecified'
+        '0_HWrappedNativeToken_deposit: Unspecified'
       );
     });
   });
@@ -169,7 +169,7 @@ contract('CubeCounting', function([_, user]) {
         this.proxy.batchExec(to, config, data, [], {
           from: user,
         }),
-        '0_HAaveProtocolV2_flashLoan: 0_HWeth_withdraw: Unspecified'
+        '0_HAaveProtocolV2_flashLoan: 0_HWrappedNativeToken_withdraw: Unspecified'
       );
     });
 
@@ -205,7 +205,7 @@ contract('CubeCounting', function([_, user]) {
         this.proxy.batchExec(to, config, data, [], {
           from: user,
         }),
-        '0_HAaveProtocolV2_flashLoan: 1_HWeth_deposit: Unspecified'
+        '0_HAaveProtocolV2_flashLoan: 1_HWrappedNativeToken_deposit: Unspecified'
       );
     });
 
@@ -237,7 +237,7 @@ contract('CubeCounting', function([_, user]) {
         this.proxy.batchExec(to, config, data, [], {
           from: user,
         }),
-        '1_HAaveProtocolV2_flashLoan: 0_HWeth_withdraw: Unspecified'
+        '1_HAaveProtocolV2_flashLoan: 0_HWrappedNativeToken_withdraw: Unspecified'
       );
     });
   });

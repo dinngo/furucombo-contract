@@ -119,7 +119,7 @@ function expectEqWithinBps(actual, expected, bps = 1) {
   expect(actual).to.be.bignumber.gte(lower);
 }
 
-async function etherProviderWrappedNativeToken() {
+async function nativeTokenProvider() {
   // Impersonate wrapped native token
   await network.provider.send('hardhat_impersonateAccount', [
     WRAPPED_NATIVE_TOKEN,
@@ -316,7 +316,7 @@ module.exports = {
   getFuncSig,
   hasFuncSig,
   expectEqWithinBps,
-  etherProviderWrappedNativeToken,
+  nativeTokenProvider,
   getTokenProvider,
   tokenProviderUniV3,
   tokenProviderTraderJoe,

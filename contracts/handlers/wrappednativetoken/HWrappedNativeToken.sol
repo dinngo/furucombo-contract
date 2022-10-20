@@ -15,7 +15,7 @@ contract HWrappedNativeToken is HandlerBase {
     }
 
     function getContractName() public pure override returns (string memory) {
-        return "HWeth";
+        return "HWrappedNativeToken";
     }
 
     function deposit(uint256 value) external payable {

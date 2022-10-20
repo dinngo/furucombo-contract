@@ -1,5 +1,5 @@
 include:
-  - 'templates/.gitlab-ci-mainnet.yml'
+  - 'templates/.gitlab-ci-eth.yml'
   - 'templates/.gitlab-ci-optimism.yml'
   - 'templates/.gitlab-ci-arbitrum.yml'
   - 'templates/.gitlab-ci-avalanche.yml'
@@ -20,7 +20,7 @@ default:
 
 stages:
   - build
-  - test-mainnet
+  - test-eth
   - test-optimism
   - test-arbitrum
   - test-avalanche
