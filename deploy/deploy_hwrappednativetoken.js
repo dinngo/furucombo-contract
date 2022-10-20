@@ -11,10 +11,13 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
   });
 
   const registry = await ethers.getContract('Registry', deployer);
-  const hWeth = await ethers.getContract('HWrappedNativeToken', deployer);
+  const HWrappedNativeToken = await ethers.getContract(
+    'HWrappedNativeToken',
+    deployer
+  );
 
   await registry.register(
-    hWeth.address,
+    HWrappedNativeToken.address,
     utils.formatBytes32String('HWrappedNativeToken')
   );
 };
