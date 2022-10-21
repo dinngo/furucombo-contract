@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+## [2.2.0] - 2022-10-21
+
 ### Added
 
 - Support Aave Protocol V3.
