@@ -78,7 +78,7 @@ module.exports = {
       accounts: accounts(process.env.OPTIMISM_SECRET),
     },
     arbitrum: {
-      url: process.env.ARBITRUM_RPC_URL || 'https://rpc.ankr.com/arbitrum',
+      url: process.env.ARBITRUM_RPC_URL || 'https://arb1.arbitrum.io/rpc',
       accounts: accounts(process.env.ARBITRUM_SECRET),
     },
     avalanche: {
