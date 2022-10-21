@@ -26,6 +26,7 @@ stages:
   - test-avalanche
   - analysis
   - certora
+  - deploy
 
 build:
   stage: build
@@ -61,3 +62,8 @@ analysis_slither:
     - apt-get update && apt-get install -y python3-pip
     - pip3 install slither-analyzer && pip3 install solc-select
     - npm run analysis
+
+deploy:
+  stage: deploy
+  script:
+    - npm run deploy

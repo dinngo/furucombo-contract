@@ -19,7 +19,7 @@
     "analysis": "scripts/analysis.sh",
     "lint:solhint": "solhint \"contracts/**/*.sol\"",
     "lint:prettier": "scripts/prettier.sh",
-    "deploy": "scripts/deploy.sh"
+    "deploy": "npx hardhat deploy"
   },
   "repository": {
     "type": "git",

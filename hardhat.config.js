@@ -66,23 +66,25 @@ module.exports = {
       gas: 30000000,
     },
     ethBeta: {
-      url: process.env.ETH_BETA_URL || 'https://geth-beta.furucombo.app',
+      url: process.env.ETH_BETA_RPC_URL || 'https://geth-beta.furucombo.app',
       accounts: accounts(process.env.ETH_BETA_SECRET),
     },
     eth: {
-      url: process.env.ETH_URL || 'https://rpc.ankr.com/eth',
+      url: process.env.ETH_RPC_URL || 'https://rpc.ankr.com/eth',
       accounts: accounts(process.env.ETH_SECRET),
     },
     optimism: {
-      url: process.env.OPTIMISM_URL || 'https://rpc.ankr.com/optimism',
+      url: process.env.OPTIMISM_RPC_URL || 'https://rpc.ankr.com/optimism',
       accounts: accounts(process.env.OPTIMISM_SECRET),
     },
     arbitrum: {
-      url: process.env.ARBITRUM_URL || 'https://rpc.ankr.com/arbitrum',
+      url: process.env.ARBITRUM_RPC_URL || 'https://rpc.ankr.com/arbitrum',
       accounts: accounts(process.env.ARBITRUM_SECRET),
     },
     avalanche: {
-      url: process.env.AVALANCHE_URL || 'https://api.avax.network/ext/bc/C/rpc',
+      url:
+        process.env.AVALANCHE_RPC_URL ||
+        'https://api.avax.network/ext/bc/C/rpc',
       accounts: accounts(process.env.AVALANCHE_SECRET),
     },
   },
