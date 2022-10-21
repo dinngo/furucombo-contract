@@ -1,7 +1,7 @@
-const eth = require('./constants-eth');
-const optimism = require('./constants-optimism');
-const arbitrum = require('./constants-arbitrum');
-const avalanche = require('./constants-avalanche');
+const eth = require('./constants_eth');
+const optimism = require('./constants_optimism');
+const arbitrum = require('./constants_arbitrum');
+const avalanche = require('./constants_avalanche');
 
 module.exports =
   network.config.chainId == 1
