@@ -199,7 +199,7 @@ contract('CubeCounting', function([_, user]) {
           ]),
         ];
 
-        // Different error msg for Arbitrum
+        // FIXME: revert message is different on arbitrum
         if (chainId == 42161) {
           await expectRevert(
             this.proxy.batchExec(to, config, data, [], {
@@ -271,7 +271,7 @@ contract('CubeCounting', function([_, user]) {
           ]),
         ];
 
-        // Different error msg for Arbitrum
+        // FIXME: revert message is different on arbitrum
         if (chainId == 42161) {
           await expectRevert(
             this.proxy.batchExec(to, config, data, [], {
@@ -417,7 +417,7 @@ contract('CubeCounting', function([_, user]) {
           ]),
         ];
 
-        // Different error msg for Arbitrum
+        // FIXME: revert message is different on arbitrum
         if (chainId == 42161) {
           await expectRevert(
             this.proxy.batchExec(to, config, data, [], {

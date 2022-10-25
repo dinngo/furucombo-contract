@@ -49,7 +49,7 @@
           RUNNER_TEST_CNTS[$MINIDX]=`expr ${TestCases[$i]} + ${RUNNER_TEST_CNTS[$MINIDX]}`
           MIN=${RUNNER_TEST_CNTS[$MINIDX]}
       done
-    - RPC_URL=${ETH_URL} CHAIN_ID=1 npm run test ${UNITTEST_FILES[${JOB_INDEX}]}
+    - RPC_URL=${ETH_RPC_URL} CHAIN_ID=1 npm run test ${UNITTEST_FILES[${JOB_INDEX}]}
 
 eth_test_0:
   variables:
