@@ -558,7 +558,7 @@ contract('Aave V3', function([_, user]) {
       );
       await this.proxy.updateTokenMock(this.borrowToken.address);
 
-      // Temp work-around for Arbitrum
+      // FIXME: revert message is different on arbitrum
       if (network.config.chainId == 42161) {
         await expectRevert(
           this.proxy.execMock(to, data, { from: user }),

@@ -49,7 +49,7 @@
           RUNNER_TEST_CNTS[$MINIDX]=`expr ${TestCases[$i]} + ${RUNNER_TEST_CNTS[$MINIDX]}`
           MIN=${RUNNER_TEST_CNTS[$MINIDX]}
       done
-    - ETH_MAINNET_NODE=https://api.avax.network/ext/bc/C/rpc CHAIN_ID=43114 npm run test ${UNITTEST_FILES[${JOB_INDEX}]}
+    - RPC_URL=${AVALANCHE_RPC_URL} CHAIN_ID=43114 npm run test ${UNITTEST_FILES[${JOB_INDEX}]}
 
 avalanche_test_0:
   variables:

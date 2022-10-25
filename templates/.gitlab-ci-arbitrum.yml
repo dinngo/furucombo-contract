@@ -51,7 +51,7 @@
           RUNNER_TEST_CNTS[$MINIDX]=`expr ${TestCases[$i]} + ${RUNNER_TEST_CNTS[$MINIDX]}`
           MIN=${RUNNER_TEST_CNTS[$MINIDX]}
       done
-    - ETH_MAINNET_NODE=https://rpc.ankr.com/arbitrum CHAIN_ID=42161 npm run test ${UNITTEST_FILES[${JOB_INDEX}]}
+    - RPC_URL=${ARBITRUM_RPC_URL} CHAIN_ID=42161 npm run test ${UNITTEST_FILES[${JOB_INDEX}]}
 
 arbitrum_test_0:
   variables:

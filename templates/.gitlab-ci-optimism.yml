@@ -49,7 +49,7 @@
           RUNNER_TEST_CNTS[$MINIDX]=`expr ${TestCases[$i]} + ${RUNNER_TEST_CNTS[$MINIDX]}`
           MIN=${RUNNER_TEST_CNTS[$MINIDX]}
       done
-    - ETH_MAINNET_NODE=https://rpc.ankr.com/optimism CHAIN_ID=10 npm run test ${UNITTEST_FILES[${JOB_INDEX}]}
+    - RPC_URL=${OPTIMISM_RPC_URL} CHAIN_ID=10 npm run test ${UNITTEST_FILES[${JOB_INDEX}]}
 
 optimism_test_0:
   variables:

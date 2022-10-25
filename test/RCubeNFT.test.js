@@ -1,15 +1,12 @@
 const chainId = network.config.chainId;
 
-if (chainId == 1 || chainId == 42161 || chainId == 10) {
+if (chainId == 1 || chainId == 10 || chainId == 42161) {
   // This test supports to run on these chains.
 } else {
   return;
 }
 
-const { BN, constants, ether } = require('@openzeppelin/test-helpers');
-const { ZERO_ADDRESS } = constants;
-const abi = require('ethereumjs-abi');
-const utils = web3.utils;
+const { BN, ether } = require('@openzeppelin/test-helpers');
 
 const { expect } = require('chai');
 
@@ -88,7 +85,7 @@ contract('RCubeNFT', function([_, feeCollector, user, someone]) {
       expect(await this.wooden.balanceOf(someone)).to.be.bignumber.zero;
       expect(await this.metal.balanceOf(someone)).to.be.bignumber.zero;
       expect(await this.diamond.balanceOf(someone)).to.be.bignumber.zero;
-    } else if (chainId == 42161 || chainId == 10) {
+    } else if (chainId == 10 || chainId == 42161) {
       const { FREE_PASS } = require('./utils/constants');
       this.freePass = await IStarNFTV4.at(FREE_PASS);
       this.registry = await FeeRuleRegistry.new(BASIS_FEE_RATE, feeCollector);
@@ -397,7 +394,7 @@ contract('RCubeNFT', function([_, feeCollector, user, someone]) {
   });
 
   describe('Free Pass', function() {
-    if (chainId == 42161 || chainId == 10) {
+    if (chainId == 10 || chainId == 42161) {
       beforeEach(async function() {
         await this.registry.registerRule(this.freePassRule.address);
         expect(await this.registry.rules.call('0')).to.be.eq(
