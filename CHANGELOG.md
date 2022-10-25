@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+### Changed
+
+- replace `RCubeNFT` with `RStarNFTV4`.
+
 ## [2.2.0] - 2022-10-21
 
 ### Added
