@@ -13,8 +13,8 @@ Any direct modification to develop branch is prohibited. Please work on your own
 1. Make sure your fork is up-to-date.
 
 ```
-cd legocontract
-git remote add upstream git@garage.dinngo.co:hackathon-black/legocontract.git
+cd furucombo-contract
+git remote add upstream git@github.com:dinngodev/furucombo-contract.git
 git pull upstream develop
 ```
 
