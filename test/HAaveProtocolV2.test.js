@@ -1,4 +1,5 @@
-if (network.config.chainId == 1 || network.config.chainId == 137) {
+const chainId = network.config.chainId;
+if (chainId == 1 || chainId == 137) {
   // This test supports to run on these chains.
 } else {
   return;
@@ -9,7 +10,6 @@ const {
   BN,
   constants,
   ether,
-  expectEvent,
   expectRevert,
   time,
 } = require('@openzeppelin/test-helpers');
@@ -22,10 +22,8 @@ const utils = web3.utils;
 const { expect } = require('chai');
 
 const {
-  WETH_TOKEN,
   DAI_TOKEN,
   ADAI_V2,
-  AWETH_V2,
   AAVEPROTOCOL_V2_PROVIDER,
   WRAPPED_NATIVE_TOKEN,
   AWRAPPED_NATIVE_V2_TOKEN,
@@ -50,7 +48,7 @@ const ILendingPool = artifacts.require('ILendingPoolV2');
 const IProvider = artifacts.require('ILendingPoolAddressesProviderV2');
 const SimpleToken = artifacts.require('SimpleToken');
 
-contract('Aave V2', function([_, user, someone]) {
+contract('Aave V2', function([_, user]) {
   const aTokenAddress = ADAI_V2;
   const tokenAddress = DAI_TOKEN;
   const aWrappedNativeTokenAddress = AWRAPPED_NATIVE_V2_TOKEN;
