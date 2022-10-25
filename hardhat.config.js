@@ -51,7 +51,7 @@ module.exports = {
   networks: {
     hardhat: {
       forking: {
-        url: process.env.ETH_MAINNET_NODE || 'https://rpc.ankr.com/eth',
+        url: process.env.RPC_URL || 'https://rpc.ankr.com/eth',
         ignoreUnknownTxType: true,
       },
       chainId: Number(process.env.CHAIN_ID) || 1,
