@@ -135,8 +135,7 @@ async function getTokenProvider(
   fee = 500
 ) {
   const chainId = network.config.chainId;
-
-  if (chainId == 1 || chainId == 10 || chainId == 42161) {
+  if (chainId == 1 || chainId == 10 || chainId == 42161 || chainId == 137) {
     let provider = await tokenProviderUniV3(token0, token1, fee);
     return provider == ZERO_ADDRESS
       ? await tokenProviderUniV3(token0, token1, 3000)

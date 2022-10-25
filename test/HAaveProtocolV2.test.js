@@ -1,4 +1,4 @@
-if (network.config.chainId == 1) {
+if (network.config.chainId == 1 || network.config.chainId == 137) {
   // This test supports to run on these chains.
 } else {
   return;
@@ -27,6 +27,8 @@ const {
   ADAI_V2,
   AWETH_V2,
   AAVEPROTOCOL_V2_PROVIDER,
+  WRAPPED_NATIVE_TOKEN,
+  AWRAPPED_NATIVE_V2_TOKEN,
 } = require('./utils/constants');
 const {
   evmRevert,
@@ -35,7 +37,7 @@ const {
   getHandlerReturn,
   mulPercent,
   expectEqWithinBps,
-  tokenProviderUniV2,
+  getTokenProvider,
 } = require('./utils/utils');
 
 const HAaveV2 = artifacts.require('HAaveProtocolV2');
@@ -51,8 +53,8 @@ const SimpleToken = artifacts.require('SimpleToken');
 contract('Aave V2', function([_, user, someone]) {
   const aTokenAddress = ADAI_V2;
   const tokenAddress = DAI_TOKEN;
-  const awethAddress = AWETH_V2;
-  const wethAddress = WETH_TOKEN;
+  const aWrappedNativeTokenAddress = AWRAPPED_NATIVE_V2_TOKEN;
+  const wrappedNativeTokenAddress = WRAPPED_NATIVE_TOKEN;
   const ATOKEN_DUST = ether('0.00001');
 
   let id;
@@ -62,8 +64,8 @@ contract('Aave V2', function([_, user, someone]) {
   let wethProviderAddress;
 
   before(async function() {
-    providerAddress = await tokenProviderUniV2(tokenAddress);
-    wethProviderAddress = await tokenProviderUniV2(wethAddress);
+    providerAddress = await getTokenProvider(tokenAddress);
+    wethProviderAddress = await getTokenProvider(wrappedNativeTokenAddress);
 
     this.registry = await Registry.new();
     this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);
@@ -71,7 +73,10 @@ contract('Aave V2', function([_, user, someone]) {
       this.registry.address,
       this.feeRuleRegistry.address
     );
-    this.hAaveV2 = await HAaveV2.new();
+    this.hAaveV2 = await HAaveV2.new(
+      WRAPPED_NATIVE_TOKEN,
+      AAVEPROTOCOL_V2_PROVIDER
+    );
     await this.registry.register(
       this.hAaveV2.address,
       utils.asciiToHex('AaveProtocolV2')
@@ -81,8 +86,8 @@ contract('Aave V2', function([_, user, someone]) {
     this.lendingPool = await ILendingPool.at(this.lendingPoolAddress);
     this.token = await IToken.at(tokenAddress);
     this.aToken = await IAToken.at(aTokenAddress);
-    this.weth = await IToken.at(WETH_TOKEN);
-    this.aweth = await IAToken.at(awethAddress);
+    this.wrappedNative = await IToken.at(wrappedNativeTokenAddress);
+    this.aWrappedNative = await IAToken.at(aWrappedNativeTokenAddress);
     this.mockToken = await SimpleToken.new();
   });
 
@@ -109,9 +114,13 @@ contract('Aave V2', function([_, user, someone]) {
         });
         expect(await balanceProxy.get()).to.be.bignumber.zero;
         expect(
-          await this.aweth.balanceOf.call(this.proxy.address)
+          await this.aWrappedNative.balanceOf.call(this.proxy.address)
         ).to.be.bignumber.zero;
-        expectEqWithinBps(await this.aweth.balanceOf.call(user), value, 100);
+        expectEqWithinBps(
+          await this.aWrappedNative.balanceOf.call(user),
+          value,
+          100
+        );
         expect(await balanceUser.delta()).to.be.bignumber.eq(
           ether('0').sub(value)
         );
@@ -129,9 +138,13 @@ contract('Aave V2', function([_, user, someone]) {
         });
         expect(await balanceProxy.get()).to.be.bignumber.zero;
         expect(
-          await this.aweth.balanceOf.call(this.proxy.address)
+          await this.aWrappedNative.balanceOf.call(this.proxy.address)
         ).to.be.bignumber.zero;
-        expectEqWithinBps(await this.aweth.balanceOf.call(user), value, 100);
+        expectEqWithinBps(
+          await this.aWrappedNative.balanceOf.call(user),
+          value,
+          100
+        );
         expect(await balanceUser.delta()).to.be.bignumber.eq(
           ether('0').sub(value)
         );
@@ -217,26 +230,32 @@ contract('Aave V2', function([_, user, someone]) {
 
     describe('Ether', function() {
       beforeEach(async function() {
-        await this.weth.approve(this.lendingPool.address, depositAmount, {
-          from: wethProviderAddress,
-        });
+        await this.wrappedNative.approve(
+          this.lendingPool.address,
+          depositAmount,
+          {
+            from: wethProviderAddress,
+          }
+        );
         await this.lendingPool.deposit(
-          this.weth.address,
+          this.wrappedNative.address,
           depositAmount,
           user,
           0,
           { from: wethProviderAddress }
         );
 
-        depositAmount = await this.aweth.balanceOf.call(user);
+        depositAmount = await this.aWrappedNative.balanceOf.call(user);
       });
 
       it('partial', async function() {
         const value = depositAmount.div(new BN(2));
         const to = this.hAaveV2.address;
         const data = abi.simpleEncode('withdrawETH(uint256)', value);
-        await this.aweth.transfer(this.proxy.address, value, { from: user });
-        await this.proxy.updateTokenMock(this.aweth.address);
+        await this.aWrappedNative.transfer(this.proxy.address, value, {
+          from: user,
+        });
+        await this.proxy.updateTokenMock(this.aWrappedNative.address);
         await balanceUser.get();
 
         const receipt = await this.proxy.execMock(to, data, {
@@ -248,14 +267,14 @@ contract('Aave V2', function([_, user, someone]) {
         const handlerReturn = utils.toBN(
           getHandlerReturn(receipt, ['uint256'])[0]
         );
-        const aTokenUserAfter = await this.aweth.balanceOf.call(user);
+        const aTokenUserAfter = await this.aWrappedNative.balanceOf.call(user);
         const interestMax = depositAmount.mul(new BN(1)).div(new BN(10000));
 
         // Verify handler return
         expect(value).to.be.bignumber.eq(handlerReturn);
         // Verify proxy balance
         expect(
-          await this.aweth.balanceOf.call(this.proxy.address)
+          await this.aWrappedNative.balanceOf.call(this.proxy.address)
         ).to.be.bignumber.zero;
         // Verify user balance
         // (deposit - withdraw - 1) <= aTokenAfter < (deposit + interestMax - withdraw)
@@ -273,8 +292,10 @@ contract('Aave V2', function([_, user, someone]) {
         const value = depositAmount.div(new BN(2));
         const to = this.hAaveV2.address;
         const data = abi.simpleEncode('withdrawETH(uint256)', MAX_UINT256);
-        await this.aweth.transfer(this.proxy.address, value, { from: user });
-        await this.proxy.updateTokenMock(this.aweth.address);
+        await this.aWrappedNative.transfer(this.proxy.address, value, {
+          from: user,
+        });
+        await this.proxy.updateTokenMock(this.aWrappedNative.address);
         await balanceUser.get();
 
         const receipt = await this.proxy.execMock(to, data, {
@@ -286,7 +307,7 @@ contract('Aave V2', function([_, user, someone]) {
         const handlerReturn = utils.toBN(
           getHandlerReturn(receipt, ['uint256'])[0]
         );
-        const aTokenUserAfter = await this.aweth.balanceOf.call(user);
+        const aTokenUserAfter = await this.aWrappedNative.balanceOf.call(user);
         const interestMax = depositAmount.mul(new BN(1)).div(new BN(10000));
 
         // Verify handler return
@@ -297,7 +318,7 @@ contract('Aave V2', function([_, user, someone]) {
 
         // Verify proxy balance
         expect(
-          await this.aweth.balanceOf.call(this.proxy.address)
+          await this.aWrappedNative.balanceOf.call(this.proxy.address)
         ).to.be.bignumber.zero;
         // Verify user balance
         // (deposit - withdraw) <= aTokenAfter < (deposit + interestMax - withdraw)

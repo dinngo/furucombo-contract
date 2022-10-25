@@ -14,12 +14,14 @@ import "./libraries/DataTypes.sol";
 contract HAaveProtocolV2 is HandlerBase, IFlashLoanReceiver {
     using SafeERC20 for IERC20;
 
-    // prettier-ignore
-    address public constant PROVIDER = 0xB53C1a33016B2DC2fF3653530bfF1848a515c8c5;
-    // prettier-ignore
-    address public constant WETH = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
-    // prettier-ignore
     uint16 public constant REFERRAL_CODE = 56;
+    address public immutable provider;
+    address public immutable wrappedNativeToken;
+
+    constructor(address wrappedNativeToken_, address provider_) {
+        wrappedNativeToken = wrappedNativeToken_;
+        provider = provider_;
+    }
 
     function getContractName() public pure override returns (string memory) {
         return "HAaveProtocolV2";
@@ -32,10 +34,10 @@ contract HAaveProtocolV2 is HandlerBase, IFlashLoanReceiver {
 
     function depositETH(uint256 amount) external payable {
         amount = _getBalance(NATIVE_TOKEN_ADDRESS, amount);
-        IWrappedNativeToken(WETH).deposit{value: amount}();
-        _deposit(WETH, amount);
+        IWrappedNativeToken(wrappedNativeToken).deposit{value: amount}();
+        _deposit(wrappedNativeToken, amount);
 
-        _updateToken(WETH);
+        _updateToken(wrappedNativeToken);
     }
 
     function withdraw(address asset, uint256 amount)
@@ -53,8 +55,8 @@ contract HAaveProtocolV2 is HandlerBase, IFlashLoanReceiver {
         payable
         returns (uint256 withdrawAmount)
     {
-        withdrawAmount = _withdraw(WETH, amount);
-        IWrappedNativeToken(WETH).withdraw(withdrawAmount);
+        withdrawAmount = _withdraw(wrappedNativeToken, amount);
+        IWrappedNativeToken(wrappedNativeToken).withdraw(withdrawAmount);
     }
 
     function repay(
@@ -71,10 +73,10 @@ contract HAaveProtocolV2 is HandlerBase, IFlashLoanReceiver {
         uint256 rateMode,
         address onBehalfOf
     ) external payable returns (uint256 remainDebt) {
-        IWrappedNativeToken(WETH).deposit{value: amount}();
-        remainDebt = _repay(WETH, amount, rateMode, onBehalfOf);
+        IWrappedNativeToken(wrappedNativeToken).deposit{value: amount}();
+        remainDebt = _repay(wrappedNativeToken, amount, rateMode, onBehalfOf);
 
-        _updateToken(WETH);
+        _updateToken(wrappedNativeToken);
     }
 
     function borrow(
@@ -89,8 +91,8 @@ contract HAaveProtocolV2 is HandlerBase, IFlashLoanReceiver {
 
     function borrowETH(uint256 amount, uint256 rateMode) external payable {
         address onBehalfOf = _getSender();
-        _borrow(WETH, amount, rateMode, onBehalfOf);
-        IWrappedNativeToken(WETH).withdraw(amount);
+        _borrow(wrappedNativeToken, amount, rateMode, onBehalfOf);
+        IWrappedNativeToken(wrappedNativeToken).withdraw(amount);
     }
 
     function flashLoan(
@@ -113,7 +115,7 @@ contract HAaveProtocolV2 is HandlerBase, IFlashLoanReceiver {
 
         address onBehalfOf = _getSender();
         address pool =
-            ILendingPoolAddressesProviderV2(PROVIDER).getLendingPool();
+            ILendingPoolAddressesProviderV2(provider).getLendingPool();
 
         try
             ILendingPoolV2(pool).flashLoan(
@@ -147,7 +149,7 @@ contract HAaveProtocolV2 is HandlerBase, IFlashLoanReceiver {
     ) external override returns (bool) {
         _requireMsg(
             msg.sender ==
-                ILendingPoolAddressesProviderV2(PROVIDER).getLendingPool(),
+                ILendingPoolAddressesProviderV2(provider).getLendingPool(),
             "executeOperation",
             "invalid caller"
         );
@@ -163,7 +165,7 @@ contract HAaveProtocolV2 is HandlerBase, IFlashLoanReceiver {
         IProxy(address(this)).execs(tos, configs, datas);
 
         address pool =
-            ILendingPoolAddressesProviderV2(PROVIDER).getLendingPool();
+            ILendingPoolAddressesProviderV2(provider).getLendingPool();
         for (uint256 i = 0; i < assets.length; i++) {
             uint256 amountOwing = amounts[i] + premiums[i];
             _tokenApprove(assets[i], pool, amountOwing);
@@ -218,7 +220,7 @@ contract HAaveProtocolV2 is HandlerBase, IFlashLoanReceiver {
         address onBehalfOf
     ) internal returns (uint256 remainDebt) {
         address pool =
-            ILendingPoolAddressesProviderV2(PROVIDER).getLendingPool();
+            ILendingPoolAddressesProviderV2(provider).getLendingPool();
         _tokenApprove(asset, pool, amount);
 
         try
@@ -245,7 +247,7 @@ contract HAaveProtocolV2 is HandlerBase, IFlashLoanReceiver {
         address onBehalfOf
     ) internal {
         address pool =
-            ILendingPoolAddressesProviderV2(PROVIDER).getLendingPool();
+            ILendingPoolAddressesProviderV2(provider).getLendingPool();
 
         try
             ILendingPoolV2(pool).borrow(
@@ -267,7 +269,7 @@ contract HAaveProtocolV2 is HandlerBase, IFlashLoanReceiver {
         view
         returns (address pool, address aToken)
     {
-        pool = ILendingPoolAddressesProviderV2(PROVIDER).getLendingPool();
+        pool = ILendingPoolAddressesProviderV2(provider).getLendingPool();
         try ILendingPoolV2(pool).getReserveData(underlying) returns (
             DataTypes.ReserveData memory data
         ) {
