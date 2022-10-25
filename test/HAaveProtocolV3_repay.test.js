@@ -117,9 +117,7 @@ contract('Aave V3', function([_, user]) {
       await this.pool.supply(this.token.address, supplyAmount, user, 0, {
         from: providerAddress,
       });
-      expect(await this.aToken.balanceOf(user)).to.be.bignumber.eq(
-        supplyAmount
-      );
+      expectEqWithinBps(await this.aToken.balanceOf(user), supplyAmount, 1);
 
       // Borrow
       await this.pool.borrow(

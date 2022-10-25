@@ -6,12 +6,7 @@ if (chainId == 10 || chainId == 42161 || chainId == 43114) {
   return;
 }
 
-const {
-  balance,
-  ether,
-  expectRevert,
-  BN,
-} = require('@openzeppelin/test-helpers');
+const { balance, ether, expectRevert } = require('@openzeppelin/test-helpers');
 const { tracker } = balance;
 const abi = require('ethereumjs-abi');
 const utils = web3.utils;
@@ -115,10 +110,7 @@ contract('Aave V3', function([_, user, someone]) {
       await this.pool.supply(this.token.address, supplyAmount, user, 0, {
         from: providerAddress,
       });
-      // For 1 wei tolerance
-      expect(await this.aToken.balanceOf(user)).to.be.bignumber.gte(
-        new BN(supplyAmount).sub(new BN('1'))
-      );
+      expectEqWithinBps(await this.aToken.balanceOf(user), supplyAmount, 1);
 
       borrowTokenUserBefore = await this.borrowToken.balanceOf(user);
       debtTokenUserBefore = await this.debtToken.balanceOf(user);
