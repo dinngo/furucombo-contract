@@ -15,12 +15,17 @@ interface IFoo2Factory {
 }
 
 contract Foo2Handler is HandlerBase {
+    address public immutable factory;
+    constructor(address factory_) {
+        factory = factory_;
+    }
+
     function getContractName() public pure override returns (string memory) {
         return "Foo2Handler";
     }
 
-    function getFooFactory() public pure returns (address target) {
-        return 0xaB7D1E16d471065629431aeABED38880170876f2;
+    function getFooFactory() public view returns (address target) {
+        return factory;
     }
 
     function getFoo(uint256 index) public view returns (address target) {

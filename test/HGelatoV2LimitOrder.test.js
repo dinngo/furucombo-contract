@@ -1,3 +1,9 @@
+if (network.config.chainId == 1) {
+  // This test supports to run on these chains.
+} else {
+  return;
+}
+
 const {
   balance,
   BN,
@@ -26,7 +32,7 @@ const {
   evmRevert,
   evmSnapshot,
   mulPercent,
-  etherProviderWeth,
+  nativeTokenProvider,
   tokenProviderSushi,
 } = require('./utils/utils');
 
@@ -56,7 +62,7 @@ contract('GelatoLimitOrder', function([_, user]) {
 
   before(async function() {
     tokenAProviderAddress = await tokenProviderSushi(tokenAAddress);
-    tokenBProviderAddress = await etherProviderWeth();
+    tokenBProviderAddress = await nativeTokenProvider();
     tokenCProviderAddress = await tokenProviderSushi(tokenCAddress);
 
     this.registry = await Registry.new();

@@ -10,7 +10,7 @@ build/
 .DS_Store
 
 # secrets
-.secret_beta
+.env
 
 # hardhat build directory and cache
 artifacts/

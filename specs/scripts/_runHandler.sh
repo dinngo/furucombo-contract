@@ -89,8 +89,8 @@ perl -0777 -i -pe 's/function claimComp\(/function unique_claimComp\(/g' contrac
 perl -0777 -i -pe 's/function claimComp\(/function unique_claimComp\(/g' contracts/handlers/compound/HComptroller.sol
 perl -0777 -i -pe 's/function swap\(/function unique_swap\(/g' contracts/handlers/oneinchV3/HOneInchV3.sol
 perl -0777 -i -pe 's/function unoswap\(/function unique_unoswap\(/g' contracts/handlers/oneinchV3/HOneInchV3.sol
-perl -0777 -i -pe 's/function withdraw\(/function unique_withdraw\(/g' contracts/handlers/weth/HWeth.sol
-perl -0777 -i -pe 's/function deposit\(/function unique_deposit\(/g' contracts/handlers/weth/HWeth.sol
+perl -0777 -i -pe 's/function withdraw\(/function unique_withdraw\(/g' contracts/handlers/wrappednativetoken/HWrappedNativeToken.sol
+perl -0777 -i -pe 's/function deposit\(/function unique_deposit\(/g' contracts/handlers/wrappednativetoken/HWrappedNativeToken.sol
 perl -0777 -i -pe 's/function redeemUnderlying/function unique_redeemUnderlying/g' contracts/handlers/compound/HCEther.sol
 perl -0777 -i -pe 's/receiver.transfer\(amount\)/Nothing\(receiver\).nop{value:amount}\(\)/g' contracts/handlers/funds/HFunds.sol
 # perl -0777 -i -pe 's/function swap\(/function unique_swap\(/g' contracts/handlers/oneinchV2/HOneInchExchange.sol

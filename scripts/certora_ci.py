@@ -32,7 +32,7 @@ CONTRACT_RULES_MAP = {
     "HSushiSwap.sol": ["runHSushiSwap.sh"],
     "HUniswapV2.sol": ["runHUniswapV2.sh"],
     "HYVault.sol": ["runHYVault.sh"],
-    "HWeth.sol": ["runHWeth.sh"],
+    "HWrappedNativeToken.sol": ["runHWrappedNativeToken.sh"],
     "HUniswapV3.sol": ["runHUniswapV3.sh"],
     "HPolygon.sol": ["runHPolygon.sh"],
     "HOneInchV3.sol": ["runHOneInchV3.sh"],

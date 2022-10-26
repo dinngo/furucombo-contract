@@ -1,3 +1,9 @@
+if (network.config.chainId == 1) {
+  // This test supports to run on these chains.
+} else {
+  return;
+}
+
 const {
   ether,
   expectRevert,

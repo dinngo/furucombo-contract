@@ -1,0 +1,72 @@
+# Test Template
+.job_template: &test-avalanche-configuration
+  stage: test-avalanche
+  script:
+    - apt-get update && apt-get install -y netcat
+    - RUNNER_COUNT=4
+    - FILES=( $(find -H -L ./test/* -regex "^.*.test.js") )
+    - len=${#FILES[@]}
+    - >
+      for (( i=0; i<${RUNNER_COUNT}; i+=1 )); do
+          RUNNER_TEST_CNTS[$i]=0
+      done
+    - >
+      for (( i=0; i<${len}; i+=1 )); do
+          TestCases[$i]=$(grep -o " it" ${FILES[$i]} | wc -l)
+      done
+    - >
+      for ((i = 0; i<${len}; i++))
+      do
+          for((j = 0; j<${len}-i-1; j++))
+          do
+              if [ ${TestCases[j]} -lt ${TestCases[$((j+1))]} ]
+              then
+                  # swap
+                  temp=${TestCases[j]}
+                  TestCases[$j]=${TestCases[$((j+1))]}
+                  TestCases[$((j+1))]=$temp
+
+                  temp=${FILES[j]}
+                  FILES[$j]=${FILES[$((j+1))]}
+                  FILES[$((j+1))]=$temp
+              fi
+          done
+      done
+    - MIN=${RUNNER_TEST_CNTS[0]}
+    - MINIDX=0
+    - >
+      for (( i=0; i<${len}; i+=1 )); do
+          for j in ${!RUNNER_TEST_CNTS[@]};
+          do
+              if [ ${MIN} -gt ${RUNNER_TEST_CNTS[$j]} ]
+              then
+                  MIN=${RUNNER_TEST_CNTS[${j}]}
+                  MINIDX=${j}
+              fi
+          done
+
+          UNITTEST_FILES[$MINIDX]+=' '"${FILES[$i]}"
+          RUNNER_TEST_CNTS[$MINIDX]=`expr ${TestCases[$i]} + ${RUNNER_TEST_CNTS[$MINIDX]}`
+          MIN=${RUNNER_TEST_CNTS[$MINIDX]}
+      done
+    - RPC_URL=${AVALANCHE_RPC_URL} CHAIN_ID=43114 npm run test ${UNITTEST_FILES[${JOB_INDEX}]}
+
+avalanche_test_0:
+  variables:
+    JOB_INDEX: 0
+  <<: *test-avalanche-configuration
+
+avalanche_test_1:
+  variables:
+    JOB_INDEX: 1
+  <<: *test-avalanche-configuration
+
+avalanche_test_2:
+  variables:
+    JOB_INDEX: 2
+  <<: *test-avalanche-configuration
+
+avalanche_test_3:
+  variables:
+    JOB_INDEX: 3
+  <<: *test-avalanche-configuration

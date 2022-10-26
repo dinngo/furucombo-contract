@@ -9,21 +9,6 @@ require('@nomiclabs/hardhat-etherscan');
 
 require('dotenv').config();
 
-const fs = require('fs');
-let key_beta;
-
-try {
-  key_beta = fs
-    .readFileSync('.secret_beta')
-    .toString()
-    .trim();
-} catch (err) {
-  console.log('No available .secret_beta');
-}
-
-/**
- * @type import('hardhat/config').HardhatUserConfig
- */
 module.exports = {
   solidity: {
     compilers: [
@@ -64,16 +49,12 @@ module.exports = {
     },
   },
   networks: {
-    beta: {
-      accounts: key_beta ? [key_beta] : [],
-      chainId: 1,
-      url: 'https://geth-beta.furucombo.app/',
-    },
     hardhat: {
       forking: {
-        url: process.env.ETH_MAINNET_NODE || '',
+        url: process.env.RPC_URL || 'https://rpc.ankr.com/eth',
+        ignoreUnknownTxType: true,
       },
-      chainId: 1, // hardhat sets 31337 as chainId rather than a forked chainId, so we set here.
+      chainId: Number(process.env.CHAIN_ID) || 1,
       accounts: {
         mnemonic:
           'dice shove sheriff police boss indoor hospital vivid tenant method game matter',
@@ -84,11 +65,27 @@ module.exports = {
       gasPrice: 0,
       gas: 30000000,
     },
-    prod: {
-      url: process.env.PROD_URL || 'https://rpc.ankr.com/eth',
-      chainId: parseInt(process.env.PROD_CHAIN_ID) || 1,
-      accounts:
-        process.env.PROD_SECRET !== undefined ? [process.env.PROD_SECRET] : [],
+    ethBeta: {
+      url: process.env.ETH_BETA_RPC_URL || 'https://geth-beta.furucombo.app',
+      accounts: accounts(process.env.ETH_BETA_SECRET),
+    },
+    eth: {
+      url: process.env.ETH_RPC_URL || 'https://rpc.ankr.com/eth',
+      accounts: accounts(process.env.ETH_SECRET),
+    },
+    optimism: {
+      url: process.env.OPTIMISM_RPC_URL || 'https://rpc.ankr.com/optimism',
+      accounts: accounts(process.env.OPTIMISM_SECRET),
+    },
+    arbitrum: {
+      url: process.env.ARBITRUM_RPC_URL || 'https://arb1.arbitrum.io/rpc',
+      accounts: accounts(process.env.ARBITRUM_SECRET),
+    },
+    avalanche: {
+      url:
+        process.env.AVALANCHE_RPC_URL ||
+        'https://api.avax.network/ext/bc/C/rpc',
+      accounts: accounts(process.env.AVALANCHE_SECRET),
     },
   },
   mocha: {
@@ -98,3 +95,7 @@ module.exports = {
     apiKey: process.env.ETHERSCAN_KEY || '',
   },
 };
+
+function accounts(envKey) {
+  return envKey !== undefined ? [envKey] : [];
+}

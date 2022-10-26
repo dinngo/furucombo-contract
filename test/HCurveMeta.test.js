@@ -1,3 +1,9 @@
+if (network.config.chainId == 1) {
+  // This test supports to run on these chains.
+} else {
+  return;
+}
+
 const { BN, ether, constants, send } = require('@openzeppelin/test-helpers');
 const { expect } = require('chai');
 const abi = require('ethereumjs-abi');
@@ -37,7 +43,10 @@ contract('Curve Meta', function([_, user]) {
     );
 
     this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);
-    this.proxy = await Proxy.new(this.registry.address, this.feeRuleRegistry.address);
+    this.proxy = await Proxy.new(
+      this.registry.address,
+      this.feeRuleRegistry.address
+    );
     this.usdnSwap = await ICurveHandler.at(CURVE_USDN_SWAP);
     this.usdnDeposit = await ICurveHandler.at(CURVE_USDN_DEPOSIT);
   });

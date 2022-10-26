@@ -1,19 +1,23 @@
-const { BN, ether, ZERO_ADDRESS } = require('@openzeppelin/test-helpers');
+const { BN, ZERO_ADDRESS } = require('@openzeppelin/test-helpers');
 const fetch = require('node-fetch');
 // const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 const sleep = delay => new Promise(resolve => setTimeout(resolve, delay));
 const {
   UNISWAPV2_FACTORY,
+  UNISWAPV3_FACTORY,
   SUSHISWAP_FACTORY,
+  JOE_FACTORY,
   CURVE_ADDRESS_PROVIDER,
   YEARN_CONTROLLER,
   WETH_TOKEN,
   USDC_TOKEN,
+  WAVAX_TOKEN,
   RecordHandlerResultSig,
   STORAGE_KEY_MSG_SENDER,
   STORAGE_KEY_CUBE_COUNTER,
   STORAGE_KEY_FEE_RATE,
   STORAGE_KEY_FEE_COLLECTOR,
+  WRAPPED_NATIVE_TOKEN,
 } = require('./constants');
 
 const { expect } = require('chai');
@@ -115,11 +119,57 @@ function expectEqWithinBps(actual, expected, bps = 1) {
   expect(actual).to.be.bignumber.gte(lower);
 }
 
-async function etherProviderWeth() {
-  // Impersonate weth
-  await network.provider.send('hardhat_impersonateAccount', [WETH_TOKEN]);
+async function nativeTokenProvider() {
+  // Impersonate wrapped native token
+  await network.provider.send('hardhat_impersonateAccount', [
+    WRAPPED_NATIVE_TOKEN,
+  ]);
 
-  return WETH_TOKEN;
+  return WRAPPED_NATIVE_TOKEN;
+}
+
+async function getTokenProvider(
+  token0 = USDC_TOKEN,
+  token1 = WETH_TOKEN,
+  fee = 500
+) {
+  const chainId = network.config.chainId;
+
+  if (chainId == 1 || chainId == 10 || chainId == 42161) {
+    return tokenProviderUniV3(token0, token1, fee);
+  } else if (chainId == 43114) {
+    return tokenProviderTraderJoe(token0, WAVAX_TOKEN);
+  }
+}
+
+async function tokenProviderUniV3(
+  token0 = USDC_TOKEN,
+  token1 = WETH_TOKEN,
+  fee = 500 // 0.05%
+) {
+  if (token0 === WETH_TOKEN) {
+    token1 = USDC_TOKEN;
+  }
+
+  const uniswapV3Factory = await ethers.getContractAt(
+    ['function getPool(address,address,uint24) view returns (address)'],
+    UNISWAPV3_FACTORY
+  );
+  const pool = await uniswapV3Factory.getPool(token0, token1, fee);
+  impersonateAndInjectEther(pool);
+
+  return pool;
+}
+
+async function tokenProviderTraderJoe(
+  token0 = USDC_TOKEN,
+  token1 = WAVAX_TOKEN,
+  factoryAddress = JOE_FACTORY
+) {
+  if (token0 === WAVAX_TOKEN) {
+    token1 = USDC_TOKEN;
+  }
+  return _tokenProviderUniLike(token0, token1, factoryAddress);
 }
 
 async function tokenProviderUniV2(
@@ -266,7 +316,10 @@ module.exports = {
   getFuncSig,
   hasFuncSig,
   expectEqWithinBps,
-  etherProviderWeth,
+  nativeTokenProvider,
+  getTokenProvider,
+  tokenProviderUniV3,
+  tokenProviderTraderJoe,
   tokenProviderUniV2,
   tokenProviderSushi,
   tokenProviderCurveGauge,

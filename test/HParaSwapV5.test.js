@@ -1,3 +1,11 @@
+const chainId = network.config.chainId;
+
+if (chainId == 1 || chainId == 42161 || chainId == 10 || chainId == 43114) {
+  // This test supports to run on these chains.
+} else {
+  return;
+}
+
 const {
   balance,
   BN,
@@ -11,7 +19,6 @@ const { expect, assert } = require('chai');
 const {
   DAI_TOKEN,
   USDC_TOKEN,
-  COMBO_TOKEN,
   NATIVE_TOKEN_ADDRESS,
   NATIVE_TOKEN_DECIMAL,
 } = require('./utils/constants');
@@ -21,7 +28,7 @@ const {
   mulPercent,
   getHandlerReturn,
   getCallData,
-  tokenProviderYearn,
+  getTokenProvider,
   callExternalApi,
   mwei,
 } = require('./utils/utils');
@@ -33,14 +40,13 @@ const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('ProxyMock');
 const IToken = artifacts.require('IERC20');
 
-const ETHEREUM_NETWORK_ID = 1;
 const URL_PARASWAP = 'https://apiv5.paraswap.io/';
 const IGNORE_CHECKS_PARAM = 'ignoreChecks=true';
 const URL_PARASWAP_PRICE = URL_PARASWAP + 'prices';
 const URL_PARASWAP_TRANSACTION =
   URL_PARASWAP +
   'transactions/' +
-  ETHEREUM_NETWORK_ID +
+  network.config.chainId +
   '?' +
   IGNORE_CHECKS_PARAM;
 
@@ -63,7 +69,7 @@ async function getPriceData(
       destToken: destToken,
       destDecimals: destDecimals,
       amount: amount,
-      network: ETHEREUM_NETWORK_ID,
+      network: network.config.chainId,
       route: route,
       partner: PARTNER_ADDRESS,
       excludeDirectContractMethods: excludeDirectContractMethods,
@@ -365,7 +371,7 @@ contract('ParaSwapV5', function([_, user, user2]) {
     let userBalance, proxyBalance;
 
     before(async function() {
-      providerAddress = await tokenProviderYearn(tokenAddress);
+      providerAddress = await getTokenProvider(tokenAddress);
       this.token = await IToken.at(tokenAddress);
     });
 
@@ -480,21 +486,21 @@ contract('ParaSwapV5', function([_, user, user2]) {
   }); // describe('token to ether') end
 
   describe('token to token', function() {
-    const token1Address = DAI_TOKEN;
-    const token1Decimal = 18;
-    const token2Address = COMBO_TOKEN;
+    const token1Address = USDC_TOKEN;
+    const token1Decimal = 6;
+    const token2Address = DAI_TOKEN;
     const token2Decimal = 18;
     const slippageInBps = 100; // 1%
     let providerAddress;
 
     before(async function() {
-      providerAddress = await tokenProviderYearn(token1Address);
+      providerAddress = await getTokenProvider(token1Address);
       this.token = await IToken.at(token1Address);
       this.token2 = await IToken.at(token2Address);
     });
 
     it('normal', async function() {
-      const amount = ether('500');
+      const amount = mwei('500');
       const to = this.hParaSwap.address;
 
       // Call Paraswap price API

@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+## [2.2.0] - 2022-10-21
+
+### Added
+
+- Support Aave Protocol V3.
+
+### Changed
+
+- Add multi-chain stages in CI.
+- Add free pass fee rule test cases.
+- Refactor deploy for multichain.
+
 ## [2.1.0] - 2022-10-08
 
 ### Changed

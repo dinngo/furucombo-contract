@@ -12,17 +12,59 @@ $ npm install
 
 ### Test
 
-The testing is performed through the fork function of [ganache-cli](https://github.com/trufflesuite/ganache-cli). The location of the data source is defined under `$ETH_MAINNET_NODE`. You may perform the testing by your own ethereum mainnet node instance or service provider like [Infura](https://infura.io/).
+The testing is performed through the fork function of [ganache-cli](https://github.com/trufflesuite/ganache-cli). The location of the data source is defined under `$RPC_URL`. You may perform the testing by your own rpc node instance or service provider like [Infura](https://infura.io/).
 
 ```console
-$ export ETH_MAINNET_NODE=https://mainnet.infura.io/v3/{Your_project_ID}
+$ export RPC_URL=https://mainnet.infura.io/v3/{Your_project_ID}
 $ npm run test
 ```
 
 or
 
 ```console
-$ ETH_MAINNET_NODE=https://mainnet.infura.io/v3/{Your_project_ID} npm run test
+$ RPC_URL=https://mainnet.infura.io/v3/{Your_project_ID} npm run test
+```
+
+### Deploy
+
+#### In-memory hardhat node
+
+Deploy all contracts under deploy/
+
+```console
+npx hardhat deploy
+```
+
+#### Private beta node
+
+Take `HFunds` for example.
+
+```console
+1. Add ETH_BETA_SECRET to .env
+2. npx hardhat --network ethBeta deploy --tags HFunds
+3. Add the new address of HFunds to deploy/utils/addresses_eth_beta.js
+4. npx hardhat --network ethBeta deploy --tags HFundsPostSetup
+```
+
+### Production
+
+Take `HFunds` for example. Refer to `hardhat.config.js` for the network name.
+
+```console
+1. Add ${network_name}_SECRET to .env
+2. npx hardhat --network ${network_name} deploy --tags HFunds
+3. Add the new address of HFunds to deploy/utils/addresses_${network_name}.js
+4. Register the new address using Gnosis Safe
+```
+
+### Notice
+
+Certain EVM blockchain (e.g. Arbitrum Nitro) have non-standard EIP-2718 typed transaction that would prevent hardhat fork from working due to Unknown transaction type.  
+To workaround this:
+
+```console
+1. npm install
+2. npx patch-package --patch-dir patch
 ```
 
 ### Usage
