@@ -7,6 +7,7 @@ const {
   UNISWAPV2_FACTORY,
   UNISWAPV3_FACTORY,
   SUSHISWAP_FACTORY,
+  QUICKSWAP_FACTORY,
   JOE_FACTORY,
   CURVE_ADDRESS_PROVIDER,
   YEARN_CONTROLLER,
@@ -135,13 +136,15 @@ async function getTokenProvider(
   fee = 500
 ) {
   const chainId = network.config.chainId;
-  if (chainId == 1 || chainId == 10 || chainId == 42161 || chainId == 137) {
+  if (chainId == 1 || chainId == 10 || chainId == 42161) {
     let provider = await tokenProviderUniV3(token0, token1, fee);
     return provider == ZERO_ADDRESS
       ? await tokenProviderUniV3(token0, token1, 3000)
       : provider;
   } else if (chainId == 43114) {
-    return await tokenProviderTraderJoe(token0, WAVAX_TOKEN);
+    return tokenProviderTraderJoe(token0, WAVAX_TOKEN);
+  } else if (chainId == 137) {
+    return tokenProviderQuick(token0, token1);
   }
 }
 
@@ -170,6 +173,17 @@ async function tokenProviderTraderJoe(
   factoryAddress = JOE_FACTORY
 ) {
   if (token0 === WAVAX_TOKEN) {
+    token1 = USDC_TOKEN;
+  }
+  return _tokenProviderUniLike(token0, token1, factoryAddress);
+}
+
+async function tokenProviderQuick(
+  token0 = USDC_TOKEN,
+  token1 = WETH_TOKEN,
+  factoryAddress = QUICKSWAP_FACTORY
+) {
+  if (token0 === WETH_TOKEN) {
     token1 = USDC_TOKEN;
   }
   return _tokenProviderUniLike(token0, token1, factoryAddress);
