@@ -1,6 +1,6 @@
 const chainId = network.config.chainId;
 
-if (chainId == 10 || chainId == 42161 || chainId == 43114) {
+if (chainId == 10 || chainId == 42161 || chainId == 43114 || chainId == 137) {
   // This test supports to run on these chains.
 } else {
   return;

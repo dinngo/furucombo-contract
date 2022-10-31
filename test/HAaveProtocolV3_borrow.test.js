@@ -1,6 +1,6 @@
 const chainId = network.config.chainId;
 
-if (chainId == 10 || chainId == 42161 || chainId == 43114) {
+if (chainId == 10 || chainId == 42161 || chainId == 43114 || chainId == 137) {
   // This test supports to run on these chains.
 } else {
   return;
@@ -251,7 +251,7 @@ contract('Aave V3', function([_, user, someone]) {
     });
 
     it('should revert: borrow token with no collateral ', async function() {
-      const borrowAmount = ether('2');
+      const borrowAmount = mwei('2');
       const to = this.hAaveV3.address;
       const data = abi.simpleEncode(
         'borrow(address,uint256,uint256)',
