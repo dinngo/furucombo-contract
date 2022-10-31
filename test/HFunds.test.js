@@ -967,6 +967,10 @@ contract('Funds', function([_, user, someone]) {
     });
 
     describe('ether to miner', function() {
+      if (network.config.chainId == 137) {
+        return;
+      }
+
       before(async function() {
         // send dummy tx to get miner address
         const receipt = await send.ether(

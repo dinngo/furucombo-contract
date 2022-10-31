@@ -1,8 +1,10 @@
-if (network.config.chainId == 1) {
+const chainId = network.config.chainId;
+if (chainId == 1 || chainId == 137) {
   // This test supports to run on these chains.
 } else {
   return;
 }
+
 const {
   balance,
   BN,
@@ -31,6 +33,7 @@ const {
   evmSnapshot,
   profileGas,
   tokenProviderUniV2,
+  getTokenProvider,
 } = require('./utils/utils');
 
 const HFurucombo = artifacts.require('HFurucomboStaking');
@@ -47,7 +50,7 @@ contract('Furucombo', function([_, user, someone]) {
   let providerAddress;
 
   before(async function() {
-    providerAddress = await tokenProviderUniV2(tokenAddress);
+    providerAddress = await getTokenProvider(tokenAddress);
 
     this.registry = await Registry.new();
     this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);
@@ -181,13 +184,23 @@ contract('Furucombo', function([_, user, someone]) {
       });
       await this.proxy.updateTokenMock(this.token.address);
 
-      await expectRevert(
-        this.proxy.execMock(to, data, {
-          from: user,
-          value: ether('0.1'),
-        }),
-        'Dai/insufficient-balance'
-      );
+      if (chainId == 1) {
+        await expectRevert(
+          this.proxy.execMock(to, data, {
+            from: user,
+            value: ether('0.1'),
+          }),
+          'Dai/insufficient-balance'
+        );
+      } else if (chainId == 137) {
+        await expectRevert(
+          this.proxy.execMock(to, data, {
+            from: user,
+            value: ether('0.1'),
+          }),
+          'transfer amount exceeds balance'
+        );
+      }
     });
 
     it('should revert: stake zero amount', async function() {
@@ -364,6 +377,10 @@ contract('Furucombo', function([_, user, someone]) {
   });
 
   describe('claim all', function() {
+    if (chainId == 137) {
+      return;
+    }
+
     const funcABI = {
       constant: false,
       inputs: [
