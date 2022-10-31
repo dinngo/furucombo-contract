@@ -126,6 +126,36 @@ contract HCurve is HandlerBase {
         return _exchangeAfter(handler, tokenI, tokenJ, balanceBefore);
     }
 
+    /// @notice Curve exchange underlying with factory zap
+    function exchangeUnderlyingFactoryZap(
+        address handler,
+        address pool,
+        address tokenI,
+        address tokenJ,
+        int128 i,
+        int128 j,
+        uint256 amount,
+        uint256 minAmount
+    ) external payable returns (uint256) {
+        (uint256 _amount, uint256 balanceBefore, uint256 ethAmount) =
+            _exchangeBefore(handler, tokenI, tokenJ, amount);
+        try
+            ICurveHandler(handler).exchange_underlying{value: ethAmount}(
+                pool,
+                i,
+                j,
+                _amount,
+                minAmount
+            )
+        {} catch Error(string memory reason) {
+            _revertMsg("exchangeUnderlyingFactoryZap", reason);
+        } catch {
+            _revertMsg("exchangeUnderlyingFactoryZap");
+        }
+
+        return _exchangeAfter(handler, tokenI, tokenJ, balanceBefore);
+    }
+
     /// @notice Curve exchange underlying with uint256 ij
     function exchangeUnderlyingUint256(
         address handler,
@@ -167,6 +197,7 @@ contract HCurve is HandlerBase {
             uint256
         )
     {
+        _notMaticToken(tokenI);
         amount = _getBalance(tokenI, amount);
         uint256 balanceBefore = _getBalance(tokenJ, type(uint256).max);
 
@@ -499,6 +530,7 @@ contract HCurve is HandlerBase {
             uint256
         )
     {
+        _notMaticToken(tokens);
         uint256 balanceBefore = IERC20(pool).balanceOf(address(this));
 
         // Approve non-zero amount erc20 token and set eth amount

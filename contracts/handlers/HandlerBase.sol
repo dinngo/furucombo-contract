@@ -14,6 +14,8 @@ abstract contract HandlerBase is Storage, Config {
 
     address public constant NATIVE_TOKEN_ADDRESS =
         0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
+    address private constant MATIC_TOKEN =
+        0x0000000000000000000000000000000000001010;
 
     function postProcess() external payable virtual {
         revert("Invalid post process");
@@ -123,6 +125,17 @@ abstract contract HandlerBase is Storage, Config {
             try IERC20Usdt(token).approve(spender, 0) {} catch {
                 IERC20Usdt(token).approve(spender, 1);
             }
+        }
+    }
+
+    // Do not support matic token (0x0000...1010)
+    function _notMaticToken(address token) internal pure {
+        require(token != MATIC_TOKEN, "Not support matic token");
+    }
+
+    function _notMaticToken(address[] memory tokens) internal pure {
+        for (uint256 i = 0; i < tokens.length; i++) {
+            require(tokens[i] != MATIC_TOKEN, "Not support matic token");
         }
     }
 
