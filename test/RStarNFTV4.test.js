@@ -7,10 +7,6 @@ if (chainId == 1 || chainId == 42161 || chainId == 10) {
 }
 
 const { BN, constants, ether } = require('@openzeppelin/test-helpers');
-const { ZERO_ADDRESS } = constants;
-const abi = require('ethereumjs-abi');
-const utils = web3.utils;
-
 const { expect } = require('chai');
 const { STAR_NFTV4 } = require('./utils/constants');
 
@@ -46,7 +42,7 @@ contract('RStarNFTV4', function([_, feeCollector, user, someone]) {
       STAR_NFTV4_DISCOUNT_ZERO
     );
 
-    // Lock free pass nfts owner
+    // Unlock starNftV4 owner
     const starNFTOwner = await this.starNFT.owner();
     impersonateAndInjectEther(await this.starNFT.owner());
 
@@ -203,7 +199,7 @@ contract('RStarNFTV4', function([_, feeCollector, user, someone]) {
         });
       });
 
-      describe('zero discount', function() {
+      describe('100% discount', function() {
         beforeEach(async function() {
           const receipt = await this.registry.registerRule(
             this.starNFTRuleZero.address
