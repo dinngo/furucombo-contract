@@ -142,9 +142,9 @@ async function getTokenProvider(
       ? await tokenProviderUniV3(token0, token1, 3000)
       : provider;
   } else if (chainId == 43114) {
-    return tokenProviderTraderJoe(token0, WAVAX_TOKEN);
+    return await tokenProviderTraderJoe(token0, WAVAX_TOKEN);
   } else if (chainId == 137) {
-    return tokenProviderQuick(token0, token1);
+    return await tokenProviderQuick(token0, token1);
   }
 }
 
