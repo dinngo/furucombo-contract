@@ -197,7 +197,6 @@ contract HCurve is HandlerBase {
             uint256
         )
     {
-        _notMaticToken(tokenI);
         amount = _getBalance(tokenI, amount);
         uint256 balanceBefore = _getBalance(tokenJ, type(uint256).max);
 
@@ -530,7 +529,6 @@ contract HCurve is HandlerBase {
             uint256
         )
     {
-        _notMaticToken(tokens);
         uint256 balanceBefore = IERC20(pool).balanceOf(address(this));
 
         // Approve non-zero amount erc20 token and set eth amount

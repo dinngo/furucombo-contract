@@ -522,7 +522,7 @@ contract('QuickSwap Swap', function([_, user, someone]) {
         );
         await expectRevert(
           this.proxy.execMock(to, data, { from: user }),
-          'Not support matic token'
+          'low-level call failed'
         );
       });
     });
@@ -657,7 +657,7 @@ contract('QuickSwap Swap', function([_, user, someone]) {
         );
         await expectRevert(
           this.proxy.execMock(to, data, { from: user }),
-          'Not support matic token'
+          'low-level call failed'
         );
       });
     });
@@ -821,7 +821,7 @@ contract('QuickSwap Swap', function([_, user, someone]) {
         );
         await expectRevert(
           this.proxy.execMock(to, data, { from: user }),
-          'Not support matic token'
+          'low-level call failed'
         );
       });
 
@@ -990,7 +990,7 @@ contract('QuickSwap Swap', function([_, user, someone]) {
           this.proxy.execMock(to, data, {
             from: user,
           }),
-          'Not support matic token'
+          'low-level call failed'
         );
       });
 

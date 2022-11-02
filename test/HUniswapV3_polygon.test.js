@@ -984,7 +984,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
               from: user,
               value: value,
             }),
-            'Not support matic token'
+            'low-level call failed'
           );
         });
       });
@@ -1208,7 +1208,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
               from: user,
               value: value,
             }),
-            'Not support matic token'
+            'low-level call failed'
           );
         });
       });
@@ -1394,7 +1394,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
               from: user,
               value: value,
             }),
-            'Not support matic token'
+            'low-level call failed'
           );
         });
       });
@@ -1593,7 +1593,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
               from: user,
               value: value,
             }),
-            'Not support matic token'
+            'low-level call failed'
           );
         });
       });
@@ -1824,7 +1824,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
               from: user,
               value: value,
             }),
-            'Not support matic token'
+            'low-level call failed'
           );
         });
       });
@@ -2021,7 +2021,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
               from: user,
               value: value,
             }),
-            'Not support matic token'
+            'low-level call failed'
           );
         });
       });
@@ -2254,7 +2254,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
               from: user,
               value: value,
             }),
-            'Not support matic token'
+            'low-level call failed'
           );
         });
       });
@@ -2461,7 +2461,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
               from: user,
               value: value,
             }),
-            'Not support matic token'
+            'low-level call failed'
           );
         });
       });

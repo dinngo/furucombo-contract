@@ -281,7 +281,7 @@ contract('QuickSwap Liquidity', function([_, user]) {
           from: user,
           value: value,
         }),
-        'Not support matic token'
+        'low-level call failed'
       );
     });
   });
@@ -478,7 +478,7 @@ contract('QuickSwap Liquidity', function([_, user]) {
         this.proxy.execMock(to, data, {
           from: user,
         }),
-        'Not support matic token'
+        'low-level call failed'
       );
     });
 
@@ -502,7 +502,7 @@ contract('QuickSwap Liquidity', function([_, user]) {
         this.proxy.execMock(to, data, {
           from: user,
         }),
-        'Not support matic token'
+        'low-level call failed'
       );
     });
   });

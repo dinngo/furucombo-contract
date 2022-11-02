@@ -128,17 +128,6 @@ abstract contract HandlerBase is Storage, Config {
         }
     }
 
-    // Do not support matic token (0x0000...1010)
-    function _notMaticToken(address token) internal pure {
-        require(token != MATIC_TOKEN, "Not support matic token");
-    }
-
-    function _notMaticToken(address[] memory tokens) internal pure {
-        for (uint256 i = 0; i < tokens.length; i++) {
-            require(tokens[i] != MATIC_TOKEN, "Not support matic token");
-        }
-    }
-
     function _isNotNativeToken(address token) internal pure returns (bool) {
         return (token != address(0) && token != NATIVE_TOKEN_ADDRESS);
     }

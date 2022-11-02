@@ -33,8 +33,6 @@ contract HQuickSwap is HandlerBase {
             uint256 liquidity
         )
     {
-        _notMaticToken(token);
-
         // Get uniswapV2 router
         IUniswapV2Router02 router = IUniswapV2Router02(UNISWAPV2_ROUTER);
 
@@ -86,9 +84,6 @@ contract HQuickSwap is HandlerBase {
             uint256 liquidity
         )
     {
-        _notMaticToken(tokenA);
-        _notMaticToken(tokenB);
-
         // Get uniswapV2 router
         IUniswapV2Router02 router = IUniswapV2Router02(UNISWAPV2_ROUTER);
 
@@ -277,7 +272,6 @@ contract HQuickSwap is HandlerBase {
     ) external payable returns (uint256 amount) {
         _requireMsg(path.length >= 2, "swapExactTokensForETH", "invalid path");
         address tokenIn = path[0];
-        _notMaticToken(tokenIn);
 
         // Get uniswapV2 router
         IUniswapV2Router02 router = IUniswapV2Router02(UNISWAPV2_ROUTER);
@@ -311,7 +305,6 @@ contract HQuickSwap is HandlerBase {
     ) external payable returns (uint256 amount) {
         _requireMsg(path.length >= 2, "swapTokensForExactETH", "invalid path");
         address tokenIn = path[0];
-        _notMaticToken(tokenIn);
 
         // Get uniswapV2 router
         IUniswapV2Router02 router = IUniswapV2Router02(UNISWAPV2_ROUTER);
@@ -352,7 +345,6 @@ contract HQuickSwap is HandlerBase {
         );
         address tokenIn = path[0];
         address tokenOut = path[path.length - 1];
-        _notMaticToken(tokenIn);
 
         // Get uniswapV2 router
         IUniswapV2Router02 router = IUniswapV2Router02(UNISWAPV2_ROUTER);
@@ -393,7 +385,6 @@ contract HQuickSwap is HandlerBase {
         );
         address tokenIn = path[0];
         address tokenOut = path[path.length - 1];
-        _notMaticToken(tokenIn);
 
         // Get uniswapV2 router
         IUniswapV2Router02 router = IUniswapV2Router02(UNISWAPV2_ROUTER);

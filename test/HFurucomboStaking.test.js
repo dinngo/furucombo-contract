@@ -27,6 +27,11 @@ const {
   COMBO_CLAIM_AMOUNT,
   COMBO_CLAIM_MERKLE_ROOT,
   COMBO_CLAIM_MERKLE_PROOFS,
+  MR_TOTAL_SUPPLY,
+  MR_CLAIM_USER,
+  MR_CLAIM_AMOUNT,
+  MR_CLAIM_MERKLE_ROOT,
+  MR_CLAIM_MERKLE_PROOFS,
 } = require('./utils/constants');
 const {
   evmRevert,
@@ -377,10 +382,6 @@ contract('Furucombo', function([_, user, someone]) {
   });
 
   describe('claim all', function() {
-    if (chainId == 137) {
-      return;
-    }
-
     const funcABI = {
       constant: false,
       inputs: [
@@ -427,13 +428,18 @@ contract('Furucombo', function([_, user, someone]) {
     var week;
     var supply;
     var root;
-
+    const claimUser_ = chainId == 1 ? COMBO_CLAIM_USER : MR_CLAIM_USER;
+    const claimAmount_ =
+      chainId == 1 ? ether(COMBO_CLAIM_AMOUNT) : ether(MR_CLAIM_AMOUNT);
+    const proofs_ =
+      chainId == 1 ? COMBO_CLAIM_MERKLE_PROOFS : MR_CLAIM_MERKLE_PROOFS;
     beforeEach(async function() {
-      balanceUser = await tracker(COMBO_CLAIM_USER);
+      balanceUser = await tracker(claimUser_);
       balanceProxy = await tracker(this.proxy.address);
       week = utils.toBN(1);
-      supply = ether(COMBO_TOTAL_SUPPLY);
-      root = COMBO_CLAIM_MERKLE_ROOT;
+      supply =
+        chainId == 1 ? ether(COMBO_TOTAL_SUPPLY) : ether(MR_TOTAL_SUPPLY);
+      root = chainId == 1 ? COMBO_CLAIM_MERKLE_ROOT : MR_CLAIM_MERKLE_ROOT;
 
       // Update merkle root to merkleRedeem for retroactive contract
       await this.rewardToken.approve(this.merkleRedeem.address, supply, {
@@ -456,15 +462,15 @@ contract('Furucombo', function([_, user, someone]) {
       // Send ether to claimUser
       await web3.eth.sendTransaction({
         from: _,
-        to: COMBO_CLAIM_USER,
+        to: claimUser_,
         value: 5,
       });
     });
 
     it('claim from the first week', async function() {
-      const claimAmount = ether(COMBO_CLAIM_AMOUNT);
-      const proofs = COMBO_CLAIM_MERKLE_PROOFS;
-      const claimUser = COMBO_CLAIM_USER;
+      const claimAmount = claimAmount_;
+      const proofs = proofs_;
+      const claimUser = claimUser_;
       const pools = [this.staking.address, this.merkleRedeem.address];
       const claims = [
         [[week.toString(), claimAmount.toString(), proofs]],
@@ -508,9 +514,9 @@ contract('Furucombo', function([_, user, someone]) {
       expect(await this.stakingRedeem.weekMerkleRoots.call(week2)).eq(root);
 
       // setup handler data
-      const claimAmount = ether(COMBO_CLAIM_AMOUNT);
-      const proofs = COMBO_CLAIM_MERKLE_PROOFS;
-      const claimUser = COMBO_CLAIM_USER;
+      const claimAmount = claimAmount_;
+      const proofs = proofs_;
+      const claimUser = claimUser_;
       const pools = [
         this.staking.address,
         this.merkleRedeem.address,
@@ -548,9 +554,9 @@ contract('Furucombo', function([_, user, someone]) {
     });
 
     it('claim from other one', async function() {
-      const claimAmount = ether(COMBO_CLAIM_AMOUNT);
-      const proofs = COMBO_CLAIM_MERKLE_PROOFS;
-      const claimUser = COMBO_CLAIM_USER;
+      const claimAmount = claimAmount_;
+      const proofs = proofs_;
+      const claimUser = claimUser_;
       const pools = [this.staking.address, this.merkleRedeem.address];
       const claims = [
         [[week.toString(), claimAmount.toString(), proofs]],
@@ -584,8 +590,8 @@ contract('Furucombo', function([_, user, someone]) {
 
     it('should revert: claim over reward', async function() {
       const claimAmount = ether('100');
-      const proofs = COMBO_CLAIM_MERKLE_PROOFS;
-      const claimUser = COMBO_CLAIM_USER;
+      const proofs = proofs_;
+      const claimUser = claimUser_;
       const pools = [this.staking.address];
       const claims = [[[week.toString(), claimAmount.toString(), proofs]]];
       const to = this.hFurucombo.address;
@@ -605,8 +611,8 @@ contract('Furucombo', function([_, user, someone]) {
 
     it('should revert: claim less reward', async function() {
       const claimAmount = ether('1');
-      const proofs = COMBO_CLAIM_MERKLE_PROOFS;
-      const claimUser = COMBO_CLAIM_USER;
+      const proofs = proofs_;
+      const claimUser = claimUser_;
       const pools = [this.staking.address];
       const claims = [[[week.toString(), claimAmount.toString(), proofs]]];
       const to = this.hFurucombo.address;
@@ -626,7 +632,7 @@ contract('Furucombo', function([_, user, someone]) {
 
     it('should revert: claim no reward', async function() {
       const claimAmount = ether('1');
-      const proofs = COMBO_CLAIM_MERKLE_PROOFS;
+      const proofs = proofs_;
       const claimUser = someone;
       const pools = [this.staking.address];
       const claims = [[[week.toString(), claimAmount.toString(), proofs]]];
@@ -647,7 +653,7 @@ contract('Furucombo', function([_, user, someone]) {
 
     it('should revert: claim length is zero', async function() {
       const claimAmount = ether('1');
-      const proofs = COMBO_CLAIM_MERKLE_PROOFS;
+      const proofs = proofs_;
       const claimUser = someone;
       const pools = [this.staking.address];
       const claims = [];
@@ -668,8 +674,8 @@ contract('Furucombo', function([_, user, someone]) {
 
     it('should revert: claim length != pool length', async function() {
       const claimAmount = ether('100');
-      const proofs = COMBO_CLAIM_MERKLE_PROOFS;
-      const claimUser = COMBO_CLAIM_USER;
+      const proofs = proofs_;
+      const claimUser = claimUser_;
       const pools = [this.staking.address, this.staking.address];
       const claims = [[[week.toString(), claimAmount.toString(), proofs]]];
       const to = this.hFurucombo.address;

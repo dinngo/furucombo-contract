@@ -205,7 +205,7 @@ contract('Curve_polygon', function([_, user]) {
             from: user,
             value: value,
           }),
-          'Not support matic token'
+          'low-level call failed'
         );
       });
     });
@@ -345,7 +345,7 @@ contract('Curve_polygon', function([_, user]) {
             from: user,
             value: ether('1'),
           }),
-          'Not support matic token'
+          'low-level call failed'
         );
       });
 
