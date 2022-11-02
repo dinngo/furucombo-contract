@@ -57,6 +57,8 @@ contract HUniswapV3 is HandlerBase {
         uint256 amountOutMinimum,
         uint160 sqrtPriceLimitX96
     ) external payable returns (uint256 amountOut) {
+        _notMaticToken(tokenIn);
+
         // Build params for router call
         ISwapRouter.ExactInputSingleParams memory params;
         params.tokenIn = tokenIn;
@@ -81,6 +83,8 @@ contract HUniswapV3 is HandlerBase {
         uint256 amountOutMinimum,
         uint160 sqrtPriceLimitX96
     ) external payable returns (uint256 amountOut) {
+        _notMaticToken(tokenIn);
+
         // Build params for router call
         ISwapRouter.ExactInputSingleParams memory params;
         params.tokenIn = tokenIn;
@@ -129,6 +133,7 @@ contract HUniswapV3 is HandlerBase {
     ) external payable returns (uint256 amountOut) {
         // Extract tokenIn and tokenOut
         address tokenIn = _getFirstToken(path);
+        _notMaticToken(tokenIn);
         address tokenOut = _getLastToken(path);
         // Output token must be WETH
         _requireMsg(
@@ -156,6 +161,7 @@ contract HUniswapV3 is HandlerBase {
     ) external payable returns (uint256 amountOut) {
         // Extract tokenIn and tokenOut
         address tokenIn = _getFirstToken(path);
+        _notMaticToken(tokenIn);
         address tokenOut = _getLastToken(path);
         // Build params for router call
         ISwapRouter.ExactInputParams memory params;
@@ -200,6 +206,8 @@ contract HUniswapV3 is HandlerBase {
         uint256 amountInMaximum,
         uint160 sqrtPriceLimitX96
     ) external payable returns (uint256 amountIn) {
+        _notMaticToken(tokenIn);
+
         // Build params for router call
         ISwapRouter.ExactOutputSingleParams memory params;
         params.tokenIn = tokenIn;
@@ -225,6 +233,8 @@ contract HUniswapV3 is HandlerBase {
         uint256 amountInMaximum,
         uint160 sqrtPriceLimitX96
     ) external payable returns (uint256 amountIn) {
+        _notMaticToken(tokenIn);
+
         // Build params for router call
         ISwapRouter.ExactOutputSingleParams memory params;
         params.tokenIn = tokenIn;
@@ -277,6 +287,7 @@ contract HUniswapV3 is HandlerBase {
         // Extract tokenIn and tokenOut
         // Note that the first token is tokenOut in exactOutput functions, vice versa
         address tokenIn = _getLastToken(path);
+        _notMaticToken(tokenIn);
         address tokenOut = _getFirstToken(path);
         // Out token must be WETH
         _requireMsg(
@@ -306,6 +317,7 @@ contract HUniswapV3 is HandlerBase {
         // Extract tokenIn and tokenOut
         // Note that the first token is tokenOut in exactOutput functions, vice versa
         address tokenIn = _getLastToken(path);
+        _notMaticToken(tokenIn);
         address tokenOut = _getFirstToken(path);
         // Build params for router call
         ISwapRouter.ExactOutputParams memory params;
