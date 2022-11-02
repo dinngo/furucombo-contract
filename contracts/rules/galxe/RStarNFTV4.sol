@@ -5,7 +5,7 @@ import "../RuleBase.sol";
 import "./IStarNFTV4.sol";
 
 contract RStarNFTV4 is RuleBase {
-    uint256 public immutable DISCOUNT; // DISCOUNT is for feeRate.
+    uint256 public immutable DISCOUNT;
     IStarNFTV4 public immutable starNFT;
 
     constructor(IStarNFTV4 nft_, uint256 discount_) {

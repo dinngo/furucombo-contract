@@ -61,7 +61,6 @@ contract('RStarNFTV4', function([_, feeCollector, user, someone]) {
     expect(await this.starNFT.balanceOf(user)).to.be.bignumber.gte(new BN(1));
     expect(await this.starNFT.balanceOf(someone)).to.be.bignumber.zero;
   });
-
   beforeEach(async function() {
     id = await evmSnapshot();
   });
