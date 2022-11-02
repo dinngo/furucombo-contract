@@ -21,11 +21,11 @@ default:
 
 stages:
   - build
+  - test-polygon
   - test-eth
   - test-optimism
   - test-arbitrum
   - test-avalanche
-  - test-polygon
   - analysis
   - certora
   - deploy
