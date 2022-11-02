@@ -1,6 +1,6 @@
 const chainId = network.config.chainId;
 
-if (chainId == 1 || chainId == 42161 || chainId == 10) {
+if (chainId == 1 || chainId == 10 || chainId == 42161) {
   // This test supports to run on these chains.
 } else {
   return;
@@ -72,7 +72,7 @@ contract('RStarNFTV4', function([_, feeCollector, user, someone]) {
 
   describe('StarNFTV4', function() {
     describe('calculate single', function() {
-      describe('low discount', function() {
+      describe('high rule discount', function() {
         beforeEach(async function() {
           await this.registry.registerRule(this.starNFTRuleA.address);
           expect(await this.registry.rules.call('0')).to.be.eq(
@@ -113,7 +113,7 @@ contract('RStarNFTV4', function([_, feeCollector, user, someone]) {
         });
       });
 
-      describe('middle discount', function() {
+      describe('middle rule discount', function() {
         beforeEach(async function() {
           const receipt = await this.registry.registerRule(
             this.starNFTRuleB.address
@@ -156,7 +156,7 @@ contract('RStarNFTV4', function([_, feeCollector, user, someone]) {
         });
       });
 
-      describe('high discount', function() {
+      describe('low rule discount', function() {
         beforeEach(async function() {
           const receipt = await this.registry.registerRule(
             this.starNFTRuleC.address
@@ -199,7 +199,7 @@ contract('RStarNFTV4', function([_, feeCollector, user, someone]) {
         });
       });
 
-      describe('100% discount', function() {
+      describe('zero rule discount', function() {
         beforeEach(async function() {
           const receipt = await this.registry.registerRule(
             this.starNFTRuleZero.address
