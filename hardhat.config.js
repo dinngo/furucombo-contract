@@ -87,6 +87,10 @@ module.exports = {
         'https://api.avax.network/ext/bc/C/rpc',
       accounts: accounts(process.env.AVALANCHE_SECRET),
     },
+    polygon: {
+      url: process.env.POLYGON_RPC_URL || 'https://rpc.ankr.com/polygon',
+      accounts: accounts(process.env.POLYGON_SECRET),
+    },
   },
   mocha: {
     timeout: 900000,
