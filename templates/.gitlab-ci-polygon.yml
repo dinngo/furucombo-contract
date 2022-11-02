@@ -72,3 +72,23 @@ polygon_test_3:
   variables:
     JOB_INDEX: 3
   <<: *test-polygon-configuration
+
+polygon_test_4:
+  variables:
+    JOB_INDEX: 4
+  <<: *test-polygon-configuration
+
+polygon_test_5:
+  variables:
+    JOB_INDEX: 5
+  <<: *test-polygon-configuration
+
+polygon_test_6:
+  variables:
+    JOB_INDEX: 6
+  <<: *test-polygon-configuration
+
+polygon_test_7:
+  variables:
+    JOB_INDEX: 7
+  <<: *test-polygon-configuration
