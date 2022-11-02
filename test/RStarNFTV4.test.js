@@ -72,6 +72,7 @@ contract('RStarNFTV4', function([_, feeCollector, user, someone]) {
 
   describe('StarNFTV4', function() {
     describe('calculate single', function() {
+      // Rule discount higher then fee higher. Rule discount lower then fee lower.
       describe('high rule discount', function() {
         beforeEach(async function() {
           await this.registry.registerRule(this.starNFTRuleA.address);
