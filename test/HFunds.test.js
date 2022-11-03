@@ -15,7 +15,6 @@ const utils = web3.utils;
 const { expect } = require('chai');
 
 const {
-  BLOCK_REWARD,
   DAI_TOKEN,
   USDT_TOKEN,
   NATIVE_TOKEN_ADDRESS,
@@ -987,10 +986,9 @@ contract('Funds', function([_, user, someone]) {
           from: user,
           value: value,
         });
-        // delta = ether tip + gas fee + block reward
-        expect(await this.balanceMiner.delta()).to.be.bignumber.eq(
-          value.add(ether(BLOCK_REWARD))
-        );
+        // delta = ether tip + gas fee + block reward.
+        // However block reward is 0 probably because of hardhat fork, and ether tip + gas fee = 0 since we set 0 to both base fee and gas price.
+        expect(await this.balanceMiner.delta()).to.be.bignumber.eq(value);
 
         profileGas(receipt);
       });

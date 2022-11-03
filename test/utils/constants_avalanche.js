@@ -1,5 +1,4 @@
 module.exports = {
-  BLOCK_REWARD: '2', // ether
   NATIVE_TOKEN_ADDRESS: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
   NATIVE_TOKEN_DECIMAL: 18,
 
