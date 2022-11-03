@@ -98,7 +98,11 @@ contract('Fee', function([_, feeCollector, user]) {
     await this.token.transfer(user, tokenAmount, { from: providerAddress });
     await this.token.approve(this.proxy.address, tokenAmount, { from: user });
     this.rule1Token = await IToken.at(rule1TokenAddress);
-    const rule1TokenProviderAddress = await getTokenProvider(rule1TokenAddress);
+    const rule1TokenProviderAddress = await getTokenProvider(
+      rule1TokenAddress,
+      WETH_TOKEN,
+      3000
+    );
 
     await this.rule1Token.transfer(user, RULE1_REQUIREMENT, {
       from: rule1TokenProviderAddress,
