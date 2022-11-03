@@ -57,16 +57,6 @@ Take `HFunds` for example. Refer to `hardhat.config.js` for the network name.
 4. Register the new address using Gnosis Safe
 ```
 
-### Notice
-
-Certain EVM blockchain (e.g. Arbitrum Nitro) have non-standard EIP-2718 typed transaction that would prevent hardhat fork from working due to Unknown transaction type.  
-To workaround this:
-
-```console
-1. npm install
-2. npx patch-package --patch-dir patch
-```
-
 ### Usage
 
 Furucombo contracts contains three different parts, **Proxy**, **Registry** and **Handler**.
