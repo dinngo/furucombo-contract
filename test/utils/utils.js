@@ -1,4 +1,5 @@
-const { BN, ZERO_ADDRESS } = require('@openzeppelin/test-helpers');
+const { BN, constants } = require('@openzeppelin/test-helpers');
+const { ZERO_ADDRESS } = constants;
 const fetch = require('node-fetch');
 // const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 const sleep = delay => new Promise(resolve => setTimeout(resolve, delay));
@@ -136,9 +137,12 @@ async function getTokenProvider(
   const chainId = network.config.chainId;
 
   if (chainId == 1 || chainId == 10 || chainId == 42161) {
-    return tokenProviderUniV3(token0, token1, fee);
+    let provider = await tokenProviderUniV3(token0, token1, fee);
+    return provider == ZERO_ADDRESS
+      ? await tokenProviderUniV3(token0, token1, 3000)
+      : provider;
   } else if (chainId == 43114) {
-    return tokenProviderTraderJoe(token0, WAVAX_TOKEN);
+    return await tokenProviderTraderJoe(token0, WAVAX_TOKEN);
   }
 }
 

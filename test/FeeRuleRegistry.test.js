@@ -12,7 +12,7 @@ const { ZERO_ADDRESS } = constants;
 
 const { expect } = require('chai');
 
-const { LINK_TOKEN } = require('./utils/constants');
+const { LINK_TOKEN, WETH_TOKEN } = require('./utils/constants');
 const { evmRevert, evmSnapshot, getTokenProvider } = require('./utils/utils');
 
 const FeeRuleRegistry = artifacts.require('FeeRuleRegistry');
@@ -36,7 +36,11 @@ contract('FeeRuleRegistry', function([_, feeCollector, user, someone]) {
     this.rule1 = await RuleMock1.new(tokenAddress);
     this.rule2 = await RuleMock2.new();
     this.token = await IToken.at(tokenAddress);
-    this.providerAddress = await getTokenProvider(tokenAddress);
+    this.providerAddress = await getTokenProvider(
+      tokenAddress,
+      WETH_TOKEN,
+      3000
+    );
   });
 
   beforeEach(async function() {
