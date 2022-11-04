@@ -2,7 +2,7 @@ const { get, getAlias, registerRule } = require('../utils/deploy.js');
 
 module.exports = async () => {
   const feeRuleRegistry = await get('FeeRuleRegistry');
-  const rule = await getAlias('RCubeNFT', 'RFreePass');
+  const rule = await getAlias('RStarNFTV4', 'RFreePass');
   await registerRule(feeRuleRegistry, rule);
 };
 
