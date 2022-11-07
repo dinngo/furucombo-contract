@@ -5,7 +5,7 @@
     - npx patch-package --patch-dir patch
   script:
     - apt-get update && apt-get install -y netcat
-    - RUNNER_COUNT=8
+    - RUNNER_COUNT=12
     - FILES=( $(find -H -L ./test/* -regex "^.*.test.js") )
     - len=${#FILES[@]}
     - >
@@ -91,4 +91,24 @@ polygon_test_6:
 polygon_test_7:
   variables:
     JOB_INDEX: 7
+  <<: *test-polygon-configuration
+
+polygon_test_8:
+  variables:
+    JOB_INDEX: 8
+  <<: *test-polygon-configuration
+
+polygon_test_9:
+  variables:
+    JOB_INDEX: 9
+  <<: *test-polygon-configuration
+
+polygon_test_10:
+  variables:
+    JOB_INDEX: 10
+  <<: *test-polygon-configuration
+
+polygon_test_11:
+  variables:
+    JOB_INDEX: 11
   <<: *test-polygon-configuration
