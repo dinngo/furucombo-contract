@@ -37,6 +37,8 @@ contract ProxyMock is Proxy, GasProfiler, IHandlerEvents {
     function _preProcess(uint256[] memory _rules) internal override {
         // Set the sender.
         _setSender();
+        // Set the fee collector
+        cache._setFeeCollector(feeRuleRegistry.feeCollector());
         // Calculate fee
         uint256 feeRate = feeRuleRegistry.calFeeRateMulti(_getSender(), _rules);
         cache._setFeeRate(feeRate);

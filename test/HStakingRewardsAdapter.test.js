@@ -205,6 +205,7 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
         sValue
       );
 
+      const stBalanceBefore = await this.st.balanceOf(someone);
       // Proxy stake to adapter for user initiated by someone
       const receipt = await this.proxy.execMock(this.hAdapter.address, data, {
         from: someone,
@@ -244,7 +245,9 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
       expect(await this.st.balanceOf(user)).to.be.bignumber.zero;
       expect(await balanceUser.delta()).to.be.bignumber.zero;
       // Check someone balance
-      expect(await this.st.balanceOf(someone)).to.be.bignumber.zero;
+      expect(await this.st.balanceOf(someone)).to.be.bignumber.eq(
+        stBalanceBefore
+      );
       profileGas(receipt);
     });
 
