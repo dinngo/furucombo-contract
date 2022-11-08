@@ -1,4 +1,3 @@
-return; // temporary skip 1inch test due to unknown swap issue.
 const chainId = network.config.chainId;
 if (chainId == 1 || chainId == 137) {
   // This test supports to run on these chains.
@@ -133,7 +132,7 @@ contract('OneInchV3 Swap', function([_, user]) {
       tokenUser = await this.token.balanceOf.call(user);
     });
 
-    describe('Swap', function() {
+    describe.skip('Swap', function() {
       it('normal', async function() {
         // Prepare data
         const value = ether('0.1');
@@ -391,7 +390,7 @@ contract('OneInchV3 Swap', function([_, user]) {
       tokenUser = await this.token.balanceOf.call(user);
     });
 
-    describe('Swap', function() {
+    describe.skip('Swap', function() {
       it('normal', async function() {
         // Prepare data
         const value = ether('100');
@@ -570,7 +569,7 @@ contract('OneInchV3 Swap', function([_, user]) {
       wethProxy = await this.weth.balanceOf.call(this.proxy.address);
     });
 
-    describe('Swap', function() {
+    describe.skip('Swap', function() {
       it('normal', async function() {
         // Prepare data
         const value = ether('100');

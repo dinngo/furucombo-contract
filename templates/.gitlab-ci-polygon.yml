@@ -1,8 +1,6 @@
 # Test Template
 .job_template: &test-polygon-configuration
   stage: test-polygon
-  before_script:
-    - npx patch-package --patch-dir patch
   script:
     - apt-get update && apt-get install -y netcat
     - RUNNER_COUNT=12

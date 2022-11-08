@@ -27,17 +27,11 @@ const {
   COMBO_CLAIM_AMOUNT,
   COMBO_CLAIM_MERKLE_ROOT,
   COMBO_CLAIM_MERKLE_PROOFS,
-  MR_TOTAL_SUPPLY,
-  MR_CLAIM_USER,
-  MR_CLAIM_AMOUNT,
-  MR_CLAIM_MERKLE_ROOT,
-  MR_CLAIM_MERKLE_PROOFS,
 } = require('./utils/constants');
 const {
   evmRevert,
   evmSnapshot,
   profileGas,
-  tokenProviderUniV2,
   getTokenProvider,
 } = require('./utils/utils');
 
@@ -428,18 +422,15 @@ contract('Furucombo', function([_, user, someone]) {
     var week;
     var supply;
     var root;
-    const claimUser_ = chainId == 1 ? COMBO_CLAIM_USER : MR_CLAIM_USER;
-    const claimAmount_ =
-      chainId == 1 ? ether(COMBO_CLAIM_AMOUNT) : ether(MR_CLAIM_AMOUNT);
-    const proofs_ =
-      chainId == 1 ? COMBO_CLAIM_MERKLE_PROOFS : MR_CLAIM_MERKLE_PROOFS;
+    const claimUser_ = COMBO_CLAIM_USER;
+    const claimAmount_ = ether(COMBO_CLAIM_AMOUNT);
+    const proofs_ = COMBO_CLAIM_MERKLE_PROOFS;
     beforeEach(async function() {
       balanceUser = await tracker(claimUser_);
       balanceProxy = await tracker(this.proxy.address);
       week = utils.toBN(1);
-      supply =
-        chainId == 1 ? ether(COMBO_TOTAL_SUPPLY) : ether(MR_TOTAL_SUPPLY);
-      root = chainId == 1 ? COMBO_CLAIM_MERKLE_ROOT : MR_CLAIM_MERKLE_ROOT;
+      supply = ether(COMBO_TOTAL_SUPPLY);
+      root = COMBO_CLAIM_MERKLE_ROOT;
 
       // Update merkle root to merkleRedeem for retroactive contract
       await this.rewardToken.approve(this.merkleRedeem.address, supply, {
