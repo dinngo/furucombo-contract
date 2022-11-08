@@ -24,7 +24,6 @@ const {
   WMATIC_TOKEN,
   WETH_TOKEN,
   QUICKSWAP_ROUTER,
-  MATIC_TOKEN,
 } = require('./utils/constants');
 const {
   evmRevert,
@@ -206,22 +205,6 @@ contract('QuickSwap Swap', function([_, user, someone]) {
           'HQuickSwap_swapExactETHForTokens: UniswapV2Router: INVALID_PATH'
         );
       });
-
-      it('matic token', async function() {
-        const value = ether('1');
-        const to = this.hQuickSwap.address;
-        const path = [WMATIC_TOKEN, MATIC_TOKEN];
-        const data = abi.simpleEncode(
-          'swapExactETHForTokens(uint256,uint256,address[]):(uint256[])',
-          value,
-          new BN('1'),
-          path
-        );
-        await expectRevert(
-          this.proxy.execMock(to, data, { from: user, value: value }),
-          'HQuickSwap_swapExactETHForTokens: Unspecified'
-        );
-      });
     });
 
     describe('Exact output', function() {
@@ -343,26 +326,6 @@ contract('QuickSwap Swap', function([_, user, someone]) {
             value: value,
           }),
           'HQuickSwap_swapETHForExactTokens: UniswapV2Router: INVALID_PATH'
-        );
-      });
-
-      it('matic token', async function() {
-        const value = ether('1');
-        const buyAmt = ether('100');
-        const to = this.hQuickSwap.address;
-        const path = [WMATIC_TOKEN, MATIC_TOKEN];
-        const data = abi.simpleEncode(
-          'swapETHForExactTokens(uint256,uint256,address[]):(uint256[])',
-          value,
-          buyAmt,
-          path
-        );
-        await expectRevert(
-          this.proxy.execMock(to, data, {
-            from: user,
-            value: value,
-          }),
-          'HQuickSwap_swapETHForExactTokens: Unspecified'
         );
       });
     });
@@ -509,22 +472,6 @@ contract('QuickSwap Swap', function([_, user, someone]) {
           'HQuickSwap_swapExactTokensForETH: UniswapV2Router: INVALID_PATH'
         );
       });
-
-      it('matic token', async function() {
-        const value = ether('1');
-        const to = this.hQuickSwap.address;
-        const path = [MATIC_TOKEN, WMATIC_TOKEN];
-        const data = abi.simpleEncode(
-          'swapExactTokensForETH(uint256,uint256,address[]):(uint256[])',
-          value,
-          new BN('1'),
-          path
-        );
-        await expectRevert(
-          this.proxy.execMock(to, data, { from: user }),
-          'low-level call failed'
-        );
-      });
     });
 
     describe('Exact output', function() {
@@ -641,23 +588,6 @@ contract('QuickSwap Swap', function([_, user, someone]) {
         await expectRevert(
           this.proxy.execMock(to, data, { from: user }),
           'HQuickSwap_swapTokensForExactETH: UniswapV2Router: INVALID_PATH'
-        );
-      });
-
-      it('matic token', async function() {
-        const value = ether('1');
-        const buyAmt = ether('1');
-        const to = this.hQuickSwap.address;
-        const path = [MATIC_TOKEN, WMATIC_TOKEN];
-        const data = abi.simpleEncode(
-          'swapTokensForExactETH(uint256,uint256,address[]):(uint256[])',
-          buyAmt,
-          value,
-          path
-        );
-        await expectRevert(
-          this.proxy.execMock(to, data, { from: user }),
-          'low-level call failed'
         );
       });
     });
@@ -808,38 +738,6 @@ contract('QuickSwap Swap', function([_, user, someone]) {
           'HQuickSwap_swapExactTokensForTokens: UniswapV2Library: IDENTICAL_ADDRESSES'
         );
       });
-
-      it('from matic token', async function() {
-        const value = ether('1');
-        const to = this.hQuickSwap.address;
-        const path = [MATIC_TOKEN, WMATIC_TOKEN, token1Address];
-        const data = abi.simpleEncode(
-          'swapExactTokensForTokens(uint256,uint256,address[]):(uint256[])',
-          value,
-          new BN('1'),
-          path
-        );
-        await expectRevert(
-          this.proxy.execMock(to, data, { from: user }),
-          'low-level call failed'
-        );
-      });
-
-      it('to matic token', async function() {
-        const value = ether('1');
-        const to = this.hQuickSwap.address;
-        const path = [token0Address, WMATIC_TOKEN, MATIC_TOKEN];
-        const data = abi.simpleEncode(
-          'swapExactTokensForTokens(uint256,uint256,address[]):(uint256[])',
-          value,
-          new BN('1'),
-          path
-        );
-        await expectRevert(
-          this.proxy.execMock(to, data, { from: user }),
-          'HQuickSwap_swapExactTokensForTokens: Unspecified'
-        );
-      });
     });
 
     describe('Exact output', function() {
@@ -972,44 +870,6 @@ contract('QuickSwap Swap', function([_, user, someone]) {
         await expectRevert(
           this.proxy.execMock(to, data, { from: user }),
           'HQuickSwap_swapTokensForExactTokens: UniswapV2Library: IDENTICAL_ADDRESSES'
-        );
-      });
-
-      it('from matic token', async function() {
-        const value = ether('1');
-        const buyAmt = mwei('1');
-        const to = this.hQuickSwap.address;
-        const path = [MATIC_TOKEN, WMATIC_TOKEN, token1Address];
-        const data = abi.simpleEncode(
-          'swapTokensForExactTokens(uint256,uint256,address[]):(uint256[])',
-          buyAmt,
-          new BN('1'),
-          path
-        );
-        await expectRevert(
-          this.proxy.execMock(to, data, {
-            from: user,
-          }),
-          'low-level call failed'
-        );
-      });
-
-      it('to matic token', async function() {
-        const value = ether('1');
-        const buyAmt = mwei('1');
-        const to = this.hQuickSwap.address;
-        const path = [token0Address, WMATIC_TOKEN, MATIC_TOKEN];
-        const data = abi.simpleEncode(
-          'swapTokensForExactTokens(uint256,uint256,address[]):(uint256[])',
-          buyAmt,
-          new BN('1'),
-          path
-        );
-        await expectRevert(
-          this.proxy.execMock(to, data, {
-            from: user,
-          }),
-          'HQuickSwap_swapTokensForExactTokens: Unspecified'
         );
       });
     });

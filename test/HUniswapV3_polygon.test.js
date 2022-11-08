@@ -23,7 +23,6 @@ const {
   USDC_TOKEN,
   WMATIC_TOKEN,
   WETH_TOKEN,
-  MATIC_TOKEN,
   WRAPPED_NATIVE_TOKEN,
 } = require('./utils/constants');
 
@@ -52,7 +51,6 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
   const tokenAddress = DAI_TOKEN;
   const tokenBAddress = USDC_TOKEN;
   const tokenCAddress = WETH_TOKEN;
-  const maticAddress = MATIC_TOKEN;
 
   let balanceUser;
   let balanceProxy;
@@ -958,35 +956,6 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
             '0_HUniswapV3_exactInputSingle: Too little received'
           );
         });
-
-        it('should revert: token in is Matic', async function() {
-          const value = mwei('1');
-          const to = this.hUniswapV3.address;
-
-          // Set swap info
-          const tokenIn = maticAddress;
-          const fee = new BN('500'); // 0.05%
-          const amountIn = value;
-          const amountOutMinimum = new BN('1');
-          const sqrtPriceLimitX96 = new BN('0');
-
-          // Execution
-          const data = getCallData(HUniswapV3, 'exactInputSingleToEther', [
-            tokenIn,
-            fee,
-            amountIn,
-            amountOutMinimum,
-            sqrtPriceLimitX96,
-          ]);
-
-          await expectRevert(
-            this.proxy.execMock(to, data, {
-              from: user,
-              value: value,
-            }),
-            'low-level call failed'
-          );
-        });
       });
 
       describe('multi-path', function() {
@@ -1184,33 +1153,6 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
             '0_HUniswapV3_exactInputToEther: Output not wrapped native token'
           );
         });
-
-        it('should revert: token in is Matic', async function() {
-          const value = ether('1');
-          const to = this.hUniswapV3.address;
-
-          // Set swap info
-          const tokens = [maticAddress, tokenBAddress, WMATIC_TOKEN];
-          const fees = [new BN('500') /* 0.05% */, new BN('500') /* 0.05% */];
-          const path = encodePath(tokens, fees);
-          const amountIn = value;
-          const amountOutMinimum = ether('100');
-
-          // Execution
-          const data = getCallData(HUniswapV3, 'exactInputToEther', [
-            path,
-            amountIn,
-            amountOutMinimum,
-          ]);
-
-          await expectRevert(
-            this.proxy.execMock(to, data, {
-              from: user,
-              value: value,
-            }),
-            'low-level call failed'
-          );
-        });
       });
     });
 
@@ -1366,35 +1308,6 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
               value: value,
             }),
             '0_HUniswapV3_exactOutputSingle: STF'
-          );
-        });
-
-        it('should revert: token in is Matic', async function() {
-          const value = ether('1');
-          const to = this.hUniswapV3.address;
-
-          // Set swap info
-          const tokenIn = maticAddress;
-          const fee = new BN('500'); // 0.05%
-          const amountOut = ether('1');
-          const amountInMaximum = mwei('3000');
-          const sqrtPriceLimitX96 = new BN('0');
-
-          // Execution
-          const data = getCallData(HUniswapV3, 'exactOutputSingleToEther', [
-            tokenIn,
-            fee,
-            amountOut,
-            amountInMaximum,
-            sqrtPriceLimitX96,
-          ]);
-
-          await expectRevert(
-            this.proxy.execMock(to, data, {
-              from: user,
-              value: value,
-            }),
-            'low-level call failed'
           );
         });
       });
@@ -1567,33 +1480,6 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
               value: value,
             }),
             '0_HUniswapV3_exactOutputToEther: Output not wrapped native token'
-          );
-        });
-
-        it('should revert: token in is Matic', async function() {
-          const value = ether('1');
-          const to = this.hUniswapV3.address;
-
-          // Set swap info
-          const tokens = [WMATIC_TOKEN, tokenBAddress, maticAddress];
-          const fees = [new BN('500') /* 0.05% */, new BN('500') /* 0.05% */];
-          const path = encodePath(tokens, fees);
-          const amountOut = ether('1');
-          const amountInMaximum = ether('10');
-
-          // Execution
-          const data = getCallData(HUniswapV3, 'exactOutputToEther', [
-            path,
-            amountOut,
-            amountInMaximum,
-          ]);
-
-          await expectRevert(
-            this.proxy.execMock(to, data, {
-              from: user,
-              value: value,
-            }),
-            'low-level call failed'
           );
         });
       });
@@ -1796,37 +1682,6 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
             '0_HUniswapV3_exactInputSingle: Too little received'
           );
         });
-
-        it('should revert: token in is Matic', async function() {
-          const value = ether('1');
-          const to = this.hUniswapV3.address;
-
-          // Set swap info
-          const tokenIn = maticAddress;
-          const tokenOut = tokenCAddress;
-          const fee = new BN('500'); // 0.05%
-          const amountIn = mwei('5000');
-          const amountOutMinimum = new BN('1');
-          const sqrtPriceLimitX96 = new BN('0');
-
-          // Execution
-          const data = getCallData(HUniswapV3, 'exactInputSingle', [
-            tokenIn,
-            tokenOut,
-            fee,
-            amountIn,
-            amountOutMinimum,
-            sqrtPriceLimitX96,
-          ]);
-
-          await expectRevert(
-            this.proxy.execMock(to, data, {
-              from: user,
-              value: value,
-            }),
-            'low-level call failed'
-          );
-        });
       });
 
       describe('multi-path', function() {
@@ -1995,33 +1850,6 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
               value: value,
             }),
             '0_HUniswapV3_exactInput: Too little received'
-          );
-        });
-
-        it('should revert: token in is Matic', async function() {
-          const value = ether('1');
-          const to = this.hUniswapV3.address;
-
-          // Set swap info
-          const tokens = [maticAddress, tokenBAddress, tokenCAddress];
-          const fees = [new BN(500) /* 0.05% */, new BN(500) /* 0.05% */];
-          const path = encodePath(tokens, fees);
-          const amountIn = value;
-          const amountOutMinimum = new BN('1');
-
-          // Execution
-          const data = getCallData(HUniswapV3, 'exactInput', [
-            path,
-            amountIn,
-            amountOutMinimum,
-          ]);
-
-          await expectRevert(
-            this.proxy.execMock(to, data, {
-              from: user,
-              value: value,
-            }),
-            'low-level call failed'
           );
         });
       });
@@ -2226,37 +2054,6 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
             '0_HUniswapV3_exactOutputSingle: STF'
           );
         });
-
-        it('should revert: token in is Matic', async function() {
-          const value = ether('1');
-          const to = this.hUniswapV3.address;
-
-          // Set swap info
-          const tokenIn = maticAddress;
-          const tokenOut = tokenCAddress;
-          const fee = new BN('500'); // 0.05%
-          const amountOut = ether('1');
-          const amountInMaximum = mwei('10000');
-          const sqrtPriceLimitX96 = new BN('0');
-
-          // Execution
-          const data = getCallData(HUniswapV3, 'exactOutputSingle', [
-            tokenIn,
-            tokenOut,
-            fee,
-            amountOut,
-            amountInMaximum,
-            sqrtPriceLimitX96,
-          ]);
-
-          await expectRevert(
-            this.proxy.execMock(to, data, {
-              from: user,
-              value: value,
-            }),
-            'low-level call failed'
-          );
-        });
       });
 
       describe('multi-path', function() {
@@ -2435,33 +2232,6 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
               value: value,
             }),
             '0_HUniswapV3_exactOutput: STF'
-          );
-        });
-
-        it('should revert: token in is Matic', async function() {
-          const value = ether('1');
-          const to = this.hUniswapV3.address;
-
-          // Set swap info
-          const tokens = [tokenCAddress, tokenBAddress, maticAddress];
-          const fees = [new BN('500') /* 0.05% */, new BN('500') /* 0.05% */];
-          const path = encodePath(tokens, fees);
-          const amountOut = ether('1');
-          const amountInMaximum = ether('10000');
-
-          // Execution
-          const data = getCallData(HUniswapV3, 'exactOutput', [
-            path,
-            amountOut,
-            amountInMaximum,
-          ]);
-
-          await expectRevert(
-            this.proxy.execMock(to, data, {
-              from: user,
-              value: value,
-            }),
-            'low-level call failed'
           );
         });
       });

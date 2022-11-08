@@ -16,7 +16,6 @@ const { expect } = require('chai');
 const abi = require('ethereumjs-abi');
 const utils = web3.utils;
 const {
-  MATIC_TOKEN,
   DAI_TOKEN,
   USDT_TOKEN,
   CURVE_AAVE_SWAP,
@@ -186,28 +185,6 @@ contract('Curve_polygon', function([_, user]) {
         );
         profileGas(receipt);
       });
-
-      it('should revert: not support MRC20', async function() {
-        const value = new BN('1000000');
-        const data = abi.simpleEncode(
-          'exchangeUnderlying(address,address,address,int128,int128,uint256,uint256)',
-          this.aaveSwap.address,
-          MATIC_TOKEN,
-          this.token1.address,
-          2,
-          0,
-          value,
-          ether('0')
-        );
-
-        await expectRevert(
-          this.proxy.execMock(this.hCurve.address, data, {
-            from: user,
-            value: value,
-          }),
-          'low-level call failed'
-        );
-      });
     });
   });
 
@@ -312,41 +289,6 @@ contract('Curve_polygon', function([_, user]) {
         expect(poolTokenUserEnd).to.be.bignumber.lte(answer);
 
         profileGas(receipt);
-      });
-
-      it('should revert: not support MRC20', async function() {
-        const token0Amount = ether('1');
-        const token1Amount = new BN('2000000');
-        const tokens = [
-          MATIC_TOKEN,
-          constants.ZERO_ADDRESS,
-          this.token1.address,
-        ];
-        const amounts = [token0Amount, 0, token1Amount];
-
-        // Execute handler
-
-        await this.token1.transfer(this.proxy.address, token1Amount, {
-          from: provider1Address,
-        });
-
-        await this.proxy.updateTokenMock(this.token1.address);
-        const data = abi.simpleEncode(
-          'addLiquidityUnderlying(address,address,address[],uint256[],uint256)',
-          this.aaveSwap.address,
-          this.poolToken.address,
-          tokens,
-          amounts,
-          ether('0')
-        );
-
-        await expectRevert(
-          this.proxy.execMock(this.hCurve.address, data, {
-            from: user,
-            value: ether('1'),
-          }),
-          'low-level call failed'
-        );
       });
 
       it('remove from pool to USDT by removeLiquidityOneCoinUnderlying', async function() {
