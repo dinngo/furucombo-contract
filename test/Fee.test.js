@@ -67,6 +67,8 @@ contract('Fee', function([_, feeCollector, user]) {
   let balanceFeeCollector;
 
   before(async function() {
+    beforeId = await evmSnapshot();
+
     // Handlers related
     this.registry = await Registry.new();
     this.hFunds = await HFunds.new();
@@ -142,6 +144,10 @@ contract('Fee', function([_, feeCollector, user]) {
   afterEach(async function() {
     await checkCacheClean(this.proxy.address);
     await evmRevert(id);
+  });
+
+  after(async function() {
+    await evmRevert(beforeId);
   });
 
   describe('single token', function() {

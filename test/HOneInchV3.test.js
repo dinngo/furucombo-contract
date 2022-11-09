@@ -132,6 +132,7 @@ contract('OneInchV3 Swap', function([_, user]) {
       tokenUser = await this.token.balanceOf.call(user);
     });
 
+    // Turn on when OneInchV3 swap comes back
     describe.skip('Swap', function() {
       it('normal', async function() {
         // Prepare data
@@ -390,6 +391,7 @@ contract('OneInchV3 Swap', function([_, user]) {
       tokenUser = await this.token.balanceOf.call(user);
     });
 
+    // Turn on when OneInchV3 swap comes back
     describe.skip('Swap', function() {
       it('normal', async function() {
         // Prepare data
@@ -569,6 +571,7 @@ contract('OneInchV3 Swap', function([_, user]) {
       wethProxy = await this.weth.balanceOf.call(this.proxy.address);
     });
 
+    // Turn on when OneInchV3 swap comes back
     describe.skip('Swap', function() {
       it('normal', async function() {
         // Prepare data

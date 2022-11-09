@@ -1013,7 +1013,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
             await this.token.balanceOf.call(this.proxy.address)
           ).to.be.bignumber.eq(ether('0'));
           expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
-          expect(await balanceUser.delta()).to.be.bignumber.eq(
+          expect(await balanceUser.delta()).to.be.bignumber.gte(
             ether('0').sub(result)
           );
         });
@@ -1067,7 +1067,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
             await this.token.balanceOf.call(this.proxy.address)
           ).to.be.bignumber.eq(ether('0'));
           expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
-          expect(await balanceUser.delta()).to.be.bignumber.eq(
+          expect(await balanceUser.delta()).to.be.bignumber.gte(
             ether('0').sub(result)
           );
         });
@@ -1459,7 +1459,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
             await this.token.balanceOf.call(this.proxy.address)
           ).to.be.bignumber.eq(ether('0'));
           expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
-          expect(await balanceUser.delta()).to.be.bignumber.eq(
+          expect(await balanceUser.delta()).to.be.bignumber.gte(
             ether('0').sub(result)
           );
         });
@@ -1507,7 +1507,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
             await this.token.balanceOf.call(this.proxy.address)
           ).to.be.bignumber.eq(ether('0'));
           expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
-          expect(await balanceUser.delta()).to.be.bignumber.eq(
+          expect(await balanceUser.delta()).to.be.bignumber.gte(
             ether('0').sub(result)
           );
         });

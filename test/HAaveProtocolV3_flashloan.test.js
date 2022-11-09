@@ -31,7 +31,12 @@ const {
   WETH_TOKEN,
   AWETH_V3_TOKEN,
 } = require('./utils/constants');
-const { evmRevert, evmSnapshot, getTokenProvider } = require('./utils/utils');
+const {
+  evmRevert,
+  evmSnapshot,
+  getTokenProvider,
+  expectEqWithinBps,
+} = require('./utils/utils');
 
 const FeeRuleRegistry = artifacts.require('FeeRuleRegistry');
 const Registry = artifacts.require('Registry');
@@ -284,8 +289,10 @@ contract('AaveV3 flashloan', function([_, user, someone]) {
       expect(await this.tokenA.balanceOf(user)).to.be.bignumber.eq(
         tokenAUser.add(value).add(value)
       );
-      expect(await this.variableDebtTokenA.balanceOf(user)).to.be.bignumber.eq(
-        value
+      expectEqWithinBps(
+        await this.variableDebtTokenA.balanceOf(user),
+        value,
+        1
       );
       expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
     });
