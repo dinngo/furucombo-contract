@@ -392,7 +392,7 @@ contract('Aave V2', function([_, user, someone]) {
 
     before(async function() {
       this.borrowToken = await IToken.at(borrowTokenAddr);
-      this.weth = await IToken.at(WRAPPED_NATIVE_TOKEN);
+      this.wrappedNativeToken = await IToken.at(WRAPPED_NATIVE_TOKEN);
       this.debtWrappedNativeToken = await IVariableDebtToken.at(
         debtWrappedNativeTokenAddr
       );
@@ -416,7 +416,9 @@ contract('Aave V2', function([_, user, someone]) {
       expectEqWithinBps(await this.aToken.balanceOf.call(user), depositAmount);
 
       borrowTokenUserBefore = await this.borrowToken.balanceOf.call(user);
-      borrowWETHUserBefore = await this.weth.balanceOf.call(user);
+      borrowWrappedNativeTokenUserBefore = await this.wrappedNativeToken.balanceOf.call(
+        user
+      );
       debtTokenUserBefore = await this.debtToken.balanceOf.call(user);
       debtWrappedNativeTokenUserBefore = await this.debtWrappedNativeToken.balanceOf.call(
         user
@@ -491,7 +493,7 @@ contract('Aave V2', function([_, user, someone]) {
         from: user,
         value: ether('0.1'),
       });
-      const borrowWETHUserAfter = await this.weth.balanceOf.call(user);
+
       const debtWrappedNativeTokenUserAfter = await this.debtWrappedNativeToken.balanceOf.call(
         user
       );
@@ -506,7 +508,7 @@ contract('Aave V2', function([_, user, someone]) {
 
       // Verify user balance
       expect(
-        debtWrappedNativeTokenUserAfter.sub(borrowWETHUserBefore)
+        debtWrappedNativeTokenUserAfter.sub(borrowWrappedNativeTokenUserBefore)
       ).to.be.bignumber.eq(borrowAmount);
 
       //  borrowAmount - 1 <= (debtTokenUserAfter-debtTokenUserBefore) < borrowAmount + interestMax

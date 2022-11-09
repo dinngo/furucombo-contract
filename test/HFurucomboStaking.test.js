@@ -191,7 +191,7 @@ contract('Furucombo', function([_, user, someone]) {
           }),
           'Dai/insufficient-balance'
         );
-      } else if (chainId == 137) {
+      } else {
         await expectRevert(
           this.proxy.execMock(to, data, {
             from: user,
