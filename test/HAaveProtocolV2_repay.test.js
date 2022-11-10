@@ -1,4 +1,5 @@
-if (network.config.chainId == 1) {
+const chainId = network.config.chainId;
+if (chainId == 1 || chainId == 137) {
   // This test supports to run on these chains.
 } else {
   return;
@@ -24,13 +25,15 @@ const {
   AWETH_V2_DEBT_STABLE,
   AWETH_V2_DEBT_VARIABLE,
   AAVE_RATEMODE,
+  WRAPPED_NATIVE_TOKEN,
+  AWRAPPED_NATIVE_V2_DEBT_VARIABLE,
 } = require('./utils/constants');
 const {
   evmRevert,
   evmSnapshot,
   profileGas,
   getHandlerReturn,
-  tokenProviderUniV2,
+  getTokenProvider,
   expectEqWithinBps,
 } = require('./utils/utils');
 
@@ -53,7 +56,7 @@ contract('Aave V2', function([_, user]) {
   let providerAddress;
 
   before(async function() {
-    providerAddress = await tokenProviderUniV2(tokenAddress);
+    providerAddress = await getTokenProvider(tokenAddress);
 
     this.registry = await Registry.new();
     this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);
@@ -61,7 +64,10 @@ contract('Aave V2', function([_, user]) {
       this.registry.address,
       this.feeRuleRegistry.address
     );
-    this.hAaveV2 = await HAaveV2.new();
+    this.hAaveV2 = await HAaveV2.new(
+      WRAPPED_NATIVE_TOKEN,
+      AAVEPROTOCOL_V2_PROVIDER
+    );
     await this.registry.register(
       this.hAaveV2.address,
       utils.asciiToHex('AaveProtocolV2')
@@ -85,6 +91,11 @@ contract('Aave V2', function([_, user]) {
   });
 
   describe('Repay Stable Rate', function() {
+    if (chainId == 137) {
+      // Stable Rate borrow is not available on Polygon.
+      return;
+    }
+
     var depositAmount = ether('10000');
     const borrowAmount = ether('1');
     const borrowTokenAddr = WETH_TOKEN;
@@ -97,7 +108,7 @@ contract('Aave V2', function([_, user]) {
     let borrowTokenProvider;
 
     before(async function() {
-      borrowTokenProvider = await tokenProviderUniV2(borrowTokenAddr);
+      borrowTokenProvider = await getTokenProvider(borrowTokenAddr);
 
       this.borrowToken = await IToken.at(borrowTokenAddr);
       this.debtToken = await IToken.at(debtTokenAddr);
@@ -393,14 +404,14 @@ contract('Aave V2', function([_, user]) {
   describe('Repay Variable Rate', function() {
     var depositAmount = ether('10000');
     const borrowAmount = ether('1');
-    const borrowTokenAddr = WETH_TOKEN;
+    const borrowTokenAddr = WRAPPED_NATIVE_TOKEN;
     const rateMode = AAVE_RATEMODE.VARIABLE;
-    const debtTokenAddr = AWETH_V2_DEBT_VARIABLE;
+    const debtTokenAddr = AWRAPPED_NATIVE_V2_DEBT_VARIABLE;
 
     let borrowTokenProvider;
 
     before(async function() {
-      borrowTokenProvider = await tokenProviderUniV2(borrowTokenAddr);
+      borrowTokenProvider = await getTokenProvider(borrowTokenAddr);
 
       this.borrowToken = await IToken.at(borrowTokenAddr);
       this.debtToken = await IToken.at(debtTokenAddr);

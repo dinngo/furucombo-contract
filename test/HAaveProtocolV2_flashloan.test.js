@@ -1,4 +1,5 @@
-if (network.config.chainId == 1) {
+const chainId = network.config.chainId;
+if (chainId == 1 || chainId == 137) {
   // This test supports to run on these chains.
 } else {
   return;
@@ -22,25 +23,24 @@ const utils = web3.utils;
 const { expect } = require('chai');
 
 const {
-  WETH_TOKEN,
   DAI_TOKEN,
   AAVEPROTOCOL_V2_PROVIDER,
   ADAI_V2,
-  AWETH_V2_DEBT_STABLE,
-  AWETH_V2_DEBT_VARIABLE,
   AAVE_RATEMODE,
+  WRAPPED_NATIVE_TOKEN,
+  AWRAPPED_NATIVE_V2_DEBT_STABLE,
+  AWRAPPED_NATIVE_V2_DEBT_VARIABLE,
 } = require('./utils/constants');
 const {
   evmRevert,
   evmSnapshot,
   expectEqWithinBps,
-  tokenProviderUniV2,
+  getTokenProvider,
 } = require('./utils/utils');
 
 const FeeRuleRegistry = artifacts.require('FeeRuleRegistry');
 const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('ProxyMock');
-// const HAave = artifacts.require('HAaveProtocol'); archived
 const HAaveV2 = artifacts.require('HAaveProtocolV2');
 const HMock = artifacts.require('HMock');
 const Faucet = artifacts.require('Faucet');
@@ -63,16 +63,11 @@ contract('AaveV2 flashloan', function([_, user, someone]) {
       this.registry.address,
       this.feeRuleRegistry.address
     );
-    // Register aave v1 handler
-    /* archived
-    this.hAave = await HAave.new();
-    await this.registry.register(
-      this.hAave.address,
-      utils.asciiToHex('Aave Protocol')
-    );
-    */
     // Register aave v2 handler
-    this.hAaveV2 = await HAaveV2.new();
+    this.hAaveV2 = await HAaveV2.new(
+      WRAPPED_NATIVE_TOKEN,
+      AAVEPROTOCOL_V2_PROVIDER
+    );
     await this.registry.register(
       this.hAaveV2.address,
       utils.asciiToHex('Aave ProtocolV2')
@@ -91,14 +86,16 @@ contract('AaveV2 flashloan', function([_, user, someone]) {
     );
 
     this.faucet = await Faucet.new();
-    this.tokenA = await IToken.at(WETH_TOKEN);
+    this.tokenA = await IToken.at(WRAPPED_NATIVE_TOKEN);
     this.tokenB = await IToken.at(DAI_TOKEN);
-    this.tokenAProvider = await tokenProviderUniV2(this.tokenA.address);
-    this.tokenBProvider = await tokenProviderUniV2(this.tokenB.address);
+    this.tokenAProvider = await getTokenProvider(this.tokenA.address);
+    this.tokenBProvider = await getTokenProvider(this.tokenB.address);
     this.aTokenB = await IToken.at(ADAI_V2);
-    this.stableDebtTokenA = await IStableDebtToken.at(AWETH_V2_DEBT_STABLE);
+    this.stableDebtTokenA = await IStableDebtToken.at(
+      AWRAPPED_NATIVE_V2_DEBT_STABLE
+    );
     this.variableDebtTokenA = await IVariableDebtToken.at(
-      AWETH_V2_DEBT_VARIABLE
+      AWRAPPED_NATIVE_V2_DEBT_VARIABLE
     );
     this.mockToken = await SimpleToken.new();
   });
@@ -210,6 +207,10 @@ contract('AaveV2 flashloan', function([_, user, someone]) {
     });
 
     it('single asset with stable rate by borrowing from itself', async function() {
+      if (chainId == 137) {
+        // Stable Rate borrow is not available on Polygon.
+        return;
+      }
       const value = ether('1');
       const params = _getFlashloanParams(
         [this.hMock.address],
@@ -412,7 +413,7 @@ contract('AaveV2 flashloan', function([_, user, someone]) {
       const data = _getFlashloanCubeData(
         [this.tokenA.address], // assets
         [value], // amounts
-        [AAVE_RATEMODE.STABLE], // modes
+        [AAVE_RATEMODE.VARIABLE], // modes
         params
       );
 
@@ -426,6 +427,11 @@ contract('AaveV2 flashloan', function([_, user, someone]) {
     });
 
     it('should revert: collateral same as borrowing currency', async function() {
+      if (chainId == 137) {
+        // Stable Rate borrow is not available on Polygon and
+        // variable rate doesn't check collateral and debt. so skip this test.
+        return;
+      }
       const value = ether('1');
       const params = _getFlashloanParams(
         [this.hMock.address],

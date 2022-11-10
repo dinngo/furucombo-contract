@@ -77,6 +77,10 @@ module.exports = {
       url: process.env.OPTIMISM_RPC_URL || 'https://rpc.ankr.com/optimism',
       accounts: accounts(process.env.OPTIMISM_SECRET),
     },
+    polygon: {
+      url: process.env.POLYGON_RPC_URL || 'https://rpc.ankr.com/polygon',
+      accounts: accounts(process.env.POLYGON_SECRET),
+    },
     arbitrum: {
       url: process.env.ARBITRUM_RPC_URL || 'https://arb1.arbitrum.io/rpc',
       accounts: accounts(process.env.ARBITRUM_SECRET),

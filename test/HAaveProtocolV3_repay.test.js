@@ -1,6 +1,6 @@
 const chainId = network.config.chainId;
 
-if (chainId == 10 || chainId == 42161 || chainId == 43114) {
+if (chainId == 10 || chainId == 137 || chainId == 42161 || chainId == 43114) {
   // This test supports to run on these chains.
 } else {
   return;
@@ -20,6 +20,7 @@ const { expect } = require('chai');
 
 const {
   DAI_TOKEN,
+  WETH_TOKEN,
   USDC_TOKEN,
   ADAI_V3_TOKEN,
   WRAPPED_NATIVE_TOKEN,
@@ -57,7 +58,7 @@ contract('Aave V3', function([_, user]) {
   let providerAddress;
 
   before(async function() {
-    providerAddress = await getTokenProvider(tokenAddress);
+    providerAddress = await getTokenProvider(tokenAddress, WETH_TOKEN, 3000);
 
     this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);
     this.registry = await Registry.new();
@@ -91,7 +92,7 @@ contract('Aave V3', function([_, user]) {
   });
 
   describe('Repay Stable Rate', function() {
-    var supplyAmount = ether('10000');
+    var supplyAmount = ether('5000');
     const borrowAmount = mwei('2');
     const borrowTokenAddr = USDC_TOKEN;
     const rateMode = AAVE_RATEMODE.STABLE;
@@ -302,8 +303,8 @@ contract('Aave V3', function([_, user]) {
   });
 
   describe('Repay Variable Rate', function() {
-    var supplyAmount = ether('10000');
-    const borrowAmount = ether('2');
+    var supplyAmount = ether('5000');
+    const borrowAmount = ether('1');
     const borrowTokenAddr = WRAPPED_NATIVE_TOKEN;
     const rateMode = AAVE_RATEMODE.VARIABLE;
     const debtTokenAddr = AWRAPPED_NATIVE_V3_DEBT_VARIABLE;

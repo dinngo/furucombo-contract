@@ -2,6 +2,7 @@ const hardhat = require('./addresses_hardhat');
 const ethBeta = require('./addresses_eth_beta');
 const eth = require('./addresses_eth');
 const optimism = require('./addresses_optimism');
+const polygon = require('./addresses_polygon');
 const arbitrum = require('./addresses_arbitrum');
 const avalanche = require('./addresses_avalanche');
 
@@ -14,6 +15,8 @@ module.exports =
     ? eth
     : network.name == 'optimism'
     ? optimism
+    : network.name == 'polygon'
+    ? polygon
     : network.name == 'arbitrum'
     ? arbitrum
     : network.name == 'avalanche'

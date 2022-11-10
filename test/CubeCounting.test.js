@@ -1,6 +1,12 @@
 const chainId = network.config.chainId;
 
-if (chainId == 1 || chainId == 10 || chainId == 42161 || chainId == 43114) {
+if (
+  chainId == 1 ||
+  chainId == 10 ||
+  chainId == 137 ||
+  chainId == 42161 ||
+  chainId == 43114
+) {
   // This test supports to run on these chains.
 } else {
   return;
@@ -54,7 +60,10 @@ contract('CubeCounting', function([_, user]) {
     );
     if (chainId == 1) {
       // Register aave v2 handler and caller
-      this.hAaveV2 = await HAaveV2.new();
+      this.hAaveV2 = await HAaveV2.new(
+        WRAPPED_NATIVE_TOKEN,
+        AAVEPROTOCOL_V2_PROVIDER
+      );
       await this.registry.register(
         this.hAaveV2.address,
         utils.asciiToHex('HAaveProtocolV2')

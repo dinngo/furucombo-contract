@@ -54,7 +54,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
   let tokenProvider;
 
   before(async function() {
-    tokenProvider = await getTokenProvider(tokenAddress);
+    tokenProvider = await getTokenProvider(tokenAddress, WETH_TOKEN, 3000);
 
     this.registry = await Registry.new();
     this.hUniswapV3 = await HUniswapV3.new(WRAPPED_NATIVE_TOKEN);
@@ -1111,7 +1111,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           const tokenOut = WETH_TOKEN;
           const fee = new BN('3000');
           const amountOut = ether('1');
-          const amountInMaximum = ether('10000');
+          const amountInMaximum = ether('5000');
           const sqrtPriceLimitX96 = new BN('0');
           await this.token.transfer(this.proxy.address, amountInMaximum, {
             from: tokenProvider,
@@ -1168,7 +1168,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           const tokenOut = WETH_TOKEN;
           const fee = new BN('3000');
           const amountOut = ether('1');
-          const amountInMaximum = ether('10000');
+          const amountInMaximum = ether('5000');
           const sqrtPriceLimitX96 = new BN('0');
           await this.token.transfer(this.proxy.address, amountInMaximum, {
             from: tokenProvider,
@@ -1260,7 +1260,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           const tokenOut = WETH_TOKEN;
           const fee = new BN('3000');
           const amountOut = ether('1');
-          const amountInMaximum = ether('10000');
+          const amountInMaximum = ether('5000');
           const sqrtPriceLimitX96 = new BN('0');
           await this.token.transfer(this.proxy.address, amountInMaximum, {
             from: tokenProvider,
@@ -1323,7 +1323,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           const tokenOut = WETH_TOKEN;
           const fee = new BN('3000');
           const amountOut = ether('1');
-          const amountInMaximum = ether('10000');
+          const amountInMaximum = ether('5000');
           const sqrtPriceLimitX96 = new BN('0');
           await this.token.transfer(this.proxy.address, amountInMaximum, {
             from: tokenProvider,
@@ -1386,7 +1386,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           const tokenOut = WETH_TOKEN;
           const fee = new BN('3000');
           const amountOut = ether('100');
-          const amountInMaximum = ether('10000');
+          const amountInMaximum = ether('5000');
           const sqrtPriceLimitX96 = new BN('0');
           await this.token.transfer(this.proxy.address, amountInMaximum, {
             from: tokenProvider,
@@ -1548,7 +1548,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           const fees = [new BN('3000'), new BN('500')];
           const path = encodePath(tokens, fees);
           const amountOut = ether('1');
-          const amountInMaximum = ether('10000');
+          const amountInMaximum = ether('5000');
           await this.token.transfer(this.proxy.address, amountInMaximum, {
             from: tokenProvider,
           });
@@ -1599,7 +1599,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           const fees = [new BN('3000'), new BN('500')];
           const path = encodePath(tokens, fees);
           const amountOut = ether('1');
-          const amountInMaximum = ether('10000');
+          const amountInMaximum = ether('5000');
           await this.token.transfer(this.proxy.address, amountInMaximum, {
             from: tokenProvider,
           });
@@ -1682,7 +1682,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           const fees = [new BN('3000'), new BN('500')];
           const path = encodePath(tokens, fees);
           const amountOut = ether('1');
-          const amountInMaximum = ether('10000');
+          const amountInMaximum = ether('5000');
           await this.token.transfer(this.proxy.address, amountInMaximum, {
             from: tokenProvider,
           });
@@ -1738,7 +1738,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           const fees = [new BN('3000'), new BN('500')];
           const path = encodePath(tokens, fees);
           const amountOut = ether('1');
-          const amountInMaximum = ether('10000');
+          const amountInMaximum = ether('5000');
           await this.token.transfer(this.proxy.address, amountInMaximum, {
             from: tokenProvider,
           });

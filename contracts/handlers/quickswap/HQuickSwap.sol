@@ -5,20 +5,17 @@ pragma solidity 0.8.10;
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import "../HandlerBase.sol";
-import "./libraries/SushiSwapLibrary.sol";
+import "../uniswapv2/libraries/UniswapV2Library.sol";
 import "../uniswapv2/IUniswapV2Router02.sol";
 
-contract HSushiSwap is HandlerBase {
+contract HQuickSwap is HandlerBase {
     using SafeERC20 for IERC20;
 
-    address public immutable sushiSwapRouter;
-
-    constructor(address sushiSwapRouter_) {
-        sushiSwapRouter = sushiSwapRouter_;
-    }
+    // prettier-ignore
+    address public constant UNISWAPV2_ROUTER = 0xa5E0829CaCEd8fFDD4De3c43696c57F7D7A678ff;
 
     function getContractName() public pure override returns (string memory) {
-        return "HSushiSwap";
+        return "HQuickSwap";
     }
 
     function addLiquidityETH(
@@ -37,12 +34,12 @@ contract HSushiSwap is HandlerBase {
         )
     {
         // Get uniswapV2 router
-        IUniswapV2Router02 router = IUniswapV2Router02(sushiSwapRouter);
+        IUniswapV2Router02 router = IUniswapV2Router02(UNISWAPV2_ROUTER);
 
         // Approve token
         value = _getBalance(address(0), value);
         amountTokenDesired = _getBalance(token, amountTokenDesired);
-        _tokenApprove(token, sushiSwapRouter, amountTokenDesired);
+        _tokenApprove(token, UNISWAPV2_ROUTER, amountTokenDesired);
 
         // Add liquidity ETH
         try
@@ -63,11 +60,11 @@ contract HSushiSwap is HandlerBase {
         } catch {
             _revertMsg("addLiquidityETH");
         }
-        _tokenApproveZero(token, sushiSwapRouter);
+        _tokenApproveZero(token, UNISWAPV2_ROUTER);
 
         // Update involved token
         address pair =
-            SushiSwapLibrary.pairFor(router.factory(), token, router.WETH());
+            UniswapV2Library.pairFor(router.factory(), token, router.WETH());
         _updateToken(pair);
     }
 
@@ -88,13 +85,13 @@ contract HSushiSwap is HandlerBase {
         )
     {
         // Get uniswapV2 router
-        IUniswapV2Router02 router = IUniswapV2Router02(sushiSwapRouter);
+        IUniswapV2Router02 router = IUniswapV2Router02(UNISWAPV2_ROUTER);
 
         // Approve token
         amountADesired = _getBalance(tokenA, amountADesired);
         amountBDesired = _getBalance(tokenB, amountBDesired);
-        _tokenApprove(tokenA, sushiSwapRouter, amountADesired);
-        _tokenApprove(tokenB, sushiSwapRouter, amountBDesired);
+        _tokenApprove(tokenA, UNISWAPV2_ROUTER, amountADesired);
+        _tokenApprove(tokenB, UNISWAPV2_ROUTER, amountBDesired);
 
         // Add liquidity
         try
@@ -117,11 +114,12 @@ contract HSushiSwap is HandlerBase {
         } catch {
             _revertMsg("addLiquidity");
         }
-        _tokenApproveZero(tokenA, sushiSwapRouter);
-        _tokenApproveZero(tokenB, sushiSwapRouter);
+        _tokenApproveZero(tokenA, UNISWAPV2_ROUTER);
+        _tokenApproveZero(tokenB, UNISWAPV2_ROUTER);
+
         // Update involved token
         address pair =
-            SushiSwapLibrary.pairFor(router.factory(), tokenA, tokenB);
+            UniswapV2Library.pairFor(router.factory(), tokenA, tokenB);
         _updateToken(pair);
     }
 
@@ -132,13 +130,13 @@ contract HSushiSwap is HandlerBase {
         uint256 amountETHMin
     ) external payable returns (uint256 amountToken, uint256 amountETH) {
         // Get uniswapV2 router
-        IUniswapV2Router02 router = IUniswapV2Router02(sushiSwapRouter);
+        IUniswapV2Router02 router = IUniswapV2Router02(UNISWAPV2_ROUTER);
         address pair =
-            SushiSwapLibrary.pairFor(router.factory(), token, router.WETH());
+            UniswapV2Library.pairFor(router.factory(), token, router.WETH());
 
         // Approve token
         liquidity = _getBalance(pair, liquidity);
-        _tokenApprove(pair, sushiSwapRouter, liquidity);
+        _tokenApprove(pair, UNISWAPV2_ROUTER, liquidity);
 
         // remove liquidityETH
         try
@@ -158,7 +156,7 @@ contract HSushiSwap is HandlerBase {
         } catch {
             _revertMsg("removeLiquidityETH");
         }
-        _tokenApproveZero(pair, sushiSwapRouter);
+        _tokenApproveZero(pair, UNISWAPV2_ROUTER);
 
         // Update involved token
         _updateToken(token);
@@ -172,13 +170,13 @@ contract HSushiSwap is HandlerBase {
         uint256 amountBMin
     ) external payable returns (uint256 amountA, uint256 amountB) {
         // Get uniswapV2 router
-        IUniswapV2Router02 router = IUniswapV2Router02(sushiSwapRouter);
+        IUniswapV2Router02 router = IUniswapV2Router02(UNISWAPV2_ROUTER);
         address pair =
-            SushiSwapLibrary.pairFor(router.factory(), tokenA, tokenB);
+            UniswapV2Library.pairFor(router.factory(), tokenA, tokenB);
 
         // Approve token
         liquidity = _getBalance(pair, liquidity);
-        _tokenApprove(pair, sushiSwapRouter, liquidity);
+        _tokenApprove(pair, UNISWAPV2_ROUTER, liquidity);
 
         // remove liquidity
         try
@@ -199,7 +197,7 @@ contract HSushiSwap is HandlerBase {
         } catch {
             _revertMsg("removeLiquidity");
         }
-        _tokenApproveZero(pair, sushiSwapRouter);
+        _tokenApproveZero(pair, UNISWAPV2_ROUTER);
 
         // Update involved token
         _updateToken(tokenA);
@@ -215,7 +213,7 @@ contract HSushiSwap is HandlerBase {
         address tokenOut = path[path.length - 1];
 
         // Get uniswapV2 router
-        IUniswapV2Router02 router = IUniswapV2Router02(sushiSwapRouter);
+        IUniswapV2Router02 router = IUniswapV2Router02(UNISWAPV2_ROUTER);
         value = _getBalance(address(0), value);
         try
             router.swapExactETHForTokens{value: value}(
@@ -244,7 +242,7 @@ contract HSushiSwap is HandlerBase {
         address tokenOut = path[path.length - 1];
 
         // Get uniswapV2 router
-        IUniswapV2Router02 router = IUniswapV2Router02(sushiSwapRouter);
+        IUniswapV2Router02 router = IUniswapV2Router02(UNISWAPV2_ROUTER);
 
         // if amount == type(uint256).max return balance of Proxy
         value = _getBalance(address(0), value);
@@ -276,11 +274,11 @@ contract HSushiSwap is HandlerBase {
         address tokenIn = path[0];
 
         // Get uniswapV2 router
-        IUniswapV2Router02 router = IUniswapV2Router02(sushiSwapRouter);
+        IUniswapV2Router02 router = IUniswapV2Router02(UNISWAPV2_ROUTER);
 
         // Approve token
         amountIn = _getBalance(tokenIn, amountIn);
-        _tokenApprove(tokenIn, sushiSwapRouter, amountIn);
+        _tokenApprove(tokenIn, UNISWAPV2_ROUTER, amountIn);
 
         try
             router.swapExactTokensForETH(
@@ -297,7 +295,7 @@ contract HSushiSwap is HandlerBase {
         } catch {
             _revertMsg("swapExactTokensForETH");
         }
-        _tokenApproveZero(tokenIn, sushiSwapRouter);
+        _tokenApproveZero(tokenIn, UNISWAPV2_ROUTER);
     }
 
     function swapTokensForExactETH(
@@ -309,13 +307,13 @@ contract HSushiSwap is HandlerBase {
         address tokenIn = path[0];
 
         // Get uniswapV2 router
-        IUniswapV2Router02 router = IUniswapV2Router02(sushiSwapRouter);
+        IUniswapV2Router02 router = IUniswapV2Router02(UNISWAPV2_ROUTER);
 
         // if amount == type(uint256).max return balance of Proxy
         amountInMax = _getBalance(tokenIn, amountInMax);
 
         // Approve token
-        _tokenApprove(tokenIn, sushiSwapRouter, amountInMax);
+        _tokenApprove(tokenIn, UNISWAPV2_ROUTER, amountInMax);
 
         try
             router.swapTokensForExactETH(
@@ -332,7 +330,7 @@ contract HSushiSwap is HandlerBase {
         } catch {
             _revertMsg("swapTokensForExactETH");
         }
-        _tokenApproveZero(tokenIn, sushiSwapRouter);
+        _tokenApproveZero(tokenIn, UNISWAPV2_ROUTER);
     }
 
     function swapExactTokensForTokens(
@@ -349,11 +347,11 @@ contract HSushiSwap is HandlerBase {
         address tokenOut = path[path.length - 1];
 
         // Get uniswapV2 router
-        IUniswapV2Router02 router = IUniswapV2Router02(sushiSwapRouter);
+        IUniswapV2Router02 router = IUniswapV2Router02(UNISWAPV2_ROUTER);
 
         // Approve token
         amountIn = _getBalance(tokenIn, amountIn);
-        _tokenApprove(tokenIn, sushiSwapRouter, amountIn);
+        _tokenApprove(tokenIn, UNISWAPV2_ROUTER, amountIn);
 
         try
             router.swapExactTokensForTokens(
@@ -370,7 +368,8 @@ contract HSushiSwap is HandlerBase {
         } catch {
             _revertMsg("swapExactTokensForTokens");
         }
-        _tokenApproveZero(tokenIn, sushiSwapRouter);
+        _tokenApproveZero(tokenIn, UNISWAPV2_ROUTER);
+
         _updateToken(tokenOut);
     }
 
@@ -388,13 +387,13 @@ contract HSushiSwap is HandlerBase {
         address tokenOut = path[path.length - 1];
 
         // Get uniswapV2 router
-        IUniswapV2Router02 router = IUniswapV2Router02(sushiSwapRouter);
+        IUniswapV2Router02 router = IUniswapV2Router02(UNISWAPV2_ROUTER);
 
         // if amount == type(uint256).max return balance of Proxy
         amountInMax = _getBalance(tokenIn, amountInMax);
 
         // Approve token
-        _tokenApprove(tokenIn, sushiSwapRouter, amountInMax);
+        _tokenApprove(tokenIn, UNISWAPV2_ROUTER, amountInMax);
 
         try
             router.swapTokensForExactTokens(
@@ -411,7 +410,8 @@ contract HSushiSwap is HandlerBase {
         } catch {
             _revertMsg("swapTokensForExactTokens");
         }
-        _tokenApproveZero(tokenIn, sushiSwapRouter);
+        _tokenApproveZero(tokenIn, UNISWAPV2_ROUTER);
+
         _updateToken(tokenOut);
     }
 }

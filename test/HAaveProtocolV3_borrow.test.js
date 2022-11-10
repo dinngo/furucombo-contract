@@ -1,6 +1,6 @@
 const chainId = network.config.chainId;
 
-if (chainId == 10 || chainId == 42161 || chainId == 43114) {
+if (chainId == 10 || chainId == 137 || chainId == 42161 || chainId == 43114) {
   // This test supports to run on these chains.
 } else {
   return;
@@ -56,7 +56,7 @@ contract('Aave V3', function([_, user, someone]) {
   let providerAddress;
 
   before(async function() {
-    providerAddress = await getTokenProvider(tokenAddress);
+    providerAddress = await getTokenProvider(tokenAddress, WETH_TOKEN, 3000);
 
     this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);
     this.registry = await Registry.new();
@@ -88,7 +88,7 @@ contract('Aave V3', function([_, user, someone]) {
   });
 
   describe('Borrow with Stable Rate', function() {
-    const supplyAmount = ether('10000');
+    const supplyAmount = ether('5000');
     const borrowTokenAddr = USDC_TOKEN;
     const rateMode = AAVE_RATEMODE.STABLE;
     const debtTokenAddr = AUSDC_V3_DEBT_STABLE;
@@ -235,7 +235,7 @@ contract('Aave V3', function([_, user, someone]) {
     });
 
     it('should revert: borrow token that is not enable stable mode', async function() {
-      const borrowAmount = ether('2');
+      const borrowAmount = ether('1');
       const to = this.hAaveV3.address;
       const data = abi.simpleEncode(
         'borrow(address,uint256,uint256)',
@@ -251,7 +251,7 @@ contract('Aave V3', function([_, user, someone]) {
     });
 
     it('should revert: borrow token with no collateral ', async function() {
-      const borrowAmount = ether('2');
+      const borrowAmount = mwei('2');
       const to = this.hAaveV3.address;
       const data = abi.simpleEncode(
         'borrow(address,uint256,uint256)',
@@ -284,7 +284,7 @@ contract('Aave V3', function([_, user, someone]) {
   });
 
   describe('Borrow with Variable Rate', function() {
-    const supplyAmount = ether('10000');
+    const supplyAmount = ether('5000');
     const borrowTokenAddr = WRAPPED_NATIVE_TOKEN;
     const rateMode = AAVE_RATEMODE.VARIABLE;
     const debtTokenAddr = AWRAPPED_NATIVE_V3_DEBT_VARIABLE;
@@ -364,7 +364,7 @@ contract('Aave V3', function([_, user, someone]) {
     });
 
     it('borrow eth', async function() {
-      const borrowAmount = ether('2');
+      const borrowAmount = ether('1');
       const to = this.hAaveV3.address;
       const data = abi.simpleEncode(
         'borrowETH(uint256,uint256)',

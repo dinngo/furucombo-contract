@@ -126,6 +126,36 @@ contract HCurve is HandlerBase {
         return _exchangeAfter(handler, tokenI, tokenJ, balanceBefore);
     }
 
+    /// @notice Curve exchange underlying with factory zap
+    function exchangeUnderlyingFactoryZap(
+        address handler,
+        address pool,
+        address tokenI,
+        address tokenJ,
+        int128 i,
+        int128 j,
+        uint256 amount,
+        uint256 minAmount
+    ) external payable returns (uint256) {
+        (uint256 _amount, uint256 balanceBefore, uint256 ethAmount) =
+            _exchangeBefore(handler, tokenI, tokenJ, amount);
+        try
+            ICurveHandler(handler).exchange_underlying{value: ethAmount}(
+                pool,
+                i,
+                j,
+                _amount,
+                minAmount
+            )
+        {} catch Error(string memory reason) {
+            _revertMsg("exchangeUnderlyingFactoryZap", reason);
+        } catch {
+            _revertMsg("exchangeUnderlyingFactoryZap");
+        }
+
+        return _exchangeAfter(handler, tokenI, tokenJ, balanceBefore);
+    }
+
     /// @notice Curve exchange underlying with uint256 ij
     function exchangeUnderlyingUint256(
         address handler,

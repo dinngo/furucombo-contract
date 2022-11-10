@@ -1,6 +1,7 @@
 include:
   - 'templates/.gitlab-ci-eth.yml'
   - 'templates/.gitlab-ci-optimism.yml'
+  - 'templates/.gitlab-ci-polygon.yml'
   - 'templates/.gitlab-ci-arbitrum.yml'
   - 'templates/.gitlab-ci-avalanche.yml'
 
@@ -22,6 +23,7 @@ stages:
   - build
   - test-eth
   - test-optimism
+  - test-polygon
   - test-arbitrum
   - test-avalanche
   - analysis
