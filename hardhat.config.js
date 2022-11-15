@@ -8,6 +8,7 @@ require('@nomiclabs/hardhat-truffle5');
 require('@nomiclabs/hardhat-etherscan');
 
 require('dotenv').config();
+require('@xplorfin/hardhat-solc-excludes');
 
 module.exports = {
   solidity: {
@@ -42,6 +43,7 @@ module.exports = {
         version: '0.6.12',
       },
     },
+    excludes: { directories: ['test/foundry'] },
   },
   namedAccounts: {
     deployer: {

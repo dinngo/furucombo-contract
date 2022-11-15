@@ -26,6 +26,7 @@ stages:
   - test-polygon
   - test-arbitrum
   - test-avalanche
+  - fuzzing
   - analysis
   - certora
   - deploy
@@ -34,6 +35,15 @@ build:
   stage: build
   script:
     - npm run build
+
+test_fuzzing:
+  image: ghcr.io/foundry-rs/foundry:nightly-63ed1099a74fded7c3a7182b5a508bd7d16743d3
+  stage: fuzzing
+  before_script:
+    - apk add --update nodejs npm
+    - npm install
+  script:
+    - npm run fuzzing
 
 # Certora Prover CI
 .job_template: &certora-configuration
