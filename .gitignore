@@ -8,6 +8,7 @@ build/
 
 # lol macs
 .DS_Store
+foundry-lib/.DS_Store
 
 # secrets
 .env
@@ -22,3 +23,7 @@ deployments/
 .last_confs
 coverage
 coverage.json
+
+# foundry build directory and cache
+out/
+forge-cache/
