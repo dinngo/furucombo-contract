@@ -1,5 +1,11 @@
 const chainId = network.config.chainId;
-if (chainId == 1 || chainId == 137) {
+if (
+  chainId == 1 ||
+  chainId == 10 ||
+  chainId == 137 ||
+  chainId == 42161 ||
+  chainId == 43114
+) {
   // This test supports to run on these chains.
 } else {
   return;
@@ -34,20 +40,20 @@ const {
 const queryString = require('query-string');
 
 const FeeRuleRegistry = artifacts.require('FeeRuleRegistry');
-const HOneInch = artifacts.require('HOneInchV3');
+const HOneInch = artifacts.require('HOneInchV4');
 const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('ProxyMock');
 const IToken = artifacts.require('IERC20');
-const IOneInch = artifacts.require('IAggregationRouterV3');
+const IOneInch = artifacts.require('IAggregationRouterV4');
 
 const SELECTOR_1INCH_SWAP = getFuncSig(IOneInch, 'swap');
 const SELECTOR_1INCH_UNOSWAP = getFuncSig(IOneInch, 'unoswap');
+const SELECTOR_1INCH_UNISWAP_V3_SWAP = getFuncSig(IOneInch, 'uniswapV3Swap');
 
 /// Change url for different chain
-/// - Ethereum: https://api.1inch.exchange/v3.0/1/
-/// - Polygon: https://api.1inch.exchange/v3.0/137/
-/// - BSC: https://api.1inch.exchange/v3.0/56/
-const URL_1INCH = 'https://api.1inch.exchange/v3.0/' + chainId + '/';
+/// - Ethereum: https://api.1inch.exchange/v4.0/1/
+/// - Polygon: https://api.1inch.exchange/v4.0/137/
+const URL_1INCH = 'https://api.1inch.exchange/v4.0/' + chainId + '/';
 const URL_1INCH_SWAP = URL_1INCH + 'swap';
 
 const UNOSWAP_PROTOCOLS =
@@ -70,7 +76,7 @@ const NON_UNOSWAP_PROTOCOLS =
         // 'PMM3',
         'KYBER_DMM',
         'BALANCER_V2',
-        'UNISWAP_V3',
+        // 'UNISWAP_V3',
       ].join(',')
     : [
         'POLYGON_DODO',
@@ -82,7 +88,7 @@ const NON_UNOSWAP_PROTOCOLS =
         'POLYGON_AAVE_V2',
       ].join(',');
 
-contract('OneInchV3 Swap', function([_, user]) {
+contract('OneInchV4 Swap', function([_, user]) {
   let id;
 
   before(async function() {
@@ -94,11 +100,15 @@ contract('OneInchV3 Swap', function([_, user]) {
     }
     // ==================================================
 
+    // Get 1inch router address
+    const routerResponse = await callExternalApi(URL_1INCH + 'approve/spender');
+    const routerAddress = (await routerResponse.json()).address;
+
     this.registry = await Registry.new();
-    this.hOneInch = await HOneInch.new();
+    this.hOneInch = await HOneInch.new(routerAddress);
     await this.registry.register(
       this.hOneInch.address,
-      utils.asciiToHex('OneInchV3')
+      utils.asciiToHex('OneInchV4')
     );
     this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);
     this.proxy = await Proxy.new(
@@ -132,8 +142,7 @@ contract('OneInchV3 Swap', function([_, user]) {
       tokenUser = await this.token.balanceOf.call(user);
     });
 
-    // Turn on when OneInchV3 swap comes back
-    describe.skip('Swap', function() {
+    describe('Swap', function() {
       it('normal', async function() {
         // Prepare data
         const value = ether('0.1');
@@ -365,7 +374,7 @@ contract('OneInchV3 Swap', function([_, user]) {
         // Execute
         await expectRevert(
           this.proxy.execMock(to, data, { from: user, value: ether('0.1') }),
-          'HOneInchV3_unoswap: invalid msg.value'
+          'HOneInchV4_unoswap: invalid msg.value'
         );
       });
     });
@@ -391,8 +400,7 @@ contract('OneInchV3 Swap', function([_, user]) {
       tokenUser = await this.token.balanceOf.call(user);
     });
 
-    // Turn on when OneInchV3 swap comes back
-    describe.skip('Swap', function() {
+    describe('Swap', function() {
       it('normal', async function() {
         // Prepare data
         const value = ether('100');
@@ -571,8 +579,7 @@ contract('OneInchV3 Swap', function([_, user]) {
       wethProxy = await this.weth.balanceOf.call(this.proxy.address);
     });
 
-    // Turn on when OneInchV3 swap comes back
-    describe.skip('Swap', function() {
+    describe('Swap', function() {
       it('normal', async function() {
         // Prepare data
         const value = ether('100');
@@ -937,7 +944,7 @@ contract('OneInchV3 Swap', function([_, user]) {
 
         await expectRevert(
           this.proxy.execMock(to, data, { from: user, value: ether('0.1') }),
-          'HOneInchV3_unoswap: Invalid output token amount'
+          'HOneInchV4_unoswap: Invalid output token amount'
         );
       });
 
@@ -986,7 +993,7 @@ contract('OneInchV3 Swap', function([_, user]) {
 
         await expectRevert(
           this.proxy.execMock(to, data, { from: user, value: ether('0.1') }),
-          'HOneInchV3_unoswap: Invalid output token amount'
+          'HOneInchV4_unoswap: Invalid output token amount'
         );
       });
 
@@ -1083,7 +1090,7 @@ contract('OneInchV3 Swap', function([_, user]) {
 
         await expectRevert(
           this.proxy.execMock(to, data, { from: user, value: ether('0.1') }),
-          'HOneInchV3_unoswap: Dai/insufficient-allowance'
+          'HOneInchV4_unoswap: Dai/insufficient-allowance'
         );
       });
 
@@ -1132,7 +1139,7 @@ contract('OneInchV3 Swap', function([_, user]) {
 
         await expectRevert(
           this.proxy.execMock(to, data, { from: user, value: ether('0.1') }),
-          'HOneInchV3_unoswap: Dai/insufficient-allowance'
+          'HOneInchV4_unoswap: Dai/insufficient-allowance'
         );
       });
     });

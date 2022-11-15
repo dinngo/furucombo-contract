@@ -3,46 +3,47 @@
 pragma solidity 0.8.10;
 
 import "../HandlerBase.sol";
-import "./IAggregationExecutor.sol";
-import "./IAggregationRouterV3.sol";
+import "./IAggregationExecutorV4.sol";
+import "./IAggregationRouterV4.sol";
 
-contract HOneInchV3 is HandlerBase {
-    // prettier-ignore
-    address private constant _ONEINCH_SPENDER = 0x11111112542D85B3EF69AE05771c2dCCff4fAa26;
+contract HOneInchV4 is HandlerBase {
+    IAggregationRouterV4 public immutable oneInchRouter;
 
     function getContractName() public pure override returns (string memory) {
-        return "HOneInchV3";
+        return "HOneInchV4";
+    }
+
+    constructor(address oneInchRouter_) {
+        oneInchRouter = IAggregationRouterV4(oneInchRouter_);
     }
 
     function swap(
-        IAggregationExecutor caller,
-        IAggregationRouterV3.SwapDescriptionV3 calldata desc,
+        IAggregationExecutorV4 caller,
+        IAggregationRouterV4.SwapDescriptionV4 calldata desc,
         bytes calldata data
     ) external payable returns (uint256 returnAmount) {
         if (_isNotNativeToken(address(desc.srcToken))) {
             _tokenApprove(
                 address(desc.srcToken),
-                _ONEINCH_SPENDER,
+                address(oneInchRouter),
                 desc.amount
             );
-            try
-                IAggregationRouterV3(_ONEINCH_SPENDER).swap(caller, desc, data)
-            returns (uint256 ret, uint256) {
+            try oneInchRouter.swap(caller, desc, data) returns (
+                uint256 ret,
+                uint256,
+                uint256
+            ) {
                 returnAmount = ret;
             } catch Error(string memory message) {
                 _revertMsg("swap", message);
             } catch {
                 _revertMsg("swap");
             }
-            _tokenApproveZero(address(desc.srcToken), _ONEINCH_SPENDER);
+            _tokenApproveZero(address(desc.srcToken), address(oneInchRouter));
         } else {
             try
-                IAggregationRouterV3(_ONEINCH_SPENDER).swap{value: desc.amount}(
-                    caller,
-                    desc,
-                    data
-                )
-            returns (uint256 ret, uint256) {
+                oneInchRouter.swap{value: desc.amount}(caller, desc, data)
+            returns (uint256 ret, uint256, uint256) {
                 returnAmount = ret;
             } catch Error(string memory message) {
                 _revertMsg("swap", message);
@@ -69,9 +70,9 @@ contract HOneInchV3 is HandlerBase {
         // Interact with 1inch
         if (_isNotNativeToken(address(srcToken))) {
             // ERC20 token need to approve before unoswap
-            _tokenApprove(address(srcToken), _ONEINCH_SPENDER, amount);
+            _tokenApprove(address(srcToken), address(oneInchRouter), amount);
             returnAmount = _unoswapCall(0, data);
-            _tokenApproveZero(address(srcToken), _ONEINCH_SPENDER);
+            _tokenApproveZero(address(srcToken), address(oneInchRouter));
         } else {
             returnAmount = _unoswapCall(amount, data);
         }
@@ -97,7 +98,7 @@ contract HOneInchV3 is HandlerBase {
     {
         // Interact with 1inch through contract call with data
         (bool success, bytes memory returnData) =
-            _ONEINCH_SPENDER.call{value: value}(data);
+            address(oneInchRouter).call{value: value}(data);
 
         // Verify return status and data
         if (success) {
