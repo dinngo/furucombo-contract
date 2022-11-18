@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+### Added
+
+- Support Foundry fuzzing and add fuzzing tests.
+
 ### Changed
 
 - Replace `RCubeNFT` with `RStarNFTV4`.
