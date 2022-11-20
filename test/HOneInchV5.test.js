@@ -591,7 +591,7 @@ contract('OneInchV5 Swap', function([_, user]) {
 
       // Prepare data
       it('normal', async function() {
-        const value = ether('10');
+        const value = ether('0.1');
         const to = this.hOneInch.address;
         const slippage = 3;
         const swapReq = queryString.stringifyUrl({
@@ -614,9 +614,18 @@ contract('OneInchV5 Swap', function([_, user]) {
         const swapData = await swapResponse.json();
         const quote = swapData.toTokenAmount;
         // Verify it's `unoswap` function call
-        expect(swapData.tx.data.substring(0, 10)).to.be.eq(
-          SELECTOR_1INCH_UNOSWAP_V3_SWAP
-        );
+        if (chainId == 10) {
+          // Function sig will be SELECTOR_1INCH_UNOSWAP_V3_SWAP or SELECTOR_1INCH_SWAP on Optimism
+          expect(
+            swapData.tx.data.substring(0, 10) ==
+              SELECTOR_1INCH_UNOSWAP_V3_SWAP ||
+              swapData.tx.data.substring(0, 10) == SELECTOR_1INCH_SWAP
+          ).to.be.true;
+        } else {
+          expect(swapData.tx.data.substring(0, 10)).to.be.eq(
+            SELECTOR_1INCH_UNOSWAP_V3_SWAP
+          );
+        }
 
         // Prepare handler data
         const data = getCallData(HOneInch, 'swap', [
@@ -658,7 +667,7 @@ contract('OneInchV5 Swap', function([_, user]) {
       });
 
       it('should revert: wrong src token amount(ether)', async function() {
-        const value = ether('10');
+        const value = ether('0.1');
         const to = this.hOneInch.address;
         const slippage = 3;
         const swapReq = queryString.stringifyUrl({
@@ -680,9 +689,18 @@ contract('OneInchV5 Swap', function([_, user]) {
         expect(swapResponse.ok, '1inch api response not ok').to.be.true;
         const swapData = await swapResponse.json();
         // Verify it's `unoswapV3` function call
-        expect(swapData.tx.data.substring(0, 10)).to.be.eq(
-          SELECTOR_1INCH_UNOSWAP_V3_SWAP
-        );
+        if (chainId == 10) {
+          // Function sig will be SELECTOR_1INCH_UNOSWAP_V3_SWAP or SELECTOR_1INCH_SWAP on Optimism
+          expect(
+            swapData.tx.data.substring(0, 10) ==
+              SELECTOR_1INCH_UNOSWAP_V3_SWAP ||
+              swapData.tx.data.substring(0, 10) == SELECTOR_1INCH_SWAP
+          ).to.be.true;
+        } else {
+          expect(swapData.tx.data.substring(0, 10)).to.be.eq(
+            SELECTOR_1INCH_UNOSWAP_V3_SWAP
+          );
+        }
 
         // Prepare handler data
         const data = getCallData(HOneInch, 'swap', [
@@ -886,7 +904,7 @@ contract('OneInchV5 Swap', function([_, user]) {
 
       it('normal', async function() {
         // Prepare data
-        const value = ether('10');
+        const value = ether('100');
         const to = this.hOneInch.address;
         const slippage = 3;
         const swapReq = queryString.stringifyUrl({
@@ -914,9 +932,18 @@ contract('OneInchV5 Swap', function([_, user]) {
         const swapData = await swapResponse.json();
         const quote = swapData.toTokenAmount;
         // Verify it's `unoswapV3` function call
-        expect(swapData.tx.data.substring(0, 10)).to.be.eq(
-          SELECTOR_1INCH_UNOSWAP_V3_SWAP
-        );
+        if (chainId == 10) {
+          // Function sig will be SELECTOR_1INCH_UNOSWAP_V3_SWAP or SELECTOR_1INCH_SWAP on Optimism
+          expect(
+            swapData.tx.data.substring(0, 10) ==
+              SELECTOR_1INCH_UNOSWAP_V3_SWAP ||
+              swapData.tx.data.substring(0, 10) == SELECTOR_1INCH_SWAP
+          ).to.be.true;
+        } else {
+          expect(swapData.tx.data.substring(0, 10)).to.be.eq(
+            SELECTOR_1INCH_UNOSWAP_V3_SWAP
+          );
+        }
 
         // Prepare handler data
         const data = getCallData(HOneInch, 'swap', [
@@ -1571,7 +1598,7 @@ contract('OneInchV5 Swap', function([_, user]) {
 
       it('normal', async function() {
         // Prepare data
-        const value = ether('10');
+        const value = ether('100');
         const to = this.hOneInch.address;
         const slippage = 3;
         const swapReq = queryString.stringifyUrl({
@@ -1600,9 +1627,18 @@ contract('OneInchV5 Swap', function([_, user]) {
         const swapData = await swapResponse.json();
         const quote = swapData.toTokenAmount;
         // Verify it's `unoswapV3` function call
-        expect(swapData.tx.data.substring(0, 10)).to.be.eq(
-          SELECTOR_1INCH_UNOSWAP_V3_SWAP
-        );
+        if (chainId == 10) {
+          // Function sig will be SELECTOR_1INCH_UNOSWAP_V3_SWAP or SELECTOR_1INCH_SWAP on Optimism
+          expect(
+            swapData.tx.data.substring(0, 10) ==
+              SELECTOR_1INCH_UNOSWAP_V3_SWAP ||
+              swapData.tx.data.substring(0, 10) == SELECTOR_1INCH_SWAP
+          ).to.be.true;
+        } else {
+          expect(swapData.tx.data.substring(0, 10)).to.be.eq(
+            SELECTOR_1INCH_UNOSWAP_V3_SWAP
+          );
+        }
 
         // Prepare handler data
         const data = getCallData(HOneInch, 'swap', [
@@ -1651,7 +1687,7 @@ contract('OneInchV5 Swap', function([_, user]) {
 
       it('to weth', async function() {
         // Prepare data
-        const value = ether('10');
+        const value = ether('100');
         const to = this.hOneInch.address;
         const slippage = 3;
         const swapReq = queryString.stringifyUrl({
@@ -1680,9 +1716,18 @@ contract('OneInchV5 Swap', function([_, user]) {
         const swapData = await swapResponse.json();
         const quote = swapData.toTokenAmount;
         // Verify it's `unoswapV3` function call
-        expect(swapData.tx.data.substring(0, 10)).to.be.eq(
-          SELECTOR_1INCH_UNOSWAP_V3_SWAP
-        );
+        if (chainId == 10) {
+          // Function sig will be SELECTOR_1INCH_UNOSWAP_V3_SWAP or SELECTOR_1INCH_SWAP on Optimism
+          expect(
+            swapData.tx.data.substring(0, 10) ==
+              SELECTOR_1INCH_UNOSWAP_V3_SWAP ||
+              swapData.tx.data.substring(0, 10) == SELECTOR_1INCH_SWAP
+          ).to.be.true;
+        } else {
+          expect(swapData.tx.data.substring(0, 10)).to.be.eq(
+            SELECTOR_1INCH_UNOSWAP_V3_SWAP
+          );
+        }
 
         // Prepare handler data
         const data = getCallData(HOneInch, 'swap', [
@@ -1732,7 +1777,7 @@ contract('OneInchV5 Swap', function([_, user]) {
       it('append extra data to API data at the end', async function() {
         // Prepare data
         const appendData = 'ff0000ff';
-        const value = ether('10');
+        const value = ether('100');
         const to = this.hOneInch.address;
         const slippage = 3;
         const swapReq = queryString.stringifyUrl({
@@ -1761,10 +1806,18 @@ contract('OneInchV5 Swap', function([_, user]) {
         const swapData = await swapResponse.json();
         const quote = swapData.toTokenAmount;
         // Verify it's `unoswapV3` function call
-        expect(swapData.tx.data.substring(0, 10)).to.be.eq(
-          SELECTOR_1INCH_UNOSWAP_V3_SWAP
-        );
-
+        if (chainId == 10) {
+          // Function sig will be SELECTOR_1INCH_UNOSWAP_V3_SWAP or SELECTOR_1INCH_SWAP on Optimism
+          expect(
+            swapData.tx.data.substring(0, 10) ==
+              SELECTOR_1INCH_UNOSWAP_V3_SWAP ||
+              swapData.tx.data.substring(0, 10) == SELECTOR_1INCH_SWAP
+          ).to.be.true;
+        } else {
+          expect(swapData.tx.data.substring(0, 10)).to.be.eq(
+            SELECTOR_1INCH_UNOSWAP_V3_SWAP
+          );
+        }
         // Prepare handler data
         var data = getCallData(HOneInch, 'swap', [
           token0Address,
@@ -1813,7 +1866,7 @@ contract('OneInchV5 Swap', function([_, user]) {
 
       it('should revert: wrong dst token(ether)', async function() {
         // Prepare data
-        const value = ether('10');
+        const value = ether('100');
         const to = this.hOneInch.address;
         const slippage = 3;
         const swapReq = queryString.stringifyUrl({
@@ -1841,9 +1894,18 @@ contract('OneInchV5 Swap', function([_, user]) {
         expect(swapResponse.ok, '1inch api response not ok').to.be.true;
         const swapData = await swapResponse.json();
         // Verify it's `unoswapV3` function call
-        expect(swapData.tx.data.substring(0, 10)).to.be.eq(
-          SELECTOR_1INCH_UNOSWAP_V3_SWAP
-        );
+        if (chainId == 10) {
+          // Function sig will be SELECTOR_1INCH_UNOSWAP_V3_SWAP or SELECTOR_1INCH_SWAP on Optimism
+          expect(
+            swapData.tx.data.substring(0, 10) ==
+              SELECTOR_1INCH_UNOSWAP_V3_SWAP ||
+              swapData.tx.data.substring(0, 10) == SELECTOR_1INCH_SWAP
+          ).to.be.true;
+        } else {
+          expect(swapData.tx.data.substring(0, 10)).to.be.eq(
+            SELECTOR_1INCH_UNOSWAP_V3_SWAP
+          );
+        }
 
         // Prepare handler data
         const data = getCallData(HOneInch, 'swap', [
@@ -1861,7 +1923,7 @@ contract('OneInchV5 Swap', function([_, user]) {
 
       it('should revert: wrong dst token(erc20)', async function() {
         // Prepare data
-        const value = ether('10');
+        const value = ether('100');
         const to = this.hOneInch.address;
         const slippage = 3;
         const swapReq = queryString.stringifyUrl({
@@ -1889,9 +1951,18 @@ contract('OneInchV5 Swap', function([_, user]) {
         expect(swapResponse.ok, '1inch api response not ok').to.be.true;
         const swapData = await swapResponse.json();
         // Verify it's `unoswapV3` function call
-        expect(swapData.tx.data.substring(0, 10)).to.be.eq(
-          SELECTOR_1INCH_UNOSWAP_V3_SWAP
-        );
+        if (chainId == 10) {
+          // Function sig will be SELECTOR_1INCH_UNOSWAP_V3_SWAP or SELECTOR_1INCH_SWAP on Optimism
+          expect(
+            swapData.tx.data.substring(0, 10) ==
+              SELECTOR_1INCH_UNOSWAP_V3_SWAP ||
+              swapData.tx.data.substring(0, 10) == SELECTOR_1INCH_SWAP
+          ).to.be.true;
+        } else {
+          expect(swapData.tx.data.substring(0, 10)).to.be.eq(
+            SELECTOR_1INCH_UNOSWAP_V3_SWAP
+          );
+        }
 
         // Prepare handler data
         const data = getCallData(HOneInch, 'swap', [
@@ -1909,7 +1980,7 @@ contract('OneInchV5 Swap', function([_, user]) {
 
       it('should revert: wrong src token(ether)', async function() {
         // Prepare data
-        const value = ether('10');
+        const value = ether('100');
         const to = this.hOneInch.address;
         const slippage = 3;
         const swapReq = queryString.stringifyUrl({
@@ -1937,9 +2008,18 @@ contract('OneInchV5 Swap', function([_, user]) {
         expect(swapResponse.ok, '1inch api response not ok').to.be.true;
         const swapData = await swapResponse.json();
         // Verify it's `unoswapV3` function call
-        expect(swapData.tx.data.substring(0, 10)).to.be.eq(
-          SELECTOR_1INCH_UNOSWAP_V3_SWAP
-        );
+        if (chainId == 10) {
+          // Function sig will be SELECTOR_1INCH_UNOSWAP_V3_SWAP or SELECTOR_1INCH_SWAP on Optimism
+          expect(
+            swapData.tx.data.substring(0, 10) ==
+              SELECTOR_1INCH_UNOSWAP_V3_SWAP ||
+              swapData.tx.data.substring(0, 10) == SELECTOR_1INCH_SWAP
+          ).to.be.true;
+        } else {
+          expect(swapData.tx.data.substring(0, 10)).to.be.eq(
+            SELECTOR_1INCH_UNOSWAP_V3_SWAP
+          );
+        }
 
         // Prepare handler data
         const data = getCallData(HOneInch, 'swap', [
@@ -1956,7 +2036,7 @@ contract('OneInchV5 Swap', function([_, user]) {
 
       it('should revert: wrong src token(erc20)', async function() {
         // Prepare data
-        const value = ether('10');
+        const value = ether('100');
         const to = this.hOneInch.address;
         const slippage = 3;
         const swapReq = queryString.stringifyUrl({
@@ -1984,9 +2064,18 @@ contract('OneInchV5 Swap', function([_, user]) {
         expect(swapResponse.ok, '1inch api response not ok').to.be.true;
         const swapData = await swapResponse.json();
         // Verify it's `unoswapV3` function call
-        expect(swapData.tx.data.substring(0, 10)).to.be.eq(
-          SELECTOR_1INCH_UNOSWAP_V3_SWAP
-        );
+        if (chainId == 10) {
+          // Function sig will be SELECTOR_1INCH_UNOSWAP_V3_SWAP or SELECTOR_1INCH_SWAP on Optimism
+          expect(
+            swapData.tx.data.substring(0, 10) ==
+              SELECTOR_1INCH_UNOSWAP_V3_SWAP ||
+              swapData.tx.data.substring(0, 10) == SELECTOR_1INCH_SWAP
+          ).to.be.true;
+        } else {
+          expect(swapData.tx.data.substring(0, 10)).to.be.eq(
+            SELECTOR_1INCH_UNOSWAP_V3_SWAP
+          );
+        }
 
         // Prepare handler data
         const data = getCallData(HOneInch, 'swap', [
@@ -2011,7 +2100,7 @@ contract('OneInchV5 Swap', function([_, user]) {
 
       it('should revert: wrong src token amount(erc20)', async function() {
         // Prepare data
-        const value = ether('10');
+        const value = ether('100');
         const to = this.hOneInch.address;
         const slippage = 3;
         const swapReq = queryString.stringifyUrl({
@@ -2039,10 +2128,18 @@ contract('OneInchV5 Swap', function([_, user]) {
         expect(swapResponse.ok, '1inch api response not ok').to.be.true;
         const swapData = await swapResponse.json();
         // Verify it's `unoswapV3` function call
-        expect(swapData.tx.data.substring(0, 10)).to.be.eq(
-          SELECTOR_1INCH_UNOSWAP_V3_SWAP
-        );
-
+        if (chainId == 10) {
+          // Function sig will be SELECTOR_1INCH_UNOSWAP_V3_SWAP or SELECTOR_1INCH_SWAP on Optimism
+          expect(
+            swapData.tx.data.substring(0, 10) ==
+              SELECTOR_1INCH_UNOSWAP_V3_SWAP ||
+              swapData.tx.data.substring(0, 10) == SELECTOR_1INCH_SWAP
+          ).to.be.true;
+        } else {
+          expect(swapData.tx.data.substring(0, 10)).to.be.eq(
+            SELECTOR_1INCH_UNOSWAP_V3_SWAP
+          );
+        }
         // Prepare handler data
         const data = getCallData(HOneInch, 'swap', [
           token0Address,
