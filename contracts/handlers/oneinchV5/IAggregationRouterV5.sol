@@ -3,10 +3,10 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "./IAggregationExecutorV4.sol";
+import "./IAggregationExecutorV5.sol";
 
-interface IAggregationRouterV4 {
-    struct SwapDescriptionV4 {
+interface IAggregationRouterV5 {
+    struct SwapDescriptionV5 {
         IERC20 srcToken;
         IERC20 dstToken;
         address payable srcReceiver;
@@ -14,30 +14,29 @@ interface IAggregationRouterV4 {
         uint256 amount;
         uint256 minReturnAmount;
         uint256 flags;
-        bytes permit;
     }
 
-    function swap(
-        IAggregationExecutorV4 caller,
-        SwapDescriptionV4 calldata desc,
+    function swap( //0x12aa3caf
+        IAggregationExecutorV5 executor,
+        SwapDescriptionV5 calldata desc,
+        bytes calldata permit,
         bytes calldata data
     )
         external
         payable
         returns (
             uint256 returnAmount,
-            uint256 spentAmount,
-            uint256 gasLeft
+            uint256 spentAmount
         );
 
-    function unoswap(
+    function unoswap( //0x0502b1c5
         IERC20 srcToken,
         uint256 amount,
         uint256 minReturn,
-        bytes32[] calldata pools
+        uint256[] calldata pools
     ) external payable returns (uint256 returnAmount);
 
-    function uniswapV3Swap(
+    function uniswapV3Swap( //0xe449022e
         uint256 amount,
         uint256 minReturn,
         uint256[] calldata pools
