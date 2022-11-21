@@ -62,6 +62,7 @@ contract('Fee', function([_, feeCollector, user]) {
   const omgAmount = ether('10');
 
   let id;
+  let beforeId;
   let balanceUser;
   let balanceProxy;
   let balanceFeeCollector;
