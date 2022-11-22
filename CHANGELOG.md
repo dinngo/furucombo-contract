@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 - Support Foundry fuzzing and add fuzzing tests.
+- Add ERC1155 fee rule.
 
 ### Changed
 
