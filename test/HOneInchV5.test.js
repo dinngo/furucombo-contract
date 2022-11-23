@@ -56,6 +56,7 @@ const SELECTOR_1INCH_UNOSWAP_V3_SWAP = getFuncSig(IOneInch, 'uniswapV3Swap');
 const URL_1INCH = 'https://api.1inch.exchange/v5.0/' + chainId + '/';
 const URL_1INCH_SWAP = URL_1INCH + 'swap';
 
+// UniswapV2Like protocols
 const UNOSWAP_PROTOCOLS =
   chainId == 1
     ? [
@@ -267,6 +268,7 @@ const NON_UNOSWAP_PROTOCOLS =
         'AVALANCHE_KYBER_DMM_STATIC',
         // 'AVALANCHE_AAVE_V3',
       ].join(',');
+// UniswapV3Like protocols
 const UNOSWAP_V3_PROTOCOLS =
   chainId == 1
     ? ['UNISWAP_V3'].join(',')
@@ -613,7 +615,7 @@ contract('OneInchV5 Swap', function([_, user]) {
         expect(swapResponse.ok, '1inch api response not ok').to.be.true;
         const swapData = await swapResponse.json();
         const quote = swapData.toTokenAmount;
-        // Verify it's `unoswap` function call
+        // Verify it's `uniswapV3Swap` or `swap` function call
         if (chainId == 10) {
           // Function sig will be SELECTOR_1INCH_UNOSWAP_V3_SWAP or SELECTOR_1INCH_SWAP on Optimism
           expect(
@@ -688,7 +690,7 @@ contract('OneInchV5 Swap', function([_, user]) {
         const swapResponse = await callExternalApi(swapReq);
         expect(swapResponse.ok, '1inch api response not ok').to.be.true;
         const swapData = await swapResponse.json();
-        // Verify it's `unoswapV3` function call
+        // Verify it's `uniswapV3Swap` or `swap` function call
         if (chainId == 10) {
           // Function sig will be SELECTOR_1INCH_UNOSWAP_V3_SWAP or SELECTOR_1INCH_SWAP on Optimism
           expect(
@@ -931,7 +933,7 @@ contract('OneInchV5 Swap', function([_, user]) {
         expect(swapResponse.ok, '1inch api response not ok').to.be.true;
         const swapData = await swapResponse.json();
         const quote = swapData.toTokenAmount;
-        // Verify it's `unoswapV3` function call
+        // Verify it's `uniswapV3Swap` or `swap` function call
         if (chainId == 10) {
           // Function sig will be SELECTOR_1INCH_UNOSWAP_V3_SWAP or SELECTOR_1INCH_SWAP on Optimism
           expect(
@@ -1537,7 +1539,7 @@ contract('OneInchV5 Swap', function([_, user]) {
 
         await expectRevert(
           this.proxy.execMock(to, data, { from: user, value: ether('0.1') }),
-          '0_HOneInchV5__oneinchswapCall: Dai/insufficient-allowance'
+          '0_HOneInchV5__oneInchswapCall: Dai/insufficient-allowance'
         );
       });
 
@@ -1586,7 +1588,7 @@ contract('OneInchV5 Swap', function([_, user]) {
 
         await expectRevert(
           this.proxy.execMock(to, data, { from: user, value: ether('0.1') }),
-          '0_HOneInchV5__oneinchswapCall: Dai/insufficient-allowance'
+          '0_HOneInchV5__oneInchswapCall: Dai/insufficient-allowance'
         );
       });
     });
@@ -1626,7 +1628,7 @@ contract('OneInchV5 Swap', function([_, user]) {
         expect(swapResponse.ok, '1inch api response not ok').to.be.true;
         const swapData = await swapResponse.json();
         const quote = swapData.toTokenAmount;
-        // Verify it's `unoswapV3` function call
+        // Verify it's `uniswapV3Swap` or `swap` function call
         if (chainId == 10) {
           // Function sig will be SELECTOR_1INCH_UNOSWAP_V3_SWAP or SELECTOR_1INCH_SWAP on Optimism
           expect(
@@ -1715,7 +1717,7 @@ contract('OneInchV5 Swap', function([_, user]) {
         expect(swapResponse.ok, '1inch api response not ok').to.be.true;
         const swapData = await swapResponse.json();
         const quote = swapData.toTokenAmount;
-        // Verify it's `unoswapV3` function call
+        // Verify it's `uniswapV3Swap` or `swap` function call
         if (chainId == 10) {
           // Function sig will be SELECTOR_1INCH_UNOSWAP_V3_SWAP or SELECTOR_1INCH_SWAP on Optimism
           expect(
@@ -1805,7 +1807,7 @@ contract('OneInchV5 Swap', function([_, user]) {
         expect(swapResponse.ok, '1inch api response not ok').to.be.true;
         const swapData = await swapResponse.json();
         const quote = swapData.toTokenAmount;
-        // Verify it's `unoswapV3` function call
+        // Verify it's `uniswapV3Swap` or `swap` function call
         if (chainId == 10) {
           // Function sig will be SELECTOR_1INCH_UNOSWAP_V3_SWAP or SELECTOR_1INCH_SWAP on Optimism
           expect(
@@ -1893,7 +1895,7 @@ contract('OneInchV5 Swap', function([_, user]) {
         const swapResponse = await callExternalApi(swapReq);
         expect(swapResponse.ok, '1inch api response not ok').to.be.true;
         const swapData = await swapResponse.json();
-        // Verify it's `unoswapV3` function call
+        // Verify it's `uniswapV3Swap` or `swap` function call
         if (chainId == 10) {
           // Function sig will be SELECTOR_1INCH_UNOSWAP_V3_SWAP or SELECTOR_1INCH_SWAP on Optimism
           expect(
@@ -1915,6 +1917,7 @@ contract('OneInchV5 Swap', function([_, user]) {
           swapData.tx.data,
         ]);
 
+        // Wrong dst token would still cause error msg: Invalid output token amount
         await expectRevert(
           this.proxy.execMock(to, data, { from: user, value: ether('0.1') }),
           '0_HOneInchV5_swap: Invalid output token amount'
@@ -1950,7 +1953,7 @@ contract('OneInchV5 Swap', function([_, user]) {
         const swapResponse = await callExternalApi(swapReq);
         expect(swapResponse.ok, '1inch api response not ok').to.be.true;
         const swapData = await swapResponse.json();
-        // Verify it's `unoswapV3` function call
+        // Verify it's `uniswapV3Swap` or `swap` function call
         if (chainId == 10) {
           // Function sig will be SELECTOR_1INCH_UNOSWAP_V3_SWAP or SELECTOR_1INCH_SWAP on Optimism
           expect(
@@ -2007,7 +2010,7 @@ contract('OneInchV5 Swap', function([_, user]) {
         const swapResponse = await callExternalApi(swapReq);
         expect(swapResponse.ok, '1inch api response not ok').to.be.true;
         const swapData = await swapResponse.json();
-        // Verify it's `unoswapV3` function call
+        // Verify it's `uniswapV3Swap` or `swap` function call
         if (chainId == 10) {
           // Function sig will be SELECTOR_1INCH_UNOSWAP_V3_SWAP or SELECTOR_1INCH_SWAP on Optimism
           expect(
@@ -2063,7 +2066,7 @@ contract('OneInchV5 Swap', function([_, user]) {
         const swapResponse = await callExternalApi(swapReq);
         expect(swapResponse.ok, '1inch api response not ok').to.be.true;
         const swapData = await swapResponse.json();
-        // Verify it's `unoswapV3` function call
+        // Verify it's `uniswapV3Swap` or `swap` function call
         if (chainId == 10) {
           // Function sig will be SELECTOR_1INCH_UNOSWAP_V3_SWAP or SELECTOR_1INCH_SWAP on Optimism
           expect(
@@ -2088,12 +2091,12 @@ contract('OneInchV5 Swap', function([_, user]) {
         if (chainId == 137) {
           await expectRevert(
             this.proxy.execMock(to, data, { from: user, value: ether('0.1') }),
-            '0_HOneInchV5__oneinchswapCall: ERC20: transfer amount exceeds allowance'
+            '0_HOneInchV5__oneInchswapCall: ERC20: transfer amount exceeds allowance'
           );
         } else {
           await expectRevert(
             this.proxy.execMock(to, data, { from: user, value: ether('0.1') }),
-            '0_HOneInchV5__oneinchswapCall: Dai/insufficient-allowance'
+            '0_HOneInchV5__oneInchswapCall: Dai/insufficient-allowance'
           );
         }
       });
@@ -2127,7 +2130,7 @@ contract('OneInchV5 Swap', function([_, user]) {
         const swapResponse = await callExternalApi(swapReq);
         expect(swapResponse.ok, '1inch api response not ok').to.be.true;
         const swapData = await swapResponse.json();
-        // Verify it's `unoswapV3` function call
+        // Verify it's `uniswapV3Swap` or `swap` function call
         if (chainId == 10) {
           // Function sig will be SELECTOR_1INCH_UNOSWAP_V3_SWAP or SELECTOR_1INCH_SWAP on Optimism
           expect(
@@ -2150,12 +2153,12 @@ contract('OneInchV5 Swap', function([_, user]) {
         if (chainId == 137) {
           await expectRevert(
             this.proxy.execMock(to, data, { from: user, value: ether('0.1') }),
-            '0_HOneInchV5__oneinchswapCall: ERC20: transfer amount exceeds allowance'
+            '0_HOneInchV5__oneInchswapCall: ERC20: transfer amount exceeds allowance'
           );
         } else {
           await expectRevert(
             this.proxy.execMock(to, data, { from: user, value: ether('0.1') }),
-            '0_HOneInchV5__oneinchswapCall: Dai/insufficient-allowance'
+            '0_HOneInchV5__oneInchswapCall: Dai/insufficient-allowance'
           );
         }
       });

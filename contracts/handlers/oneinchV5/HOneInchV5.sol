@@ -29,10 +29,10 @@ contract HOneInchV5 is HandlerBase {
         if (_isNotNativeToken(address(srcToken))) {
             // ERC20 token need to approve before swap
             _tokenApprove(address(srcToken), oneInchRouter, amount);
-            returnAmount = _oneinchswapCall(0, data);
+            returnAmount = _oneInchswapCall(0, data);
             _tokenApproveZero(address(srcToken), oneInchRouter);
         } else {
-            returnAmount = _oneinchswapCall(amount, data);
+            returnAmount = _oneInchswapCall(amount, data);
         }
 
         // Check, dstToken balance should be increased
@@ -50,7 +50,7 @@ contract HOneInchV5 is HandlerBase {
         }
     }
 
-    function _oneinchswapCall(uint256 value, bytes calldata data)
+    function _oneInchswapCall(uint256 value, bytes calldata data)
         internal
         returns (uint256 returnAmount)
     {
@@ -64,14 +64,14 @@ contract HOneInchV5 is HandlerBase {
         } else {
             if (returnData.length < 68) {
                 // If the returnData length is less than 68, then the transaction failed silently.
-                _revertMsg("_oneinchswapCall");
+                _revertMsg("_oneInchswapCall");
             } else {
                 // Look for revert reason and bubble it up if present
                 assembly {
                     returnData := add(returnData, 0x04)
                 }
                 _revertMsg(
-                    "_oneinchswapCall",
+                    "_oneInchswapCall",
                     abi.decode(returnData, (string))
                 );
             }
