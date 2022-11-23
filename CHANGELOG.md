@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - Replace `RCubeNFT` with `RStarNFTV4`.
+- Replace `HOneInchV3` with `HOneInchV5`.
 
 ## [2.2.0] - 2022-10-21
 
