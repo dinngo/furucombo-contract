@@ -1,6 +1,12 @@
 const chainId = network.config.chainId;
 
-if (chainId == 1 || chainId == 10 || chainId == 42161 || chainId == 43114) {
+if (
+  chainId == 1 ||
+  chainId == 10 ||
+  chainId == 137 ||
+  chainId == 42161 ||
+  chainId == 43114
+) {
   // This test supports to run on these chains.
 } else {
   return;
@@ -26,7 +32,7 @@ contract('RERC1155NFT', function([owner, feeCollector, user, someone]) {
 
   before(async function() {
     this.nft = await ERC1155Mock.new();
-    this.nftTokenID = await this.nft.GOLD();
+    this.nftTokenID = await this.nft.tokenId();
     this.registry = await FeeRuleRegistry.new(BASIS_FEE_RATE, feeCollector);
     this.nftRuleA = await RERC1155NFT.new(
       this.nft.address,
@@ -72,7 +78,7 @@ contract('RERC1155NFT', function([owner, feeCollector, user, someone]) {
 
   describe('RERC1155NFT', function() {
     describe('calculate single', function() {
-      // Rule discount higher then fee higher. Rule discount lower then fee lower.
+      //  The fee is higher if the Rule discount is higher. The fee is lower if the Rule discount is lower.
       describe('high rule discount', function() {
         beforeEach(async function() {
           await this.registry.registerRule(this.nftRuleA.address);
