@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+## [2.3.0] - 2022-11-29
+
 ### Added
 
 - Support Foundry fuzzing and add fuzzing tests.
