@@ -1,112 +1,95 @@
-# Test Template
-.job_template: &test-polygon-configuration
-  stage: test-polygon
-  script:
-    - apt-get update && apt-get install -y netcat
-    - RUNNER_COUNT=12
-    - FILES=( $(find -H -L ./test/* -regex "^.*.test.js") )
-    - len=${#FILES[@]}
-    - >
-      for (( i=0; i<${RUNNER_COUNT}; i+=1 )); do
-          RUNNER_TEST_CNTS[$i]=0
-      done
-    - >
-      for (( i=0; i<${len}; i+=1 )); do
-          TestCases[$i]=$(grep -o " it" ${FILES[$i]} | wc -l)
-      done
-    - >
-      for ((i = 0; i<${len}; i++))
-      do
-          for((j = 0; j<${len}-i-1; j++))
-          do
-              if [ ${TestCases[j]} -lt ${TestCases[$((j+1))]} ]
-              then
-                  # swap
-                  temp=${TestCases[j]}
-                  TestCases[$j]=${TestCases[$((j+1))]}
-                  TestCases[$((j+1))]=$temp
-
-                  temp=${FILES[j]}
-                  FILES[$j]=${FILES[$((j+1))]}
-                  FILES[$((j+1))]=$temp
-              fi
-          done
-      done
-    - MIN=${RUNNER_TEST_CNTS[0]}
-    - MINIDX=0
-    - >
-      for (( i=0; i<${len}; i+=1 )); do
-          for j in ${!RUNNER_TEST_CNTS[@]};
-          do
-              if [ ${MIN} -gt ${RUNNER_TEST_CNTS[$j]} ]
-              then
-                  MIN=${RUNNER_TEST_CNTS[${j}]}
-                  MINIDX=${j}
-              fi
-          done
-
-          UNITTEST_FILES[$MINIDX]+=' '"${FILES[$i]}"
-          RUNNER_TEST_CNTS[$MINIDX]=`expr ${TestCases[$i]} + ${RUNNER_TEST_CNTS[$MINIDX]}`
-          MIN=${RUNNER_TEST_CNTS[$MINIDX]}
-      done
-    - RPC_URL=${POLYGON_RPC_URL} CHAIN_ID=137 npm run test ${UNITTEST_FILES[${JOB_INDEX}]}
-
 polygon_test_0:
   variables:
     JOB_INDEX: 0
-  <<: *test-polygon-configuration
+    RUNNER_COUNT: 12
+    RPC_URL: ${POLYGON_RPC_URL}
+    CHAIN_ID: 137
+  extends: .test_template
 
 polygon_test_1:
   variables:
     JOB_INDEX: 1
-  <<: *test-polygon-configuration
+    RUNNER_COUNT: 12
+    RPC_URL: ${POLYGON_RPC_URL}
+    CHAIN_ID: 137
+  extends: .test_template
 
 polygon_test_2:
   variables:
     JOB_INDEX: 2
-  <<: *test-polygon-configuration
+    RUNNER_COUNT: 12
+    RPC_URL: ${POLYGON_RPC_URL}
+    CHAIN_ID: 137
+  extends: .test_template
 
 polygon_test_3:
   variables:
     JOB_INDEX: 3
-  <<: *test-polygon-configuration
+    RUNNER_COUNT: 12
+    RPC_URL: ${POLYGON_RPC_URL}
+    CHAIN_ID: 137
+  extends: .test_template
 
 polygon_test_4:
   variables:
     JOB_INDEX: 4
-  <<: *test-polygon-configuration
+    RUNNER_COUNT: 12
+    RPC_URL: ${POLYGON_RPC_URL}
+    CHAIN_ID: 137
+  extends: .test_template
 
 polygon_test_5:
   variables:
     JOB_INDEX: 5
-  <<: *test-polygon-configuration
+    RUNNER_COUNT: 12
+    RPC_URL: ${POLYGON_RPC_URL}
+    CHAIN_ID: 137
+  extends: .test_template
 
 polygon_test_6:
   variables:
     JOB_INDEX: 6
-  <<: *test-polygon-configuration
+    RUNNER_COUNT: 12
+    RPC_URL: ${POLYGON_RPC_URL}
+    CHAIN_ID: 137
+  extends: .test_template
 
 polygon_test_7:
   variables:
     JOB_INDEX: 7
-  <<: *test-polygon-configuration
+    RUNNER_COUNT: 12
+    RPC_URL: ${POLYGON_RPC_URL}
+    CHAIN_ID: 137
+  extends: .test_template
 
 polygon_test_8:
   variables:
     JOB_INDEX: 8
-  <<: *test-polygon-configuration
+    RUNNER_COUNT: 12
+    RPC_URL: ${POLYGON_RPC_URL}
+    CHAIN_ID: 137
+  extends: .test_template
 
 polygon_test_9:
   variables:
     JOB_INDEX: 9
-  <<: *test-polygon-configuration
+    RUNNER_COUNT: 12
+    RPC_URL: ${POLYGON_RPC_URL}
+    CHAIN_ID: 137
+  extends: .test_template
 
 polygon_test_10:
   variables:
     JOB_INDEX: 10
-  <<: *test-polygon-configuration
+    RUNNER_COUNT: 12
+    RPC_URL: ${POLYGON_RPC_URL}
+    CHAIN_ID: 137
+  extends: .test_template
 
 polygon_test_11:
   variables:
     JOB_INDEX: 11
-  <<: *test-polygon-configuration
+    RUNNER_COUNT: 12
+    RPC_URL: ${POLYGON_RPC_URL}
+    CHAIN_ID: 137
+  extends: .test_template
