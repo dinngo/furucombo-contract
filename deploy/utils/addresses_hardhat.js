@@ -2,6 +2,7 @@ module.exports = {
   // Deployed addresses - SHOULD BE EMPTY FOR THIS NETWORK
 
   // External addresses - testing addresses are just simply used in in-memory deploy
+  ONE_INCH_ROUTER: '0x1111111254eeb25477b68fb85ed929f73a960582',
   WRAPPED_NATIVE_TOKEN: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
   AAVE_POOL_V3: '0x794a61358D6845594F94dc1DB02A252b5b4814aD',
   WOODEN_CUBE: '0xBACFb3577d0c07FF62bde140Fdc41fEb1742833D',
