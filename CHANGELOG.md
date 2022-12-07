@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+## [2.3.1] - 2022-12-07
+
 ### Changed
 
 - Merge multi-chain unit test stages into single unit test stage in CI.
