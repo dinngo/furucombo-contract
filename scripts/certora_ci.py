@@ -35,7 +35,7 @@ CONTRACT_RULES_MAP = {
     "HWrappedNativeToken.sol": ["runHWrappedNativeToken.sh"],
     "HUniswapV3.sol": ["runHUniswapV3.sh"],
     "HPolygon.sol": ["runHPolygon.sh"],
-    "HOneInchV3.sol": ["runHOneInchV3.sh"],
+    "HOneInchV5.sol": ["runHOneInchV5.sh"],
     "HGelatoV2LimitOrder.sol": ["runHGelatoV2LimitOrder.sh"]
 }
 

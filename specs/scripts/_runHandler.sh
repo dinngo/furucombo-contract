@@ -79,7 +79,7 @@ perl -0777 -i -pe 's/address constant ETHADDRESS/address public ETHADDRESS/g' co
 perl -0777 -i -pe 's/ETHADDRESS/ETH_ADDRESS/g' contracts/handlers/aave/FlashLoanReceiverBase.sol
 perl -0777 -i -pe 's/ETHADDRESS/ETH_ADDRESS/g' contracts/handlers/aave/HAaveProtocol.sol
 perl -0777 -i -pe 's/ETHADDRESS/ETH_ADDRESS/g' contracts/handlers/aavev2/HAaveProtocolV2.sol
-perl -0777 -i -pe 's/_ETH_ADDRESS/ETH_ADDRESS/g' contracts/handlers/oneinchV3/HOneInchV3.sol
+perl -0777 -i -pe 's/_ETH_ADDRESS/ETH_ADDRESS/g' contracts/handlers/oneinchV5/HOneInchV5.sol
 # Add ETH_ADDRESS getter for HGelatoV2LimitOrder
 perl -0777 -i -pe 's/immutable GELATO_LIMIT_ORDER_MODULE;/immutable  GELATO_LIMIT_ORDER_MODULE;\n    address public ETH_ADDRESS = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;/g' contracts/handlers/gelatov2/HGelatoV2LimitOrder.sol
 
@@ -87,8 +87,8 @@ perl -0777 -i -pe 's/immutable GELATO_LIMIT_ORDER_MODULE;/immutable  GELATO_LIMI
 perl -0777 -i -pe 's/function repay\(/function unique_repay\(/g' contracts/handlers/aavev2/HAaveProtocolV2.sol
 perl -0777 -i -pe 's/function claimComp\(/function unique_claimComp\(/g' contracts/handlers/compound/HSCompound.sol
 perl -0777 -i -pe 's/function claimComp\(/function unique_claimComp\(/g' contracts/handlers/compound/HComptroller.sol
-perl -0777 -i -pe 's/function swap\(/function unique_swap\(/g' contracts/handlers/oneinchV3/HOneInchV3.sol
-perl -0777 -i -pe 's/function unoswap\(/function unique_unoswap\(/g' contracts/handlers/oneinchV3/HOneInchV3.sol
+perl -0777 -i -pe 's/function swap\(/function unique_swap\(/g' contracts/handlers/oneinchV5/HOneInchV5.sol
+perl -0777 -i -pe 's/function unoswap\(/function unique_unoswap\(/g' contracts/handlers/oneinchV5/HOneInchV5.sol
 perl -0777 -i -pe 's/function withdraw\(/function unique_withdraw\(/g' contracts/handlers/wrappednativetoken/HWrappedNativeToken.sol
 perl -0777 -i -pe 's/function deposit\(/function unique_deposit\(/g' contracts/handlers/wrappednativetoken/HWrappedNativeToken.sol
 perl -0777 -i -pe 's/function redeemUnderlying/function unique_redeemUnderlying/g' contracts/handlers/compound/HCEther.sol
@@ -96,7 +96,7 @@ perl -0777 -i -pe 's/receiver.transfer\(amount\)/Nothing\(receiver\).nop{value:a
 # perl -0777 -i -pe 's/function swap\(/function unique_swap\(/g' contracts/handlers/oneinchV2/HOneInchExchange.sol
 # perl -0777 -i -pe 's/function swap/function unique_swap/g' contracts/handlers/kybernetwork/HKyberNetwork.sol
 # constant keyword being remove above so change pure to view
-perl -0777 -i -pe 's/function _isNotNativeToken\(address token\) internal pure/function _isNotNativeToken\(address token\) internal view/g' contracts/handlers/oneinchV3/HOneInchV3.sol
+perl -0777 -i -pe 's/function _isNotNativeToken\(address token\) internal pure/function _isNotNativeToken\(address token\) internal view/g' contracts/handlers/oneinchV5/HOneInchV5.sol
 
 # add ABIEncoderV2 to HMooniswap
 # perl -0777 -i -pe 's/pragma solidity/pragma experimental ABIEncoderV2; pragma  solidity/g' contracts/handlers/mooniswap/HMooniswap.sol
