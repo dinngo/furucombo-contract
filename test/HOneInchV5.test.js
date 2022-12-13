@@ -32,7 +32,6 @@ const {
   mulPercent,
   profileGas,
   getHandlerReturn,
-  getFuncSig,
   getCallData,
   getTokenProvider,
   callExternalApi,
@@ -44,11 +43,6 @@ const HOneInch = artifacts.require('HOneInchV5');
 const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('ProxyMock');
 const IToken = artifacts.require('IERC20');
-const IOneInch = artifacts.require('IAggregationRouterV5');
-
-const SELECTOR_1INCH_SWAP = getFuncSig(IOneInch, 'swap');
-const SELECTOR_1INCH_UNOSWAP = getFuncSig(IOneInch, 'unoswap');
-const SELECTOR_1INCH_UNOSWAP_V3_SWAP = getFuncSig(IOneInch, 'uniswapV3Swap');
 
 /// Change url for different chain
 /// - Ethereum: https://api.1inch.exchange/v5.0/1/
@@ -779,30 +773,9 @@ contract('OneInchV5 Swap', function([_, user]) {
           swapData.tx.data,
         ]);
 
-        const sig = swapData.tx.data.substring(0, 10);
-        if (sig == SELECTOR_1INCH_SWAP) {
-          await expectRevert.unspecified(
-            this.proxy.execMock(to, data, { from: user, value: ether('0.1') })
-          );
-        } else {
-          if (chainId == 137 && sig == SELECTOR_1INCH_UNOSWAP_V3_SWAP) {
-            await expectRevert(
-              this.proxy.execMock(to, data, {
-                from: user,
-                value: ether('0.1'),
-              }),
-              '0_HOneInchV5__oneInchswapCall: ERC20: transfer amount exceeds allowance'
-            );
-          } else {
-            await expectRevert(
-              this.proxy.execMock(to, data, {
-                from: user,
-                value: ether('0.1'),
-              }),
-              '0_HOneInchV5__oneInchswapCall: Dai/insufficient-allowance'
-            );
-          }
-        }
+        await expectRevert.unspecified(
+          this.proxy.execMock(to, data, { from: user, value: ether('0.1') })
+        );
       });
 
       it('should revert: wrong src token amount(erc20)', async function() {
@@ -841,30 +814,9 @@ contract('OneInchV5 Swap', function([_, user]) {
           swapData.tx.data,
         ]);
 
-        const sig = swapData.tx.data.substring(0, 10);
-        if (sig == SELECTOR_1INCH_SWAP) {
-          await expectRevert.unspecified(
-            this.proxy.execMock(to, data, { from: user, value: ether('0.1') })
-          );
-        } else {
-          if (chainId == 137 && sig == SELECTOR_1INCH_UNOSWAP_V3_SWAP) {
-            await expectRevert(
-              this.proxy.execMock(to, data, {
-                from: user,
-                value: ether('0.1'),
-              }),
-              '0_HOneInchV5__oneInchswapCall: ERC20: transfer amount exceeds allowance'
-            );
-          } else {
-            await expectRevert(
-              this.proxy.execMock(to, data, {
-                from: user,
-                value: ether('0.1'),
-              }),
-              '0_HOneInchV5__oneInchswapCall: Dai/insufficient-allowance'
-            );
-          }
-        }
+        await expectRevert.unspecified(
+          this.proxy.execMock(to, data, { from: user, value: ether('0.1') })
+        );
       });
     });
   });
