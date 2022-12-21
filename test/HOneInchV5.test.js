@@ -151,8 +151,7 @@ contract('OneInchV5 Swap', function([_, user]) {
 
         // Verify token balance
         expect(tokenUserEnd).to.be.bignumber.gte(
-          // sub 1 more percent to tolerate the slippage calculation difference with 1inch
-          tokenUser.add(mulPercent(quote, 100 - slippage - 1))
+          tokenUser.add(mulPercent(quote, 100 - slippage))
         );
         expect(
           await this.token.balanceOf.call(this.proxy.address)
@@ -213,8 +212,7 @@ contract('OneInchV5 Swap', function([_, user]) {
 
         // Verify token balance
         expect(tokenUserEnd).to.be.bignumber.gte(
-          // sub 1 more percent to tolerate the slippage calculation difference with 1inch
-          tokenUser.add(mulPercent(quote, 100 - slippage - 1))
+          tokenUser.add(mulPercent(quote, 100 - slippage))
         );
         expect(
           await this.token.balanceOf.call(this.proxy.address)
@@ -348,9 +346,7 @@ contract('OneInchV5 Swap', function([_, user]) {
         // Verify ether balance
         expect(await balanceProxy.get()).to.be.bignumber.zero;
         expect(balanceUserDelta).to.be.bignumber.gte(
-          ether('0')
-            // sub 1 more percent to tolerate the slippage calculation difference with 1inch
-            .add(mulPercent(quote, 100 - slippage - 1))
+          ether('0').add(mulPercent(quote, 100 - slippage))
         );
 
         profileGas(receipt);
@@ -448,8 +444,7 @@ contract('OneInchV5 Swap', function([_, user]) {
 
         // Verify token1 balance
         expect(await this.token1.balanceOf.call(user)).to.be.bignumber.gte(
-          // sub 1 more percent to tolerate the slippage calculation difference with 1inch
-          token1User.add(mulPercent(quote, 100 - slippage - 1))
+          token1User.add(mulPercent(quote, 100 - slippage))
         );
         expect(
           await this.token1.balanceOf.call(this.proxy.address)
@@ -522,8 +517,7 @@ contract('OneInchV5 Swap', function([_, user]) {
 
         // Verify weth balance
         expect(await this.weth.balanceOf.call(user)).to.be.bignumber.gte(
-          // sub 1 more percent to tolerate the slippage calculation difference with 1inch
-          wethUser.add(mulPercent(quote, 100 - slippage - 1))
+          wethUser.add(mulPercent(quote, 100 - slippage))
         );
         expect(
           await this.weth.balanceOf.call(this.proxy.address)
@@ -598,8 +592,7 @@ contract('OneInchV5 Swap', function([_, user]) {
 
         // Verify weth balance
         expect(await this.weth.balanceOf.call(user)).to.be.bignumber.gte(
-          // sub 1 more percent to tolerate the slippage calculation difference with 1inch
-          wethUser.add(mulPercent(quote, 100 - slippage - 1))
+          wethUser.add(mulPercent(quote, 100 - slippage))
         );
         expect(
           await this.weth.balanceOf.call(this.proxy.address)

@@ -148,7 +148,7 @@ contract('AaveV3 flashloan', function([_, user, someone]) {
       tokenAUser = await this.tokenA.balanceOf(user);
       tokenBUser = await this.tokenB.balanceOf(user);
 
-      const supplyAmount = ether('1000');
+      const supplyAmount = ether('500');
       await this.tokenB.approve(this.pool.address, supplyAmount, {
         from: this.tokenBProvider,
       });
