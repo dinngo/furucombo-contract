@@ -1,9 +1,11 @@
+const arbitrum = require('../../deploy/utils/addresses_arbitrum');
+
 module.exports = {
   NATIVE_TOKEN_ADDRESS: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
   NATIVE_TOKEN_DECIMAL: 18,
 
   /* Wrapped Native Token */
-  WRAPPED_NATIVE_TOKEN: '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1',
+  WRAPPED_NATIVE_TOKEN: arbitrum.WRAPPED_NATIVE_TOKEN,
   AWRAPPED_NATIVE_V3_TOKEN: '0xe50fA9b3c56FfB159cB0FCA61F5c9D750e8128c8',
   AWRAPPED_NATIVE_V3_DEBT_VARIABLE:
     '0x0c84331e39d6658Cd6e6b9ba04736cC4c4734351',
@@ -65,5 +67,5 @@ module.exports = {
     '0x60d7a7cc0a45d852bd613e4f527aaa2e4b81fff918a69a2aab88b6458751d614',
 
   // Star NFT v4
-  STAR_NFTV4: '0x87C277Fa828b69Bd62d642Ba310448Cd9C12dfF4',
+  STAR_NFTV4: arbitrum.FREE_PASS,
 };

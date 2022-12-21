@@ -86,7 +86,7 @@ contract('SushiSwap Liquidity', function([_, user]) {
     await this.tokenA.transfer(user, ether('1000'), {
       from: tokenAProviderAddress,
     });
-    await this.tokenB.transfer(user, ether('1000'), {
+    await this.tokenB.transfer(user, ether('500'), {
       from: tokenBProviderAddress,
     });
 

@@ -9,6 +9,9 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - Merge multi-chain unit test stages into single unit test stage in CI.
+- Generalize unit tests in `HOneInchV5.test.js`
+- Replace oneInchV3 with oneInchV5 in Certora files
+- Use addresses_xxx.js file as a reference in constants_xxx.js file
 
 ## [2.3.0] - 2022-11-29
 
