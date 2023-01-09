@@ -46,6 +46,7 @@ const Proxy = artifacts.require('ProxyMock');
 const IToken = artifacts.require('IERC20');
 
 const URL_PARASWAP = 'https://apiv5.paraswap.io/';
+const EXCLUDE_DEXS = 'ParaSwapPool,ParaSwapLimitOrders';
 const IGNORE_CHECKS_PARAM = 'ignoreChecks=true';
 const URL_PARASWAP_PRICE = URL_PARASWAP + 'prices';
 const URL_PARASWAP_TRANSACTION =
@@ -75,6 +76,7 @@ async function getPriceData(
       destDecimals: destDecimals,
       amount: amount,
       network: network.config.chainId,
+      excludeDEXS: EXCLUDE_DEXS,
       route: route,
       partner: PARTNER_ADDRESS,
       excludeDirectContractMethods: excludeDirectContractMethods,
