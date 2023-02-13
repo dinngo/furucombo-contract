@@ -944,7 +944,7 @@ contract('BProtocol', function([_, user1, user2, someone]) {
           generateLimit,
           minCollateral,
         ] = await getGenerateLimitAndMinCollateral(
-          utils.padRight(utils.asciiToHex(makerMcdJoinETHName), 64)
+          utils.padRight(utils.asciiToHex(makerMcdJoinTokenName), 64)
         );
         const wad = generateLimit;
         const data = abi.simpleEncode(

@@ -371,7 +371,10 @@ contract('Maker', function([_, user1, user2, someone]) {
           expect(await this.dsRegistry.proxies.call(someone)).eq(ZERO_ADDRESS);
 
           const to = this.hMaker.address;
-          const ilkToken = utils.padRight(utils.asciiToHex('LINK-A'), 64);
+          const ilkToken = utils.padRight(
+            utils.asciiToHex(makerMcdJoinTokenName),
+            64
+          );
           const [
             generateLimit,
             minCollateral,
@@ -418,7 +421,10 @@ contract('Maker', function([_, user1, user2, someone]) {
 
         it('User has proxy', async function() {
           const to = this.hMaker.address;
-          const ilkToken = utils.padRight(utils.asciiToHex('LINK-A'), 64);
+          const ilkToken = utils.padRight(
+            utils.asciiToHex(makerMcdJoinTokenName),
+            64
+          );
           const [
             generateLimit,
             minCollateral,
@@ -481,7 +487,7 @@ contract('Maker', function([_, user1, user2, someone]) {
       const new2 = abi.simpleEncode(
         'open(address,bytes32,address)',
         MAKER_CDP_MANAGER,
-        utils.padRight(utils.asciiToHex('LINK-A'), 64),
+        utils.padRight(utils.asciiToHex(makerMcdJoinTokenName), 64),
         this.user2Proxy.address
       );
       await this.user1Proxy.execute(MAKER_PROXY_ACTIONS, new1, { from: user1 });
@@ -565,7 +571,7 @@ contract('Maker', function([_, user1, user2, someone]) {
           generateLimit,
           minCollateral,
         ] = await getGenerateLimitAndMinCollateral(
-          utils.padRight(utils.asciiToHex('LINK-A'), 64)
+          utils.padRight(utils.asciiToHex(makerMcdJoinTokenName), 64)
         );
         const wad = generateLimit;
         const data = abi.simpleEncode(
@@ -595,7 +601,7 @@ contract('Maker', function([_, user1, user2, someone]) {
           generateLimit,
           minCollateral,
         ] = await getGenerateLimitAndMinCollateral(
-          utils.padRight(utils.asciiToHex('LINK-A'), 64)
+          utils.padRight(utils.asciiToHex(makerMcdJoinTokenName), 64)
         );
         const wad = generateLimit;
         const data = abi.simpleEncode(
@@ -720,7 +726,7 @@ contract('Maker', function([_, user1, user2, someone]) {
           MAKER_MCD_JUG,
           MAKER_MCD_JOIN_LINK_A,
           MAKER_MCD_JOIN_DAI,
-          utils.padRight(utils.asciiToHex('LINK-A'), 64),
+          utils.padRight(utils.asciiToHex(makerMcdJoinTokenName), 64),
           tokenAmount,
           ether('0'),
           true
@@ -909,7 +915,7 @@ contract('Maker', function([_, user1, user2, someone]) {
           generateLimit,
           minCollateral,
         ] = await getGenerateLimitAndMinCollateral(
-          utils.padRight(utils.asciiToHex('LINK-A'), 64)
+          utils.padRight(utils.asciiToHex(makerMcdJoinTokenName), 64)
         );
         const tokenAmount = minCollateral;
         const new2 = abi.simpleEncode(
@@ -918,7 +924,7 @@ contract('Maker', function([_, user1, user2, someone]) {
           MAKER_MCD_JUG,
           MAKER_MCD_JOIN_LINK_A,
           MAKER_MCD_JOIN_DAI,
-          utils.padRight(utils.asciiToHex('LINK-A'), 64),
+          utils.padRight(utils.asciiToHex(makerMcdJoinTokenName), 64),
           tokenAmount,
           ether('0'),
           true
@@ -944,7 +950,7 @@ contract('Maker', function([_, user1, user2, someone]) {
           generateLimit,
           minCollateral,
         ] = await getGenerateLimitAndMinCollateral(
-          utils.padRight(utils.asciiToHex('LINK-A'), 64)
+          utils.padRight(utils.asciiToHex(makerMcdJoinTokenName), 64)
         );
         const wad = generateLimit;
         const data = abi.simpleEncode(
@@ -1118,7 +1124,7 @@ contract('Maker', function([_, user1, user2, someone]) {
           generateLimit,
           minCollateral,
         ] = await getGenerateLimitAndMinCollateral(
-          utils.padRight(utils.asciiToHex('LINK-A'), 64)
+          utils.padRight(utils.asciiToHex(makerMcdJoinTokenName), 64)
         );
         const tokenAmount = minCollateral;
         const daiAmount = generateLimit.add(ether('10'));
@@ -1128,7 +1134,7 @@ contract('Maker', function([_, user1, user2, someone]) {
           MAKER_MCD_JUG,
           MAKER_MCD_JOIN_LINK_A,
           MAKER_MCD_JOIN_DAI,
-          utils.padRight(utils.asciiToHex('LINK-A'), 64),
+          utils.padRight(utils.asciiToHex(makerMcdJoinTokenName), 64),
           tokenAmount,
           daiAmount,
           true
@@ -1188,7 +1194,7 @@ contract('Maker', function([_, user1, user2, someone]) {
           generateLimit,
           minCollateral,
         ] = await getGenerateLimitAndMinCollateral(
-          utils.padRight(utils.asciiToHex(makerMcdJoinETHName), 64)
+          utils.padRight(utils.asciiToHex(makerMcdJoinTokenName), 64)
         );
         await this.dai.transfer(
           this.proxy.address,
