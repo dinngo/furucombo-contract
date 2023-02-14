@@ -70,6 +70,28 @@ contract HFunds is HandlerBase {
         }
     }
 
+    function sendTokenToAddresses(
+        address token,
+        uint256[] calldata amounts,
+        address payable[] calldata receivers
+    ) external payable {
+        _requireMsg(
+            amounts.length == receivers.length,
+            "sendTokenToAddresses",
+            "amount and receiver does not match"
+        );
+        for (uint256 i = 0; i < amounts.length; i++) {
+            if (amounts[i] > 0) {
+                // ETH case
+                if (token == address(0) || token == NATIVE_TOKEN_ADDRESS) {
+                    receivers[i].transfer(amounts[i]);
+                } else {
+                    IERC20(token).safeTransfer(receivers[i], amounts[i]);
+                }
+            }
+        }
+    }
+
     function send(uint256 amount, address payable receiver) external payable {
         amount = _getBalance(address(0), amount);
         if (amount > 0) {
