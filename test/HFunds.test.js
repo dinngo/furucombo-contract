@@ -28,6 +28,7 @@ const {
   getCallData,
   getTokenProvider,
   nativeTokenProvider,
+  mwei,
 } = require('./utils/utils');
 
 const HFunds = artifacts.require('HFunds');
@@ -974,9 +975,9 @@ contract('Funds', function([_, user, someone]) {
 
         it('normal', async function() {
           const token = this.token0.address;
-          const count = 2;
-          const amount = 1000000;
-          const value = Array(count).fill(new BN(amount));
+          const count = 3;
+          const amount = mwei('10');
+          const values = Array(count).fill(new BN(amount));
           const receivers = Array.from(
             Array(count),
             _ => web3.eth.accounts.create().address
@@ -985,7 +986,7 @@ contract('Funds', function([_, user, someone]) {
           const data = abi.simpleEncode(
             'sendTokenToAddresses(address,uint256[],address[])',
             token,
-            value,
+            values,
             receivers
           );
 
@@ -1014,7 +1015,7 @@ contract('Funds', function([_, user, someone]) {
               {
                 from: this.proxy.address,
                 to: receivers[i],
-                value: value[i],
+                value: values[i],
               }
             );
 
@@ -1023,7 +1024,7 @@ contract('Funds', function([_, user, someone]) {
             );
             expect(
               tokenSomeoneEnd.sub(tokenSomeoneStart[i])
-            ).to.be.bignumber.eq(value[i]);
+            ).to.be.bignumber.eq(values[i]);
           }
 
           profileGas(receipt);
@@ -1031,17 +1032,17 @@ contract('Funds', function([_, user, someone]) {
 
         it('zero case', async function() {
           const token = this.token0.address;
-          const value = [new BN(ether('0'))];
+          const values = [new BN(ether('0'))];
           const receivers = [someone];
           const to = this.hFunds.address;
           const data = abi.simpleEncode(
             'sendTokenToAddresses(address,uint256[],address[])',
             token,
-            value,
+            values,
             receivers
           );
 
-          await this.token0.transfer(this.proxy.address, value[0], {
+          await this.token0.transfer(this.proxy.address, values[0], {
             from: usdtProviderAddress,
           });
           await this.proxy.updateTokenMock(this.token0.address);
@@ -1049,7 +1050,7 @@ contract('Funds', function([_, user, someone]) {
           const tokenSomeoneStart = await this.token0.balanceOf.call(someone);
           const receipt = await this.proxy.execMock(to, data, {
             from: user,
-            value: value[0],
+            value: values[0],
           });
 
           await expectEvent.notEmitted.inTransaction(
@@ -1059,13 +1060,13 @@ contract('Funds', function([_, user, someone]) {
             {
               from: this.proxy.address,
               to: someone,
-              value: value[0],
+              value: values[0],
             }
           );
 
           const tokenSomeoneEnd = await this.token0.balanceOf.call(someone);
           expect(tokenSomeoneEnd.sub(tokenSomeoneStart)).to.be.bignumber.eq(
-            value[0]
+            values[0]
           );
 
           profileGas(receipt);
@@ -1073,13 +1074,13 @@ contract('Funds', function([_, user, someone]) {
 
         it('insufficient case', async function() {
           const token = this.token0.address;
-          const value = [ether('10')];
+          const values = [ether('10')];
           const receivers = [someone];
           const to = this.hFunds.address;
           const data = abi.simpleEncode(
             'sendTokenToAddresses(address,uint256[],address[])',
             token,
-            value,
+            values,
             receivers
           );
 
@@ -1094,9 +1095,9 @@ contract('Funds', function([_, user, someone]) {
       describe('from eth', function() {
         it('normal', async function() {
           const token = ZERO_ADDRESS;
-          const count = 3;
+          const count = 100;
           const amount = ether('0.1');
-          const value = Array(count).fill(new BN(amount));
+          const values = Array(count).fill(new BN(amount));
           const receivers = Array.from(
             Array(count),
             _ => web3.eth.accounts.create().address
@@ -1105,7 +1106,7 @@ contract('Funds', function([_, user, someone]) {
           const data = abi.simpleEncode(
             'sendTokenToAddresses(address,uint256[],address[])',
             token,
-            value,
+            values,
             receivers
           );
 
@@ -1121,7 +1122,7 @@ contract('Funds', function([_, user, someone]) {
 
           for (i = 0; i < count; i++) {
             expect(await balanceSomeone[i].delta()).to.be.bignumber.eq(
-              value[i]
+              values[i]
             );
           }
           profileGas(receipt);
@@ -1129,35 +1130,35 @@ contract('Funds', function([_, user, someone]) {
 
         it('zero case', async function() {
           const token = ZERO_ADDRESS;
-          const value = [new BN(ether('0'))];
+          const values = [new BN(ether('0'))];
           const receivers = [someone];
           const to = this.hFunds.address;
           const data = abi.simpleEncode(
             'sendTokenToAddresses(address,uint256[],address[])',
             token,
-            value,
+            values,
             receivers
           );
 
           let balanceSomeone = await tracker(someone);
           const receipt = await this.proxy.execMock(to, data, {
             from: user,
-            value: value[0],
+            value: values[0],
           });
 
-          expect(await balanceSomeone.delta()).to.be.bignumber.eq(value[0]);
+          expect(await balanceSomeone.delta()).to.be.bignumber.eq(values[0]);
           profileGas(receipt);
         });
 
         it('insufficient case', async function() {
           const token = ZERO_ADDRESS;
-          const value = [ether('10')];
+          const values = [ether('10')];
           const receivers = [someone];
           const to = this.hFunds.address;
           const data = abi.simpleEncode(
             'sendTokenToAddresses(address,uint256[],address[])',
             token,
-            value,
+            values,
             receivers
           );
 

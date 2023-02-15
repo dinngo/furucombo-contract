@@ -62,7 +62,8 @@ contract HFunds is HandlerBase {
                 if (
                     tokens[i] == address(0) || tokens[i] == NATIVE_TOKEN_ADDRESS
                 ) {
-                    receiver.transfer(amount);
+                    (bool success, ) = receiver.call{value: amount}("");
+                    _requireMsg(success, "sendTokens", "failed to send Ether");
                 } else {
                     IERC20(tokens[i]).safeTransfer(receiver, amount);
                 }
@@ -80,13 +81,18 @@ contract HFunds is HandlerBase {
             "sendTokenToAddresses",
             "amount and receiver does not match"
         );
+        bool isNotNativeToken = _isNotNativeToken(token);
         for (uint256 i = 0; i < amounts.length; i++) {
             if (amounts[i] > 0) {
-                // ETH case
-                if (token == address(0) || token == NATIVE_TOKEN_ADDRESS) {
-                    receivers[i].transfer(amounts[i]);
-                } else {
+                if (isNotNativeToken) {
                     IERC20(token).safeTransfer(receivers[i], amounts[i]);
+                } else {
+                    (bool success, ) = receivers[i].call{value: amounts[i]}("");
+                    _requireMsg(
+                        success,
+                        "sendTokenToAddresses",
+                        "failed to send Ether"
+                    );
                 }
             }
         }
@@ -95,7 +101,8 @@ contract HFunds is HandlerBase {
     function send(uint256 amount, address payable receiver) external payable {
         amount = _getBalance(address(0), amount);
         if (amount > 0) {
-            receiver.transfer(amount);
+            (bool success, ) = receiver.call{value: amount}("");
+            _requireMsg(success, "send", "failed to send Ether");
         }
     }
 
@@ -115,7 +122,8 @@ contract HFunds is HandlerBase {
     /// @param amount The ether amount.
     function sendEtherToMiner(uint256 amount) external payable {
         if (amount > 0) {
-            block.coinbase.transfer(amount);
+            (bool success, ) = block.coinbase.call{value: amount}("");
+            _requireMsg(success, "sendEtherToMiner", "failed to send Ether");
         }
     }
 
