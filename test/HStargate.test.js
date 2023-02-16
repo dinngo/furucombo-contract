@@ -18,6 +18,7 @@ const {
   constants,
   ether,
   expectRevert,
+  expectEvent,
 } = require('@openzeppelin/test-helpers');
 const { tracker } = balance;
 const abi = require('ethereumjs-abi');
@@ -31,6 +32,7 @@ const {
   STARGATE_FACTORY,
   STARGATE_ROUTER,
   STARGATE_ROUTER_ETH,
+  STARGATE_WIDGET_SWAP,
   STARGATE_DESTINATION_CHAIN_ID,
   STARGATE_VAULT_ETH,
   STARGATE_POOL_USDC,
@@ -52,6 +54,7 @@ const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('ProxyMock');
 const IToken = artifacts.require('IERC20');
 const IStartgateRouter = artifacts.require('IStargateRouter');
+const IStargateWidget = artifacts.require('IStargateWidget');
 const IStargateFactory = artifacts.require('IFactory');
 
 const TYPE_SWAP_REMOTE = 1;
@@ -61,6 +64,12 @@ const STARGATE_POOL_ID_ETH = 13;
 
 const STARGATE_UNKNOWN_POOL_ID = 99;
 const STARGATE_UNKNOWN_CHAIN_ID = 99;
+
+const PARTNER_ID = '0x0033'; // mock id
+
+function stargateFormat(num) {
+  return num.toString().padEnd(66, '0'); // include 0x for a 32 bit data
+}
 
 contract('Stargate', function([_, user, user2]) {
   before(async function() {
@@ -78,7 +87,9 @@ contract('Stargate', function([_, user, user2]) {
     this.hStargate = await HStargate.new(
       STARGATE_ROUTER,
       STARGATE_ROUTER_ETH,
-      STARGATE_FACTORY
+      STARGATE_FACTORY,
+      STARGATE_WIDGET_SWAP,
+      PARTNER_ID
     );
 
     await this.registry.register(
@@ -89,6 +100,7 @@ contract('Stargate', function([_, user, user2]) {
     this.wrappedNativeToken = await IToken.at(WRAPPED_NATIVE_TOKEN);
     this.stargateRouter = await IStartgateRouter.at(STARGATE_ROUTER);
     this.stargateFactory = await IStargateFactory.at(STARGATE_FACTORY);
+    this.stargateWidget = await IStargateWidget.at(STARGATE_WIDGET_SWAP);
   });
 
   beforeEach(async function() {
@@ -157,6 +169,13 @@ contract('Stargate', function([_, user, user2]) {
           ether('0').sub(value)
         );
         expect(await balanceVaultETH.delta()).to.be.bignumber.eq(amountIn);
+
+        await expectEvent.inTransaction(
+          receipt.tx,
+          this.stargateWidget,
+          'PartnerSwap',
+          { partnerId: stargateFormat(PARTNER_ID) }
+        );
         profileGas(receipt);
       });
 
@@ -196,6 +215,13 @@ contract('Stargate', function([_, user, user2]) {
           ether('0').sub(value)
         );
         expect(await balanceVaultETH.delta()).to.be.bignumber.eq(amountIn);
+
+        await expectEvent.inTransaction(
+          receipt.tx,
+          this.stargateWidget,
+          'PartnerSwap',
+          { partnerId: stargateFormat(PARTNER_ID) }
+        );
         profileGas(receipt);
       });
 
@@ -237,6 +263,13 @@ contract('Stargate', function([_, user, user2]) {
             .add(extraFee)
         );
         expect(await balanceVaultETH.delta()).to.be.bignumber.eq(amountIn);
+
+        await expectEvent.inTransaction(
+          receipt.tx,
+          this.stargateWidget,
+          'PartnerSwap',
+          { partnerId: stargateFormat(PARTNER_ID) }
+        );
         profileGas(receipt);
       });
 
@@ -302,7 +335,6 @@ contract('Stargate', function([_, user, user2]) {
         );
       });
 
-      // token (only for exp. should not used in prod.)
       it('should revert: to stable token', async function() {
         // Prep
         const srcPoolId = STARGATE_POOL_ID_ETH;
@@ -636,6 +668,13 @@ contract('Stargate', function([_, user, user2]) {
         expect(
           await this.inputToken.balanceOf(STARGATE_POOL_USDC)
         ).to.be.bignumber.eq(inputTokenPoolBefore.add(amountIn));
+
+        await expectEvent.inTransaction(
+          receipt.tx,
+          this.stargateWidget,
+          'PartnerSwap',
+          { partnerId: stargateFormat(PARTNER_ID) }
+        );
         profileGas(receipt);
       });
 
@@ -681,6 +720,13 @@ contract('Stargate', function([_, user, user2]) {
         expect(
           await this.inputToken.balanceOf(STARGATE_POOL_USDC)
         ).to.be.bignumber.eq(inputTokenPoolBefore.add(amountIn));
+
+        await expectEvent.inTransaction(
+          receipt.tx,
+          this.stargateWidget,
+          'PartnerSwap',
+          { partnerId: stargateFormat(PARTNER_ID) }
+        );
         profileGas(receipt);
       });
 
@@ -728,6 +774,13 @@ contract('Stargate', function([_, user, user2]) {
         expect(
           await this.inputToken.balanceOf(STARGATE_POOL_USDC)
         ).to.be.bignumber.eq(inputTokenPoolBefore.add(amountIn));
+
+        await expectEvent.inTransaction(
+          receipt.tx,
+          this.stargateWidget,
+          'PartnerSwap',
+          { partnerId: stargateFormat(PARTNER_ID) }
+        );
         profileGas(receipt);
       });
 
