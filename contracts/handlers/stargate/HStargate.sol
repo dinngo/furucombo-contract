@@ -3,7 +3,7 @@
 pragma solidity 0.8.10;
 
 import {HandlerBase} from "../HandlerBase.sol";
-import {IStargateRouter} from "./IStargateRouter.sol";
+import {IStargateRouter, IStargateWidget} from "./IStargateRouter.sol";
 import {IStargateRouterETH} from "./IStargateRouterETH.sol";
 import {IFactory, IPool} from "./IFactory.sol";
 
@@ -11,15 +11,21 @@ contract HStargate is HandlerBase {
     address public immutable router;
     address public immutable routerETH;
     address public immutable factory;
+    address public immutable widgetSwap;
+    bytes2 public immutable partnerId;
 
     constructor(
         address router_,
         address routerETH_,
-        address factory_
+        address factory_,
+        address widgetSwap_,
+        bytes2 partnerId_
     ) {
         router = router_;
         routerETH = routerETH_;
         factory = factory_;
+        widgetSwap = widgetSwap_;
+        partnerId = partnerId_;
     }
 
     function getContractName() public pure override returns (string memory) {
@@ -49,6 +55,9 @@ contract HStargate is HandlerBase {
         } catch {
             _revertMsg("swapETH");
         }
+
+        // Partnership
+        IStargateWidget(widgetSwap).partnerSwap(partnerId);
     }
 
     function swap(
@@ -89,5 +98,8 @@ contract HStargate is HandlerBase {
 
         // Reset Approval
         _tokenApproveZero(tokenIn, router);
+
+        // Partnership
+        IStargateWidget(widgetSwap).partnerSwap(partnerId);
     }
 }

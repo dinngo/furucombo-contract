@@ -1,7 +1,11 @@
 // SPDX-License-Identifier: BUSL-1.1
 
 pragma solidity ^0.8.0;
-pragma abicoder v2;
+
+interface IStargateWidget {
+    function partnerSwap(bytes2 _partnerId) external;
+    event PartnerSwap(bytes2 indexed partnerId);
+}
 
 interface IStargateRouter {
     struct lzTxObj {
