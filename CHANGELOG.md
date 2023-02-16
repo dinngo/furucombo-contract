@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+### Added
+
+- Support swap of Stargate token bridge
+- Add `setTokenBalance` in utils.js to manipulate token balance for unit testing
+
 ## [2.3.2] - 2022-12-21
 
 ### Changed
