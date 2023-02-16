@@ -1,0 +1,1082 @@
+const chainId = network.config.chainId;
+
+if (
+  chainId == 1 ||
+  chainId == 10 ||
+  chainId == 137 ||
+  chainId == 42161 ||
+  chainId == 43114
+) {
+  // This test supports to run on these chains.
+} else {
+  return;
+}
+
+const {
+  balance,
+  BN,
+  constants,
+  ether,
+  expectRevert,
+} = require('@openzeppelin/test-helpers');
+const { tracker } = balance;
+const abi = require('ethereumjs-abi');
+const utils = web3.utils;
+
+const { expect } = require('chai');
+
+const {
+  USDC_TOKEN,
+  WRAPPED_NATIVE_TOKEN,
+  STARGATE_FACTORY,
+  STARGATE_ROUTER,
+  STARGATE_ROUTER_ETH,
+  STARGATE_DESTINATION_CHAIN_ID,
+  STARGATE_VAULT_ETH,
+  STARGATE_POOL_USDC,
+  STARGATE_UNSUPPORT_ETH_DEST_CHAIN_ID,
+  STARGATE_USDC_TO_DISALLOW_TOKEN_ID,
+} = require('./utils/constants');
+const {
+  evmRevert,
+  evmSnapshot,
+  profileGas,
+  getTokenProvider,
+  mwei,
+  setTokenBalance,
+} = require('./utils/utils');
+
+const HStargate = artifacts.require('HStargate');
+const FeeRuleRegistry = artifacts.require('FeeRuleRegistry');
+const Registry = artifacts.require('Registry');
+const Proxy = artifacts.require('ProxyMock');
+const IToken = artifacts.require('IERC20');
+const IStartgateRouter = artifacts.require('IStargateRouter');
+const IStargateFactory = artifacts.require('IFactory');
+
+const TYPE_SWAP_REMOTE = 1;
+
+const STARGATE_POOL_ID_USDC = 1;
+const STARGATE_POOL_ID_ETH = 13;
+
+const STARGATE_UNKNOWN_POOL_ID = 99;
+const STARGATE_UNKNOWN_CHAIN_ID = 99;
+
+contract('Stargate', function([_, user, user2]) {
+  before(async function() {
+    wrappedNativeTokenProviderAddress = await getTokenProvider(
+      WRAPPED_NATIVE_TOKEN
+    );
+
+    this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);
+    this.registry = await Registry.new();
+    this.proxy = await Proxy.new(
+      this.registry.address,
+      this.feeRuleRegistry.address
+    );
+
+    this.hStargate = await HStargate.new(
+      STARGATE_ROUTER,
+      STARGATE_ROUTER_ETH,
+      STARGATE_FACTORY
+    );
+
+    await this.registry.register(
+      this.hStargate.address,
+      utils.asciiToHex('Stargate')
+    );
+
+    this.wrappedNativeToken = await IToken.at(WRAPPED_NATIVE_TOKEN);
+    this.stargateRouter = await IStartgateRouter.at(STARGATE_ROUTER);
+    this.stargateFactory = await IStargateFactory.at(STARGATE_FACTORY);
+  });
+
+  beforeEach(async function() {
+    id = await evmSnapshot();
+    balanceUser = await tracker(user);
+    balanceProxy = await tracker(this.proxy.address);
+  });
+
+  afterEach(async function() {
+    await evmRevert(id);
+  });
+
+  describe('Swap', function() {
+    const dstChainId = STARGATE_DESTINATION_CHAIN_ID;
+    const amountOutMin = 0;
+    const receiver = user;
+
+    const funcType = TYPE_SWAP_REMOTE;
+    const payload = '0x';
+
+    describe('Native', function() {
+      if (chainId == 137 || chainId == 43114) {
+        // Stargate does not support MATIC / AVAX for now
+        return;
+      }
+
+      beforeEach(async function() {
+        balanceVaultETH = await tracker(STARGATE_VAULT_ETH);
+      });
+
+      const amountIn = ether('10');
+
+      // to the same address and amountOutMin = amountIn
+      it('normal', async function() {
+        // Prep
+        const refundAddress = this.proxy.address;
+        const to = this.hStargate.address;
+        const data = abi.simpleEncode(
+          'swapETH(uint16,address,uint256,uint256,address)',
+          dstChainId,
+          refundAddress,
+          amountIn,
+          amountOutMin,
+          receiver
+        );
+
+        const fees = await this.stargateRouter.quoteLayerZeroFee(
+          dstChainId,
+          funcType,
+          receiver,
+          payload,
+          { dstGasForCall: 0, dstNativeAmount: 0, dstNativeAddr: '0x' } // lzTxObj
+        );
+        const fee = fees[0];
+
+        // Execute
+        const value = amountIn.add(fee);
+        const receipt = await this.proxy.execMock(to, data, {
+          from: user,
+          value: value,
+        });
+
+        // Verify
+        expect(await balanceProxy.get()).to.be.bignumber.zero;
+        expect(await balanceUser.delta()).to.be.bignumber.eq(
+          ether('0').sub(value)
+        );
+        expect(await balanceVaultETH.delta()).to.be.bignumber.eq(amountIn);
+        profileGas(receipt);
+      });
+
+      it('to a different address', async function() {
+        // Prep
+        const receiver = user2;
+        const refundAddress = this.proxy.address;
+        const to = this.hStargate.address;
+        const data = abi.simpleEncode(
+          'swapETH(uint16,address,uint256,uint256,address)',
+          dstChainId,
+          refundAddress,
+          amountIn,
+          amountOutMin,
+          receiver
+        );
+
+        const fees = await this.stargateRouter.quoteLayerZeroFee(
+          dstChainId,
+          funcType,
+          receiver,
+          payload,
+          { dstGasForCall: 0, dstNativeAmount: 0, dstNativeAddr: '0x' } // lzTxObj
+        );
+        const fee = fees[0];
+
+        // Execute
+        const value = amountIn.add(fee);
+        const receipt = await this.proxy.execMock(to, data, {
+          from: user,
+          value: value,
+        });
+
+        // Verify
+        expect(await balanceProxy.get()).to.be.bignumber.zero;
+        expect(await balanceUser.delta()).to.be.bignumber.eq(
+          ether('0').sub(value)
+        );
+        expect(await balanceVaultETH.delta()).to.be.bignumber.eq(amountIn);
+        profileGas(receipt);
+      });
+
+      it('refund extra fee', async function() {
+        // Prep
+        const refundAddress = this.proxy.address;
+        const to = this.hStargate.address;
+        const data = abi.simpleEncode(
+          'swapETH(uint16,address,uint256,uint256,address)',
+          dstChainId,
+          refundAddress,
+          amountIn,
+          amountOutMin,
+          receiver
+        );
+
+        const fees = await this.stargateRouter.quoteLayerZeroFee(
+          dstChainId,
+          funcType,
+          receiver,
+          payload,
+          { dstGasForCall: 0, dstNativeAmount: 0, dstNativeAddr: '0x' } // lzTxObj
+        );
+        const fee = fees[0];
+        const extraFee = fee.mul(new BN('2'));
+
+        // Execute
+        const value = amountIn.add(fee).add(extraFee);
+        const receipt = await this.proxy.execMock(to, data, {
+          from: user,
+          value: value,
+        });
+
+        // Verify
+        expect(await balanceProxy.get()).to.be.bignumber.zero;
+        expect(await balanceUser.delta()).to.be.bignumber.eq(
+          ether('0')
+            .sub(value)
+            .add(extraFee)
+        );
+        expect(await balanceVaultETH.delta()).to.be.bignumber.eq(amountIn);
+        profileGas(receipt);
+      });
+
+      // chain
+      it('should revert: to unsupported chain', async function() {
+        // Prep
+        const dstChainId = STARGATE_UNSUPPORT_ETH_DEST_CHAIN_ID;
+        const refundAddress = this.proxy.address;
+        const to = this.hStargate.address;
+        const data = abi.simpleEncode(
+          'swapETH(uint16,address,uint256,uint256,address)',
+          dstChainId,
+          refundAddress,
+          amountIn,
+          amountOutMin,
+          receiver
+        );
+
+        const fees = await this.stargateRouter.quoteLayerZeroFee(
+          dstChainId,
+          funcType,
+          receiver,
+          payload,
+          { dstGasForCall: 0, dstNativeAmount: 0, dstNativeAddr: '0x' } // lzTxObj
+        );
+        const fee = fees[0];
+
+        // Execute
+        const value = amountIn.add(fee);
+        await expectRevert(
+          this.proxy.execMock(to, data, {
+            from: user,
+            value: value,
+          }),
+          '0_HStargate_swapETH: Stargate: local chainPath does not exist'
+        );
+      });
+
+      it('should revert: to unknown chain', async function() {
+        // Prep
+        const dstChainId = STARGATE_UNKNOWN_CHAIN_ID;
+        const refundAddress = this.proxy.address;
+        const to = this.hStargate.address;
+        const data = abi.simpleEncode(
+          'swapETH(uint16,address,uint256,uint256,address)',
+          dstChainId,
+          refundAddress,
+          amountIn,
+          amountOutMin,
+          receiver
+        );
+
+        const fee = ether('1'); // Use fixed fee because of unknown chain id
+
+        // Execute
+        const value = amountIn.add(fee);
+        await expectRevert(
+          this.proxy.execMock(to, data, {
+            from: user,
+            value: value,
+          }),
+          '0_HStargate_swapETH: Stargate: local chainPath does not exist'
+        );
+      });
+
+      // token (only for exp. should not used in prod.)
+      it('should revert: to stable token', async function() {
+        // Prep
+        const srcPoolId = STARGATE_POOL_ID_ETH;
+        const dstPoolId = STARGATE_POOL_ID_USDC;
+        const amountIn = mwei('10');
+        const refundAddress = this.proxy.address;
+        const to = this.hStargate.address;
+        const data = abi.simpleEncode(
+          'swap(uint16,uint256,uint256,address,uint256,uint256,address)',
+          dstChainId,
+          srcPoolId,
+          dstPoolId,
+          refundAddress,
+          amountIn,
+          amountOutMin,
+          receiver
+        );
+
+        // Execute
+        const value = ether('1'); // Use fixed fee because of unsupported path
+        await expectRevert(
+          this.proxy.execMock(to, data, {
+            from: user,
+            value: value,
+          }),
+          '0_HStargate_swap: Stargate: local chainPath does not exist'
+        );
+      });
+
+      // fee
+      it('should revert: without fee', async function() {
+        // Prep
+        const refundAddress = this.proxy.address;
+        const to = this.hStargate.address;
+        const data = abi.simpleEncode(
+          'swapETH(uint16,address,uint256,uint256,address)',
+          dstChainId,
+          refundAddress,
+          amountIn,
+          amountOutMin,
+          receiver
+        );
+
+        const fee = ether('0');
+
+        // Execute
+        const value = amountIn.add(fee);
+        await expectRevert(
+          this.proxy.execMock(to, data, {
+            from: user,
+            value: value,
+          }),
+          '0_HStargate_swapETH: Stargate: msg.value must be > _amountLD'
+        );
+      });
+
+      it('should revert: insufficient fee', async function() {
+        // Prep
+        const refundAddress = this.proxy.address;
+        const to = this.hStargate.address;
+        const data = abi.simpleEncode(
+          'swapETH(uint16,address,uint256,uint256,address)',
+          dstChainId,
+          refundAddress,
+          amountIn,
+          amountOutMin,
+          receiver
+        );
+
+        const fees = await this.stargateRouter.quoteLayerZeroFee(
+          dstChainId,
+          funcType,
+          receiver,
+          payload,
+          { dstGasForCall: 0, dstNativeAmount: 0, dstNativeAddr: '0x' } // lzTxObj
+        );
+        const fee = fees[0].div(new BN('2'));
+
+        // Execute
+        const value = amountIn.add(fee);
+        await expectRevert(
+          this.proxy.execMock(to, data, {
+            from: user,
+            value: value,
+          }),
+          '0_HStargate_swapETH: LayerZero: not enough native for fees'
+        );
+      });
+
+      // amount
+      it('should revert: amountIn = 0', async function() {
+        // Prep
+        const amountIn = ether('0');
+        const refundAddress = this.proxy.address;
+        const to = this.hStargate.address;
+        const data = abi.simpleEncode(
+          'swapETH(uint16,address,uint256,uint256,address)',
+          dstChainId,
+          refundAddress,
+          amountIn,
+          amountOutMin,
+          receiver
+        );
+
+        const fees = await this.stargateRouter.quoteLayerZeroFee(
+          dstChainId,
+          funcType,
+          receiver,
+          payload,
+          { dstGasForCall: 0, dstNativeAmount: 0, dstNativeAddr: '0x' } // lzTxObj
+        );
+        const fee = fees[0];
+
+        // Execute
+        const value = amountIn.add(fee);
+        await expectRevert(
+          this.proxy.execMock(to, data, {
+            from: user,
+            value: value,
+          }),
+          '0_HStargate_swapETH: Stargate: cannot swap 0'
+        );
+      });
+
+      it('should revert: amountOutMin = amountIn', async function() {
+        // Prep
+        const amountOutMin = amountIn;
+        const refundAddress = this.proxy.address;
+        const to = this.hStargate.address;
+        const data = abi.simpleEncode(
+          'swapETH(uint16,address,uint256,uint256,address)',
+          dstChainId,
+          refundAddress,
+          amountIn,
+          amountOutMin,
+          receiver
+        );
+
+        const fees = await this.stargateRouter.quoteLayerZeroFee(
+          dstChainId,
+          funcType,
+          receiver,
+          payload,
+          { dstGasForCall: 0, dstNativeAmount: 0, dstNativeAddr: '0x' } // lzTxObj
+        );
+        const fee = fees[0];
+
+        // Execute
+        const value = amountIn.add(fee);
+        await expectRevert(
+          this.proxy.execMock(to, data, {
+            from: user,
+            value: value,
+          }),
+          '0_HStargate_swapETH: Stargate: slippage too high'
+        );
+      });
+
+      it('should revert: amountIn = pool total balance', async function() {
+        // Prep
+        const amountIn = await balanceVaultETH.get();
+        await network.provider.send('hardhat_setBalance', [
+          user,
+          '0x' + amountIn,
+        ]);
+        const refundAddress = this.proxy.address;
+        const to = this.hStargate.address;
+        const data = abi.simpleEncode(
+          'swapETH(uint16,address,uint256,uint256,address)',
+          dstChainId,
+          refundAddress,
+          amountIn,
+          amountOutMin,
+          receiver
+        );
+
+        const fees = await this.stargateRouter.quoteLayerZeroFee(
+          dstChainId,
+          funcType,
+          receiver,
+          payload,
+          { dstGasForCall: 0, dstNativeAmount: 0, dstNativeAddr: '0x' } // lzTxObj
+        );
+        const fee = fees[0];
+
+        // Execute
+        const value = amountIn.add(fee);
+        await expectRevert(
+          this.proxy.execMock(to, data, {
+            from: user,
+            value: value,
+          }),
+          '0_HStargate_swapETH: FeeLibrary: not enough balance'
+        );
+      });
+
+      // address
+      it('should revert: refund zero address', async function() {
+        // Prep
+        const refundAddress = constants.ZERO_ADDRESS;
+        const to = this.hStargate.address;
+        const data = abi.simpleEncode(
+          'swapETH(uint16,address,uint256,uint256,address)',
+          dstChainId,
+          refundAddress,
+          amountIn,
+          amountOutMin,
+          receiver
+        );
+
+        const fees = await this.stargateRouter.quoteLayerZeroFee(
+          dstChainId,
+          funcType,
+          receiver,
+          payload,
+          { dstGasForCall: 0, dstNativeAmount: 0, dstNativeAddr: '0x' } // lzTxObj
+        );
+        const fee = fees[0];
+
+        // Execute
+        const value = amountIn.add(fee);
+        await expectRevert(
+          this.proxy.execMock(to, data, {
+            from: user,
+            value: value,
+          }),
+          '0_HStargate_swapETH: Stargate: _refundAddress cannot be 0x0'
+        );
+      });
+
+      it('should revert: to zero address', async function() {
+        // Prep
+        const receiver = constants.ZERO_ADDRESS;
+        const refundAddress = this.proxy.address;
+        const to = this.hStargate.address;
+        const data = abi.simpleEncode(
+          'swapETH(uint16,address,uint256,uint256,address)',
+          dstChainId,
+          refundAddress,
+          amountIn,
+          amountOutMin,
+          receiver
+        );
+
+        const fees = await this.stargateRouter.quoteLayerZeroFee(
+          dstChainId,
+          funcType,
+          receiver,
+          payload,
+          { dstGasForCall: 0, dstNativeAmount: 0, dstNativeAddr: '0x' } // lzTxObj
+        );
+        const fee = fees[0];
+
+        // Execute
+        const value = amountIn.add(fee);
+        await expectRevert(
+          this.proxy.execMock(to, data, {
+            from: user,
+            value: value,
+          }),
+          '0_HStargate_swapETH: to zero address'
+        );
+      });
+    });
+
+    describe('Stable', function() {
+      const inputTokenAddr = USDC_TOKEN;
+      const INPUT_TOKEN_BALANCE_SLOT_NUM = 9;
+
+      const srcPoolId = STARGATE_POOL_ID_USDC;
+      const dstPoolId = STARGATE_POOL_ID_USDC;
+      const amountIn = mwei('10');
+
+      let inputTokenPoolBefore;
+
+      before(async function() {
+        inputTokenProvider = await getTokenProvider(inputTokenAddr);
+        this.inputToken = await IToken.at(inputTokenAddr);
+      });
+
+      this.beforeEach(async function() {
+        await this.inputToken.transfer(this.proxy.address, amountIn, {
+          from: inputTokenProvider,
+        });
+        await this.proxy.updateTokenMock(this.inputToken.address);
+
+        inputTokenPoolBefore = await this.inputToken.balanceOf(
+          STARGATE_POOL_USDC
+        );
+      });
+
+      // to the same address and amountOutMin = amountIn
+      it('normal', async function() {
+        // Prep
+        const refundAddress = this.proxy.address;
+        const to = this.hStargate.address;
+        const data = abi.simpleEncode(
+          'swap(uint16,uint256,uint256,address,uint256,uint256,address)',
+          dstChainId,
+          srcPoolId,
+          dstPoolId,
+          refundAddress,
+          amountIn,
+          amountOutMin,
+          receiver
+        );
+
+        const fees = await this.stargateRouter.quoteLayerZeroFee(
+          dstChainId,
+          funcType,
+          receiver,
+          payload,
+          { dstGasForCall: 0, dstNativeAmount: 0, dstNativeAddr: '0x' } // lzTxObj
+        );
+
+        // Execute
+        const value = fees[0];
+        const receipt = await this.proxy.execMock(to, data, {
+          from: user,
+          value: value,
+        });
+
+        // Verify
+        expect(await balanceProxy.get()).to.be.bignumber.zero;
+        expect(
+          await this.inputToken.balanceOf(this.proxy.address)
+        ).to.be.bignumber.zero;
+        expect(await balanceUser.delta()).to.be.bignumber.eq(
+          ether('0').sub(value)
+        );
+        expect(
+          await this.inputToken.balanceOf(STARGATE_POOL_USDC)
+        ).to.be.bignumber.eq(inputTokenPoolBefore.add(amountIn));
+        profileGas(receipt);
+      });
+
+      it('to a different address', async function() {
+        // Prep
+        const receiver = user2;
+        const refundAddress = this.proxy.address;
+        const to = this.hStargate.address;
+        const data = abi.simpleEncode(
+          'swap(uint16,uint256,uint256,address,uint256,uint256,address)',
+          dstChainId,
+          srcPoolId,
+          dstPoolId,
+          refundAddress,
+          amountIn,
+          amountOutMin,
+          receiver
+        );
+
+        const fees = await this.stargateRouter.quoteLayerZeroFee(
+          dstChainId,
+          funcType,
+          receiver,
+          payload,
+          { dstGasForCall: 0, dstNativeAmount: 0, dstNativeAddr: '0x' } // lzTxObj
+        );
+
+        // Execute
+        const value = fees[0];
+        const receipt = await this.proxy.execMock(to, data, {
+          from: user,
+          value: value,
+        });
+
+        // Verify
+        expect(await balanceProxy.get()).to.be.bignumber.zero;
+        expect(
+          await this.inputToken.balanceOf(this.proxy.address)
+        ).to.be.bignumber.zero;
+        expect(await balanceUser.delta()).to.be.bignumber.eq(
+          ether('0').sub(value)
+        );
+        expect(
+          await this.inputToken.balanceOf(STARGATE_POOL_USDC)
+        ).to.be.bignumber.eq(inputTokenPoolBefore.add(amountIn));
+        profileGas(receipt);
+      });
+
+      it('refund extra fee', async function() {
+        // Prep
+        const refundAddress = this.proxy.address;
+        const to = this.hStargate.address;
+        const data = abi.simpleEncode(
+          'swap(uint16,uint256,uint256,address,uint256,uint256,address)',
+          dstChainId,
+          srcPoolId,
+          dstPoolId,
+          refundAddress,
+          amountIn,
+          amountOutMin,
+          receiver
+        );
+
+        const fees = await this.stargateRouter.quoteLayerZeroFee(
+          dstChainId,
+          funcType,
+          receiver,
+          payload,
+          { dstGasForCall: 0, dstNativeAmount: 0, dstNativeAddr: '0x' } // lzTxObj
+        );
+
+        // Execute
+        const extraFee = fees[0];
+        const value = fees[0].add(extraFee);
+        const receipt = await this.proxy.execMock(to, data, {
+          from: user,
+          value: value,
+        });
+
+        // Verify
+        expect(await balanceProxy.get()).to.be.bignumber.zero;
+        expect(
+          await this.inputToken.balanceOf(this.proxy.address)
+        ).to.be.bignumber.zero;
+        expect(await balanceUser.delta()).to.be.bignumber.eq(
+          ether('0')
+            .sub(value)
+            .add(extraFee)
+        );
+        expect(
+          await this.inputToken.balanceOf(STARGATE_POOL_USDC)
+        ).to.be.bignumber.eq(inputTokenPoolBefore.add(amountIn));
+        profileGas(receipt);
+      });
+
+      // chain
+      it('should revert: to unknown chain', async function() {
+        // Prep
+        const dstChainId = STARGATE_UNKNOWN_CHAIN_ID;
+        const refundAddress = this.proxy.address;
+        const to = this.hStargate.address;
+        const data = abi.simpleEncode(
+          'swap(uint16,uint256,uint256,address,uint256,uint256,address)',
+          dstChainId,
+          srcPoolId,
+          dstPoolId,
+          refundAddress,
+          amountIn,
+          amountOutMin,
+          receiver
+        );
+
+        // Execute
+        const value = ether('1'); // Use fixed fee because of unknown chain id
+        await expectRevert(
+          this.proxy.execMock(to, data, {
+            from: user,
+            value: value,
+          }),
+          '0_HStargate_swap: Stargate: local chainPath does not exist'
+        );
+      });
+
+      // token
+      it('should revert: from unknown src token', async function() {
+        // Prep
+        const srcPoolId = STARGATE_UNKNOWN_POOL_ID;
+        const refundAddress = this.proxy.address;
+        const to = this.hStargate.address;
+        const data = abi.simpleEncode(
+          'swap(uint16,uint256,uint256,address,uint256,uint256,address)',
+          dstChainId,
+          srcPoolId,
+          dstPoolId,
+          refundAddress,
+          amountIn,
+          amountOutMin,
+          receiver
+        );
+
+        // Execute
+        const value = ether('1'); // Use fixed fee because of unknown pool id
+        await expectRevert(
+          this.proxy.execMock(to, data, {
+            from: user,
+            value: value,
+          }),
+          '0_HStargate_swap: pool not found'
+        );
+      });
+
+      it('should revert: to unknown token', async function() {
+        // Prep
+        const dstPoolId = STARGATE_UNKNOWN_POOL_ID;
+        const refundAddress = this.proxy.address;
+        const to = this.hStargate.address;
+        const data = abi.simpleEncode(
+          'swap(uint16,uint256,uint256,address,uint256,uint256,address)',
+          dstChainId,
+          srcPoolId,
+          dstPoolId,
+          refundAddress,
+          amountIn,
+          amountOutMin,
+          receiver
+        );
+
+        // Execute
+        const value = ether('1'); // Use fixed fee because of unknown pool id
+        await expectRevert(
+          this.proxy.execMock(to, data, {
+            from: user,
+            value: value,
+          }),
+          '0_HStargate_swap: Stargate: local chainPath does not exist'
+        );
+      });
+
+      it('should revert: to disallowed stable token', async function() {
+        // Prep
+        const dstPoolId = STARGATE_USDC_TO_DISALLOW_TOKEN_ID;
+        const refundAddress = this.proxy.address;
+        const to = this.hStargate.address;
+        const data = abi.simpleEncode(
+          'swap(uint16,uint256,uint256,address,uint256,uint256,address)',
+          dstChainId,
+          srcPoolId,
+          dstPoolId,
+          refundAddress,
+          amountIn,
+          amountOutMin,
+          receiver
+        );
+
+        // Execute
+        const value = ether('1'); // Use fixed fee because of unsupported path
+        await expectRevert(
+          this.proxy.execMock(to, data, {
+            from: user,
+            value: value,
+          }),
+          '0_HStargate_swap: Stargate: local chainPath does not exist'
+        );
+      });
+
+      it('should revert: to native token', async function() {
+        // Prep
+        const dstPoolId = STARGATE_POOL_ID_ETH;
+        const refundAddress = this.proxy.address;
+        const to = this.hStargate.address;
+        const data = abi.simpleEncode(
+          'swap(uint16,uint256,uint256,address,uint256,uint256,address)',
+          dstChainId,
+          srcPoolId,
+          dstPoolId,
+          refundAddress,
+          amountIn,
+          amountOutMin,
+          receiver
+        );
+
+        // Execute
+        const value = ether('1'); // Use fixed fee because of unsupported path
+        await expectRevert(
+          this.proxy.execMock(to, data, {
+            from: user,
+            value: value,
+          }),
+          '0_HStargate_swap: Stargate: local chainPath does not exist'
+        );
+      });
+
+      // fee
+      it('should revert: insufficient fee', async function() {
+        // Prep
+        const refundAddress = this.proxy.address;
+        const to = this.hStargate.address;
+        const data = abi.simpleEncode(
+          'swap(uint16,uint256,uint256,address,uint256,uint256,address)',
+          dstChainId,
+          srcPoolId,
+          dstPoolId,
+          refundAddress,
+          amountIn,
+          amountOutMin,
+          receiver
+        );
+
+        // Execute
+        const value = ether('0'); // Send zero fee
+        await expectRevert(
+          this.proxy.execMock(to, data, {
+            from: user,
+            value: value,
+          }),
+          '0_HStargate_swap: LayerZero: not enough native for fees'
+        );
+      });
+
+      // amount
+      it('should revert: amountIn = 0', async function() {
+        // Prep
+        const amountIn = ether('0');
+        const refundAddress = this.proxy.address;
+        const to = this.hStargate.address;
+        const data = abi.simpleEncode(
+          'swap(uint16,uint256,uint256,address,uint256,uint256,address)',
+          dstChainId,
+          srcPoolId,
+          dstPoolId,
+          refundAddress,
+          amountIn,
+          amountOutMin,
+          receiver
+        );
+
+        const fees = await this.stargateRouter.quoteLayerZeroFee(
+          dstChainId,
+          funcType,
+          receiver,
+          payload,
+          { dstGasForCall: 0, dstNativeAmount: 0, dstNativeAddr: '0x' } // lzTxObj
+        );
+
+        // Execute
+        const value = fees[0];
+        await expectRevert(
+          this.proxy.execMock(to, data, {
+            from: user,
+            value: value,
+          }),
+          '0_HStargate_swap: Stargate: cannot swap 0'
+        );
+      });
+
+      it('should revert: amountOutMin = amountIn', async function() {
+        // Prep
+        const amountOutMin = amountIn;
+        const refundAddress = this.proxy.address;
+        const to = this.hStargate.address;
+        const data = abi.simpleEncode(
+          'swap(uint16,uint256,uint256,address,uint256,uint256,address)',
+          dstChainId,
+          srcPoolId,
+          dstPoolId,
+          refundAddress,
+          amountIn,
+          amountOutMin,
+          receiver
+        );
+
+        const fees = await this.stargateRouter.quoteLayerZeroFee(
+          dstChainId,
+          funcType,
+          receiver,
+          payload,
+          { dstGasForCall: 0, dstNativeAmount: 0, dstNativeAddr: '0x' } // lzTxObj
+        );
+
+        // Execute
+        const value = fees[0];
+        await expectRevert(
+          this.proxy.execMock(to, data, {
+            from: user,
+            value: value,
+          }),
+          '0_HStargate_swap: Stargate: slippage too high'
+        );
+      });
+
+      it('should revert: amountIn = pool total balance', async function() {
+        // Prep
+        const amountIn = inputTokenPoolBefore;
+        const refundAddress = this.proxy.address;
+        const to = this.hStargate.address;
+        const data = abi.simpleEncode(
+          'swap(uint16,uint256,uint256,address,uint256,uint256,address)',
+          dstChainId,
+          srcPoolId,
+          dstPoolId,
+          refundAddress,
+          amountIn,
+          amountOutMin,
+          receiver
+        );
+
+        await setTokenBalance(
+          this.inputToken.address,
+          this.proxy.address,
+          amountIn,
+          INPUT_TOKEN_BALANCE_SLOT_NUM
+        );
+
+        const fees = await this.stargateRouter.quoteLayerZeroFee(
+          dstChainId,
+          funcType,
+          receiver,
+          payload,
+          { dstGasForCall: 0, dstNativeAmount: 0, dstNativeAddr: '0x' } // lzTxObj
+        );
+
+        // Execute
+        const value = fees[0];
+        await expectRevert(
+          this.proxy.execMock(to, data, {
+            from: user,
+            value: value,
+          }),
+          '0_HStargate_swap: FeeLibrary: not enough balance'
+        );
+      });
+
+      // address
+      it('should revert: refund zero address', async function() {
+        // Prep
+        const refundAddress = constants.ZERO_ADDRESS;
+        const to = this.hStargate.address;
+        const data = abi.simpleEncode(
+          'swap(uint16,uint256,uint256,address,uint256,uint256,address)',
+          dstChainId,
+          srcPoolId,
+          dstPoolId,
+          refundAddress,
+          amountIn,
+          amountOutMin,
+          receiver
+        );
+
+        const fees = await this.stargateRouter.quoteLayerZeroFee(
+          dstChainId,
+          funcType,
+          receiver,
+          payload,
+          { dstGasForCall: 0, dstNativeAmount: 0, dstNativeAddr: '0x' } // lzTxObj
+        );
+
+        // Execute
+        const value = fees[0];
+        await expectRevert(
+          this.proxy.execMock(to, data, {
+            from: user,
+            value: value,
+          }),
+          '0_HStargate_swap: Stargate: _refundAddress cannot be 0x0'
+        );
+      });
+
+      it('should revert: to zero address', async function() {
+        // Prep
+        const refundAddress = this.proxy.address;
+        const receiver = constants.ZERO_ADDRESS;
+        const to = this.hStargate.address;
+        const data = abi.simpleEncode(
+          'swap(uint16,uint256,uint256,address,uint256,uint256,address)',
+          dstChainId,
+          srcPoolId,
+          dstPoolId,
+          refundAddress,
+          amountIn,
+          amountOutMin,
+          receiver
+        );
+
+        const fees = await this.stargateRouter.quoteLayerZeroFee(
+          dstChainId,
+          funcType,
+          receiver,
+          payload,
+          { dstGasForCall: 0, dstNativeAmount: 0, dstNativeAddr: '0x' } // lzTxObj
+        );
+
+        // Execute
+        const value = fees[0];
+        await expectRevert(
+          this.proxy.execMock(to, data, {
+            from: user,
+            value: value,
+          }),
+          '0_HStargate_swap: to zero address'
+        );
+      });
+    });
+  });
+});
