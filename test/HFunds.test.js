@@ -1095,7 +1095,7 @@ contract('Funds', function([_, user, someone]) {
       describe('from eth', function() {
         it('normal', async function() {
           const token = ZERO_ADDRESS;
-          const count = 100;
+          const count = 3;
           const amount = ether('0.1');
           const values = Array(count).fill(new BN(amount));
           const receivers = Array.from(

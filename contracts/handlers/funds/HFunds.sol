@@ -81,12 +81,15 @@ contract HFunds is HandlerBase {
             "sendTokenToAddresses",
             "amount and receiver does not match"
         );
-        bool isNotNativeToken = _isNotNativeToken(token);
-        for (uint256 i = 0; i < amounts.length; i++) {
-            if (amounts[i] > 0) {
-                if (isNotNativeToken) {
+        if (_isNotNativeToken(token)) {
+            for (uint256 i = 0; i < amounts.length; i++) {
+                if (amounts[i] > 0) {
                     IERC20(token).safeTransfer(receivers[i], amounts[i]);
-                } else {
+                }
+            }
+        } else {
+            for (uint256 i = 0; i < amounts.length; i++) {
+                if (amounts[i] > 0) {
                     (bool success, ) = receivers[i].call{value: amounts[i]}("");
                     _requireMsg(
                         success,
