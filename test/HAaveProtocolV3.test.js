@@ -99,7 +99,7 @@ contract('Aave V3', function([_, user]) {
   describe('Supply', function() {
     describe('Eth', function() {
       it('normal', async function() {
-        const value = ether('10');
+        const value = ether('1');
         const to = this.hAaveV3.address;
         const data = abi.simpleEncode('supplyETH(uint256)', value);
 
@@ -123,7 +123,7 @@ contract('Aave V3', function([_, user]) {
       });
 
       it('max amount', async function() {
-        const value = ether('10');
+        const value = ether('1');
         const to = this.hAaveV3.address;
         const data = abi.simpleEncode('supplyETH(uint256)', MAX_UINT256);
 
@@ -220,7 +220,7 @@ contract('Aave V3', function([_, user]) {
   });
 
   describe('Withdraw', function() {
-    var supplyAmount = ether('5');
+    var supplyAmount = ether('1');
 
     describe('Eth', function() {
       beforeEach(async function() {
