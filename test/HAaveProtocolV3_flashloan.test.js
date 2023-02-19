@@ -31,12 +31,7 @@ const {
   USDC_TOKEN,
   AUSDC_V3_TOKEN,
 } = require('./utils/constants');
-const {
-  REGISTRY,
-  FEE_RULE_REGISTRY,
-  HAAVEV3,
-  REGISTRY_OWNER,
-} = require('./utils/configs');
+
 const {
   mwei,
   evmRevert,
