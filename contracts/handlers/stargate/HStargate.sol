@@ -36,6 +36,7 @@ contract HStargate is HandlerBase {
         uint16 dstChainId,
         address payable refundAddress,
         uint256 amountIn,
+        uint256 fee,
         uint256 amountOutMin,
         address to
     ) external payable {
@@ -43,7 +44,7 @@ contract HStargate is HandlerBase {
 
         // Swap ETH
         try
-            IStargateRouterETH(routerETH).swapETH{value: msg.value}(
+            IStargateRouterETH(routerETH).swapETH{value: amountIn + fee}(
                 dstChainId,
                 refundAddress,
                 abi.encodePacked(to),
@@ -66,6 +67,7 @@ contract HStargate is HandlerBase {
         uint256 dstPoolId,
         address payable refundAddress,
         uint256 amountIn,
+        uint256 fee,
         uint256 amountOutMin,
         address to
     ) external payable {
@@ -79,7 +81,7 @@ contract HStargate is HandlerBase {
 
         // Swap input token
         try
-            IStargateRouter(router).swap{value: msg.value}(
+            IStargateRouter(router).swap{value: fee}(
                 dstChainId,
                 srcPoolId,
                 dstPoolId,
