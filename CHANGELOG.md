@@ -6,8 +6,9 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
-- Support swap of Stargate token bridge
-- Add `setTokenBalance` in utils.js to manipulate token balance for unit testing
+- Add send token to addresses in `HFunds`.
+- Support swap of Stargate token bridge.
+- Add `setTokenBalance` in utils.js to manipulate token balance for unit testing.
 
 ## [2.3.2] - 2022-12-21
 
