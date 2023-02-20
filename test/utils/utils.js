@@ -138,7 +138,7 @@ const toBytes32 = bn => {
 // could use the tool "slot20" to find the slot #
 async function setTokenBalance(tokenAddress, receiver, amount, slot) {
   const index = ethers.utils.solidityKeccak256(
-    ['uint256', 'uint256'],
+    ['address', 'uint256'],
     [receiver, slot] // key, slot
   );
 
