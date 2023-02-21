@@ -130,6 +130,28 @@ async function nativeTokenProvider() {
   return WRAPPED_NATIVE_TOKEN;
 }
 
+const toBytes32 = bn => {
+  return ethers.utils.hexlify(ethers.utils.zeroPad(bn.toHexString(), 32));
+};
+
+// @dev: slot = the storage slot # of balances in the token contract
+// could use the tool "slot20" to find the slot #
+async function setTokenBalance(tokenAddress, receiver, amount, slot) {
+  const index = ethers.utils.solidityKeccak256(
+    ['address', 'uint256'],
+    [receiver, slot] // key, slot
+  );
+
+  const amountBn = ethers.BigNumber.from(amount.toString());
+
+  await network.provider.send('hardhat_setStorageAt', [
+    tokenAddress,
+    index,
+    toBytes32(amountBn).toString(),
+  ]);
+  await ethers.provider.send('evm_mine', []);
+}
+
 async function getTokenProvider(
   token0 = USDC_TOKEN,
   token1 = WETH_TOKEN,
@@ -345,4 +367,5 @@ module.exports = {
   callExternalApi,
   mwei,
   checkCacheClean,
+  setTokenBalance,
 };

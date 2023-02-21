@@ -42,7 +42,7 @@ const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('ProxyMock');
 const IToken = artifacts.require('IERC20');
 const IAToken = artifacts.require('IATokenV3');
-const IPool = artifacts.require('IPool');
+const IPool = artifacts.require('contracts/handlers/aaveV3/IPool.sol:IPool');
 const IProvider = artifacts.require('IPoolAddressesProvider');
 const SimpleToken = artifacts.require('SimpleToken');
 const ATOKEN_DUST = ether('0.00001');
@@ -98,6 +98,10 @@ contract('Aave V3', function([_, user]) {
 
   describe('Supply', function() {
     describe('Eth', function() {
+      if (chainId == 42161) {
+        // Reach AAVE V3 ETH supply cap on Arbitrum
+        return;
+      }
       it('normal', async function() {
         const value = ether('1');
         const to = this.hAaveV3.address;
@@ -223,6 +227,10 @@ contract('Aave V3', function([_, user]) {
     var supplyAmount = ether('1');
 
     describe('Eth', function() {
+      if (chainId == 42161) {
+        // Reach AAVE V3 ETH supply cap on Arbitrum
+        return;
+      }
       beforeEach(async function() {
         await this.wrappedNativeToken.approve(this.pool.address, supplyAmount, {
           from: wrappedNativeTokenProviderAddress,
