@@ -98,6 +98,10 @@ contract('Aave V3', function([_, user]) {
 
   describe('Supply', function() {
     describe('Eth', function() {
+      if (chainId == 42161) {
+        // Reach AAVE V3 ETH supply cap on Arbitrum
+        return;
+      }
       it('normal', async function() {
         const value = ether('1');
         const to = this.hAaveV3.address;
@@ -223,6 +227,10 @@ contract('Aave V3', function([_, user]) {
     var supplyAmount = ether('1');
 
     describe('Eth', function() {
+      if (chainId == 42161) {
+        // Reach AAVE V3 ETH supply cap on Arbitrum
+        return;
+      }
       beforeEach(async function() {
         await this.wrappedNativeToken.approve(this.pool.address, supplyAmount, {
           from: wrappedNativeTokenProviderAddress,
