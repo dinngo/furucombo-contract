@@ -1,6 +1,12 @@
 const chainId = network.config.chainId;
 
-if (chainId == 10 || chainId == 137 || chainId == 42161 || chainId == 43114) {
+if (
+  chainId == 1 ||
+  chainId == 10 ||
+  chainId == 137 ||
+  chainId == 42161 ||
+  chainId == 43114
+) {
   // This test supports to run on these chains.
 } else {
   return;
@@ -53,12 +59,12 @@ const IProvider = artifacts.require('IPoolAddressesProvider');
 const IVariableDebtToken = artifacts.require('IVariableDebtTokenV3');
 const IStableDebtToken = artifacts.require('IStableDebtTokenV3');
 
-contract('AaveV3 flashloan', function([_, user, someone]) {
+contract('AaveV3 flashloan', function ([_, user, someone]) {
   let id;
   let balanceUser;
   let balanceProxy;
 
-  before(async function() {
+  before(async function () {
     this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);
     this.registry = await Registry.new();
     this.proxy = await Proxy.new(
@@ -66,7 +72,10 @@ contract('AaveV3 flashloan', function([_, user, someone]) {
       this.feeRuleRegistry.address
     );
     // Register aave v3 handler
-    this.hAaveV3 = await HAaveV3.new(WRAPPED_NATIVE_TOKEN);
+    this.hAaveV3 = await HAaveV3.new(
+      WRAPPED_NATIVE_TOKEN,
+      AAVEPROTOCOL_V3_PROVIDER
+    );
     await this.registry.register(
       this.hAaveV3.address,
       utils.asciiToHex('Aave ProtocolV3')
@@ -96,18 +105,18 @@ contract('AaveV3 flashloan', function([_, user, someone]) {
     this.mockToken = await SimpleToken.new();
   });
 
-  beforeEach(async function() {
+  beforeEach(async function () {
     id = await evmSnapshot();
     balanceUser = await tracker(user);
     balanceProxy = await tracker(this.proxy.address);
   });
 
-  afterEach(async function() {
+  afterEach(async function () {
     await evmRevert(id);
   });
 
-  describe('Pool as handler', function() {
-    it('Will success if pool is registered as handler', async function() {
+  describe('Pool as handler', function () {
+    it('Will success if pool is registered as handler', async function () {
       await this.registry.register(this.pool.address, this.hAaveV3.address);
       const to = this.pool.address;
       const data = abi.simpleEncode(
@@ -121,7 +130,7 @@ contract('AaveV3 flashloan', function([_, user, someone]) {
       });
     });
 
-    it('Will revert if pool is registered as caller only', async function() {
+    it('Will revert if pool is registered as caller only', async function () {
       const to = this.pool.address;
       const data = abi.simpleEncode(
         'initialize(address,bytes)',
@@ -138,8 +147,8 @@ contract('AaveV3 flashloan', function([_, user, someone]) {
     });
   });
 
-  describe('Normal', function() {
-    beforeEach(async function() {
+  describe('Normal', function () {
+    beforeEach(async function () {
       await this.tokenA.transfer(this.faucet.address, ether('100'), {
         from: this.tokenAProvider,
       });
@@ -163,7 +172,7 @@ contract('AaveV3 flashloan', function([_, user, someone]) {
       );
     });
 
-    it('Single asset with no debt', async function() {
+    it('Single asset with no debt', async function () {
       // Get flashloan params
       const value = ether('1');
       const params = _getFlashloanParams(
@@ -201,7 +210,11 @@ contract('AaveV3 flashloan', function([_, user, someone]) {
       expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
     });
 
-    it('single asset with stable rate by borrowing from itself', async function() {
+    it('single asset with stable rate by borrowing from itself', async function () {
+      if (chainId == 1) {
+        // Ethereum does not support borrow in stable mode
+        return;
+      }
       // Get flashloan params
       const value = ether('1');
       const params = _getFlashloanParams(
@@ -247,7 +260,7 @@ contract('AaveV3 flashloan', function([_, user, someone]) {
       expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
     });
 
-    it('single asset with variable rate by borrowing from itself', async function() {
+    it('single asset with variable rate by borrowing from itself', async function () {
       // Get flashloan params
       const value = ether('1');
       const params = _getFlashloanParams(
@@ -299,7 +312,7 @@ contract('AaveV3 flashloan', function([_, user, someone]) {
       expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
     });
 
-    it('multiple assets with no debt', async function() {
+    it('multiple assets with no debt', async function () {
       // Get flashloan params
       const tokenAValue = ether('1');
       const tokenBValue = mwei('1');
@@ -347,7 +360,7 @@ contract('AaveV3 flashloan', function([_, user, someone]) {
       expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
     });
 
-    it('should revert: assets and amount do not match', async function() {
+    it('should revert: assets and amount do not match', async function () {
       const value = ether('1');
       const params = _getFlashloanParams(
         [this.hMock.address],
@@ -374,7 +387,7 @@ contract('AaveV3 flashloan', function([_, user, someone]) {
       );
     });
 
-    it('should revert: assets and modes do not match', async function() {
+    it('should revert: assets and modes do not match', async function () {
       const value = ether('1');
       const params = _getFlashloanParams(
         [this.hMock.address],
@@ -401,7 +414,7 @@ contract('AaveV3 flashloan', function([_, user, someone]) {
       );
     });
 
-    it('should revert: not approveDelegation to proxy', async function() {
+    it('should revert: not approveDelegation to proxy', async function () {
       const value = ether('1');
       const params = _getFlashloanParams(
         [this.hMock.address],
@@ -428,7 +441,7 @@ contract('AaveV3 flashloan', function([_, user, someone]) {
       );
     });
 
-    it('should revert: collateral same as borrowing currency', async function() {
+    it('should revert: collateral same as borrowing currency', async function () {
       const value = mwei('1');
       const params = _getFlashloanParams(
         [this.hMock.address],
@@ -454,7 +467,7 @@ contract('AaveV3 flashloan', function([_, user, someone]) {
       );
     });
 
-    it('should revert: not supported token', async function() {
+    it('should revert: not supported token', async function () {
       const value = ether('1');
       const params = _getFlashloanParams(
         [this.hMock.address],
@@ -482,8 +495,8 @@ contract('AaveV3 flashloan', function([_, user, someone]) {
     });
   });
 
-  describe('Multiple Cubes', function() {
-    beforeEach(async function() {
+  describe('Multiple Cubes', function () {
+    beforeEach(async function () {
       tokenAUser = await this.tokenA.balanceOf(user);
       tokenBUser = await this.tokenB.balanceOf(user);
       await this.tokenA.transfer(this.faucet.address, ether('100'), {
@@ -494,7 +507,7 @@ contract('AaveV3 flashloan', function([_, user, someone]) {
       });
     });
 
-    it('sequential', async function() {
+    it('sequential', async function () {
       const tokenAValue = ether('1');
       const tokenBValue = mwei('1');
       // Setup 1st flashloan cube
@@ -561,7 +574,7 @@ contract('AaveV3 flashloan', function([_, user, someone]) {
       expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
     });
 
-    it('nested', async function() {
+    it('nested', async function () {
       // Get flashloan params
       const tokenAValue = ether('1');
       const tokenBValue = mwei('1');
@@ -627,8 +640,8 @@ contract('AaveV3 flashloan', function([_, user, someone]) {
     });
   });
 
-  describe('supply', function() {
-    beforeEach(async function() {
+  describe('supply', function () {
+    beforeEach(async function () {
       tokenAUser = await this.tokenA.balanceOf(user);
       tokenBUser = await this.tokenB.balanceOf(user);
       await this.tokenA.transfer(this.faucet.address, ether('100'), {
@@ -639,7 +652,7 @@ contract('AaveV3 flashloan', function([_, user, someone]) {
       });
     });
 
-    it('supply aaveV3 after flashloan', async function() {
+    it('supply aaveV3 after flashloan', async function () {
       // Get flashloan params
       const tokenAValue = ether('1');
       const tokenBValue = mwei('1');
@@ -707,14 +720,14 @@ contract('AaveV3 flashloan', function([_, user, someone]) {
     });
   });
 
-  describe('Non-proxy', function() {
-    beforeEach(async function() {
+  describe('Non-proxy', function () {
+    beforeEach(async function () {
       await this.tokenA.transfer(this.faucet.address, ether('100'), {
         from: this.tokenAProvider,
       });
     });
 
-    it('should revert: not initiated by the proxy', async function() {
+    it('should revert: not initiated by the proxy', async function () {
       const value = ether('1');
       // Setup 1st flashloan cube
       const params = _getFlashloanParams(
@@ -741,8 +754,8 @@ contract('AaveV3 flashloan', function([_, user, someone]) {
     });
   });
 
-  describe('executeOperation', function() {
-    it('should revert: non-pool call executeOperation() directly', async function() {
+  describe('executeOperation', function () {
+    it('should revert: non-pool call executeOperation() directly', async function () {
       const data = abi.simpleEncode(
         'executeOperation(address[],uint256[],uint256[],address,bytes)',
         [],

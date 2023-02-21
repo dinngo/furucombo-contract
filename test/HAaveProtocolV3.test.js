@@ -1,6 +1,12 @@
 const chainId = network.config.chainId;
 
-if (chainId == 10 || chainId == 137 || chainId == 42161 || chainId == 43114) {
+if (
+  chainId == 1 ||
+  chainId == 10 ||
+  chainId == 137 ||
+  chainId == 42161 ||
+  chainId == 43114
+) {
   // This test supports to run on these chains.
 } else {
   return;
@@ -47,7 +53,7 @@ const IProvider = artifacts.require('IPoolAddressesProvider');
 const SimpleToken = artifacts.require('SimpleToken');
 const ATOKEN_DUST = ether('0.00001');
 
-contract('Aave V3', function([_, user]) {
+contract('Aave V3', function ([_, user]) {
   const aTokenAddress = ADAI_V3_TOKEN;
   const tokenAddress = DAI_TOKEN;
   const aWrappedNativeTokenAddress = AWRAPPED_NATIVE_V3_TOKEN;
@@ -58,7 +64,7 @@ contract('Aave V3', function([_, user]) {
   let providerAddress;
   let wrappedNativeTokenProviderAddress;
 
-  before(async function() {
+  before(async function () {
     providerAddress = await getTokenProvider(tokenAddress);
     wrappedNativeTokenProviderAddress = await getTokenProvider(
       WRAPPED_NATIVE_TOKEN
@@ -70,7 +76,10 @@ contract('Aave V3', function([_, user]) {
       this.registry.address,
       this.feeRuleRegistry.address
     );
-    this.hAaveV3 = await HAaveV3.new(WRAPPED_NATIVE_TOKEN);
+    this.hAaveV3 = await HAaveV3.new(
+      WRAPPED_NATIVE_TOKEN,
+      AAVEPROTOCOL_V3_PROVIDER
+    );
 
     await this.registry.register(
       this.hAaveV3.address,
@@ -86,23 +95,23 @@ contract('Aave V3', function([_, user]) {
     this.mockToken = await SimpleToken.new();
   });
 
-  beforeEach(async function() {
+  beforeEach(async function () {
     id = await evmSnapshot();
     balanceUser = await tracker(user);
     balanceProxy = await tracker(this.proxy.address);
   });
 
-  afterEach(async function() {
+  afterEach(async function () {
     await evmRevert(id);
   });
 
-  describe('Supply', function() {
-    describe('Eth', function() {
+  describe('Supply', function () {
+    describe('Eth', function () {
       if (chainId == 42161) {
         // Reach AAVE V3 ETH supply cap on Arbitrum
         return;
       }
-      it('normal', async function() {
+      it('normal', async function () {
         const value = ether('1');
         const to = this.hAaveV3.address;
         const data = abi.simpleEncode('supplyETH(uint256)', value);
@@ -126,7 +135,7 @@ contract('Aave V3', function([_, user]) {
         profileGas(receipt);
       });
 
-      it('max amount', async function() {
+      it('max amount', async function () {
         const value = ether('1');
         const to = this.hAaveV3.address;
         const data = abi.simpleEncode('supplyETH(uint256)', MAX_UINT256);
@@ -151,8 +160,8 @@ contract('Aave V3', function([_, user]) {
       });
     });
 
-    describe('Token', function() {
-      it('normal', async function() {
+    describe('Token', function () {
+      it('normal', async function () {
         const value = ether('10');
         const to = this.hAaveV3.address;
         const data = abi.simpleEncode(
@@ -179,7 +188,7 @@ contract('Aave V3', function([_, user]) {
         profileGas(receipt);
       });
 
-      it('max amount', async function() {
+      it('max amount', async function () {
         const value = ether('10');
         const to = this.hAaveV3.address;
         const data = abi.simpleEncode(
@@ -206,7 +215,7 @@ contract('Aave V3', function([_, user]) {
         profileGas(receipt);
       });
 
-      it('should revert: not supported token', async function() {
+      it('should revert: not supported token', async function () {
         const value = ether('10');
         const to = this.hAaveV3.address;
         const data = abi.simpleEncode(
@@ -223,15 +232,15 @@ contract('Aave V3', function([_, user]) {
     });
   });
 
-  describe('Withdraw', function() {
+  describe('Withdraw', function () {
     var supplyAmount = ether('1');
 
-    describe('Eth', function() {
+    describe('Eth', function () {
       if (chainId == 42161) {
         // Reach AAVE V3 ETH supply cap on Arbitrum
         return;
       }
-      beforeEach(async function() {
+      beforeEach(async function () {
         await this.wrappedNativeToken.approve(this.pool.address, supplyAmount, {
           from: wrappedNativeTokenProviderAddress,
         });
@@ -248,7 +257,7 @@ contract('Aave V3', function([_, user]) {
         supplyAmount = await this.aWrappedNativeToken.balanceOf(user);
       });
 
-      it('partial', async function() {
+      it('partial', async function () {
         const value = supplyAmount.div(new BN(2));
         const to = this.hAaveV3.address;
         const data = abi.simpleEncode('withdrawETH(uint256)', value);
@@ -286,7 +295,7 @@ contract('Aave V3', function([_, user]) {
         profileGas(receipt);
       });
 
-      it('max amount', async function() {
+      it('max amount', async function () {
         const value = supplyAmount.div(new BN(2));
         const to = this.hAaveV3.address;
         const data = abi.simpleEncode('withdrawETH(uint256)', MAX_UINT256);
@@ -325,8 +334,8 @@ contract('Aave V3', function([_, user]) {
       });
     });
 
-    describe('Token', function() {
-      beforeEach(async function() {
+    describe('Token', function () {
+      beforeEach(async function () {
         await this.token.approve(this.pool.address, supplyAmount, {
           from: providerAddress,
         });
@@ -337,7 +346,7 @@ contract('Aave V3', function([_, user]) {
         supplyAmount = await this.aToken.balanceOf(user);
       });
 
-      it('partial', async function() {
+      it('partial', async function () {
         const value = supplyAmount.div(new BN(2));
         const to = this.hAaveV3.address;
         const data = abi.simpleEncode(
@@ -380,7 +389,7 @@ contract('Aave V3', function([_, user]) {
         profileGas(receipt);
       });
 
-      it('max amount', async function() {
+      it('max amount', async function () {
         const value = supplyAmount.div(new BN(2));
         const to = this.hAaveV3.address;
         const data = abi.simpleEncode(
@@ -427,7 +436,7 @@ contract('Aave V3', function([_, user]) {
         profileGas(receipt);
       });
 
-      it('whole', async function() {
+      it('whole', async function () {
         const value = MAX_UINT256;
         const to = this.hAaveV3.address;
         const data = abi.simpleEncode(
@@ -473,7 +482,7 @@ contract('Aave V3', function([_, user]) {
         profileGas(receipt);
       });
 
-      it('should revert: not enough balance', async function() {
+      it('should revert: not enough balance', async function () {
         const value = supplyAmount.add(ether('10'));
         const to = this.hAaveV3.address;
         const data = abi.simpleEncode(
@@ -495,7 +504,7 @@ contract('Aave V3', function([_, user]) {
         );
       });
 
-      it('should revert: not supported token', async function() {
+      it('should revert: not supported token', async function () {
         const value = supplyAmount.add(ether('10'));
         const to = this.hAaveV3.address;
         const data = abi.simpleEncode(

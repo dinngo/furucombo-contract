@@ -10,14 +10,14 @@ import "./IFlashLoanReceiver.sol";
 
 contract HAaveProtocolV3 is HandlerBase, IFlashLoanReceiver {
     // prettier-ignore
-    address public constant PROVIDER = 0xa97684ead0e402dC232d5A977953DF7ECBaB3CDb;
-
     uint16 public constant REFERRAL_CODE = 56;
 
     address public immutable wrappedNativeToken;
+    address public immutable provider;
 
-    constructor(address wrappedNativeToken_) {
+    constructor(address wrappedNativeToken_, address provider_) {
         wrappedNativeToken = wrappedNativeToken_;
+        provider = provider_;
     }
 
     function getContractName() public pure override returns (string memory) {
@@ -38,21 +38,18 @@ contract HAaveProtocolV3 is HandlerBase, IFlashLoanReceiver {
         _updateToken(wrappedNativeToken);
     }
 
-    function withdraw(address asset, uint256 amount)
-        external
-        payable
-        returns (uint256 withdrawAmount)
-    {
+    function withdraw(
+        address asset,
+        uint256 amount
+    ) external payable returns (uint256 withdrawAmount) {
         withdrawAmount = _withdraw(asset, amount);
 
         _updateToken(asset);
     }
 
-    function withdrawETH(uint256 amount)
-        external
-        payable
-        returns (uint256 withdrawAmount)
-    {
+    function withdrawETH(
+        uint256 amount
+    ) external payable returns (uint256 withdrawAmount) {
         withdrawAmount = _withdraw(wrappedNativeToken, amount);
 
         IWrappedNativeToken(wrappedNativeToken).withdraw(withdrawAmount);
@@ -115,7 +112,7 @@ contract HAaveProtocolV3 is HandlerBase, IFlashLoanReceiver {
         );
 
         address onBehalfOf = _getSender();
-        address pool = IPoolAddressesProvider(PROVIDER).getPool();
+        address pool = IPoolAddressesProvider(provider).getPool();
 
         try
             IPool(pool).flashLoan(
@@ -148,7 +145,7 @@ contract HAaveProtocolV3 is HandlerBase, IFlashLoanReceiver {
         bytes memory params
     ) external override returns (bool) {
         _requireMsg(
-            msg.sender == IPoolAddressesProvider(PROVIDER).getPool(),
+            msg.sender == IPoolAddressesProvider(provider).getPool(),
             "executeOperation",
             "invalid caller"
         );
@@ -159,11 +156,14 @@ contract HAaveProtocolV3 is HandlerBase, IFlashLoanReceiver {
             "not initiated by the proxy"
         );
 
-        (address[] memory tos, bytes32[] memory configs, bytes[] memory datas) =
-            abi.decode(params, (address[], bytes32[], bytes[]));
+        (
+            address[] memory tos,
+            bytes32[] memory configs,
+            bytes[] memory datas
+        ) = abi.decode(params, (address[], bytes32[], bytes[]));
         IProxy(address(this)).execs(tos, configs, datas);
 
-        address pool = IPoolAddressesProvider(PROVIDER).getPool();
+        address pool = IPoolAddressesProvider(provider).getPool();
         for (uint256 i = 0; i < assets.length; i++) {
             uint256 amountOwing = amounts[i] + premiums[i];
             _tokenApprove(assets[i], pool, amountOwing);
@@ -187,10 +187,10 @@ contract HAaveProtocolV3 is HandlerBase, IFlashLoanReceiver {
         _updateToken(aToken);
     }
 
-    function _withdraw(address asset, uint256 amount)
-        internal
-        returns (uint256 withdrawAmount)
-    {
+    function _withdraw(
+        address asset,
+        uint256 amount
+    ) internal returns (uint256 withdrawAmount) {
         (address pool, address aToken) = _getPoolAndAToken(asset);
         amount = _getBalance(aToken, amount);
 
@@ -211,7 +211,7 @@ contract HAaveProtocolV3 is HandlerBase, IFlashLoanReceiver {
         uint256 rateMode,
         address onBehalfOf
     ) internal {
-        address pool = IPoolAddressesProvider(PROVIDER).getPool();
+        address pool = IPoolAddressesProvider(provider).getPool();
 
         try
             IPool(pool).borrow(
@@ -234,7 +234,7 @@ contract HAaveProtocolV3 is HandlerBase, IFlashLoanReceiver {
         uint256 rateMode,
         address onBehalfOf
     ) internal returns (uint256 remainDebt) {
-        address pool = IPoolAddressesProvider(PROVIDER).getPool();
+        address pool = IPoolAddressesProvider(provider).getPool();
         _tokenApprove(asset, pool, amount);
 
         try
@@ -247,20 +247,19 @@ contract HAaveProtocolV3 is HandlerBase, IFlashLoanReceiver {
 
         _tokenApproveZero(asset, pool);
 
-        DataTypes.ReserveData memory reserve =
-            IPool(pool).getReserveData(asset);
+        DataTypes.ReserveData memory reserve = IPool(pool).getReserveData(
+            asset
+        );
         remainDebt = DataTypes.InterestRateMode(rateMode) ==
             DataTypes.InterestRateMode.STABLE
             ? IERC20(reserve.stableDebtTokenAddress).balanceOf(onBehalfOf)
             : IERC20(reserve.variableDebtTokenAddress).balanceOf(onBehalfOf);
     }
 
-    function _getPoolAndAToken(address underlying)
-        internal
-        view
-        returns (address pool, address aToken)
-    {
-        pool = IPoolAddressesProvider(PROVIDER).getPool();
+    function _getPoolAndAToken(
+        address underlying
+    ) internal view returns (address pool, address aToken) {
+        pool = IPoolAddressesProvider(provider).getPool();
         try IPool(pool).getReserveData(underlying) returns (
             DataTypes.ReserveData memory data
         ) {
