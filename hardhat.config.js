@@ -93,6 +93,10 @@ module.exports = {
         'https://api.avax.network/ext/bc/C/rpc',
       accounts: accounts(process.env.AVALANCHE_SECRET),
     },
+    fantom: {
+      url: process.env.FANTOM_RPC_URL || 'https://rpc.ankr.com/fantom',
+      accounts: accounts(process.env.FANTOM_SECRET),
+    },
   },
   mocha: {
     timeout: 900000,

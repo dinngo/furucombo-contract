@@ -9,11 +9,13 @@ const {
   SUSHISWAP_FACTORY,
   QUICKSWAP_FACTORY,
   JOE_FACTORY,
+  SPOOKY_FACTORY,
   CURVE_ADDRESS_PROVIDER,
   YEARN_CONTROLLER,
   WETH_TOKEN,
   USDC_TOKEN,
   WAVAX_TOKEN,
+  WFTM_TOKEN,
   RecordHandlerResultSig,
   STORAGE_KEY_MSG_SENDER,
   STORAGE_KEY_CUBE_COUNTER,
@@ -167,6 +169,8 @@ async function getTokenProvider(
     return await tokenProviderQuick(token0, token1);
   } else if (chainId == 43114) {
     return await tokenProviderTraderJoe(token0, WAVAX_TOKEN);
+  } else if (chainId == 250) {
+    return await tokenProviderSpookySwap(token0, WFTM_TOKEN);
   }
 }
 
@@ -187,6 +191,17 @@ async function tokenProviderUniV3(
   impersonateAndInjectEther(pool);
 
   return pool;
+}
+
+async function tokenProviderSpookySwap(
+  token0 = USDC_TOKEN,
+  token1 = WFTM_TOKEN,
+  factoryAddress = SPOOKY_FACTORY
+) {
+  if (token0 === WFTM_TOKEN) {
+    token1 = USDC_TOKEN;
+  }
+  return _tokenProviderUniLike(token0, token1, factoryAddress);
 }
 
 async function tokenProviderTraderJoe(
