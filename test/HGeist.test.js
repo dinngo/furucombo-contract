@@ -23,9 +23,9 @@ const { expect } = require('chai');
 
 const {
   DAI_TOKEN,
-  GEIST_V2_PROVIDER,
+  GEIST_LENDING_POOL_PROVIDER,
   WRAPPED_NATIVE_TOKEN,
-  GWRAPPED_NATIVE_V2_TOKEN,
+  GWRAPPED_NATIVE_TOKEN,
 } = require('./utils/constants');
 const {
   evmRevert,
@@ -47,9 +47,9 @@ const ILendingPool = artifacts.require('ILendingPoolV2');
 const IProvider = artifacts.require('ILendingPoolAddressesProviderV2');
 const SimpleToken = artifacts.require('SimpleToken');
 
-contract('Geist', function([_, user]) {
+contract('Geist', function ([_, user]) {
   const tokenAddress = DAI_TOKEN;
-  const gWrappedNativeTokenAddress = GWRAPPED_NATIVE_V2_TOKEN;
+  const gWrappedNativeTokenAddress = GWRAPPED_NATIVE_TOKEN;
   const wrappedNativeTokenAddress = WRAPPED_NATIVE_TOKEN;
   const GTOKEN_DUST = ether('0.00001');
 
@@ -59,7 +59,7 @@ contract('Geist', function([_, user]) {
   let providerAddress;
   let wethProviderAddress;
 
-  before(async function() {
+  before(async function () {
     providerAddress = await getTokenProvider(tokenAddress);
     wethProviderAddress = await getTokenProvider(wrappedNativeTokenAddress);
 
@@ -69,36 +69,41 @@ contract('Geist', function([_, user]) {
       this.registry.address,
       this.feeRuleRegistry.address
     );
-    this.hGeist = await HGeist.new(WRAPPED_NATIVE_TOKEN, GEIST_V2_PROVIDER);
+    this.hGeist = await HGeist.new(
+      WRAPPED_NATIVE_TOKEN,
+      GEIST_LENDING_POOL_PROVIDER
+    );
     await this.registry.register(
       this.hGeist.address,
       utils.asciiToHex('Geist')
     );
-    this.provider = await IProvider.at(GEIST_V2_PROVIDER);
+    this.provider = await IProvider.at(GEIST_LENDING_POOL_PROVIDER);
     this.lendingPoolAddress = await this.provider.getLendingPool.call();
     this.lendingPool = await ILendingPool.at(this.lendingPoolAddress);
     this.token = await IToken.at(tokenAddress);
     this.gToken = await IGToken.at(
-      (await this.lendingPool.getReserveData.call(tokenAddress)).aTokenAddress
+      (
+        await this.lendingPool.getReserveData.call(tokenAddress)
+      ).aTokenAddress
     );
     this.wrappedNativeToken = await IToken.at(wrappedNativeTokenAddress);
     this.aWrappedNativeToken = await IGToken.at(gWrappedNativeTokenAddress);
     this.mockToken = await SimpleToken.new();
   });
 
-  beforeEach(async function() {
+  beforeEach(async function () {
     id = await evmSnapshot();
     balanceUser = await tracker(user);
     balanceProxy = await tracker(this.proxy.address);
   });
 
-  afterEach(async function() {
+  afterEach(async function () {
     await evmRevert(id);
   });
 
-  describe('Deposit', function() {
-    describe('Ether', function() {
-      it('normal', async function() {
+  describe('Deposit', function () {
+    describe('Ether', function () {
+      it('normal', async function () {
         const value = ether('10');
         const to = this.hGeist.address;
         const data = abi.simpleEncode('depositETH(uint256)', value);
@@ -122,7 +127,7 @@ contract('Geist', function([_, user]) {
         profileGas(receipt);
       });
 
-      it('max amount', async function() {
+      it('max amount', async function () {
         const value = ether('10');
         const to = this.hGeist.address;
         const data = abi.simpleEncode('depositETH(uint256)', MAX_UINT256);
@@ -147,8 +152,8 @@ contract('Geist', function([_, user]) {
       });
     });
 
-    describe('Token', function() {
-      it('normal', async function() {
+    describe('Token', function () {
+      it('normal', async function () {
         const value = ether('10');
         const to = this.hGeist.address;
         const data = abi.simpleEncode(
@@ -175,7 +180,7 @@ contract('Geist', function([_, user]) {
         profileGas(receipt);
       });
 
-      it('max amount', async function() {
+      it('max amount', async function () {
         const value = ether('10');
         const to = this.hGeist.address;
         const data = abi.simpleEncode(
@@ -203,7 +208,7 @@ contract('Geist', function([_, user]) {
         profileGas(receipt);
       });
 
-      it('should revert: not supported token', async function() {
+      it('should revert: not supported token', async function () {
         const value = ether('10');
         const to = this.hGeist.address;
         const data = abi.simpleEncode(
@@ -220,11 +225,11 @@ contract('Geist', function([_, user]) {
     });
   });
 
-  describe('Withdraw', function() {
+  describe('Withdraw', function () {
     var depositAmount = ether('5');
 
-    describe('Ether', function() {
-      beforeEach(async function() {
+    describe('Ether', function () {
+      beforeEach(async function () {
         await this.wrappedNativeToken.approve(
           this.lendingPool.address,
           depositAmount,
@@ -243,7 +248,7 @@ contract('Geist', function([_, user]) {
         depositAmount = await this.aWrappedNativeToken.balanceOf.call(user);
       });
 
-      it('partial', async function() {
+      it('partial', async function () {
         const value = depositAmount.div(new BN(2));
         const to = this.hGeist.address;
         const data = abi.simpleEncode('withdrawETH(uint256)', value);
@@ -285,7 +290,7 @@ contract('Geist', function([_, user]) {
         profileGas(receipt);
       });
 
-      it('max amount', async function() {
+      it('max amount', async function () {
         const value = depositAmount.div(new BN(2));
         const to = this.hGeist.address;
         const data = abi.simpleEncode('withdrawETH(uint256)', MAX_UINT256);
@@ -334,8 +339,8 @@ contract('Geist', function([_, user]) {
       });
     });
 
-    describe('Token', function() {
-      beforeEach(async function() {
+    describe('Token', function () {
+      beforeEach(async function () {
         await this.token.approve(this.lendingPool.address, depositAmount, {
           from: providerAddress,
         });
@@ -350,7 +355,7 @@ contract('Geist', function([_, user]) {
         depositAmount = await this.gToken.balanceOf.call(user);
       });
 
-      it('partial', async function() {
+      it('partial', async function () {
         const value = depositAmount.div(new BN(2));
         const to = this.hGeist.address;
         const data = abi.simpleEncode(
@@ -398,7 +403,7 @@ contract('Geist', function([_, user]) {
         profileGas(receipt);
       });
 
-      it('max amount', async function() {
+      it('max amount', async function () {
         const value = depositAmount.div(new BN(2));
         const to = this.hGeist.address;
         const data = abi.simpleEncode(
@@ -450,7 +455,7 @@ contract('Geist', function([_, user]) {
         profileGas(receipt);
       });
 
-      it('whole', async function() {
+      it('whole', async function () {
         const value = MAX_UINT256;
         const to = this.hGeist.address;
         const data = abi.simpleEncode(
@@ -494,7 +499,7 @@ contract('Geist', function([_, user]) {
         profileGas(receipt);
       });
 
-      it('should revert: not enough balance', async function() {
+      it('should revert: not enough balance', async function () {
         const value = depositAmount.add(ether('10'));
         const to = this.hGeist.address;
         const data = abi.simpleEncode(
@@ -516,7 +521,7 @@ contract('Geist', function([_, user]) {
         );
       });
 
-      it('should revert: not supported token', async function() {
+      it('should revert: not supported token', async function () {
         const value = depositAmount.add(ether('10'));
         const to = this.hGeist.address;
         const data = abi.simpleEncode(

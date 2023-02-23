@@ -19,7 +19,7 @@ const { expect } = require('chai');
 
 const {
   DAI_TOKEN,
-  GEIST_V2_PROVIDER,
+  GEIST_LENDING_POOL_PROVIDER,
   AAVE_RATEMODE,
   WRAPPED_NATIVE_TOKEN,
 } = require('./utils/constants');
@@ -42,14 +42,14 @@ const ILendingPool = artifacts.require('ILendingPoolV2');
 const IProvider = artifacts.require('ILendingPoolAddressesProviderV2');
 const SimpleToken = artifacts.require('SimpleToken');
 
-contract('Geist', function([_, user]) {
+contract('Geist', function ([_, user]) {
   const tokenAddress = DAI_TOKEN;
 
   let id;
   let balanceUser;
   let providerAddress;
 
-  before(async function() {
+  before(async function () {
     providerAddress = await getTokenProvider(tokenAddress);
 
     this.registry = await Registry.new();
@@ -58,49 +58,55 @@ contract('Geist', function([_, user]) {
       this.registry.address,
       this.feeRuleRegistry.address
     );
-    this.hGeist = await HGeist.new(WRAPPED_NATIVE_TOKEN, GEIST_V2_PROVIDER);
+    this.hGeist = await HGeist.new(
+      WRAPPED_NATIVE_TOKEN,
+      GEIST_LENDING_POOL_PROVIDER
+    );
     await this.registry.register(
       this.hGeist.address,
       utils.asciiToHex('Geist')
     );
-    this.provider = await IProvider.at(GEIST_V2_PROVIDER);
+    this.provider = await IProvider.at(GEIST_LENDING_POOL_PROVIDER);
     this.lendingPoolAddress = await this.provider.getLendingPool.call();
     this.lendingPool = await ILendingPool.at(this.lendingPoolAddress);
     this.token = await IToken.at(tokenAddress);
     this.gToken = await IAToken.at(
-      (await this.lendingPool.getReserveData.call(tokenAddress)).aTokenAddress
+      (
+        await this.lendingPool.getReserveData.call(tokenAddress)
+      ).aTokenAddress
     );
     this.mockToken = await SimpleToken.new();
   });
 
-  beforeEach(async function() {
+  beforeEach(async function () {
     id = await evmSnapshot();
     balanceUser = await tracker(user);
     balanceProxy = await tracker(this.proxy.address);
   });
 
-  afterEach(async function() {
+  afterEach(async function () {
     await evmRevert(id);
   });
 
-  describe('Repay Variable Rate', function() {
+  describe('Repay Variable Rate', function () {
     var depositAmount = ether('10000');
     const borrowAmount = ether('1');
     const borrowTokenAddr = WRAPPED_NATIVE_TOKEN;
     const rateMode = AAVE_RATEMODE.VARIABLE;
 
     let borrowTokenProvider;
-    before(async function() {
+    before(async function () {
       borrowTokenProvider = await getTokenProvider(borrowTokenAddr);
 
       this.borrowToken = await IToken.at(borrowTokenAddr);
       this.debtToken = await IToken.at(
-        (await this.lendingPool.getReserveData.call(borrowTokenAddr))
-          .variableDebtTokenAddress
+        (
+          await this.lendingPool.getReserveData.call(borrowTokenAddr)
+        ).variableDebtTokenAddress
       );
     });
 
-    beforeEach(async function() {
+    beforeEach(async function () {
       // Deposit
       await this.token.approve(this.lendingPool.address, depositAmount, {
         from: providerAddress,
@@ -133,7 +139,7 @@ contract('Geist', function([_, user]) {
       );
     });
 
-    it('partial', async function() {
+    it('partial', async function () {
       const value = borrowAmount.div(new BN('2'));
       const to = this.hGeist.address;
       const data = abi.simpleEncode(
@@ -189,7 +195,7 @@ contract('Geist', function([_, user]) {
       profileGas(receipt);
     });
 
-    it('partial by ETH', async function() {
+    it('partial by ETH', async function () {
       const value = borrowAmount.div(new BN('2'));
       const to = this.hGeist.address;
       const data = abi.simpleEncode(
@@ -239,7 +245,7 @@ contract('Geist', function([_, user]) {
       profileGas(receipt);
     });
 
-    it('whole', async function() {
+    it('whole', async function () {
       const extraNeed = ether('1');
       const value = borrowAmount.add(extraNeed);
       const to = this.hGeist.address;
@@ -289,7 +295,7 @@ contract('Geist', function([_, user]) {
       profileGas(receipt);
     });
 
-    it('whole by ETH', async function() {
+    it('whole by ETH', async function () {
       const extraNeed = ether('1');
       const value = borrowAmount.add(extraNeed);
       const to = this.hGeist.address;
@@ -326,14 +332,12 @@ contract('Geist', function([_, user]) {
         ether('0').sub(borrowAmount)
       );
       expect(await balanceUser.delta()).to.be.bignumber.gt(
-        ether('0')
-          .sub(borrowAmount)
-          .sub(interestMax)
+        ether('0').sub(borrowAmount).sub(interestMax)
       );
       profileGas(receipt);
     });
 
-    it('should revert: not enough balance', async function() {
+    it('should revert: not enough balance', async function () {
       const value = ether('0.5');
       const to = this.hGeist.address;
       const data = abi.simpleEncode(
@@ -355,7 +359,7 @@ contract('Geist', function([_, user]) {
       );
     });
 
-    it('should revert: not supported token', async function() {
+    it('should revert: not supported token', async function () {
       const value = ether('0.5');
       const to = this.hGeist.address;
       const data = abi.simpleEncode(
@@ -373,7 +377,7 @@ contract('Geist', function([_, user]) {
       );
     });
 
-    it('should revert: wrong rate mode', async function() {
+    it('should revert: wrong rate mode', async function () {
       const value = ether('0.5');
       const to = this.hGeist.address;
       const unborrowedRateMode = (rateMode % 2) + 1;

@@ -3,9 +3,9 @@ const ethBeta = require('./addresses_eth_beta');
 const eth = require('./addresses_eth');
 const optimism = require('./addresses_optimism');
 const polygon = require('./addresses_polygon');
+const fantom = require('./addresses_fantom');
 const arbitrum = require('./addresses_arbitrum');
 const avalanche = require('./addresses_avalanche');
-const fantom = require('./addresses_fantom');
 
 module.exports =
   network.name == 'hardhat'
@@ -18,11 +18,11 @@ module.exports =
     ? optimism
     : network.name == 'polygon'
     ? polygon
+    : network.name == 'fantom'
+    ? fantom
     : network.name == 'arbitrum'
     ? arbitrum
     : network.name == 'avalanche'
     ? avalanche
-    : network.name == 'fantom'
-    ? fantom
     : console.log('Unsupported network name') & process.exit(0);
 module.exports.skip = async () => true;

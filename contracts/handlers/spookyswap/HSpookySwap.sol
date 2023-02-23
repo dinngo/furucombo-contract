@@ -27,11 +27,7 @@ contract HSpookySwap is HandlerBase {
     )
         external
         payable
-        returns (
-            uint256 amountToken,
-            uint256 amountETH,
-            uint256 liquidity
-        )
+        returns (uint256 amountToken, uint256 amountETH, uint256 liquidity)
     {
         // Get uniswapV2 router
         IUniswapV2Router02 router = IUniswapV2Router02(UNISWAPV2_ROUTER);
@@ -63,8 +59,11 @@ contract HSpookySwap is HandlerBase {
         _tokenApproveZero(token, UNISWAPV2_ROUTER);
 
         // Update involved token
-        address pair =
-            SpookySwapLibrary.pairFor(router.factory(), token, router.WETH());
+        address pair = SpookySwapLibrary.pairFor(
+            router.factory(),
+            token,
+            router.WETH()
+        );
         _updateToken(pair);
     }
 
@@ -78,11 +77,7 @@ contract HSpookySwap is HandlerBase {
     )
         external
         payable
-        returns (
-            uint256 amountA,
-            uint256 amountB,
-            uint256 liquidity
-        )
+        returns (uint256 amountA, uint256 amountB, uint256 liquidity)
     {
         // Get uniswapV2 router
         IUniswapV2Router02 router = IUniswapV2Router02(UNISWAPV2_ROUTER);
@@ -118,8 +113,11 @@ contract HSpookySwap is HandlerBase {
         _tokenApproveZero(tokenB, UNISWAPV2_ROUTER);
 
         // Update involved token
-        address pair =
-            SpookySwapLibrary.pairFor(router.factory(), tokenA, tokenB);
+        address pair = SpookySwapLibrary.pairFor(
+            router.factory(),
+            tokenA,
+            tokenB
+        );
         _updateToken(pair);
     }
 
@@ -131,8 +129,11 @@ contract HSpookySwap is HandlerBase {
     ) external payable returns (uint256 amountToken, uint256 amountETH) {
         // Get uniswapV2 router
         IUniswapV2Router02 router = IUniswapV2Router02(UNISWAPV2_ROUTER);
-        address pair =
-            SpookySwapLibrary.pairFor(router.factory(), token, router.WETH());
+        address pair = SpookySwapLibrary.pairFor(
+            router.factory(),
+            token,
+            router.WETH()
+        );
 
         // Approve token
         liquidity = _getBalance(pair, liquidity);
@@ -171,8 +172,11 @@ contract HSpookySwap is HandlerBase {
     ) external payable returns (uint256 amountA, uint256 amountB) {
         // Get uniswapV2 router
         IUniswapV2Router02 router = IUniswapV2Router02(UNISWAPV2_ROUTER);
-        address pair =
-            SpookySwapLibrary.pairFor(router.factory(), tokenA, tokenB);
+        address pair = SpookySwapLibrary.pairFor(
+            router.factory(),
+            tokenA,
+            tokenB
+        );
 
         // Approve token
         liquidity = _getBalance(pair, liquidity);
@@ -369,7 +373,6 @@ contract HSpookySwap is HandlerBase {
             _revertMsg("swapExactTokensForTokens");
         }
         _tokenApproveZero(tokenIn, UNISWAPV2_ROUTER);
-
         _updateToken(tokenOut);
     }
 
@@ -411,7 +414,6 @@ contract HSpookySwap is HandlerBase {
             _revertMsg("swapTokensForExactTokens");
         }
         _tokenApproveZero(tokenIn, UNISWAPV2_ROUTER);
-
         _updateToken(tokenOut);
     }
 }

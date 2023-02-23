@@ -24,7 +24,7 @@ const { expect } = require('chai');
 
 const {
   DAI_TOKEN,
-  GEIST_V2_PROVIDER,
+  GEIST_LENDING_POOL_PROVIDER,
   WETH_TOKEN,
   AAVE_RATEMODE,
   WRAPPED_NATIVE_TOKEN,
@@ -49,12 +49,12 @@ const IProviderV2 = artifacts.require('ILendingPoolAddressesProviderV2');
 const IVariableDebtToken = artifacts.require('IVariableDebtToken');
 const IStableDebtToken = artifacts.require('IStableDebtToken');
 
-contract('Geist flashloan', function([_, user, someone]) {
+contract('Geist flashloan', function ([_, user, someone]) {
   let id;
   let balanceUser;
   let balanceProxy;
 
-  before(async function() {
+  before(async function () {
     this.registry = await Registry.new();
     this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);
     this.proxy = await Proxy.new(
@@ -62,7 +62,10 @@ contract('Geist flashloan', function([_, user, someone]) {
       this.feeRuleRegistry.address
     );
     // Register geist handler
-    this.hGeist = await HGeist.new(WRAPPED_NATIVE_TOKEN, GEIST_V2_PROVIDER);
+    this.hGeist = await HGeist.new(
+      WRAPPED_NATIVE_TOKEN,
+      GEIST_LENDING_POOL_PROVIDER
+    );
     await this.registry.register(
       this.hGeist.address,
       utils.asciiToHex('Aave ProtocolV2')
@@ -72,7 +75,7 @@ contract('Geist flashloan', function([_, user, someone]) {
     await this.registry.register(this.hMock.address, utils.asciiToHex('Mock'));
 
     // Register geist lending pool for flashloan
-    this.provider = await IProviderV2.at(GEIST_V2_PROVIDER);
+    this.provider = await IProviderV2.at(GEIST_LENDING_POOL_PROVIDER);
     const lendingPoolAddress = await this.provider.getLendingPool.call();
     this.lendingPool = await ILendingPoolV2.at(lendingPoolAddress);
     await this.registry.registerCaller(lendingPoolAddress, this.hGeist.address);
@@ -84,8 +87,9 @@ contract('Geist flashloan', function([_, user, someone]) {
     this.tokenBProvider = await getTokenProvider(this.tokenB.address);
 
     this.gTokenB = await IToken.at(
-      (await this.lendingPool.getReserveData.call(this.tokenB.address))
-        .aTokenAddress
+      (
+        await this.lendingPool.getReserveData.call(this.tokenB.address)
+      ).aTokenAddress
     );
 
     tokenAReserveData = await this.lendingPool.getReserveData.call(
@@ -100,18 +104,18 @@ contract('Geist flashloan', function([_, user, someone]) {
     this.mockToken = await SimpleToken.new();
   });
 
-  beforeEach(async function() {
+  beforeEach(async function () {
     id = await evmSnapshot();
     balanceUser = await tracker(user);
     balanceProxy = await tracker(this.proxy.address);
   });
 
-  afterEach(async function() {
+  afterEach(async function () {
     await evmRevert(id);
   });
 
-  describe('Lending pool as handler', function() {
-    it('Will success if pool is registered as handler', async function() {
+  describe('Lending pool as handler', function () {
+    it('Will success if pool is registered as handler', async function () {
       await this.registry.register(
         this.lendingPool.address,
         this.hGeist.address
@@ -128,7 +132,7 @@ contract('Geist flashloan', function([_, user, someone]) {
       });
     });
 
-    it('Will revert if pool is registered as caller only', async function() {
+    it('Will revert if pool is registered as caller only', async function () {
       const to = this.lendingPool.address;
       const data = abi.simpleEncode(
         'initialize(address,bytes)',
@@ -145,8 +149,8 @@ contract('Geist flashloan', function([_, user, someone]) {
     });
   });
 
-  describe('Normal', function() {
-    beforeEach(async function() {
+  describe('Normal', function () {
+    beforeEach(async function () {
       await this.tokenA.transfer(this.faucet.address, ether('100'), {
         from: this.tokenAProvider,
       });
@@ -171,7 +175,7 @@ contract('Geist flashloan', function([_, user, someone]) {
       expectEqWithinBps(await this.gTokenB.balanceOf.call(user), depositAmount);
     });
 
-    it('single asset with no debt', async function() {
+    it('single asset with no debt', async function () {
       const value = ether('1');
       const params = _getFlashloanParams(
         [this.hMock.address],
@@ -206,7 +210,7 @@ contract('Geist flashloan', function([_, user, someone]) {
       expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
     });
 
-    it('single asset with variable rate by borrowing from itself', async function() {
+    it('single asset with variable rate by borrowing from itself', async function () {
       // Get flashloan params
       const value = ether('1');
       const params = _getFlashloanParams(
@@ -256,7 +260,7 @@ contract('Geist flashloan', function([_, user, someone]) {
       expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
     });
 
-    it('multiple assets with no debt', async function() {
+    it('multiple assets with no debt', async function () {
       const value = ether('1');
       const params = _getFlashloanParams(
         [this.hMock.address],
@@ -297,7 +301,7 @@ contract('Geist flashloan', function([_, user, someone]) {
       expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
     });
 
-    it('should revert: assets and amount do not match', async function() {
+    it('should revert: assets and amount do not match', async function () {
       const value = ether('1');
       const params = _getFlashloanParams(
         [this.hMock.address],
@@ -324,7 +328,7 @@ contract('Geist flashloan', function([_, user, someone]) {
       );
     });
 
-    it('should revert: assets and modes do not match', async function() {
+    it('should revert: assets and modes do not match', async function () {
       const value = ether('1');
       const params = _getFlashloanParams(
         [this.hMock.address],
@@ -351,7 +355,7 @@ contract('Geist flashloan', function([_, user, someone]) {
       );
     });
 
-    it('should revert: not approveDelegation to proxy', async function() {
+    it('should revert: not approveDelegation to proxy', async function () {
       const value = ether('1');
       const params = _getFlashloanParams(
         [this.hMock.address],
@@ -378,7 +382,7 @@ contract('Geist flashloan', function([_, user, someone]) {
       );
     });
 
-    it('should revert: not supported token', async function() {
+    it('should revert: not supported token', async function () {
       const value = ether('1');
       const params = _getFlashloanParams(
         [this.hMock.address],
@@ -406,8 +410,8 @@ contract('Geist flashloan', function([_, user, someone]) {
     });
   });
 
-  describe('Multiple Cubes', function() {
-    beforeEach(async function() {
+  describe('Multiple Cubes', function () {
+    beforeEach(async function () {
       tokenAUser = await this.tokenA.balanceOf.call(user);
       tokenBUser = await this.tokenB.balanceOf.call(user);
       await this.tokenA.transfer(this.faucet.address, ether('100'), {
@@ -418,7 +422,7 @@ contract('Geist flashloan', function([_, user, someone]) {
       });
     });
 
-    it('sequential', async function() {
+    it('sequential', async function () {
       const value = ether('1');
       // Setup 1st flashloan cube
       const params1 = _getFlashloanParams(
@@ -472,10 +476,7 @@ contract('Geist flashloan', function([_, user, someone]) {
         await this.tokenB.balanceOf.call(this.proxy.address)
       ).to.be.bignumber.zero;
 
-      const fee = value
-        .mul(new BN('9'))
-        .div(new BN('10000'))
-        .mul(new BN('2'));
+      const fee = value.mul(new BN('9')).div(new BN('10000')).mul(new BN('2'));
 
       expect(await this.tokenA.balanceOf.call(user)).to.be.bignumber.eq(
         tokenAUser.add(value.add(value)).sub(fee)
@@ -486,7 +487,7 @@ contract('Geist flashloan', function([_, user, someone]) {
       expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
     });
 
-    it('nested', async function() {
+    it('nested', async function () {
       // Get flashloan params
       const value = ether('1');
       const params1 = _getFlashloanParams(
@@ -538,10 +539,7 @@ contract('Geist flashloan', function([_, user, someone]) {
         await this.tokenB.balanceOf.call(this.proxy.address)
       ).to.be.bignumber.zero;
 
-      const fee = value
-        .mul(new BN('9'))
-        .div(new BN('10000'))
-        .mul(new BN('2'));
+      const fee = value.mul(new BN('9')).div(new BN('10000')).mul(new BN('2'));
 
       expect(await this.tokenA.balanceOf.call(user)).to.be.bignumber.eq(
         tokenAUser.add(value).sub(fee)
@@ -553,8 +551,8 @@ contract('Geist flashloan', function([_, user, someone]) {
     });
   });
 
-  describe('deposit', function() {
-    beforeEach(async function() {
+  describe('deposit', function () {
+    beforeEach(async function () {
       tokenAUser = await this.tokenA.balanceOf.call(user);
       tokenBUser = await this.tokenB.balanceOf.call(user);
       await this.tokenA.transfer(this.faucet.address, ether('100'), {
@@ -565,7 +563,7 @@ contract('Geist flashloan', function([_, user, someone]) {
       });
     });
 
-    it('deposit aaveV2 after flashloan', async function() {
+    it('deposit aaveV2 after flashloan', async function () {
       // Get flashloan params
       const value = ether('1');
       const depositValue = ether('0.5');
@@ -630,14 +628,14 @@ contract('Geist flashloan', function([_, user, someone]) {
     });
   });
 
-  describe('Non-proxy', function() {
-    beforeEach(async function() {
+  describe('Non-proxy', function () {
+    beforeEach(async function () {
       await this.tokenA.transfer(this.faucet.address, ether('100'), {
         from: this.tokenAProvider,
       });
     });
 
-    it('should revert: not initiated by the proxy', async function() {
+    it('should revert: not initiated by the proxy', async function () {
       const value = ether('1');
       // Setup 1st flashloan cube
       const params = _getFlashloanParams(
@@ -664,8 +662,8 @@ contract('Geist flashloan', function([_, user, someone]) {
     });
   });
 
-  describe('executeOperation', function() {
-    it('should revert: non-lending pool call executeOperation() directly', async function() {
+  describe('executeOperation', function () {
+    it('should revert: non-lending pool call executeOperation() directly', async function () {
       const data = abi.simpleEncode(
         'executeOperation(address[],uint256[],uint256[],address,bytes)',
         [],

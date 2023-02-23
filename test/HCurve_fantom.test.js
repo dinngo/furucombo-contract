@@ -52,10 +52,10 @@ const ICurveHandler = artifacts.require('ICurveHandler');
 const IToken = artifacts.require('IERC20');
 const IYToken = artifacts.require('IYToken');
 
-contract('Curve_fantom', function([_, user]) {
+contract('Curve_fantom', function ([_, user]) {
   const slippage = new BN('3');
   let id;
-  before(async function() {
+  before(async function () {
     this.registry = await Registry.new();
     this.hCurve = await HCurve.new();
     await this.registry.register(
@@ -75,15 +75,15 @@ contract('Curve_fantom', function([_, user]) {
     this.mai3PoolSwap = await ICurveHandler.at(CURVE_MAI3POOL_SWAP);
   });
 
-  beforeEach(async function() {
+  beforeEach(async function () {
     id = await evmSnapshot();
   });
 
-  afterEach(async function() {
+  afterEach(async function () {
     await evmRevert(id);
   });
 
-  describe('Exchange underlying', function() {
+  describe('Exchange underlying', function () {
     const token0Address = USDT_TOKEN;
     const token1Address = DAI_TOKEN;
 
@@ -91,20 +91,20 @@ contract('Curve_fantom', function([_, user]) {
     let token1User;
     let providerAddress;
 
-    before(async function() {
+    before(async function () {
       providerAddress = await getTokenProvider(token0Address);
 
       this.token0 = await IToken.at(token0Address);
       this.token1 = await IToken.at(token1Address);
     });
 
-    beforeEach(async function() {
+    beforeEach(async function () {
       token0User = await this.token0.balanceOf.call(user);
       token1User = await this.token1.balanceOf.call(user);
     });
 
-    describe('fUSDT pool', function() {
-      it('Exact input swap USDT to DAI by exchangeUnderlying', async function() {
+    describe('fUSDT pool', function () {
+      it('Exact input swap USDT to DAI by exchangeUnderlying', async function () {
         const value = new BN('1000000');
         const answer = await this.fUSDTSwap.methods[
           'get_dy_underlying(int128,int128,uint256)'
@@ -151,7 +151,7 @@ contract('Curve_fantom', function([_, user]) {
         profileGas(receipt);
       });
 
-      it('Exact input swap USDT to DAI by exchangeUnderlying with max amount', async function() {
+      it('Exact input swap USDT to DAI by exchangeUnderlying with max amount', async function () {
         const value = new BN('1000000');
         const answer = await this.fUSDTSwap.methods[
           'get_dy_underlying(int128,int128,uint256)'
@@ -199,8 +199,8 @@ contract('Curve_fantom', function([_, user]) {
       });
     });
 
-    describe('Geist pool', function() {
-      it('Exact input swap USDT to DAI by exchangeUnderlying', async function() {
+    describe('Geist pool', function () {
+      it('Exact input swap USDT to DAI by exchangeUnderlying', async function () {
         const value = new BN('1000000');
         const answer = await this.geistSwap.methods[
           'get_dy_underlying(int128,int128,uint256)'
@@ -247,7 +247,7 @@ contract('Curve_fantom', function([_, user]) {
         profileGas(receipt);
       });
 
-      it('Exact input swap USDT to DAI by exchangeUnderlying with max amount', async function() {
+      it('Exact input swap USDT to DAI by exchangeUnderlying with max amount', async function () {
         const value = new BN('1000000');
         const answer = await this.geistSwap.methods[
           'get_dy_underlying(int128,int128,uint256)'
@@ -296,8 +296,8 @@ contract('Curve_fantom', function([_, user]) {
     });
   });
 
-  describe('Exchange', function() {
-    describe('2pool', function() {
+  describe('Exchange', function () {
+    describe('2pool', function () {
       const token0Address = DAI_TOKEN;
       const token1Address = USDC_TOKEN;
 
@@ -305,18 +305,18 @@ contract('Curve_fantom', function([_, user]) {
       let token1User;
       let providerAddress;
 
-      before(async function() {
+      before(async function () {
         providerAddress = await getTokenProvider(token0Address);
         this.token0 = await IToken.at(token0Address);
         this.token1 = await IToken.at(token1Address);
       });
 
-      beforeEach(async function() {
+      beforeEach(async function () {
         token0User = await this.token0.balanceOf.call(user);
         token1User = await this.token1.balanceOf.call(user);
       });
 
-      it('Exact input swap DAI to USDC by exchange', async function() {
+      it('Exact input swap DAI to USDC by exchange', async function () {
         const value = ether('1');
         const answer = await this.twoSwap.methods[
           'get_dy(int128,int128,uint256)'
@@ -359,7 +359,7 @@ contract('Curve_fantom', function([_, user]) {
           token0User
         );
         // get_dy flow is different from exchange,
-        // so give 1 wei tolerance for DAI/USDT case.
+        // so give 1 wei tolerance for DAI/USDC case.
         expect(await this.token1.balanceOf.call(user)).to.be.bignumber.gte(
           token1User.add(answer).sub(new BN('1'))
         );
@@ -369,7 +369,7 @@ contract('Curve_fantom', function([_, user]) {
         profileGas(receipt);
       });
 
-      it('Exact input swap DAI to USDC by exchange with max amount', async function() {
+      it('Exact input swap DAI to USDC by exchange with max amount', async function () {
         const value = ether('1');
         const answer = await this.twoSwap.methods[
           'get_dy(int128,int128,uint256)'
@@ -410,7 +410,7 @@ contract('Curve_fantom', function([_, user]) {
           token0User
         );
         // get_dy flow is different from exchange,
-        // so give 1 wei tolerance for DAI/USDT case.
+        // so give 1 wei tolerance for DAI/USDC case.
         expect(await this.token1.balanceOf.call(user)).to.be.bignumber.gte(
           token1User.add(answer).sub(new BN('1'))
         );
@@ -421,7 +421,7 @@ contract('Curve_fantom', function([_, user]) {
       });
     });
 
-    describe('mai 3pool', function() {
+    describe('mai 3pool', function () {
       const token0Address = USDT_TOKEN;
       const token1Address = MIMATIC_TOKEN;
 
@@ -429,18 +429,18 @@ contract('Curve_fantom', function([_, user]) {
       let token1User;
       let providerAddress;
 
-      before(async function() {
+      before(async function () {
         providerAddress = await getTokenProvider(token0Address);
         this.token0 = await IToken.at(token0Address);
         this.token1 = await IToken.at(token1Address);
       });
 
-      beforeEach(async function() {
+      beforeEach(async function () {
         token0User = await this.token0.balanceOf.call(user);
         token1User = await this.token1.balanceOf.call(user);
       });
 
-      it('Exact input swap DAI to miMATIC by exchange', async function() {
+      it('Exact input swap DAI to miMATIC by exchange', async function () {
         const value = new BN('100000000');
         const answer = await this.mai3PoolSwap.methods[
           'get_dy(int128,int128,uint256)'
@@ -483,7 +483,7 @@ contract('Curve_fantom', function([_, user]) {
           token0User
         );
         // get_dy flow is different from exchange,
-        // so give 1 wei tolerance for DAI/USDT case.
+        // so give 1 wei tolerance for DAI/miMATIC case.
         expect(await this.token1.balanceOf.call(user)).to.be.bignumber.gte(
           token1User.add(answer).sub(new BN('1'))
         );
@@ -493,7 +493,7 @@ contract('Curve_fantom', function([_, user]) {
         profileGas(receipt);
       });
 
-      it('Exact input swap DAI to miMATIC by exchange with max amount', async function() {
+      it('Exact input swap DAI to miMATIC by exchange with max amount', async function () {
         const value = new BN('100000000');
         const answer = await this.mai3PoolSwap.methods[
           'get_dy(int128,int128,uint256)'
@@ -534,7 +534,7 @@ contract('Curve_fantom', function([_, user]) {
           token0User
         );
         // get_dy flow is different from exchange,
-        // so give 1 wei tolerance for DAI/USDT case.
+        // so give 1 wei tolerance for DAI/miMATIC case.
         expect(await this.token1.balanceOf.call(user)).to.be.bignumber.gte(
           token1User.add(answer).sub(new BN('1'))
         );
@@ -546,8 +546,8 @@ contract('Curve_fantom', function([_, user]) {
     });
   });
 
-  describe('Liquidity', function() {
-    describe('2pool', function() {
+  describe('Liquidity', function () {
+    describe('2pool', function () {
       const token0Address = DAI_TOKEN;
       const token1Address = USDC_TOKEN;
       const poolTokenAddress = CURVE_2POOLCRV;
@@ -559,7 +559,7 @@ contract('Curve_fantom', function([_, user]) {
       let provider1Address;
       let poolTokenProvider;
 
-      before(async function() {
+      before(async function () {
         provider0Address = await getTokenProvider(token0Address);
         provider1Address = await getTokenProvider(token1Address);
         poolTokenProvider = await tokenProviderCurveGauge(poolTokenAddress);
@@ -570,13 +570,13 @@ contract('Curve_fantom', function([_, user]) {
         this.poolToken = await IToken.at(poolTokenAddress);
       });
 
-      beforeEach(async function() {
+      beforeEach(async function () {
         token0User = await this.token0.balanceOf.call(user);
         token1User = await this.token1.balanceOf.call(user);
         poolTokenUser = await this.poolToken.balanceOf.call(user);
       });
 
-      it('add DAI and USDC to pool by addLiquidity', async function() {
+      it('add DAI and USDC to pool by addLiquidity', async function () {
         const token0Amount = ether('1');
         const token1Amount = new BN('2000000');
         const tokens = [this.token0.address, this.token1.address];
@@ -650,7 +650,7 @@ contract('Curve_fantom', function([_, user]) {
         profileGas(receipt);
       });
 
-      it('add DAI and USDC to pool by addLiquidity with max amount', async function() {
+      it('add DAI and USDC to pool by addLiquidity with max amount', async function () {
         const token0Amount = ether('1');
         const token1Amount = new BN('2000000');
         const tokens = [this.token0.address, this.token1.address];
@@ -724,7 +724,7 @@ contract('Curve_fantom', function([_, user]) {
         profileGas(receipt);
       });
 
-      it('remove from pool to USDC by removeLiquidityOneCoin', async function() {
+      it('remove from pool to USDC by removeLiquidityOneCoin', async function () {
         const poolTokenUser = ether('0.1');
         const token1UserBefore = await this.token1.balanceOf.call(user);
         const answer = await this.twoSwap.methods[
@@ -778,7 +778,7 @@ contract('Curve_fantom', function([_, user]) {
         profileGas(receipt);
       });
 
-      it('remove from pool to USDC by removeLiquidityOneCoin with max amount', async function() {
+      it('remove from pool to USDC by removeLiquidityOneCoin with max amount', async function () {
         const poolTokenUser = ether('0.1');
         const token1UserBefore = await this.token1.balanceOf.call(user);
         const answer = await this.twoSwap.methods[
@@ -833,7 +833,7 @@ contract('Curve_fantom', function([_, user]) {
       });
     });
 
-    describe('tricrypto', function() {
+    describe('tricrypto', function () {
       const token0Address = USDT_TOKEN;
       const token1Address = WETH_TOKEN;
       const poolTokenAddress = CURVE_TRICRYPTOCRV;
@@ -844,7 +844,7 @@ contract('Curve_fantom', function([_, user]) {
       let provider0Address;
       let provider1Address;
 
-      before(async function() {
+      before(async function () {
         provider0Address = await getTokenProvider(token0Address);
         provider1Address = await getTokenProvider(token1Address);
 
@@ -856,13 +856,13 @@ contract('Curve_fantom', function([_, user]) {
         this.poolToken = await IToken.at(poolTokenAddress);
       });
 
-      beforeEach(async function() {
+      beforeEach(async function () {
         token0User = await this.token0.balanceOf.call(user);
         token1User = await this.token1.balanceOf.call(user);
         poolTokenUser = await this.poolToken.balanceOf.call(user);
       });
 
-      it('add USDT and WETH to pool by addLiquidity', async function() {
+      it('add USDT and WETH to pool by addLiquidity', async function () {
         const token0Amount = new BN('2000000');
         const token1Amount = ether('1');
         const tokens = [
@@ -940,7 +940,7 @@ contract('Curve_fantom', function([_, user]) {
         profileGas(receipt);
       });
 
-      it('add USDT and WETH to pool by addLiquidity with max amount', async function() {
+      it('add USDT and WETH to pool by addLiquidity with max amount', async function () {
         const token0Amount = new BN('2000000');
         const token1Amount = ether('1');
         const tokens = [
@@ -1018,7 +1018,7 @@ contract('Curve_fantom', function([_, user]) {
         profileGas(receipt);
       });
 
-      it('remove from pool to USDT by removeLiquidityOneCoin', async function() {
+      it('remove from pool to USDT by removeLiquidityOneCoin', async function () {
         const poolTokenUser = ether('0.1');
         const token1UserBefore = await this.token1.balanceOf.call(user);
         const answer = await this.tricryptoSwap.methods[
@@ -1074,7 +1074,7 @@ contract('Curve_fantom', function([_, user]) {
         profileGas(receipt);
       });
 
-      it('remove from pool to USDC by removeLiquidityOneCoin with max amount', async function() {
+      it('remove from pool to USDC by removeLiquidityOneCoin with max amount', async function () {
         const poolTokenUser = ether('0.1');
         const token1UserBefore = await this.token1.balanceOf.call(user);
         const answer = await this.tricryptoSwap.methods[
@@ -1129,7 +1129,7 @@ contract('Curve_fantom', function([_, user]) {
       });
     });
 
-    describe('geist pool', function() {
+    describe('geist pool', function () {
       const token0Address = DAI_TOKEN;
       const token1Address = USDC_TOKEN;
       const poolTokenAddress = CURVE_GEISTCRV;
@@ -1140,7 +1140,7 @@ contract('Curve_fantom', function([_, user]) {
       let provider0Address;
       let provider1Address;
 
-      before(async function() {
+      before(async function () {
         provider0Address = await getTokenProvider(token0Address);
         provider1Address = await getTokenProvider(token1Address);
 
@@ -1152,13 +1152,13 @@ contract('Curve_fantom', function([_, user]) {
         this.poolToken = await IToken.at(poolTokenAddress);
       });
 
-      beforeEach(async function() {
+      beforeEach(async function () {
         token0User = await this.token0.balanceOf.call(user);
         token1User = await this.token1.balanceOf.call(user);
         poolTokenUser = await this.poolToken.balanceOf.call(user);
       });
 
-      it('add DAI and USDC to pool by addLiquidityUnderlying', async function() {
+      it('add DAI and USDC to pool by addLiquidityUnderlying', async function () {
         const token0Amount = ether('1');
         const token1Amount = new BN('2000000');
         const tokens = [
@@ -1236,7 +1236,7 @@ contract('Curve_fantom', function([_, user]) {
         profileGas(receipt);
       });
 
-      it('add DAI and USDC to pool by addLiquidityUnderlying with max amount', async function() {
+      it('add DAI and USDC to pool by addLiquidityUnderlying with max amount', async function () {
         const token0Amount = ether('1');
         const token1Amount = new BN('2000000');
         const tokens = [
@@ -1314,7 +1314,7 @@ contract('Curve_fantom', function([_, user]) {
         profileGas(receipt);
       });
 
-      it('remove from pool to USDC by removeLiquidityOneCoinUnderlying', async function() {
+      it('remove from pool to USDC by removeLiquidityOneCoinUnderlying', async function () {
         const poolTokenUser = ether('0.1');
         const token1UserBefore = await this.token1.balanceOf.call(user);
         const answer = await this.geistSwap.methods[
@@ -1368,7 +1368,7 @@ contract('Curve_fantom', function([_, user]) {
         profileGas(receipt);
       });
 
-      it('remove from pool to USDC by removeLiquidityOneCoinUnderlying with max amount', async function() {
+      it('remove from pool to USDC by removeLiquidityOneCoinUnderlying with max amount', async function () {
         const poolTokenUser = ether('0.1');
         const token1UserBefore = await this.token1.balanceOf.call(user);
         const answer = await this.geistSwap.methods[
@@ -1425,8 +1425,8 @@ contract('Curve_fantom', function([_, user]) {
     });
   });
 
-  describe('Liquidity with deposit contract', function() {
-    describe('fUSDT pool', function() {
+  describe('Liquidity with deposit contract', function () {
+    describe('fUSDT pool', function () {
       const token0Address = DAI_TOKEN;
       const token1Address = USDC_TOKEN;
       const poolTokenAddress = CURVE_FUSDTCRV;
@@ -1438,7 +1438,7 @@ contract('Curve_fantom', function([_, user]) {
       let provider1Address;
       let poolTokenProvider;
 
-      before(async function() {
+      before(async function () {
         provider0Address = await getTokenProvider(token0Address);
         provider1Address = await getTokenProvider(token1Address);
         // await impersonateAndInjectEther(poolTokenProvider);
@@ -1448,12 +1448,12 @@ contract('Curve_fantom', function([_, user]) {
         this.token1 = await IToken.at(token1Address);
         this.poolToken = await IToken.at(poolTokenAddress);
       });
-      beforeEach(async function() {
+      beforeEach(async function () {
         token0User = await this.token0.balanceOf.call(user);
         token1User = await this.token1.balanceOf.call(user);
         poolTokenUser = await this.poolToken.balanceOf.call(user);
       });
-      it('add DAI and USDC to pool by addLiquidity', async function() {
+      it('add DAI and USDC to pool by addLiquidity', async function () {
         const token0Amount = ether('1000');
         const token1Amount = new BN('1000000000');
         // Get expected answer
@@ -1526,7 +1526,7 @@ contract('Curve_fantom', function([_, user]) {
         );
         profileGas(receipt);
       });
-      it('add DAI and USDT to pool by addLiquidity with max amount', async function() {
+      it('add DAI and USDT to pool by addLiquidity with max amount', async function () {
         const token0Amount = ether('1000');
         const token1Amount = new BN('1000000000');
         // Get expected answer
@@ -1600,7 +1600,7 @@ contract('Curve_fantom', function([_, user]) {
         profileGas(receipt);
       });
 
-      it('remove from pool to USDC by removeLiquidityOneCoin', async function() {
+      it('remove from pool to USDC by removeLiquidityOneCoin', async function () {
         const token1UserBefore = await this.token1.balanceOf.call(user);
         const poolTokenUser = ether('1');
         const answer = await this.fUSDTDeposit.methods[

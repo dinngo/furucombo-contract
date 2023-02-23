@@ -14,13 +14,18 @@ import "../aavev2/libraries/DataTypes.sol";
 contract HGeist is HandlerBase, IFlashLoanReceiver {
     using SafeERC20 for IERC20;
 
-    uint16 public constant REFERRAL_CODE = 0;
+    uint16 public immutable referralCode;
     address public immutable provider;
     address public immutable wrappedNativeToken;
 
-    constructor(address wrappedNativeToken_, address provider_) {
+    constructor(
+        address wrappedNativeToken_,
+        address provider_,
+        uint16 referralCode_
+    ) {
         wrappedNativeToken = wrappedNativeToken_;
         provider = provider_;
+        referralCode = referralCode_;
     }
 
     function getContractName() public pure override returns (string memory) {
@@ -40,21 +45,18 @@ contract HGeist is HandlerBase, IFlashLoanReceiver {
         _updateToken(wrappedNativeToken);
     }
 
-    function withdraw(address asset, uint256 amount)
-        external
-        payable
-        returns (uint256 withdrawAmount)
-    {
+    function withdraw(
+        address asset,
+        uint256 amount
+    ) external payable returns (uint256 withdrawAmount) {
         withdrawAmount = _withdraw(asset, amount);
 
         _updateToken(asset);
     }
 
-    function withdrawETH(uint256 amount)
-        external
-        payable
-        returns (uint256 withdrawAmount)
-    {
+    function withdrawETH(
+        uint256 amount
+    ) external payable returns (uint256 withdrawAmount) {
         withdrawAmount = _withdraw(wrappedNativeToken, amount);
         IWrappedNativeToken(wrappedNativeToken).withdraw(withdrawAmount);
     }
@@ -114,8 +116,8 @@ contract HGeist is HandlerBase, IFlashLoanReceiver {
         );
 
         address onBehalfOf = _getSender();
-        address pool =
-            ILendingPoolAddressesProviderV2(provider).getLendingPool();
+        address pool = ILendingPoolAddressesProviderV2(provider)
+            .getLendingPool();
 
         try
             ILendingPoolV2(pool).flashLoan(
@@ -125,7 +127,7 @@ contract HGeist is HandlerBase, IFlashLoanReceiver {
                 modes,
                 onBehalfOf,
                 params,
-                REFERRAL_CODE
+                referralCode
             )
         {} catch Error(string memory reason) {
             _revertMsg("flashLoan", reason);
@@ -160,12 +162,15 @@ contract HGeist is HandlerBase, IFlashLoanReceiver {
             "not initiated by the proxy"
         );
 
-        (address[] memory tos, bytes32[] memory configs, bytes[] memory datas) =
-            abi.decode(params, (address[], bytes32[], bytes[]));
+        (
+            address[] memory tos,
+            bytes32[] memory configs,
+            bytes[] memory datas
+        ) = abi.decode(params, (address[], bytes32[], bytes[]));
         IProxy(address(this)).execs(tos, configs, datas);
 
-        address pool =
-            ILendingPoolAddressesProviderV2(provider).getLendingPool();
+        address pool = ILendingPoolAddressesProviderV2(provider)
+            .getLendingPool();
         for (uint256 i = 0; i < assets.length; i++) {
             uint256 amountOwing = amounts[i] + premiums[i];
             _tokenApprove(assets[i], pool, amountOwing);
@@ -184,7 +189,7 @@ contract HGeist is HandlerBase, IFlashLoanReceiver {
                 asset,
                 amount,
                 address(this),
-                REFERRAL_CODE
+                referralCode
             )
         {} catch Error(string memory reason) {
             _revertMsg("deposit", reason);
@@ -195,10 +200,10 @@ contract HGeist is HandlerBase, IFlashLoanReceiver {
         _updateToken(aToken);
     }
 
-    function _withdraw(address asset, uint256 amount)
-        internal
-        returns (uint256 withdrawAmount)
-    {
+    function _withdraw(
+        address asset,
+        uint256 amount
+    ) internal returns (uint256 withdrawAmount) {
         (address pool, address aToken) = _getLendingPoolAndAToken(asset);
         amount = _getBalance(aToken, amount);
 
@@ -219,8 +224,8 @@ contract HGeist is HandlerBase, IFlashLoanReceiver {
         uint256 rateMode,
         address onBehalfOf
     ) internal returns (uint256 remainDebt) {
-        address pool =
-            ILendingPoolAddressesProviderV2(provider).getLendingPool();
+        address pool = ILendingPoolAddressesProviderV2(provider)
+            .getLendingPool();
         _tokenApprove(asset, pool, amount);
 
         try
@@ -232,8 +237,8 @@ contract HGeist is HandlerBase, IFlashLoanReceiver {
         }
         _tokenApproveZero(asset, pool);
 
-        DataTypes.ReserveData memory reserve =
-            ILendingPoolV2(pool).getReserveData(asset);
+        DataTypes.ReserveData memory reserve = ILendingPoolV2(pool)
+            .getReserveData(asset);
         remainDebt = DataTypes.InterestRateMode(rateMode) ==
             DataTypes.InterestRateMode.STABLE
             ? IERC20(reserve.stableDebtTokenAddress).balanceOf(onBehalfOf)
@@ -246,15 +251,15 @@ contract HGeist is HandlerBase, IFlashLoanReceiver {
         uint256 rateMode,
         address onBehalfOf
     ) internal {
-        address pool =
-            ILendingPoolAddressesProviderV2(provider).getLendingPool();
+        address pool = ILendingPoolAddressesProviderV2(provider)
+            .getLendingPool();
 
         try
             ILendingPoolV2(pool).borrow(
                 asset,
                 amount,
                 rateMode,
-                REFERRAL_CODE,
+                referralCode,
                 onBehalfOf
             )
         {} catch Error(string memory reason) {
@@ -264,11 +269,9 @@ contract HGeist is HandlerBase, IFlashLoanReceiver {
         }
     }
 
-    function _getLendingPoolAndAToken(address underlying)
-        internal
-        view
-        returns (address pool, address aToken)
-    {
+    function _getLendingPoolAndAToken(
+        address underlying
+    ) internal view returns (address pool, address aToken) {
         pool = ILendingPoolAddressesProviderV2(provider).getLendingPool();
         try ILendingPoolV2(pool).getReserveData(underlying) returns (
             DataTypes.ReserveData memory data

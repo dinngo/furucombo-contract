@@ -83,6 +83,10 @@ module.exports = {
       url: process.env.POLYGON_RPC_URL || 'https://rpc.ankr.com/polygon',
       accounts: accounts(process.env.POLYGON_SECRET),
     },
+    fantom: {
+      url: process.env.FANTOM_RPC_URL || 'https://rpc.ankr.com/fantom',
+      accounts: accounts(process.env.FANTOM_SECRET),
+    },
     arbitrum: {
       url: process.env.ARBITRUM_RPC_URL || 'https://arb1.arbitrum.io/rpc',
       accounts: accounts(process.env.ARBITRUM_SECRET),
@@ -92,10 +96,6 @@ module.exports = {
         process.env.AVALANCHE_RPC_URL ||
         'https://api.avax.network/ext/bc/C/rpc',
       accounts: accounts(process.env.AVALANCHE_SECRET),
-    },
-    fantom: {
-      url: process.env.FANTOM_RPC_URL || 'https://rpc.ankr.com/fantom',
-      accounts: accounts(process.env.FANTOM_SECRET),
     },
   },
   mocha: {

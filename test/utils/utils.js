@@ -167,10 +167,10 @@ async function getTokenProvider(
       : provider;
   } else if (chainId == 137) {
     return await tokenProviderQuick(token0, token1);
-  } else if (chainId == 43114) {
-    return await tokenProviderTraderJoe(token0, WAVAX_TOKEN);
   } else if (chainId == 250) {
     return await tokenProviderSpookySwap(token0, WFTM_TOKEN);
+  } else if (chainId == 43114) {
+    return await tokenProviderTraderJoe(token0, WAVAX_TOKEN);
   }
 }
 
