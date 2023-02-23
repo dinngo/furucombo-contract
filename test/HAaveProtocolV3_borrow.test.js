@@ -419,7 +419,8 @@ contract('Aave V3', function ([_, user, someone]) {
     });
 
     it('should revert: borrow token over the collateral value', async function () {
-      const borrowAmount = chainId == 137 ? ether('20000') : ether('6000');
+      const borrowAmount =
+        chainId == 137 || chainId == 43114 ? ether('20000') : ether('50');
       const to = this.hAaveV3.address;
       const data = abi.simpleEncode(
         'borrow(address,uint256,uint256)',
