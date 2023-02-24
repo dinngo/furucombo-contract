@@ -280,7 +280,7 @@ contract HGeist is HandlerBase, IFlashLoanReceiver {
             _requireMsg(
                 aToken != address(0),
                 "General",
-                "aToken should not be zero address"
+                "gToken should not be zero address"
             );
         } catch Error(string memory reason) {
             _revertMsg("General", reason);

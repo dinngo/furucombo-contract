@@ -1,0 +1,95 @@
+polygon_test_0:
+  variables:
+    JOB_INDEX: 0
+    RUNNER_COUNT: 12
+    RPC_URL: ${FANTOM_RPC_URL}
+    CHAIN_ID: 250
+  extends: .test_template
+
+polygon_test_1:
+  variables:
+    JOB_INDEX: 1
+    RUNNER_COUNT: 12
+    RPC_URL: ${FANTOM_RPC_URL}
+    CHAIN_ID: 250
+  extends: .test_template
+
+polygon_test_2:
+  variables:
+    JOB_INDEX: 2
+    RUNNER_COUNT: 12
+    RPC_URL: ${FANTOM_RPC_URL}
+    CHAIN_ID: 250
+  extends: .test_template
+
+polygon_test_3:
+  variables:
+    JOB_INDEX: 3
+    RUNNER_COUNT: 12
+    RPC_URL: ${FANTOM_RPC_URL}
+    CHAIN_ID: 250
+  extends: .test_template
+
+polygon_test_4:
+  variables:
+    JOB_INDEX: 4
+    RUNNER_COUNT: 12
+    RPC_URL: ${FANTOM_RPC_URL}
+    CHAIN_ID: 250
+  extends: .test_template
+
+polygon_test_5:
+  variables:
+    JOB_INDEX: 5
+    RUNNER_COUNT: 12
+    RPC_URL: ${FANTOM_RPC_URL}
+    CHAIN_ID: 250
+  extends: .test_template
+
+polygon_test_6:
+  variables:
+    JOB_INDEX: 6
+    RUNNER_COUNT: 12
+    RPC_URL: ${FANTOM_RPC_URL}
+    CHAIN_ID: 250
+  extends: .test_template
+
+polygon_test_7:
+  variables:
+    JOB_INDEX: 7
+    RUNNER_COUNT: 12
+    RPC_URL: ${FANTOM_RPC_URL}
+    CHAIN_ID: 250
+  extends: .test_template
+
+polygon_test_8:
+  variables:
+    JOB_INDEX: 8
+    RUNNER_COUNT: 12
+    RPC_URL: ${FANTOM_RPC_URL}
+    CHAIN_ID: 250
+  extends: .test_template
+
+polygon_test_9:
+  variables:
+    JOB_INDEX: 9
+    RUNNER_COUNT: 12
+    RPC_URL: ${FANTOM_RPC_URL}
+    CHAIN_ID: 250
+  extends: .test_template
+
+polygon_test_10:
+  variables:
+    JOB_INDEX: 10
+    RUNNER_COUNT: 12
+    RPC_URL: ${FANTOM_RPC_URL}
+    CHAIN_ID: 250
+  extends: .test_template
+
+polygon_test_11:
+  variables:
+    JOB_INDEX: 11
+    RUNNER_COUNT: 12
+    RPC_URL: ${FANTOM_RPC_URL}
+    CHAIN_ID: 250
+  extends: .test_template

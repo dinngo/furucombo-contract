@@ -15,10 +15,8 @@ const {
 } = require('@openzeppelin/test-helpers');
 const { MAX_UINT256 } = constants;
 const { tracker } = balance;
-const { latest } = time;
 const abi = require('ethereumjs-abi');
 const utils = web3.utils;
-
 const { expect } = require('chai');
 
 const {
@@ -27,6 +25,7 @@ const {
   WRAPPED_NATIVE_TOKEN,
   GWRAPPED_NATIVE_TOKEN,
 } = require('./utils/constants');
+
 const {
   evmRevert,
   evmSnapshot,
@@ -87,7 +86,7 @@ contract('Geist', function ([_, user]) {
       ).aTokenAddress
     );
     this.wrappedNativeToken = await IToken.at(wrappedNativeTokenAddress);
-    this.aWrappedNativeToken = await IGToken.at(gWrappedNativeTokenAddress);
+    this.gWrappedNativeToken = await IGToken.at(gWrappedNativeTokenAddress);
     this.mockToken = await SimpleToken.new();
   });
 
@@ -114,10 +113,10 @@ contract('Geist', function ([_, user]) {
         });
         expect(await balanceProxy.get()).to.be.bignumber.zero;
         expect(
-          await this.aWrappedNativeToken.balanceOf.call(this.proxy.address)
+          await this.gWrappedNativeToken.balanceOf.call(this.proxy.address)
         ).to.be.bignumber.zero;
         expectEqWithinBps(
-          await this.aWrappedNativeToken.balanceOf.call(user),
+          await this.gWrappedNativeToken.balanceOf.call(user),
           value,
           100
         );
@@ -138,10 +137,10 @@ contract('Geist', function ([_, user]) {
         });
         expect(await balanceProxy.get()).to.be.bignumber.zero;
         expect(
-          await this.aWrappedNativeToken.balanceOf.call(this.proxy.address)
+          await this.gWrappedNativeToken.balanceOf.call(this.proxy.address)
         ).to.be.bignumber.zero;
         expectEqWithinBps(
-          await this.aWrappedNativeToken.balanceOf.call(user),
+          await this.gWrappedNativeToken.balanceOf.call(user),
           value,
           100
         );
@@ -245,17 +244,17 @@ contract('Geist', function ([_, user]) {
           { from: wethProviderAddress }
         );
 
-        depositAmount = await this.aWrappedNativeToken.balanceOf.call(user);
+        depositAmount = await this.gWrappedNativeToken.balanceOf.call(user);
       });
 
       it('partial', async function () {
         const value = depositAmount.div(new BN(2));
         const to = this.hGeist.address;
         const data = abi.simpleEncode('withdrawETH(uint256)', value);
-        await this.aWrappedNativeToken.transfer(this.proxy.address, value, {
+        await this.gWrappedNativeToken.transfer(this.proxy.address, value, {
           from: user,
         });
-        await this.proxy.updateTokenMock(this.aWrappedNativeToken.address);
+        await this.proxy.updateTokenMock(this.gWrappedNativeToken.address);
         await balanceUser.get();
 
         const receipt = await this.proxy.execMock(to, data, {
@@ -267,7 +266,7 @@ contract('Geist', function ([_, user]) {
         const handlerReturn = utils.toBN(
           getHandlerReturn(receipt, ['uint256'])[0]
         );
-        const gTokenUserAfter = await this.aWrappedNativeToken.balanceOf.call(
+        const gTokenUserAfter = await this.gWrappedNativeToken.balanceOf.call(
           user
         );
         const interestMax = depositAmount.mul(new BN(1)).div(new BN(10000));
@@ -276,7 +275,7 @@ contract('Geist', function ([_, user]) {
         expect(value).to.be.bignumber.eq(handlerReturn);
         // Verify proxy balance
         expect(
-          await this.aWrappedNativeToken.balanceOf.call(this.proxy.address)
+          await this.gWrappedNativeToken.balanceOf.call(this.proxy.address)
         ).to.be.bignumber.zero;
         // Verify user balance
         // (deposit - withdraw - 1) <= gTokenAfter < (deposit + interestMax - withdraw)
@@ -294,10 +293,10 @@ contract('Geist', function ([_, user]) {
         const value = depositAmount.div(new BN(2));
         const to = this.hGeist.address;
         const data = abi.simpleEncode('withdrawETH(uint256)', MAX_UINT256);
-        await this.aWrappedNativeToken.transfer(this.proxy.address, value, {
+        await this.gWrappedNativeToken.transfer(this.proxy.address, value, {
           from: user,
         });
-        await this.proxy.updateTokenMock(this.aWrappedNativeToken.address);
+        await this.proxy.updateTokenMock(this.gWrappedNativeToken.address);
         await balanceUser.get();
 
         const receipt = await this.proxy.execMock(to, data, {
@@ -309,7 +308,7 @@ contract('Geist', function ([_, user]) {
         const handlerReturn = utils.toBN(
           getHandlerReturn(receipt, ['uint256'])[0]
         );
-        const gTokenUserAfter = await this.aWrappedNativeToken.balanceOf.call(
+        const gTokenUserAfter = await this.gWrappedNativeToken.balanceOf.call(
           user
         );
         const interestMax = depositAmount.mul(new BN(1)).div(new BN(10000));
@@ -322,7 +321,7 @@ contract('Geist', function ([_, user]) {
 
         // Verify proxy balance
         expect(
-          await this.aWrappedNativeToken.balanceOf.call(this.proxy.address)
+          await this.gWrappedNativeToken.balanceOf.call(this.proxy.address)
         ).to.be.bignumber.zero;
         // Verify user balance
         // (deposit - withdraw) <= gTokenAfter < (deposit + interestMax - withdraw)

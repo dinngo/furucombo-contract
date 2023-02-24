@@ -6,7 +6,6 @@ if (network.config.chainId == 250) {
 
 const { balance, BN, ether, constants } = require('@openzeppelin/test-helpers');
 const { web3 } = require('@openzeppelin/test-helpers/src/setup');
-const { tracker } = balance;
 const { MAX_UINT256 } = constants;
 const { expect } = require('chai');
 const abi = require('ethereumjs-abi');
@@ -29,7 +28,6 @@ const {
   CURVE_GEIST_GAUGE,
   CURVE_2POOL_GAUGE,
   CURVE_TRICRYPTO_GAUGE,
-  CURVE_FUSDT_GAUGE,
   CURVE_FUSDT_DEPOSIT,
 } = require('./utils/constants');
 const {
@@ -41,7 +39,6 @@ const {
   getTokenProvider,
   tokenProviderCurveGauge,
   impersonateAndInjectEther,
-  expectEqWithinBps,
 } = require('./utils/utils');
 
 const FeeRuleRegistry = artifacts.require('FeeRuleRegistry');
@@ -50,7 +47,6 @@ const Registry = artifacts.require('Registry');
 const HCurve = artifacts.require('HCurve');
 const ICurveHandler = artifacts.require('ICurveHandler');
 const IToken = artifacts.require('IERC20');
-const IYToken = artifacts.require('IYToken');
 
 contract('Curve_fantom', function ([_, user]) {
   const slippage = new BN('3');
@@ -607,7 +603,7 @@ contract('Curve_fantom', function ([_, user]) {
           token0User
         );
         // get_dy flow is different from exchange,
-        // so give 1 wei tolerance for DAI/miMATIC case.
+        // so give 1 wei tolerance for USDT/WETH case.
         expect(await this.token1.balanceOf.call(user)).to.be.bignumber.gte(
           token1User.add(answer).sub(new BN('1'))
         );
@@ -658,7 +654,7 @@ contract('Curve_fantom', function ([_, user]) {
           token0User
         );
         // get_dy flow is different from exchange,
-        // so give 1 wei tolerance for DAI/miMATIC case.
+        // so give 1 wei tolerance for USDT/WETH case.
         expect(await this.token1.balanceOf.call(user)).to.be.bignumber.gte(
           token1User.add(answer).sub(new BN('1'))
         );
@@ -675,7 +671,6 @@ contract('Curve_fantom', function ([_, user]) {
       const token0Address = DAI_TOKEN;
       const token1Address = USDC_TOKEN;
       const poolTokenAddress = CURVE_2POOLCRV;
-      // const poolTokenProvider = CURVE_2POOL_GAUGE;
 
       let token0User;
       let token1User;
@@ -687,7 +682,6 @@ contract('Curve_fantom', function ([_, user]) {
         provider0Address = await getTokenProvider(token0Address);
         provider1Address = await getTokenProvider(token1Address);
         poolTokenProvider = await tokenProviderCurveGauge(poolTokenAddress);
-        // await impersonateAndInjectEther(poolTokenProvider);
 
         this.token0 = await IToken.at(token0Address);
         this.token1 = await IToken.at(token1Address);
@@ -1142,7 +1136,7 @@ contract('Curve_fantom', function ([_, user]) {
         profileGas(receipt);
       });
 
-      it('remove from pool to USDT by removeLiquidityOneCoin', async function () {
+      it('remove from pool to WETH by removeLiquidityOneCoin', async function () {
         const poolTokenUser = ether('0.1');
         const token1UserBefore = await this.token1.balanceOf.call(user);
         const answer = await this.tricryptoSwap.methods[
@@ -1198,7 +1192,7 @@ contract('Curve_fantom', function ([_, user]) {
         profileGas(receipt);
       });
 
-      it('remove from pool to USDC by removeLiquidityOneCoin with max amount', async function () {
+      it('remove from pool to WETH by removeLiquidityOneCoin with max amount', async function () {
         const poolTokenUser = ether('0.1');
         const token1UserBefore = await this.token1.balanceOf.call(user);
         const answer = await this.tricryptoSwap.methods[
@@ -1554,7 +1548,6 @@ contract('Curve_fantom', function ([_, user]) {
       const token0Address = DAI_TOKEN;
       const token1Address = USDC_TOKEN;
       const poolTokenAddress = CURVE_FUSDTCRV;
-      // const poolTokenProvider = CURVE_FUSDT_GAUGE;
 
       let token0User;
       let token1User;
@@ -1565,18 +1558,19 @@ contract('Curve_fantom', function ([_, user]) {
       before(async function () {
         provider0Address = await getTokenProvider(token0Address);
         provider1Address = await getTokenProvider(token1Address);
-        // await impersonateAndInjectEther(poolTokenProvider);
         poolTokenProvider = await tokenProviderCurveGauge(poolTokenAddress);
 
         this.token0 = await IToken.at(token0Address);
         this.token1 = await IToken.at(token1Address);
         this.poolToken = await IToken.at(poolTokenAddress);
       });
+
       beforeEach(async function () {
         token0User = await this.token0.balanceOf.call(user);
         token1User = await this.token1.balanceOf.call(user);
         poolTokenUser = await this.poolToken.balanceOf.call(user);
       });
+
       it('add DAI and USDC to pool by addLiquidity', async function () {
         const token0Amount = ether('1000');
         const token1Amount = new BN('1000000000');
@@ -1650,6 +1644,7 @@ contract('Curve_fantom', function ([_, user]) {
         );
         profileGas(receipt);
       });
+
       it('add DAI and USDT to pool by addLiquidity with max amount', async function () {
         const token0Amount = ether('1000');
         const token1Amount = new BN('1000000000');

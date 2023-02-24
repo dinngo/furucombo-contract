@@ -15,7 +15,6 @@ const {
 } = require('@openzeppelin/test-helpers');
 const { tracker } = balance;
 const { ZERO_BYTES32 } = constants;
-const { latest } = time;
 const abi = require('ethereumjs-abi');
 const util = require('ethereumjs-util');
 const utils = web3.utils;
@@ -24,10 +23,9 @@ const { expect } = require('chai');
 
 const {
   DAI_TOKEN,
-  GEIST_LENDING_POOL_PROVIDER,
-  WETH_TOKEN,
-  AAVE_RATEMODE,
   WRAPPED_NATIVE_TOKEN,
+  GEIST_LENDING_POOL_PROVIDER,
+  AAVE_RATEMODE,
 } = require('./utils/constants');
 const {
   evmRevert,
@@ -68,7 +66,7 @@ contract('Geist flashloan', function ([_, user, someone]) {
     );
     await this.registry.register(
       this.hGeist.address,
-      utils.asciiToHex('Aave ProtocolV2')
+      utils.asciiToHex('Geist')
     );
     // Register mock handler
     this.hMock = await HMock.new();
@@ -563,7 +561,7 @@ contract('Geist flashloan', function ([_, user, someone]) {
       });
     });
 
-    it('deposit aaveV2 after flashloan', async function () {
+    it('deposit geist after flashloan', async function () {
       // Get flashloan params
       const value = ether('1');
       const depositValue = ether('0.5');

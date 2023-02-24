@@ -40,13 +40,11 @@ const HGeist = artifacts.require('HGeist');
 const FeeRuleRegistry = artifacts.require('FeeRuleRegistry');
 const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('ProxyMock');
+const SimpleToken = artifacts.require('SimpleToken');
 const IToken = artifacts.require('IERC20');
 const IAToken = artifacts.require('IATokenV2');
 const ILendingPool = artifacts.require('ILendingPoolV2');
 const IProvider = artifacts.require('ILendingPoolAddressesProviderV2');
-const SimpleToken = artifacts.require('SimpleToken');
-
-const IStableDebtToken = artifacts.require('IStableDebtToken');
 const IVariableDebtToken = artifacts.require('IVariableDebtToken');
 
 contract('Geist', function ([_, user, someone]) {
@@ -305,7 +303,7 @@ contract('Geist', function ([_, user, someone]) {
 
       await expectRevert(
         this.proxy.execMock(to, data, { from: user, value: ether('0.1') }),
-        'HGeist_borrow: 11' // AAVEV2 Error Code: VL_COLLATERAL_CANNOT_COVER_NEW_BORROW
+        'HGeist_borrow: 11' // Geist Error Code: VL_COLLATERAL_CANNOT_COVER_NEW_BORROW
       );
     });
 
@@ -321,11 +319,11 @@ contract('Geist', function ([_, user, someone]) {
 
       await expectRevert(
         this.proxy.execMock(to, data, { from: user }),
-        'HGeist_borrow: 59' // AAVEV2 Error Code: BORROW_ALLOWANCE_NOT_ENOUGH
+        'HGeist_borrow: 59' // Geist Error Code: BORROW_ALLOWANCE_NOT_ENOUGH
       );
     });
 
-    it('should revert: borrow token that is not in aaveV2 pool', async function () {
+    it('should revert: borrow token that is not in geist pool', async function () {
       const borrowAmount = ether('2');
       const to = this.hGeist.address;
       const data = abi.simpleEncode(
@@ -338,7 +336,7 @@ contract('Geist', function ([_, user, someone]) {
       if (chainId == 1) {
         await expectRevert(
           this.proxy.execMock(to, data, { from: user }),
-          'HGeist_borrow: 2' // AAVEV2 Error Code: VL_NO_ACTIVE_RESERVE
+          'HGeist_borrow: 2' // Geist Error Code: VL_NO_ACTIVE_RESERVE
         );
       } else if (chainId == 137) {
         await expectRevert(
@@ -360,7 +358,7 @@ contract('Geist', function ([_, user, someone]) {
 
       await expectRevert(
         this.proxy.execMock(to, data, { from: someone }),
-        'HGeist_borrow: 9' // AAVEV2 Error Code: VL_COLLATERAL_BALANCE_IS_0
+        'HGeist_borrow: 9' // Geist Error Code: VL_COLLATERAL_BALANCE_IS_0
       );
     });
 
@@ -380,13 +378,9 @@ contract('Geist', function ([_, user, someone]) {
 
       await expectRevert(
         this.proxy.execMock(to, data, { from: user }),
-        'HGeist_borrow: 59' // AAVEV2 Error Code: BORROW_ALLOWANCE_NOT_ENOUGH
+        'HGeist_borrow: 59' // Geist Error Code: BORROW_ALLOWANCE_NOT_ENOUGH
         // Variable rate doesn't check collateral and debt
       );
     });
   });
-
-  async function _getVariableDebtTokenAddress(tokenAddr) {
-    return await this.lendingPool.getReserveData.call(tokenAddr)[9];
-  }
 });

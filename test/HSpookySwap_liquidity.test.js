@@ -10,7 +10,6 @@ const {
   BN,
   constants,
   ether,
-  expectRevert,
   time,
 } = require('@openzeppelin/test-helpers');
 const { MAX_UINT256 } = constants;
@@ -32,7 +31,6 @@ const {
   evmSnapshot,
   profileGas,
   getHandlerReturn,
-  tokenProviderSushi,
   impersonateAndInjectEther,
 } = require('./utils/utils');
 
@@ -43,7 +41,7 @@ const Proxy = artifacts.require('ProxyMock');
 const IToken = artifacts.require('IERC20');
 const UniswapV2Router02 = artifacts.require('IUniswapV2Router02');
 
-contract('SpookySwap Liquidity', function([_, user]) {
+contract('SpookySwap Liquidity', function ([_, user]) {
   let id;
   const tokenAAddress = WETH_TOKEN;
   const tokenBAddress = DAI_TOKEN;
@@ -56,7 +54,7 @@ contract('SpookySwap Liquidity', function([_, user]) {
   let tokenAProviderAddress;
   let tokenBProviderAddress;
 
-  before(async function() {
+  before(async function () {
     await impersonateAndInjectEther(BEETHOVENX_VAULT);
     tokenAProviderAddress = BEETHOVENX_VAULT;
     tokenBProviderAddress = BEETHOVENX_VAULT;
@@ -79,7 +77,7 @@ contract('SpookySwap Liquidity', function([_, user]) {
     this.router = await UniswapV2Router02.at(routerAddress);
   });
 
-  beforeEach(async function() {
+  beforeEach(async function () {
     id = await evmSnapshot();
     balanceUser = await tracker(user);
     balanceProxy = await tracker(this.proxy.address);
@@ -96,16 +94,16 @@ contract('SpookySwap Liquidity', function([_, user]) {
     });
   });
 
-  afterEach(async function() {
+  afterEach(async function () {
     await evmRevert(id);
   });
 
-  describe('Add FTM', function() {
-    beforeEach(async function() {
+  describe('Add FTM', function () {
+    beforeEach(async function () {
       lpTokenUserAmount = await this.lpTokenFtm.balanceOf(user);
     });
 
-    it('normal', async function() {
+    it('normal', async function () {
       // Prepare handler data
       const tokenAmount = ether('0.1');
       const minTokenAmount = ether('0.0001');
@@ -185,7 +183,7 @@ contract('SpookySwap Liquidity', function([_, user]) {
       profileGas(receipt);
     });
 
-    it('max amount', async function() {
+    it('max amount', async function () {
       // Prepare handler data
       const tokenAmount = ether('0.1');
       const minTokenAmount = ether('0.0001');
@@ -265,12 +263,12 @@ contract('SpookySwap Liquidity', function([_, user]) {
     });
   });
 
-  describe('Add Token', function() {
-    beforeEach(async function() {
+  describe('Add Token', function () {
+    beforeEach(async function () {
       lpTokenUserAmount = await this.lpTokenToken.balanceOf(user);
     });
 
-    it('normal', async function() {
+    it('normal', async function () {
       // Prepare handler data
       const tokenAAmount = ether('0.01');
       const tokenBAmount = ether('1000');
@@ -354,7 +352,7 @@ contract('SpookySwap Liquidity', function([_, user]) {
       profileGas(receipt);
     });
 
-    it('max amount', async function() {
+    it('max amount', async function () {
       // Prepare handler data
       const tokenAAmount = ether('0.01');
       const tokenBAmount = ether('1000');
@@ -438,10 +436,10 @@ contract('SpookySwap Liquidity', function([_, user]) {
     });
   });
 
-  describe('Remove FTM', function() {
+  describe('Remove FTM', function () {
     let deadline;
 
-    beforeEach(async function() {
+    beforeEach(async function () {
       // Add liquidity for getting uniToken before remove liquidity
       await this.tokenA.approve(this.router.address, ether('0.01'), {
         from: user,
@@ -465,7 +463,7 @@ contract('SpookySwap Liquidity', function([_, user]) {
       lpTokenUserAmount = await this.lpTokenFtm.balanceOf(user);
     });
 
-    it('normal', async function() {
+    it('normal', async function () {
       // Get simulation result
       await this.lpTokenFtm.approve(this.router.address, lpTokenUserAmount, {
         from: user,
@@ -533,7 +531,7 @@ contract('SpookySwap Liquidity', function([_, user]) {
       profileGas(receipt);
     });
 
-    it('max amount', async function() {
+    it('max amount', async function () {
       // Get simulation result
       await this.lpTokenFtm.approve(this.router.address, lpTokenUserAmount, {
         from: user,
@@ -602,10 +600,10 @@ contract('SpookySwap Liquidity', function([_, user]) {
     });
   });
 
-  describe('Remove Token', function() {
+  describe('Remove Token', function () {
     let deadline;
 
-    beforeEach(async function() {
+    beforeEach(async function () {
       await this.tokenA.transfer(user, ether('0.01'), {
         from: tokenAProviderAddress,
       });
@@ -640,7 +638,7 @@ contract('SpookySwap Liquidity', function([_, user]) {
       lpTokenUserAmount = await this.lpTokenToken.balanceOf(user);
     });
 
-    it('normal', async function() {
+    it('normal', async function () {
       // Get simulation result
       await this.lpTokenToken.approve(this.router.address, lpTokenUserAmount, {
         from: user,
@@ -718,7 +716,7 @@ contract('SpookySwap Liquidity', function([_, user]) {
       profileGas(receipt);
     });
 
-    it('max amount', async function() {
+    it('max amount', async function () {
       // Get simulation result
       await this.lpTokenToken.approve(this.router.address, lpTokenUserAmount, {
         from: user,
@@ -739,7 +737,6 @@ contract('SpookySwap Liquidity', function([_, user]) {
       });
       await this.proxy.updateTokenMock(this.lpTokenToken.address);
 
-      const value = lpTokenUserAmount;
       const to = this.hSpookySwap.address;
       const data = abi.simpleEncode(
         'removeLiquidity(address,address,uint256,uint256,uint256):(uint256,uint256)',
