@@ -544,6 +544,130 @@ contract('Curve_fantom', function ([_, user]) {
         profileGas(receipt);
       });
     });
+
+    describe('tricrypto', function () {
+      const token0Address = USDT_TOKEN;
+      const token1Address = WETH_TOKEN;
+
+      let token0User;
+      let token1User;
+      let providerAddress;
+
+      before(async function () {
+        providerAddress = await getTokenProvider(token0Address);
+        this.token0 = await IToken.at(token0Address);
+        this.token1 = await IToken.at(token1Address);
+      });
+
+      beforeEach(async function () {
+        token0User = await this.token0.balanceOf.call(user);
+        token1User = await this.token1.balanceOf.call(user);
+      });
+
+      it('Exact input swap USDT to WETH by exchange', async function () {
+        const value = new BN('100000000');
+        const answer = await this.tricryptoSwap.methods[
+          'get_dy(uint256,uint256,uint256)'
+        ](0, 2, value);
+
+        const data = abi.simpleEncode(
+          'exchangeUint256(address,address,address,uint256,uint256,uint256,uint256)',
+          this.tricryptoSwap.address,
+          this.token0.address,
+          this.token1.address,
+          0,
+          2,
+          value,
+          mulPercent(answer, new BN('100').sub(slippage))
+        );
+
+        await this.token0.transfer(this.proxy.address, value, {
+          from: providerAddress,
+        });
+        await this.proxy.updateTokenMock(this.token0.address);
+        const receipt = await this.proxy.execMock(this.hCurve.address, data, {
+          from: user,
+          value: ether('1'), // Ensure handler can correctly deal with ether
+        });
+
+        // Get handler return result
+        const handlerReturn = utils.toBN(
+          getHandlerReturn(receipt, ['uint256'])[0]
+        );
+        const token1UserEnd = await this.token1.balanceOf.call(user);
+        expect(handlerReturn).to.be.bignumber.eq(token1UserEnd.sub(token1User));
+
+        expect(
+          await this.token0.balanceOf.call(this.proxy.address)
+        ).to.be.bignumber.zero;
+        expect(
+          await this.token1.balanceOf.call(this.proxy.address)
+        ).to.be.bignumber.zero;
+        expect(await this.token0.balanceOf.call(user)).to.be.bignumber.eq(
+          token0User
+        );
+        // get_dy flow is different from exchange,
+        // so give 1 wei tolerance for DAI/miMATIC case.
+        expect(await this.token1.balanceOf.call(user)).to.be.bignumber.gte(
+          token1User.add(answer).sub(new BN('1'))
+        );
+        expect(await this.token1.balanceOf.call(user)).to.be.bignumber.lte(
+          token1User.add(answer)
+        );
+        profileGas(receipt);
+      });
+
+      it('Exact input swap USDT to WETH by exchange with max amount', async function () {
+        const value = new BN('100000000');
+        const answer = await this.tricryptoSwap.methods[
+          'get_dy(uint256,uint256,uint256)'
+        ](0, 2, value);
+        const data = abi.simpleEncode(
+          'exchangeUint256(address,address,address,uint256,uint256,uint256,uint256)',
+          this.tricryptoSwap.address,
+          this.token0.address,
+          this.token1.address,
+          0,
+          2,
+          MAX_UINT256,
+          mulPercent(answer, new BN('100').sub(slippage))
+        );
+        await this.token0.transfer(this.proxy.address, value, {
+          from: providerAddress,
+        });
+        await this.proxy.updateTokenMock(this.token0.address);
+        const receipt = await this.proxy.execMock(this.hCurve.address, data, {
+          from: user,
+          value: ether('1'), // Ensure handler can correctly deal with ether
+        });
+
+        // Get handler return result
+        const handlerReturn = utils.toBN(
+          getHandlerReturn(receipt, ['uint256'])[0]
+        );
+        const token1UserEnd = await this.token1.balanceOf.call(user);
+        expect(handlerReturn).to.be.bignumber.eq(token1UserEnd.sub(token1User));
+
+        expect(
+          await this.token0.balanceOf.call(this.proxy.address)
+        ).to.be.bignumber.zero;
+        expect(
+          await this.token1.balanceOf.call(this.proxy.address)
+        ).to.be.bignumber.zero;
+        expect(await this.token0.balanceOf.call(user)).to.be.bignumber.eq(
+          token0User
+        );
+        // get_dy flow is different from exchange,
+        // so give 1 wei tolerance for DAI/miMATIC case.
+        expect(await this.token1.balanceOf.call(user)).to.be.bignumber.gte(
+          token1User.add(answer).sub(new BN('1'))
+        );
+        expect(await this.token1.balanceOf.call(user)).to.be.bignumber.lte(
+          token1User.add(answer)
+        );
+        profileGas(receipt);
+      });
+    });
   });
 
   describe('Liquidity', function () {
