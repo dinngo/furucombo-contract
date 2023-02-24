@@ -64,13 +64,13 @@ async function getEstimatedComp(account) {
   return d['3'];
 }
 
-contract('Comptroller', function([_, user, someone]) {
+contract('Comptroller', function ([_, user, someone]) {
   let id;
   let balanceUser;
   let balanceProxy;
   let compUser;
 
-  before(async function() {
+  before(async function () {
     this.registry = await Registry.new();
     this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);
     this.proxy = await Proxy.new(
@@ -87,23 +87,23 @@ contract('Comptroller', function([_, user, someone]) {
     this.comptroller = await IComptroller.at(COMPOUND_COMPTROLLER);
   });
 
-  beforeEach(async function() {
+  beforeEach(async function () {
     id = await evmSnapshot();
     balanceUser = await tracker(user);
     balanceProxy = await tracker(this.proxy.address);
   });
 
-  afterEach(async function() {
+  afterEach(async function () {
     await evmRevert(id);
   });
 
   // TODO: Enable when cEther compSupplySpeeds > 0
-  describe.skip('Claim COMP', function() {
-    before(async function() {
+  describe.skip('Claim COMP', function () {
+    before(async function () {
       await this.comptroller.claimComp(user);
     });
 
-    beforeEach(async function() {
+    beforeEach(async function () {
       await this.cEther.mint({
         from: user,
         value: ether('10'),
@@ -112,8 +112,8 @@ contract('Comptroller', function([_, user, someone]) {
       compUser = await this.comp.balanceOf.call(user);
     });
 
-    describe('Owner claim', function() {
-      it('normal', async function() {
+    describe('Owner claim', function () {
+      it('normal', async function () {
         const to = this.hComptroller.address;
         const data = abi.simpleEncode('claimComp()');
         const result = await getEstimatedComp(user);
@@ -135,8 +135,8 @@ contract('Comptroller', function([_, user, someone]) {
       });
     });
 
-    describe('Others claim', function() {
-      it('normal', async function() {
+    describe('Others claim', function () {
+      it('normal', async function () {
         const to = this.hComptroller.address;
         const data = abi.simpleEncode('claimComp(address)', user);
         const result = await getEstimatedComp(user);

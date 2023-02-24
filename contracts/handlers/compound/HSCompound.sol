@@ -157,19 +157,17 @@ contract HSCompound is HandlerBase {
         }
     }
 
-    function enterMarket(address dsProxy, address cToken)
-        external
-        payable
-        isDSProxyOwner(dsProxy)
-    {
+    function enterMarket(
+        address dsProxy,
+        address cToken
+    ) external payable isDSProxyOwner(dsProxy) {
         _enterMarket(dsProxy, cToken);
     }
 
-    function enterMarkets(address dsProxy, address[] calldata cTokens)
-        external
-        payable
-        isDSProxyOwner(dsProxy)
-    {
+    function enterMarkets(
+        address dsProxy,
+        address[] calldata cTokens
+    ) external payable isDSProxyOwner(dsProxy) {
         try
             IDSProxy(dsProxy).execute(
                 FCOMPOUND_ACTIONS,
@@ -186,11 +184,10 @@ contract HSCompound is HandlerBase {
         }
     }
 
-    function exitMarket(address dsProxy, address cToken)
-        external
-        payable
-        isDSProxyOwner(dsProxy)
-    {
+    function exitMarket(
+        address dsProxy,
+        address cToken
+    ) external payable isDSProxyOwner(dsProxy) {
         try
             IDSProxy(dsProxy).execute(
                 FCOMPOUND_ACTIONS,
@@ -207,12 +204,9 @@ contract HSCompound is HandlerBase {
         }
     }
 
-    function claimComp(address dsProxy)
-        external
-        payable
-        isDSProxyOwner(dsProxy)
-        returns (uint256)
-    {
+    function claimComp(
+        address dsProxy
+    ) external payable isDSProxyOwner(dsProxy) returns (uint256) {
         try IComptroller(COMPTROLLER).claimComp(dsProxy) {} catch Error(
             string memory reason
         ) {
@@ -230,11 +224,7 @@ contract HSCompound is HandlerBase {
 
     /* ========== INTERNAL FUNCTIONS ========== */
 
-    function _deposit(
-        address dsProxy,
-        address token,
-        uint256 amount
-    ) internal {
+    function _deposit(address dsProxy, address token, uint256 amount) internal {
         if (token == NATIVE_TOKEN_ADDRESS) {
             address payable dsProxyPayable = payable(dsProxy);
             dsProxyPayable.transfer(amount);

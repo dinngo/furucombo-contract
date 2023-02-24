@@ -23,11 +23,10 @@ contract HStakingRewardsAdapter is HandlerBase {
     }
 
     // Stake for msg.sender
-    function stake(address adapterAddr, uint256 amount)
-        external
-        payable
-        whenAdapterIsValid(adapterAddr)
-    {
+    function stake(
+        address adapterAddr,
+        uint256 amount
+    ) external payable whenAdapterIsValid(adapterAddr) {
         IStakingRewardsAdapter adapter = IStakingRewardsAdapter(adapterAddr);
         IERC20 token = adapter.stakingToken();
 
@@ -65,11 +64,10 @@ contract HStakingRewardsAdapter is HandlerBase {
     }
 
     // Only withdraw for msg.sender
-    function withdraw(address adapterAddr, uint256 amount)
-        external
-        payable
-        whenAdapterIsValid(adapterAddr)
-    {
+    function withdraw(
+        address adapterAddr,
+        uint256 amount
+    ) external payable whenAdapterIsValid(adapterAddr) {
         IStakingRewardsAdapter adapter = IStakingRewardsAdapter(adapterAddr);
 
         try adapter.withdrawFor(_getSender(), amount) {} catch Error(
@@ -84,7 +82,9 @@ contract HStakingRewardsAdapter is HandlerBase {
     }
 
     // Only exit for msg.sender
-    function exit(address adapterAddr)
+    function exit(
+        address adapterAddr
+    )
         external
         payable
         whenAdapterIsValid(adapterAddr)
@@ -115,7 +115,9 @@ contract HStakingRewardsAdapter is HandlerBase {
     }
 
     // Only getReward for msg.sender
-    function getReward(address adapterAddr)
+    function getReward(
+        address adapterAddr
+    )
         external
         payable
         whenAdapterIsValid(adapterAddr)

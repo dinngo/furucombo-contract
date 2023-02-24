@@ -32,13 +32,13 @@ const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('ProxyMock');
 const IToken = artifacts.require('IERC20');
 
-contract('WrappedNativeToken', function([_, user]) {
+contract('WrappedNativeToken', function ([_, user]) {
   const wrappedNativeToken = WRAPPED_NATIVE_TOKEN;
 
   let id;
   let tokenProviderAddress;
 
-  before(async function() {
+  before(async function () {
     tokenProviderAddress = await getTokenProvider(wrappedNativeToken);
 
     this.token = await IToken.at(wrappedNativeToken);
@@ -57,22 +57,22 @@ contract('WrappedNativeToken', function([_, user]) {
     );
   });
 
-  beforeEach(async function() {
+  beforeEach(async function () {
     id = await evmSnapshot();
   });
 
-  afterEach(async function() {
+  afterEach(async function () {
     await evmRevert(id);
   });
 
-  describe('deposit', function() {
-    beforeEach(async function() {
+  describe('deposit', function () {
+    beforeEach(async function () {
       tokenUserAmount = await this.token.balanceOf.call(user);
       balanceProxy = await tracker(this.proxy.address);
       balanceUser = await tracker(user);
     });
 
-    it('normal', async function() {
+    it('normal', async function () {
       // Prepare handler data
       const token = this.token.address;
       const value = ether('10');
@@ -103,15 +103,15 @@ contract('WrappedNativeToken', function([_, user]) {
     });
   });
 
-  describe('withdraw', function() {
-    beforeEach(async function() {
+  describe('withdraw', function () {
+    beforeEach(async function () {
       this.token = await IToken.at(wrappedNativeToken);
       tokenUserAmount = await this.token.balanceOf.call(user);
       balanceProxy = await tracker(this.proxy.address);
       balanceUser = await tracker(user);
     });
 
-    it('normal', async function() {
+    it('normal', async function () {
       // Prepare handler data
       const token = this.token.address;
       const value = ether('10');

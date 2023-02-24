@@ -58,37 +58,21 @@ contract DSGuard is DSAuth, DSAuthority, DSGuardEvents {
             acl[ANY][ANY][ANY];
     }
 
-    function permit(
-        bytes32 src,
-        bytes32 dst,
-        bytes32 sig
-    ) public auth {
+    function permit(bytes32 src, bytes32 dst, bytes32 sig) public auth {
         acl[src][dst][sig] = true;
         emit LogPermit(src, dst, sig);
     }
 
-    function forbid(
-        bytes32 src,
-        bytes32 dst,
-        bytes32 sig
-    ) public auth {
+    function forbid(bytes32 src, bytes32 dst, bytes32 sig) public auth {
         acl[src][dst][sig] = false;
         emit LogForbid(src, dst, sig);
     }
 
-    function permit(
-        address src,
-        address dst,
-        bytes32 sig
-    ) public {
+    function permit(address src, address dst, bytes32 sig) public {
         permit(bytes32(bytes20(src)), bytes32(bytes20(dst)), sig);
     }
 
-    function forbid(
-        address src,
-        address dst,
-        bytes32 sig
-    ) public {
+    function forbid(address src, address dst, bytes32 sig) public {
         forbid(bytes32(bytes20(src)), bytes32(bytes20(dst)), sig);
     }
 }

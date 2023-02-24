@@ -21,11 +21,10 @@ contract HFurucomboFunds is HandlerBase {
         return "HFurucomboFunds";
     }
 
-    function purchase(address fundsAddr, uint256 amount)
-        external
-        payable
-        returns (uint256)
-    {
+    function purchase(
+        address fundsAddr,
+        uint256 amount
+    ) external payable returns (uint256) {
         require(FUND_PROXY_FACTORY.isFundCreated(fundsAddr), "invalid funds");
 
         IFunds funds = IFunds(fundsAddr);
@@ -58,11 +57,10 @@ contract HFurucomboFunds is HandlerBase {
         return shareAmount;
     }
 
-    function redeem(address fundsAddr, uint256 share)
-        external
-        payable
-        returns (uint256)
-    {
+    function redeem(
+        address fundsAddr,
+        uint256 share
+    ) external payable returns (uint256) {
         require(FUND_PROXY_FACTORY.isFundCreated(fundsAddr), "invalid funds");
 
         IFunds funds = IFunds(fundsAddr);

@@ -43,7 +43,7 @@ const ICEther = artifacts.require('ICEther');
 const ICToken = artifacts.require('ICToken');
 const IComptroller = artifacts.require('IComptroller');
 
-contract('CEther', function([_, user]) {
+contract('CEther', function ([_, user]) {
   const tokenAddress = DAI_TOKEN;
 
   let id;
@@ -52,7 +52,7 @@ contract('CEther', function([_, user]) {
   let cEtherUser;
   let providerAddress;
 
-  before(async function() {
+  before(async function () {
     providerAddress = await tokenProviderUniV2(tokenAddress);
 
     this.registry = await Registry.new();
@@ -69,18 +69,18 @@ contract('CEther', function([_, user]) {
     );
   });
 
-  beforeEach(async function() {
+  beforeEach(async function () {
     id = await evmSnapshot();
     balanceUser = await tracker(user);
     balanceProxy = await tracker(this.proxy.address);
   });
 
-  afterEach(async function() {
+  afterEach(async function () {
     await evmRevert(id);
   });
 
-  describe('Mint', function() {
-    it('normal', async function() {
+  describe('Mint', function () {
+    it('normal', async function () {
       const value = ether('0.1');
       const to = this.hCEther.address;
       const data = abi.simpleEncode('mint(uint256)', value);
@@ -100,10 +100,7 @@ contract('CEther', function([_, user]) {
       const cEtherUserEnd = await this.cEther.balanceOf.call(user);
       expect(cEtherUserEnd.sub(cEtherUser)).to.be.bignumber.eq(handlerReturn);
       expect(
-        cEtherUserEnd
-          .sub(cEtherUser)
-          .mul(new BN('1000'))
-          .divRound(result)
+        cEtherUserEnd.sub(cEtherUser).mul(new BN('1000')).divRound(result)
       ).to.be.bignumber.eq(new BN('1000'));
 
       expect(await balanceUser.delta()).to.be.bignumber.eq(
@@ -113,7 +110,7 @@ contract('CEther', function([_, user]) {
       profileGas(receipt);
     });
 
-    it('max amount', async function() {
+    it('max amount', async function () {
       const value = ether('0.1');
       const to = this.hCEther.address;
       const data = abi.simpleEncode('mint(uint256)', MAX_UINT256);
@@ -133,10 +130,7 @@ contract('CEther', function([_, user]) {
       const cEtherUserEnd = await this.cEther.balanceOf.call(user);
       expect(cEtherUserEnd.sub(cEtherUser)).to.be.bignumber.eq(handlerReturn);
       expect(
-        cEtherUserEnd
-          .sub(cEtherUser)
-          .mul(new BN('1000'))
-          .divRound(result)
+        cEtherUserEnd.sub(cEtherUser).mul(new BN('1000')).divRound(result)
       ).to.be.bignumber.eq(new BN('1000'));
 
       expect(await balanceUser.delta()).to.be.bignumber.eq(
@@ -147,8 +141,8 @@ contract('CEther', function([_, user]) {
     });
   });
 
-  describe('Redeem', function() {
-    beforeEach(async function() {
+  describe('Redeem', function () {
+    beforeEach(async function () {
       await this.cEther.mint({
         from: user,
         value: ether('1'),
@@ -156,7 +150,7 @@ contract('CEther', function([_, user]) {
       cEtherUser = await this.cEther.balanceOf.call(user);
     });
 
-    it('normal', async function() {
+    it('normal', async function () {
       const value = cEtherUser;
       const to = this.hCEther.address;
       const data = abi.simpleEncode('redeem(uint256)', value);
@@ -189,7 +183,7 @@ contract('CEther', function([_, user]) {
       profileGas(receipt);
     });
 
-    it('max amount', async function() {
+    it('max amount', async function () {
       const value = cEtherUser;
       const to = this.hCEther.address;
       const data = abi.simpleEncode('redeem(uint256)', MAX_UINT256);
@@ -222,7 +216,7 @@ contract('CEther', function([_, user]) {
       profileGas(receipt);
     });
 
-    it('revert', async function() {
+    it('revert', async function () {
       const value = cEtherUser;
       const to = this.hCEther.address;
       const data = abi.simpleEncode('redeem(uint256)', value);
@@ -238,8 +232,8 @@ contract('CEther', function([_, user]) {
     });
   });
 
-  describe('Redeem Underlying', function() {
-    beforeEach(async function() {
+  describe('Redeem Underlying', function () {
+    beforeEach(async function () {
       await this.cEther.mint({
         from: user,
         value: ether('1'),
@@ -247,7 +241,7 @@ contract('CEther', function([_, user]) {
       cEtherUser = await this.cEther.balanceOf.call(user);
     });
 
-    it('normal', async function() {
+    it('normal', async function () {
       const value = ether('1');
       const to = this.hCEther.address;
       const data = abi.simpleEncode('redeemUnderlying(uint256)', value);
@@ -281,7 +275,7 @@ contract('CEther', function([_, user]) {
       profileGas(receipt);
     });
 
-    it('revert', async function() {
+    it('revert', async function () {
       const value = ether('1');
       const to = this.hCEther.address;
       const data = abi.simpleEncode('redeemUnderlying(uint256)', value);
@@ -296,15 +290,15 @@ contract('CEther', function([_, user]) {
     });
   });
 
-  describe('Repay Borrow Behalf', function() {
+  describe('Repay Borrow Behalf', function () {
     let borrowAmount;
-    before(async function() {
+    before(async function () {
       this.comptroller = await IComptroller.at(COMPOUND_COMPTROLLER);
       this.cDai = await ICToken.at(CDAI);
       await this.comptroller.enterMarkets([CDAI], { from: user });
       this.dai = await IToken.at(DAI_TOKEN);
     });
-    beforeEach(async function() {
+    beforeEach(async function () {
       borrowAmount = ether('0.1');
       await this.dai.transfer(user, ether('1000'), { from: providerAddress });
       await this.dai.approve(this.cDai.address, ether('1000'), { from: user });
@@ -312,7 +306,7 @@ contract('CEther', function([_, user]) {
       await this.cEther.borrow(borrowAmount, { from: user });
     });
 
-    it('normal', async function() {
+    it('normal', async function () {
       const value = ether('0.2');
       const to = this.hCEther.address;
       const data = abi.simpleEncode(
@@ -341,7 +335,7 @@ contract('CEther', function([_, user]) {
       profileGas(receipt);
     });
 
-    it('partial', async function() {
+    it('partial', async function () {
       const value = borrowAmount.div(new BN(2));
       const remainBorrowAmount = borrowAmount.sub(value);
       const to = this.hCEther.address;
@@ -372,7 +366,7 @@ contract('CEther', function([_, user]) {
       profileGas(receipt);
     });
 
-    it('insufficient ether', async function() {
+    it('insufficient ether', async function () {
       const value = ether('0.2');
       const to = this.hCEther.address;
       const data = abi.simpleEncode(

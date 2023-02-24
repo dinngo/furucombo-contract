@@ -40,21 +40,18 @@ contract HAaveProtocolV2 is HandlerBase, IFlashLoanReceiver {
         _updateToken(wrappedNativeToken);
     }
 
-    function withdraw(address asset, uint256 amount)
-        external
-        payable
-        returns (uint256 withdrawAmount)
-    {
+    function withdraw(
+        address asset,
+        uint256 amount
+    ) external payable returns (uint256 withdrawAmount) {
         withdrawAmount = _withdraw(asset, amount);
 
         _updateToken(asset);
     }
 
-    function withdrawETH(uint256 amount)
-        external
-        payable
-        returns (uint256 withdrawAmount)
-    {
+    function withdrawETH(
+        uint256 amount
+    ) external payable returns (uint256 withdrawAmount) {
         withdrawAmount = _withdraw(wrappedNativeToken, amount);
         IWrappedNativeToken(wrappedNativeToken).withdraw(withdrawAmount);
     }
@@ -114,8 +111,8 @@ contract HAaveProtocolV2 is HandlerBase, IFlashLoanReceiver {
         );
 
         address onBehalfOf = _getSender();
-        address pool =
-            ILendingPoolAddressesProviderV2(provider).getLendingPool();
+        address pool = ILendingPoolAddressesProviderV2(provider)
+            .getLendingPool();
 
         try
             ILendingPoolV2(pool).flashLoan(
@@ -160,12 +157,15 @@ contract HAaveProtocolV2 is HandlerBase, IFlashLoanReceiver {
             "not initiated by the proxy"
         );
 
-        (address[] memory tos, bytes32[] memory configs, bytes[] memory datas) =
-            abi.decode(params, (address[], bytes32[], bytes[]));
+        (
+            address[] memory tos,
+            bytes32[] memory configs,
+            bytes[] memory datas
+        ) = abi.decode(params, (address[], bytes32[], bytes[]));
         IProxy(address(this)).execs(tos, configs, datas);
 
-        address pool =
-            ILendingPoolAddressesProviderV2(provider).getLendingPool();
+        address pool = ILendingPoolAddressesProviderV2(provider)
+            .getLendingPool();
         for (uint256 i = 0; i < assets.length; i++) {
             uint256 amountOwing = amounts[i] + premiums[i];
             _tokenApprove(assets[i], pool, amountOwing);
@@ -195,10 +195,10 @@ contract HAaveProtocolV2 is HandlerBase, IFlashLoanReceiver {
         _updateToken(aToken);
     }
 
-    function _withdraw(address asset, uint256 amount)
-        internal
-        returns (uint256 withdrawAmount)
-    {
+    function _withdraw(
+        address asset,
+        uint256 amount
+    ) internal returns (uint256 withdrawAmount) {
         (address pool, address aToken) = _getLendingPoolAndAToken(asset);
         amount = _getBalance(aToken, amount);
 
@@ -219,8 +219,8 @@ contract HAaveProtocolV2 is HandlerBase, IFlashLoanReceiver {
         uint256 rateMode,
         address onBehalfOf
     ) internal returns (uint256 remainDebt) {
-        address pool =
-            ILendingPoolAddressesProviderV2(provider).getLendingPool();
+        address pool = ILendingPoolAddressesProviderV2(provider)
+            .getLendingPool();
         _tokenApprove(asset, pool, amount);
 
         try
@@ -232,8 +232,8 @@ contract HAaveProtocolV2 is HandlerBase, IFlashLoanReceiver {
         }
         _tokenApproveZero(asset, pool);
 
-        DataTypes.ReserveData memory reserve =
-            ILendingPoolV2(pool).getReserveData(asset);
+        DataTypes.ReserveData memory reserve = ILendingPoolV2(pool)
+            .getReserveData(asset);
         remainDebt = DataTypes.InterestRateMode(rateMode) ==
             DataTypes.InterestRateMode.STABLE
             ? IERC20(reserve.stableDebtTokenAddress).balanceOf(onBehalfOf)
@@ -246,8 +246,8 @@ contract HAaveProtocolV2 is HandlerBase, IFlashLoanReceiver {
         uint256 rateMode,
         address onBehalfOf
     ) internal {
-        address pool =
-            ILendingPoolAddressesProviderV2(provider).getLendingPool();
+        address pool = ILendingPoolAddressesProviderV2(provider)
+            .getLendingPool();
 
         try
             ILendingPoolV2(pool).borrow(
@@ -264,11 +264,9 @@ contract HAaveProtocolV2 is HandlerBase, IFlashLoanReceiver {
         }
     }
 
-    function _getLendingPoolAndAToken(address underlying)
-        internal
-        view
-        returns (address pool, address aToken)
-    {
+    function _getLendingPoolAndAToken(
+        address underlying
+    ) internal view returns (address pool, address aToken) {
         pool = ILendingPoolAddressesProviderV2(provider).getLendingPool();
         try ILendingPoolV2(pool).getReserveData(underlying) returns (
             DataTypes.ReserveData memory data

@@ -18,12 +18,11 @@ contract StakingRewardsAdapterFactory is Ownable {
         address _rewardsToken
     ) external onlyOwner returns (address) {
         // Deploy new adapter
-        StakingRewardsAdapter adapter =
-            new StakingRewardsAdapter(
-                _stakingContract,
-                _stakingToken,
-                _rewardsToken
-            );
+        StakingRewardsAdapter adapter = new StakingRewardsAdapter(
+            _stakingContract,
+            _stakingToken,
+            _rewardsToken
+        );
         // Transfer pausership to factory owner and renounce
         adapter.addPauser(owner());
         adapter.renouncePauser();

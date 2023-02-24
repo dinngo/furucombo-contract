@@ -33,10 +33,10 @@ const HCurve = artifacts.require('HCurve');
 const ICurveHandler = artifacts.require('ICurveHandler');
 const IToken = artifacts.require('IERC20');
 
-contract('Curve Factory Meta', function([_, user]) {
+contract('Curve Factory Meta', function ([_, user]) {
   const slippage = new BN('3');
   let id;
-  before(async function() {
+  before(async function () {
     this.registry = await Registry.new();
     this.hCurve = await HCurve.new();
     await this.registry.register(
@@ -51,16 +51,16 @@ contract('Curve Factory Meta', function([_, user]) {
     this.zap3Pool = await ICurveHandler.at(CURVE_FACTORY_ZAP_3POOL);
   });
 
-  beforeEach(async function() {
+  beforeEach(async function () {
     id = await evmSnapshot();
   });
 
-  afterEach(async function() {
+  afterEach(async function () {
     await evmRevert(id);
   });
 
-  describe('Liquidity', function() {
-    describe('factory tusd pool', function() {
+  describe('Liquidity', function () {
+    describe('factory tusd pool', function () {
       const token0Address = TUSD_TOKEN;
       const token1Address = USDT_TOKEN;
       const poolTokenAddress = CURVE_FACTORY_TUSD;
@@ -71,7 +71,7 @@ contract('Curve Factory Meta', function([_, user]) {
       let provider1Address;
       let poolTokenProvider;
 
-      before(async function() {
+      before(async function () {
         provider0Address = await tokenProviderUniV2(token0Address);
         provider1Address = await tokenProviderUniV2(token1Address);
         poolTokenProvider = await tokenProviderCurveGauge(poolTokenAddress);
@@ -81,14 +81,14 @@ contract('Curve Factory Meta', function([_, user]) {
         poolToken = await IToken.at(poolTokenAddress);
       });
 
-      beforeEach(async function() {
+      beforeEach(async function () {
         balanceProxy = await tracker(this.proxy.address);
         token0User = await token0.balanceOf.call(user);
         token1User = await token1.balanceOf.call(user);
         poolTokenUser = await poolToken.balanceOf.call(user);
       });
 
-      afterEach(async function() {
+      afterEach(async function () {
         // Check handler
         expect(handlerReturn).to.be.bignumber.gte(mulPercent(answer, 99));
         expect(handlerReturn).to.be.bignumber.lte(mulPercent(answer, 101));
@@ -108,7 +108,7 @@ contract('Curve Factory Meta', function([_, user]) {
         profileGas(receipt);
       });
 
-      it('add TUSD and USDT to pool by addLiquidityFactoryZap', async function() {
+      it('add TUSD and USDT to pool by addLiquidityFactoryZap', async function () {
         const token0Amount = ether('100');
         const token1Amount = new BN('100000000'); // 1e8
         const tokens = [
@@ -160,7 +160,7 @@ contract('Curve Factory Meta', function([_, user]) {
         );
       });
 
-      it('remove from pool to TUSD by removeLiquidityOneCoinFactoryZap', async function() {
+      it('remove from pool to TUSD by removeLiquidityOneCoinFactoryZap', async function () {
         const amount = ether('0.1');
         answer = await this.zap3Pool.methods[
           'calc_withdraw_one_coin(address,uint256,int128)'

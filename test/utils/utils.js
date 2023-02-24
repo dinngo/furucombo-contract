@@ -2,7 +2,7 @@ const { BN, constants } = require('@openzeppelin/test-helpers');
 const { ZERO_ADDRESS } = constants;
 const fetch = require('node-fetch');
 // const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
-const sleep = delay => new Promise(resolve => setTimeout(resolve, delay));
+const sleep = (delay) => new Promise((resolve) => setTimeout(resolve, delay));
 const {
   UNISWAPV2_FACTORY,
   UNISWAPV3_FACTORY,
@@ -25,7 +25,7 @@ const {
 const { expect } = require('chai');
 
 function profileGas(receipt) {
-  receipt.logs.forEach(element => {
+  receipt.logs.forEach((element) => {
     if (element.event === 'DeltaGas')
       console.log(
         web3.utils.hexToAscii(element.args.tag) +
@@ -68,7 +68,7 @@ function cUnit(amount) {
 
 function getHandlerReturn(receipt, dataTypes) {
   var handlerResult;
-  receipt.receipt.rawLogs.forEach(element => {
+  receipt.receipt.rawLogs.forEach((element) => {
     if (element.topics[0] === RecordHandlerResultSig) {
       const bytesData = web3.eth.abi.decodeParameters(
         ['bytes'],
@@ -130,7 +130,7 @@ async function nativeTokenProvider() {
   return WRAPPED_NATIVE_TOKEN;
 }
 
-const toBytes32 = bn => {
+const toBytes32 = (bn) => {
   return ethers.utils.hexlify(ethers.utils.zeroPad(bn.toHexString(), 32));
 };
 

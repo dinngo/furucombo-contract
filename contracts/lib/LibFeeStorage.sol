@@ -23,17 +23,15 @@ library LibFeeStorage {
         _cache.setUint256(FEE_RATE_KEY, _feeRate);
     }
 
-    function _resetFeeRate(mapping(bytes32 => bytes32) storage _cache)
-        internal
-    {
+    function _resetFeeRate(
+        mapping(bytes32 => bytes32) storage _cache
+    ) internal {
         _cache.setUint256(FEE_RATE_KEY, 0);
     }
 
-    function _getFeeRate(mapping(bytes32 => bytes32) storage _cache)
-        internal
-        view
-        returns (uint256)
-    {
+    function _getFeeRate(
+        mapping(bytes32 => bytes32) storage _cache
+    ) internal view returns (uint256) {
         return _cache.getUint256(FEE_RATE_KEY);
     }
 
@@ -48,17 +46,15 @@ library LibFeeStorage {
         _cache.setAddress(FEE_COLLECTOR_KEY, _collector);
     }
 
-    function _resetFeeCollector(mapping(bytes32 => bytes32) storage _cache)
-        internal
-    {
+    function _resetFeeCollector(
+        mapping(bytes32 => bytes32) storage _cache
+    ) internal {
         _cache.setAddress(FEE_COLLECTOR_KEY, address(0));
     }
 
-    function _getFeeCollector(mapping(bytes32 => bytes32) storage _cache)
-        internal
-        view
-        returns (address)
-    {
+    function _getFeeCollector(
+        mapping(bytes32 => bytes32) storage _cache
+    ) internal view returns (address) {
         return _cache.getAddress(FEE_COLLECTOR_KEY);
     }
 }

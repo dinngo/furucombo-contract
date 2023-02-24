@@ -42,7 +42,7 @@ const ICEther = artifacts.require('ICEther');
 const ICToken = artifacts.require('ICToken');
 const IComptroller = artifacts.require('IComptroller');
 
-contract('CToken', function([_, user]) {
+contract('CToken', function ([_, user]) {
   let id;
   const cTokenAddress = CDAI;
   const tokenAddress = DAI_TOKEN;
@@ -53,7 +53,7 @@ contract('CToken', function([_, user]) {
   let cTokenUser;
   let providerAddress;
 
-  before(async function() {
+  before(async function () {
     providerAddress = await tokenProviderUniV2(tokenAddress);
 
     this.registry = await Registry.new();
@@ -71,18 +71,18 @@ contract('CToken', function([_, user]) {
     this.cToken = await ICToken.at(cTokenAddress);
   });
 
-  beforeEach(async function() {
+  beforeEach(async function () {
     id = await evmSnapshot();
     balanceUser = await tracker(user);
     balanceProxy = await tracker(this.proxy.address);
   });
 
-  afterEach(async function() {
+  afterEach(async function () {
     await evmRevert(id);
   });
 
-  describe('Mint', function() {
-    it('normal', async function() {
+  describe('Mint', function () {
+    it('normal', async function () {
       const value = ether('10');
       const to = this.hCToken.address;
       const data = abi.simpleEncode(
@@ -113,7 +113,7 @@ contract('CToken', function([_, user]) {
       profileGas(receipt);
     });
 
-    it('max amount', async function() {
+    it('max amount', async function () {
       const value = ether('10');
       const to = this.hCToken.address;
       const data = abi.simpleEncode(
@@ -145,7 +145,7 @@ contract('CToken', function([_, user]) {
       profileGas(receipt);
     });
 
-    it('revert', async function() {
+    it('revert', async function () {
       const value = ether('10');
       const to = this.hCToken.address;
       const data = abi.simpleEncode(
@@ -160,7 +160,7 @@ contract('CToken', function([_, user]) {
       );
     });
 
-    it('revert', async function() {
+    it('revert', async function () {
       const value = ether('10');
       const to = this.hCToken.address;
       const data = abi.simpleEncode(
@@ -176,8 +176,8 @@ contract('CToken', function([_, user]) {
     });
   });
 
-  describe('Redeem', function() {
-    beforeEach(async function() {
+  describe('Redeem', function () {
+    beforeEach(async function () {
       await this.token.transfer(user, ether('1'), { from: providerAddress });
       await this.token.approve(this.cToken.address, ether('1'), { from: user });
       await this.cToken.mint(ether('1'), { from: user });
@@ -185,7 +185,7 @@ contract('CToken', function([_, user]) {
       cTokenUser = await this.cToken.balanceOf.call(user);
     });
 
-    it('normal', async function() {
+    it('normal', async function () {
       const value = cTokenUser;
       const to = this.hCToken.address;
       const data = abi.simpleEncode(
@@ -224,7 +224,7 @@ contract('CToken', function([_, user]) {
       profileGas(receipt);
     });
 
-    it('max amount', async function() {
+    it('max amount', async function () {
       const value = cTokenUser;
       const to = this.hCToken.address;
       const data = abi.simpleEncode(
@@ -263,7 +263,7 @@ contract('CToken', function([_, user]) {
       profileGas(receipt);
     });
 
-    it('revert', async function() {
+    it('revert', async function () {
       const value = cTokenUser;
       const to = this.hCToken.address;
       const data = abi.simpleEncode(
@@ -281,7 +281,7 @@ contract('CToken', function([_, user]) {
       );
     });
 
-    it('revert', async function() {
+    it('revert', async function () {
       const value = cTokenUser;
       const to = this.hCToken.address;
       const data = abi.simpleEncode(
@@ -300,8 +300,8 @@ contract('CToken', function([_, user]) {
     });
   });
 
-  describe('Redeem Underlying', function() {
-    beforeEach(async function() {
+  describe('Redeem Underlying', function () {
+    beforeEach(async function () {
       await this.token.transfer(user, ether('100'), { from: providerAddress });
       await this.token.approve(this.cToken.address, ether('100'), {
         from: user,
@@ -311,7 +311,7 @@ contract('CToken', function([_, user]) {
       cTokenUser = await this.cToken.balanceOf.call(user);
     });
 
-    it('normal', async function() {
+    it('normal', async function () {
       const value = ether('100');
       const to = this.hCToken.address;
       const data = abi.simpleEncode(
@@ -348,7 +348,7 @@ contract('CToken', function([_, user]) {
       profileGas(receipt);
     });
 
-    it('revert', async function() {
+    it('revert', async function () {
       const value = ether('100');
       const to = this.hCToken.address;
       const data = abi.simpleEncode(
@@ -368,20 +368,20 @@ contract('CToken', function([_, user]) {
     });
   });
 
-  describe('Repay Borrow Behalf', function() {
+  describe('Repay Borrow Behalf', function () {
     let borrowAmount;
-    before(async function() {
+    before(async function () {
       this.comptroller = await IComptroller.at(COMPOUND_COMPTROLLER);
       this.cether = await await ICEther.at(CETHER);
       await this.comptroller.enterMarkets([CETHER], { from: user });
     });
-    beforeEach(async function() {
+    beforeEach(async function () {
       borrowAmount = ether('1');
       await this.cether.mint({ from: user, value: ether('1') });
       await this.cToken.borrow(borrowAmount, { from: user });
     });
 
-    it('normal', async function() {
+    it('normal', async function () {
       const value = MAX_UINT256;
       const to = this.hCToken.address;
       const data = abi.simpleEncode(
@@ -412,7 +412,7 @@ contract('CToken', function([_, user]) {
       ).to.be.bignumber.eq(ether('0'));
     });
 
-    it('partial', async function() {
+    it('partial', async function () {
       const value = borrowAmount.div(new BN(2));
       const remainBorrowAmount = borrowAmount.sub(value);
       const to = this.hCToken.address;
@@ -445,7 +445,7 @@ contract('CToken', function([_, user]) {
       );
     });
 
-    it('insufficient token', async function() {
+    it('insufficient token', async function () {
       const value = MAX_UINT256;
       const to = this.hCToken.address;
       const data = abi.simpleEncode(

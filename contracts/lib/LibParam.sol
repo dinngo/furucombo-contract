@@ -31,11 +31,9 @@ library LibParam {
         num = uint256(temp);
     }
 
-    function getParams(bytes32 conf)
-        internal
-        pure
-        returns (uint256[] memory refs, uint256[] memory params)
-    {
+    function getParams(
+        bytes32 conf
+    ) internal pure returns (uint256[] memory refs, uint256[] memory params) {
         require(!isStatic(conf), "Static params");
         uint256 n = REFS_LIMIT;
         while (conf & REFS_MASK == REFS_MASK && n > 0) {

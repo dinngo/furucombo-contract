@@ -78,7 +78,11 @@ library DataTypes {
         string label;
     }
 
-    enum InterestRateMode {NONE, STABLE, VARIABLE}
+    enum InterestRateMode {
+        NONE,
+        STABLE,
+        VARIABLE
+    }
 
     struct ReserveCache {
         uint256 currScaledVariableDebt;

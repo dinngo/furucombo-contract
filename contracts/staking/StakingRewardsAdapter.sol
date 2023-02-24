@@ -31,11 +31,10 @@ library Roles {
      * @dev Check if an account has this role.
      * @return bool
      */
-    function has(Role storage role, address account)
-        internal
-        view
-        returns (bool)
-    {
+    function has(
+        Role storage role,
+        address account
+    ) internal view returns (bool) {
         require(account != address(0), "Roles: account is the zero address");
         return role.bearer[account];
     }
@@ -214,12 +213,9 @@ contract StakingRewardsAdapter is
         return _totalSupply;
     }
 
-    function balanceOf(address account)
-        external
-        view
-        override
-        returns (uint256)
-    {
+    function balanceOf(
+        address account
+    ) external view override returns (uint256) {
         return _balances[account];
     }
 
@@ -246,12 +242,10 @@ contract StakingRewardsAdapter is
         return stakingContract.rewardRate();
     }
 
-    function isApproved(address owner, address agent)
-        public
-        view
-        override
-        returns (bool)
-    {
+    function isApproved(
+        address owner,
+        address agent
+    ) public view override returns (bool) {
         return _approvals[owner][agent];
     }
 
@@ -293,22 +287,15 @@ contract StakingRewardsAdapter is
 
     /* ========== SELF_OPERATE FUNCTIONS ========== */
 
-    function stake(uint256 amount)
-        external
-        override
-        nonReentrant
-        whenNotPaused
-        updateReward(msg.sender)
-    {
+    function stake(
+        uint256 amount
+    ) external override nonReentrant whenNotPaused updateReward(msg.sender) {
         _stakeInternal(msg.sender, amount);
     }
 
-    function withdraw(uint256 amount)
-        public
-        override
-        nonReentrant
-        updateReward(msg.sender)
-    {
+    function withdraw(
+        uint256 amount
+    ) public override nonReentrant updateReward(msg.sender) {
         _withdrawInternal(msg.sender, amount);
     }
 
@@ -323,33 +310,23 @@ contract StakingRewardsAdapter is
 
     /* ========== RESTRICTED OPERATE_FOR FUNCTIONS ========== */
 
-    function stakeFor(address account, uint256 amount)
-        external
-        override
-        nonReentrant
-        whenNotPaused
-        updateReward(account)
-    {
+    function stakeFor(
+        address account,
+        uint256 amount
+    ) external override nonReentrant whenNotPaused updateReward(account) {
         _stakeInternal(account, amount);
     }
 
-    function withdrawFor(address account, uint256 amount)
-        public
-        override
-        nonReentrant
-        onlyApproved(account)
-        updateReward(account)
-    {
+    function withdrawFor(
+        address account,
+        uint256 amount
+    ) public override nonReentrant onlyApproved(account) updateReward(account) {
         _withdrawInternal(account, amount);
     }
 
-    function getRewardFor(address account)
-        public
-        override
-        nonReentrant
-        onlyApproved(account)
-        updateReward(account)
-    {
+    function getRewardFor(
+        address account
+    ) public override nonReentrant onlyApproved(account) updateReward(account) {
         _getRewardInternal(account);
     }
 

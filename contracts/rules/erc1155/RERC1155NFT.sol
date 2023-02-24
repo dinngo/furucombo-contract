@@ -9,11 +9,7 @@ contract RERC1155NFT is RuleBase {
     uint256 public immutable tokenId;
     IERC1155 public immutable nft;
 
-    constructor(
-        IERC1155 nft_,
-        uint256 discount_,
-        uint256 tokenId_
-    ) {
+    constructor(IERC1155 nft_, uint256 discount_, uint256 tokenId_) {
         nft = nft_;
         tokenId = tokenId_;
         DISCOUNT = discount_;

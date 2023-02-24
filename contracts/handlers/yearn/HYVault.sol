@@ -13,14 +13,14 @@ contract HYVault is HandlerBase {
         return "HYVault";
     }
 
-    function deposit(address vault, uint256 _amount)
-        external
-        payable
-        returns (uint256)
-    {
+    function deposit(
+        address vault,
+        uint256 _amount
+    ) external payable returns (uint256) {
         IYVault yVault = IYVault(vault);
-        uint256 beforeYTokenBalance =
-            IERC20(address(yVault)).balanceOf(address(this));
+        uint256 beforeYTokenBalance = IERC20(address(yVault)).balanceOf(
+            address(this)
+        );
 
         address token = yVault.token();
         // if amount == type(uint256).max return balance of Proxy
@@ -33,21 +33,22 @@ contract HYVault is HandlerBase {
         }
         _tokenApproveZero(token, address(yVault));
 
-        uint256 afterYTokenBalance =
-            IERC20(address(yVault)).balanceOf(address(this));
+        uint256 afterYTokenBalance = IERC20(address(yVault)).balanceOf(
+            address(this)
+        );
 
         _updateToken(address(yVault));
         return afterYTokenBalance - beforeYTokenBalance;
     }
 
-    function depositETH(uint256 value, address vault)
-        external
-        payable
-        returns (uint256)
-    {
+    function depositETH(
+        uint256 value,
+        address vault
+    ) external payable returns (uint256) {
         IYVault yVault = IYVault(vault);
-        uint256 beforeYTokenBalance =
-            IERC20(address(yVault)).balanceOf(address(this));
+        uint256 beforeYTokenBalance = IERC20(address(yVault)).balanceOf(
+            address(this)
+        );
         // if amount == type(uint256).max return balance of Proxy
         value = _getBalance(address(0), value);
         try yVault.depositETH{value: value}() {} catch Error(
@@ -57,18 +58,18 @@ contract HYVault is HandlerBase {
         } catch {
             _revertMsg("depositETH");
         }
-        uint256 afterYTokenBalance =
-            IERC20(address(yVault)).balanceOf(address(this));
+        uint256 afterYTokenBalance = IERC20(address(yVault)).balanceOf(
+            address(this)
+        );
 
         _updateToken(address(yVault));
         return afterYTokenBalance - beforeYTokenBalance;
     }
 
-    function withdraw(address vault, uint256 _shares)
-        external
-        payable
-        returns (uint256)
-    {
+    function withdraw(
+        address vault,
+        uint256 _shares
+    ) external payable returns (uint256) {
         IYVault yVault = IYVault(vault);
         address token = yVault.token();
         uint256 beforeTokenBalance = IERC20(token).balanceOf(address(this));
@@ -86,11 +87,10 @@ contract HYVault is HandlerBase {
         return afterTokenBalance - beforeTokenBalance;
     }
 
-    function withdrawETH(address vault, uint256 _shares)
-        external
-        payable
-        returns (uint256)
-    {
+    function withdrawETH(
+        address vault,
+        uint256 _shares
+    ) external payable returns (uint256) {
         uint256 beforeETHBalance = address(this).balance;
         IYVault yVault = IYVault(vault);
         // if amount == type(uint256).max return balance of Proxy

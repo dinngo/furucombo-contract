@@ -325,19 +325,19 @@ contract Proxy is IProxy, Storage, Config {
     }
 
     /// @notice The pre-process phase.
-    function _preProcess(uint256[] memory ruleIndexes_)
-        internal
-        virtual
-        isStackEmpty
-    {
+    function _preProcess(
+        uint256[] memory ruleIndexes_
+    ) internal virtual isStackEmpty {
         // Set the sender.
         _setSender();
         // Set the fee collector
         cache._setFeeCollector(feeRuleRegistry.feeCollector());
 
         // Calculate fee
-        uint256 feeRate =
-            feeRuleRegistry.calFeeRateMulti(_getSender(), ruleIndexes_);
+        uint256 feeRate = feeRuleRegistry.calFeeRateMulti(
+            _getSender(),
+            ruleIndexes_
+        );
         require(feeRate <= PERCENTAGE_BASE, "fee rate out of range");
         cache._setFeeRate(feeRate);
         if (msg.value > 0 && feeRate > 0) {
@@ -399,11 +399,9 @@ contract Proxy is IProxy, Storage, Config {
     }
 
     /// @notice Get payload function selector.
-    function _getSelector(bytes memory payload)
-        internal
-        pure
-        returns (bytes4 selector)
-    {
+    function _getSelector(
+        bytes memory payload
+    ) internal pure returns (bytes4 selector) {
         selector =
             payload[0] |
             (bytes4(payload[1]) >> 8) |
@@ -411,11 +409,10 @@ contract Proxy is IProxy, Storage, Config {
             (bytes4(payload[3]) >> 24);
     }
 
-    function _calFee(uint256 amount, uint256 feeRate)
-        internal
-        pure
-        returns (uint256)
-    {
+    function _calFee(
+        uint256 amount,
+        uint256 feeRate
+    ) internal pure returns (uint256) {
         return (amount * feeRate) / PERCENTAGE_BASE;
     }
 }

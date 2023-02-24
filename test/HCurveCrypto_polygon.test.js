@@ -35,10 +35,10 @@ const HCurve = artifacts.require('HCurve');
 const ICurveHandler = artifacts.require('ICurveHandler');
 const IToken = artifacts.require('IERC20');
 
-contract('Curve Crypto', function([_, user]) {
+contract('Curve Crypto', function ([_, user]) {
   const slippage = new BN('3');
   let id;
-  before(async function() {
+  before(async function () {
     this.registry = await Registry.new();
     this.hCurve = await HCurve.new();
     await this.registry.register(
@@ -59,16 +59,16 @@ contract('Curve Crypto', function([_, user]) {
     });
   });
 
-  beforeEach(async function() {
+  beforeEach(async function () {
     id = await evmSnapshot();
   });
 
-  afterEach(async function() {
+  afterEach(async function () {
     await evmRevert(id);
   });
 
-  describe('Exchange underlying', function() {
-    describe('atricrypto pool', function() {
+  describe('Exchange underlying', function () {
+    describe('atricrypto pool', function () {
       const token0Address = USDT_TOKEN;
       const token1Address = WBTC_TOKEN;
       const token2Address = WETH_TOKEN;
@@ -77,7 +77,7 @@ contract('Curve Crypto', function([_, user]) {
       let balanceUser, balanceProxy, token0User, token1User, token2User;
       let provider0Address, provider1Address;
 
-      before(async function() {
+      before(async function () {
         provider0Address = await getTokenProvider(token0Address);
         provider1Address = await getTokenProvider(token1Address);
 
@@ -86,7 +86,7 @@ contract('Curve Crypto', function([_, user]) {
         token2 = await IToken.at(token2Address);
       });
 
-      beforeEach(async function() {
+      beforeEach(async function () {
         balanceUser = await tracker(user);
         balanceProxy = await tracker(this.proxy.address);
         token0User = await token0.balanceOf(user);
@@ -94,7 +94,7 @@ contract('Curve Crypto', function([_, user]) {
         token2User = await token2.balanceOf(user);
       });
 
-      afterEach(async function() {
+      afterEach(async function () {
         // Check handler return
         expect(handlerReturn).to.be.bignumber.gte(mulPercent(answer, 99));
         expect(handlerReturn).to.be.bignumber.lte(mulPercent(answer, 101));
@@ -108,7 +108,7 @@ contract('Curve Crypto', function([_, user]) {
         profileGas(receipt);
       });
 
-      it('Exact input swap USDT to WBTC by exchangeUnderlyingUint256', async function() {
+      it('Exact input swap USDT to WBTC by exchangeUnderlyingUint256', async function () {
         const value = new BN('100000000'); // 1e8
         answer = await this.atricryptoDeposit.methods[
           'get_dy_underlying(uint256,uint256,uint256)'
@@ -141,7 +141,7 @@ contract('Curve Crypto', function([_, user]) {
         );
       });
 
-      it('Exact input swap WBTC to WETH by exchangeUnderlyingUint256', async function() {
+      it('Exact input swap WBTC to WETH by exchangeUnderlyingUint256', async function () {
         const value = new BN('1000000'); // 1e6
         answer = await this.atricryptoDeposit.methods[
           'get_dy_underlying(uint256,uint256,uint256)'
@@ -176,8 +176,8 @@ contract('Curve Crypto', function([_, user]) {
     });
   });
 
-  describe('Liquidity', function() {
-    describe('atricrypto pool', function() {
+  describe('Liquidity', function () {
+    describe('atricrypto pool', function () {
       const token0Address = USDT_TOKEN;
       const token1Address = WBTC_TOKEN;
       const token2Address = WETH_TOKEN;
@@ -188,7 +188,7 @@ contract('Curve Crypto', function([_, user]) {
       let balanceProxy, token0User, token1User, token2User, poolTokenUser;
       let provider0Address, provider1Address, provider2Address;
 
-      before(async function() {
+      before(async function () {
         provider0Address = await getTokenProvider(token0Address);
         provider1Address = await getTokenProvider(token1Address);
         provider2Address = await getTokenProvider(token2Address);
@@ -199,7 +199,7 @@ contract('Curve Crypto', function([_, user]) {
         poolToken = await IToken.at(poolTokenAddress);
       });
 
-      beforeEach(async function() {
+      beforeEach(async function () {
         balanceProxy = await tracker(this.proxy.address);
         token0User = await token0.balanceOf(user);
         token1User = await token1.balanceOf(user);
@@ -207,7 +207,7 @@ contract('Curve Crypto', function([_, user]) {
         poolTokenUser = await poolToken.balanceOf(user);
       });
 
-      afterEach(async function() {
+      afterEach(async function () {
         // Check handler
         expect(handlerReturn).to.be.bignumber.gte(mulPercent(answer, 99));
         expect(handlerReturn).to.be.bignumber.lte(mulPercent(answer, 101));
@@ -228,10 +228,10 @@ contract('Curve Crypto', function([_, user]) {
         [[], ''], // will skip normal case
         [[0, 0, MAX_UINT256, MAX_UINT256, MAX_UINT256], ' max'],
       ];
-      cases.forEach(function(params) {
+      cases.forEach(function (params) {
         it(
           'add USDT, WBTC and WETH to pool by addLiquidity' + params[1],
-          async function() {
+          async function () {
             const token0Amount = new BN('100000000'); // 1e8
             const token1Amount = new BN('1000000'); // 1e6
             const token2Amount = ether('0.1');
@@ -304,11 +304,11 @@ contract('Curve Crypto', function([_, user]) {
         [0, ''], // will skip normal case
         [MAX_UINT256, ' max'],
       ];
-      cases.forEach(function(params) {
+      cases.forEach(function (params) {
         it(
           'remove from pool to USDT by removeLiquidityOneCoinUint256' +
             params[1],
-          async function() {
+          async function () {
             const amount = ether('0.1');
             answer = await this.atricryptoDeposit.methods[
               'calc_withdraw_one_coin(uint256,uint256)'
@@ -344,7 +344,7 @@ contract('Curve Crypto', function([_, user]) {
         );
       });
 
-      it('remove from pool to WETH by removeLiquidityOneCoinUint256', async function() {
+      it('remove from pool to WETH by removeLiquidityOneCoinUint256', async function () {
         const amount = ether('0.1');
         answer = await this.atricryptoDeposit.methods[
           'calc_withdraw_one_coin(uint256,uint256)'

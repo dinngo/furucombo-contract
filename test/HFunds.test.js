@@ -38,7 +38,7 @@ const Proxy = artifacts.require('ProxyMock');
 const IToken = artifacts.require('IERC20');
 const IUsdt = artifacts.require('IERC20Usdt');
 
-contract('Funds', function([_, user, someone]) {
+contract('Funds', function ([_, user, someone]) {
   let id;
   let balanceUser;
   let balanceProxy;
@@ -50,7 +50,7 @@ contract('Funds', function([_, user, someone]) {
   let usdtProviderAddress;
   let nativeTokenProviderAddress;
 
-  before(async function() {
+  before(async function () {
     provider0Address = await getTokenProvider(token0Address);
     provider1Address = await getTokenProvider(token1Address);
     usdtProviderAddress = await getTokenProvider(USDT_TOKEN);
@@ -70,23 +70,23 @@ contract('Funds', function([_, user, someone]) {
     );
   });
 
-  beforeEach(async function() {
+  beforeEach(async function () {
     id = await evmSnapshot();
   });
 
-  afterEach(async function() {
+  afterEach(async function () {
     await evmRevert(id);
   });
 
-  describe('update tokens', function() {
-    before(async function() {
+  describe('update tokens', function () {
+    before(async function () {
       this.token0 = await IToken.at(token0Address);
       this.token1 = await IToken.at(token1Address);
       balanceUser = await tracker(user);
       balanceProxy = await tracker(this.proxy.address);
     });
 
-    it('normal', async function() {
+    it('normal', async function () {
       const token = [this.token0.address, this.token1.address];
       const value = [ether('100'), ether('200')];
       const to = this.hFunds.address;
@@ -125,7 +125,7 @@ contract('Funds', function([_, user, someone]) {
       profileGas(receipt);
     });
 
-    it('native token - zero address', async function() {
+    it('native token - zero address', async function () {
       const token = [this.token0.address, ZERO_ADDRESS];
       const msgValue = ether('0.1');
       const value = [ether('200'), ether('1')];
@@ -167,7 +167,7 @@ contract('Funds', function([_, user, someone]) {
       profileGas(receipt);
     });
 
-    it('native token - 0xEEEE', async function() {
+    it('native token - 0xEEEE', async function () {
       const token = [this.token0.address, NATIVE_TOKEN_ADDRESS];
       const msgValue = ether('0.1');
       const value = [ether('200'), ether('1')];
@@ -210,13 +210,13 @@ contract('Funds', function([_, user, someone]) {
     });
   });
 
-  describe('multiple tokens', function() {
-    before(async function() {
+  describe('multiple tokens', function () {
+    before(async function () {
       this.token0 = await IToken.at(token0Address);
       this.token1 = await IToken.at(token1Address);
     });
 
-    it('inject', async function() {
+    it('inject', async function () {
       const token = [this.token0.address, this.token1.address];
       const value = [ether('100'), ether('100')];
       const to = this.hFunds.address;
@@ -263,7 +263,7 @@ contract('Funds', function([_, user, someone]) {
       profileGas(receipt);
     });
 
-    it('add funds', async function() {
+    it('add funds', async function () {
       const token = [this.token0.address, this.token1.address];
       const value = [ether('100'), ether('100')];
       const to = this.hFunds.address;
@@ -311,14 +311,14 @@ contract('Funds', function([_, user, someone]) {
     });
   });
 
-  describe('inject', function() {
-    describe('single token', function() {
-      before(async function() {
+  describe('inject', function () {
+    describe('single token', function () {
+      before(async function () {
         this.token0 = await IToken.at(token0Address);
         this.usdt = await IUsdt.at(USDT_TOKEN);
       });
 
-      it('normal', async function() {
+      it('normal', async function () {
         const token = [this.token0.address];
         const value = [ether('100')];
         const to = this.hFunds.address;
@@ -353,7 +353,7 @@ contract('Funds', function([_, user, someone]) {
         profileGas(receipt);
       });
 
-      it('add funds', async function() {
+      it('add funds', async function () {
         const token = [this.token0.address];
         const value = [ether('100')];
         const to = this.hFunds.address;
@@ -385,7 +385,7 @@ contract('Funds', function([_, user, someone]) {
         profileGas(receipt);
       });
 
-      it('USDT', async function() {
+      it('USDT', async function () {
         const token = [this.usdt.address];
         const value = [new BN('1000000')];
         const to = this.hFunds.address;
@@ -420,13 +420,13 @@ contract('Funds', function([_, user, someone]) {
       });
     });
 
-    describe('multiple tokens', function() {
-      before(async function() {
+    describe('multiple tokens', function () {
+      before(async function () {
         this.token0 = await IToken.at(token0Address);
         this.token1 = await IToken.at(token1Address);
       });
 
-      it('normal', async function() {
+      it('normal', async function () {
         const token = [this.token0.address, this.token1.address];
         const value = [ether('100'), ether('200')];
         const to = this.hFunds.address;
@@ -476,7 +476,7 @@ contract('Funds', function([_, user, someone]) {
         profileGas(receipt);
       });
 
-      it('add funds', async function() {
+      it('add funds', async function () {
         const token = [this.token0.address, this.token1.address];
         const value = [ether('100'), ether('100')];
         const to = this.hFunds.address;
@@ -525,14 +525,14 @@ contract('Funds', function([_, user, someone]) {
     });
   });
 
-  describe('send', function() {
-    before(async function() {
+  describe('send', function () {
+    before(async function () {
       this.token = await IToken.at(token0Address);
       this.usdt = await IUsdt.at(USDT_TOKEN);
     });
 
-    describe('token', function() {
-      it('normal', async function() {
+    describe('token', function () {
+      it('normal', async function () {
         const token = this.token.address;
         const providerAddress = provider0Address;
         const value = ether('100');
@@ -564,7 +564,7 @@ contract('Funds', function([_, user, someone]) {
         profileGas(receipt);
       });
 
-      it('USDT', async function() {
+      it('USDT', async function () {
         const token = this.usdt.address;
         const providerAddress = usdtProviderAddress;
         const value = new BN('1000000');
@@ -597,7 +597,7 @@ contract('Funds', function([_, user, someone]) {
         profileGas(receipt);
       });
 
-      it('maximum', async function() {
+      it('maximum', async function () {
         const token = this.token.address;
         const providerAddress = provider0Address;
         const value = ether('10');
@@ -629,7 +629,7 @@ contract('Funds', function([_, user, someone]) {
         profileGas(receipt);
       });
 
-      it('send 0 token', async function() {
+      it('send 0 token', async function () {
         const token = this.token.address;
         const providerAddress = provider0Address;
         const value = ether('0');
@@ -666,7 +666,7 @@ contract('Funds', function([_, user, someone]) {
         profileGas(receipt);
       });
 
-      it('insufficient token', async function() {
+      it('insufficient token', async function () {
         const token = this.token.address;
         const providerAddress = provider0Address;
         const value = ether('100');
@@ -692,8 +692,8 @@ contract('Funds', function([_, user, someone]) {
       });
     });
 
-    describe('Ether', async function() {
-      it('normal', async function() {
+    describe('Ether', async function () {
+      it('normal', async function () {
         const value = ether('1');
         const receiver = someone;
         const to = this.hFunds.address;
@@ -707,7 +707,7 @@ contract('Funds', function([_, user, someone]) {
         profileGas(receipt);
       });
 
-      it('maximum', async function() {
+      it('maximum', async function () {
         const value = ether('1');
         const receiver = someone;
         const to = this.hFunds.address;
@@ -725,7 +725,7 @@ contract('Funds', function([_, user, someone]) {
         profileGas(receipt);
       });
 
-      it('send 0 eth', async function() {
+      it('send 0 eth', async function () {
         const value = ether('0');
         const receiver = someone;
         const to = this.hFunds.address;
@@ -739,7 +739,7 @@ contract('Funds', function([_, user, someone]) {
         profileGas(receipt);
       });
 
-      it('insufficient ether', async function() {
+      it('insufficient ether', async function () {
         const value = ether('1');
         const receiver = someone;
         const to = this.hFunds.address;
@@ -754,13 +754,13 @@ contract('Funds', function([_, user, someone]) {
       });
     });
 
-    describe('multiple tokens', function() {
-      before(async function() {
+    describe('multiple tokens', function () {
+      before(async function () {
         this.token0 = this.usdt;
         this.token1 = await IToken.at(token1Address);
       });
 
-      it('multiple tokens', async function() {
+      it('multiple tokens', async function () {
         const tokens = [this.token0.address, this.token1.address];
         const value = [new BN(10000000), ether('15')];
         const receiver = someone;
@@ -813,7 +813,7 @@ contract('Funds', function([_, user, someone]) {
         profileGas(receipt);
       });
 
-      it('token and eth', async function() {
+      it('token and eth', async function () {
         const tokens = [ZERO_ADDRESS, this.token1.address];
         const value = [ether('10'), ether('15')];
         const receiver = someone;
@@ -853,7 +853,7 @@ contract('Funds', function([_, user, someone]) {
         profileGas(receipt);
       });
 
-      it('max amount', async function() {
+      it('max amount', async function () {
         const tokens = [ZERO_ADDRESS, this.token1.address];
         const value = [ether('10'), ether('15')];
         const receiver = someone;
@@ -893,7 +893,7 @@ contract('Funds', function([_, user, someone]) {
         profileGas(receipt);
       });
 
-      it('zero case', async function() {
+      it('zero case', async function () {
         const tokens = [ZERO_ADDRESS, this.token1.address];
         const value = [ether('0'), ether('0')];
         const receiver = someone;
@@ -937,7 +937,7 @@ contract('Funds', function([_, user, someone]) {
         profileGas(receipt);
       });
 
-      it('insufficient token', async function() {
+      it('insufficient token', async function () {
         const tokens = [ZERO_ADDRESS, this.token1.address];
         const value = [ether('10'), ether('15')];
         const receiver = someone;
@@ -967,20 +967,20 @@ contract('Funds', function([_, user, someone]) {
       });
     });
 
-    describe('multiple addresses', function() {
-      describe('from token', function() {
-        before(async function() {
+    describe('multiple addresses', function () {
+      describe('from token', function () {
+        before(async function () {
           this.token0 = this.usdt;
         });
 
-        it('normal', async function() {
+        it('normal', async function () {
           const token = this.token0.address;
           const count = 3;
           const amount = mwei('10');
           const values = Array(count).fill(new BN(amount));
           const receivers = Array.from(
             Array(count),
-            _ => web3.eth.accounts.create().address
+            (_) => web3.eth.accounts.create().address
           );
           const to = this.hFunds.address;
           const data = abi.simpleEncode(
@@ -1030,7 +1030,7 @@ contract('Funds', function([_, user, someone]) {
           profileGas(receipt);
         });
 
-        it('zero case', async function() {
+        it('zero case', async function () {
           const token = this.token0.address;
           const values = [new BN(ether('0'))];
           const receivers = [someone];
@@ -1072,7 +1072,7 @@ contract('Funds', function([_, user, someone]) {
           profileGas(receipt);
         });
 
-        it('insufficient case', async function() {
+        it('insufficient case', async function () {
           const token = this.token0.address;
           const values = [ether('10')];
           const receivers = [someone];
@@ -1092,15 +1092,15 @@ contract('Funds', function([_, user, someone]) {
           );
         });
       });
-      describe('from eth', function() {
-        it('normal', async function() {
+      describe('from eth', function () {
+        it('normal', async function () {
           const token = ZERO_ADDRESS;
           const count = 3;
           const amount = ether('0.1');
           const values = Array(count).fill(new BN(amount));
           const receivers = Array.from(
             Array(count),
-            _ => web3.eth.accounts.create().address
+            (_) => web3.eth.accounts.create().address
           );
           const to = this.hFunds.address;
           const data = abi.simpleEncode(
@@ -1128,7 +1128,7 @@ contract('Funds', function([_, user, someone]) {
           profileGas(receipt);
         });
 
-        it('zero case', async function() {
+        it('zero case', async function () {
           const token = ZERO_ADDRESS;
           const values = [new BN(ether('0'))];
           const receivers = [someone];
@@ -1150,7 +1150,7 @@ contract('Funds', function([_, user, someone]) {
           profileGas(receipt);
         });
 
-        it('insufficient case', async function() {
+        it('insufficient case', async function () {
           const token = ZERO_ADDRESS;
           const values = [ether('10')];
           const receivers = [someone];
@@ -1172,8 +1172,8 @@ contract('Funds', function([_, user, someone]) {
       });
     });
 
-    describe('ether to miner', function() {
-      before(async function() {
+    describe('ether to miner', function () {
+      before(async function () {
         // send dummy tx to get miner address
         const receipt = await send.ether(
           nativeTokenProviderAddress,
@@ -1184,7 +1184,7 @@ contract('Funds', function([_, user, someone]) {
         this.balanceMiner = await tracker(block.miner);
       });
 
-      it('normal', async function() {
+      it('normal', async function () {
         const value = ether('1');
         const to = this.hFunds.address;
         const data = getCallData(HFunds, 'sendEtherToMiner', [value]);
@@ -1201,13 +1201,13 @@ contract('Funds', function([_, user, someone]) {
     });
   });
 
-  describe('get balance', function() {
-    before(async function() {
+  describe('get balance', function () {
+    before(async function () {
       this.token = await IToken.at(token0Address);
       this.usdt = await IUsdt.at(USDT_TOKEN);
     });
-    describe('Ether', async function() {
-      it('normal', async function() {
+    describe('Ether', async function () {
+      it('normal', async function () {
         const token = constants.ZERO_ADDRESS;
         const value = ether('1');
         const providerAddress = provider0Address;
@@ -1231,8 +1231,8 @@ contract('Funds', function([_, user, someone]) {
         profileGas(receipt);
       });
 
-      describe('token', function() {
-        it('normal', async function() {
+      describe('token', function () {
+        it('normal', async function () {
           const token = this.token.address;
           const value = ether('1');
           const providerAddress = provider0Address;
@@ -1258,13 +1258,13 @@ contract('Funds', function([_, user, someone]) {
     });
   });
 
-  describe('check slippage', function() {
-    before(async function() {
+  describe('check slippage', function () {
+    before(async function () {
       this.token0 = await IToken.at(token0Address);
       this.token1 = await IToken.at(token1Address);
     });
 
-    it('normal', async function() {
+    it('normal', async function () {
       const token = [this.token0.address, this.token1.address, ZERO_ADDRESS];
       const value = [ether('10'), ether('10'), ether('10')];
       const to = this.hFunds.address;
@@ -1290,7 +1290,7 @@ contract('Funds', function([_, user, someone]) {
       profileGas(receipt);
     });
 
-    it('should revert: eth slippage', async function() {
+    it('should revert: eth slippage', async function () {
       const token = [this.token0.address, this.token1.address, ZERO_ADDRESS];
       const value = [ether('10'), ether('10'), ether('10')];
       const to = this.hFunds.address;
@@ -1318,7 +1318,7 @@ contract('Funds', function([_, user, someone]) {
       );
     });
 
-    it('should revert: token slippage', async function() {
+    it('should revert: token slippage', async function () {
       const token = [this.token0.address, this.token1.address, ZERO_ADDRESS];
       const value = [ether('10'), ether('10'), ether('10')];
       const to = this.hFunds.address;

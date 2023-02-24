@@ -47,7 +47,7 @@ const IToken = artifacts.require('IERC20');
 const IGelatoPineCore = artifacts.require('IGelatoPineCore');
 const IUniswapV2Router = artifacts.require('IUniswapV2Router02');
 
-contract('GelatoLimitOrder', function([_, user]) {
+contract('GelatoLimitOrder', function ([_, user]) {
   let id;
   let balanceUser;
   let balanceProxy;
@@ -60,7 +60,7 @@ contract('GelatoLimitOrder', function([_, user]) {
   let tokenBProviderAddress;
   let tokenCProviderAddress;
 
-  before(async function() {
+  before(async function () {
     tokenAProviderAddress = await tokenProviderSushi(tokenAAddress);
     tokenBProviderAddress = await nativeTokenProvider();
     tokenCProviderAddress = await tokenProviderSushi(tokenCAddress);
@@ -101,18 +101,18 @@ contract('GelatoLimitOrder', function([_, user]) {
     });
   });
 
-  beforeEach(async function() {
+  beforeEach(async function () {
     id = await evmSnapshot();
     balanceUser = await tracker(user);
     balanceProxy = await tracker(this.proxy.address);
   });
 
-  afterEach(async function() {
+  afterEach(async function () {
     await evmRevert(id);
   });
 
-  describe('Furu Limit Order Handler', function() {
-    it('Should place and execute ETH to Token order successfully', async function() {
+  describe('Furu Limit Order Handler', function () {
+    it('Should place and execute ETH to Token order successfully', async function () {
       // Place the order
       const sellAmount = ether('5');
       const path = [this.tokenB.address, this.tokenA.address];
@@ -222,7 +222,7 @@ contract('GelatoLimitOrder', function([_, user]) {
       );
     });
 
-    it('Should revert: insufficient ETH', async function() {
+    it('Should revert: insufficient ETH', async function () {
       // Place the order
       const sellAmount = ether('5');
       const path = [this.tokenB.address, this.tokenA.address];
@@ -260,7 +260,7 @@ contract('GelatoLimitOrder', function([_, user]) {
       );
     });
 
-    it('Should place and cancel ETH to Token order successfully', async function() {
+    it('Should place and cancel ETH to Token order successfully', async function () {
       // Place the order
       const sellAmount = ether('5');
       const path = [this.tokenB.address, this.tokenA.address];
@@ -338,7 +338,7 @@ contract('GelatoLimitOrder', function([_, user]) {
       );
     });
 
-    it('Should place and execute Token to ETH order successfully', async function() {
+    it('Should place and execute Token to ETH order successfully', async function () {
       // Place the order
       const sellAmount = ether('5000');
       const path = [this.tokenA.address, this.tokenB.address];
@@ -446,7 +446,7 @@ contract('GelatoLimitOrder', function([_, user]) {
       );
     });
 
-    it('Should revert: insufficient Token', async function() {
+    it('Should revert: insufficient Token', async function () {
       // Place the order
       const sellAmount = ether('500');
       const path = [this.tokenA.address, this.tokenB.address];
@@ -495,7 +495,7 @@ contract('GelatoLimitOrder', function([_, user]) {
       );
     });
 
-    it('Should place and cancel Token to ETH order successfully', async function() {
+    it('Should place and cancel Token to ETH order successfully', async function () {
       // Place the order
       const sellAmount = ether('5');
       const amountOut = (
@@ -577,7 +577,7 @@ contract('GelatoLimitOrder', function([_, user]) {
       );
     });
 
-    it('Should place and execute Token to Token order successfully', async function() {
+    it('Should place and execute Token to Token order successfully', async function () {
       // Place the order
       const sellAmount = ether('50');
       const path = [
@@ -690,7 +690,7 @@ contract('GelatoLimitOrder', function([_, user]) {
       expect(tokenCUserEnd.sub(tokenCUserBefore)).to.be.bignumber.gt(minReturn);
     });
 
-    it('Should place and cancel Token to Token order successfully', async function() {
+    it('Should place and cancel Token to Token order successfully', async function () {
       // Place the order
       const sellAmount = ether('50');
       const path = [
@@ -777,7 +777,7 @@ contract('GelatoLimitOrder', function([_, user]) {
     });
 
     // Double gelato tasks
-    it('Double place and execute ETH to Token order successfully', async function() {
+    it('Double place and execute ETH to Token order successfully', async function () {
       // Place the order
       const sellAmount = ether('5');
       const path = [this.tokenB.address, this.tokenA.address];
@@ -893,7 +893,7 @@ contract('GelatoLimitOrder', function([_, user]) {
       );
     });
 
-    it('Double place and execute Token to ETH order successfully', async function() {
+    it('Double place and execute Token to ETH order successfully', async function () {
       // Place the order
       const sellAmount = ether('5000');
       const path = [this.tokenA.address, this.tokenB.address];
@@ -1006,7 +1006,7 @@ contract('GelatoLimitOrder', function([_, user]) {
       );
     });
 
-    it('Double place and execute Token to Token order successfully', async function() {
+    it('Double place and execute Token to Token order successfully', async function () {
       // Place the order
       const sellAmount = ether('50');
       const path = [

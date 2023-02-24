@@ -36,10 +36,10 @@ const HCurve = artifacts.require('HCurve');
 const ICurveHandler = artifacts.require('ICurveHandler');
 const IToken = artifacts.require('IERC20');
 
-contract('Curve Crypto', function([_, user]) {
+contract('Curve Crypto', function ([_, user]) {
   const slippage = new BN('3');
   let id;
-  before(async function() {
+  before(async function () {
     this.registry = await Registry.new();
     this.hCurve = await HCurve.new();
     await this.registry.register(
@@ -55,16 +55,16 @@ contract('Curve Crypto', function([_, user]) {
     this.tricryptoDeposit = await ICurveHandler.at(CURVE_TRICRYPTO_DEPOSIT);
   });
 
-  beforeEach(async function() {
+  beforeEach(async function () {
     id = await evmSnapshot();
   });
 
-  afterEach(async function() {
+  afterEach(async function () {
     await evmRevert(id);
   });
 
-  describe('Exchange', function() {
-    describe('tricrypto pool', function() {
+  describe('Exchange', function () {
+    describe('tricrypto pool', function () {
       const token0Address = USDT_TOKEN;
       const token1Address = WBTC_TOKEN;
 
@@ -72,21 +72,21 @@ contract('Curve Crypto', function([_, user]) {
       let balanceUser, balanceProxy, token0User, token1User;
       let provider0Address;
 
-      before(async function() {
+      before(async function () {
         provider0Address = await tokenProviderUniV2(token0Address);
 
         token0 = await IToken.at(token0Address);
         token1 = await IToken.at(token1Address);
       });
 
-      beforeEach(async function() {
+      beforeEach(async function () {
         balanceUser = await tracker(user);
         balanceProxy = await tracker(this.proxy.address);
         token0User = await token0.balanceOf.call(user);
         token1User = await token1.balanceOf.call(user);
       });
 
-      afterEach(async function() {
+      afterEach(async function () {
         // Check handler return
         expect(handlerReturn).to.be.bignumber.eq(answer);
 
@@ -102,7 +102,7 @@ contract('Curve Crypto', function([_, user]) {
         profileGas(receipt);
       });
 
-      it('Exact input swap USDT to WBTC by exchangeUint256Ether', async function() {
+      it('Exact input swap USDT to WBTC by exchangeUint256Ether', async function () {
         const value = new BN('1000000');
         answer = await this.tricryptoSwap.methods[
           'get_dy(uint256,uint256,uint256)'
@@ -135,7 +135,7 @@ contract('Curve Crypto', function([_, user]) {
         );
       });
 
-      it('Exact input swap USDT to ETH by exchangeUint256Ether', async function() {
+      it('Exact input swap USDT to ETH by exchangeUint256Ether', async function () {
         const value = new BN('1000000');
         answer = await this.tricryptoSwap.methods[
           'get_dy(uint256,uint256,uint256)'
@@ -167,7 +167,7 @@ contract('Curve Crypto', function([_, user]) {
         );
       });
 
-      it('Exact input swap ETH to WBTC by exchangeUint256Ether', async function() {
+      it('Exact input swap ETH to WBTC by exchangeUint256Ether', async function () {
         const value = ether('1');
         answer = await this.tricryptoSwap.methods[
           'get_dy(uint256,uint256,uint256)'
@@ -200,8 +200,8 @@ contract('Curve Crypto', function([_, user]) {
     });
   });
 
-  describe('Liquidity with deposit contract', function() {
-    describe('tricrypto pool', function() {
+  describe('Liquidity with deposit contract', function () {
+    describe('tricrypto pool', function () {
       const token0Address = USDT_TOKEN;
       const token1Address = WBTC_TOKEN;
       const poolTokenAddress = CURVE_TRICRYPTOCRV;
@@ -212,7 +212,7 @@ contract('Curve Crypto', function([_, user]) {
       let provider1Address;
       let poolTokenProvider;
 
-      before(async function() {
+      before(async function () {
         provider0Address = await tokenProviderUniV2(token0Address);
         provider1Address = await tokenProviderUniV2(token1Address);
         poolTokenProvider = await tokenProviderCurveGauge(poolTokenAddress);
@@ -222,7 +222,7 @@ contract('Curve Crypto', function([_, user]) {
         poolToken = await IToken.at(poolTokenAddress);
       });
 
-      beforeEach(async function() {
+      beforeEach(async function () {
         balanceUser = await tracker(user);
         balanceProxy = await tracker(this.proxy.address);
         token0User = await token0.balanceOf.call(user);
@@ -230,7 +230,7 @@ contract('Curve Crypto', function([_, user]) {
         poolTokenUser = await poolToken.balanceOf.call(user);
       });
 
-      afterEach(async function() {
+      afterEach(async function () {
         // Check handler return
         expect(handlerReturn).to.be.bignumber.gte(mulPercent(answer, 99));
         expect(handlerReturn).to.be.bignumber.lte(mulPercent(answer, 101));
@@ -250,7 +250,7 @@ contract('Curve Crypto', function([_, user]) {
         profileGas(receipt);
       });
 
-      it('add USDT, WBTC and ETH to pool by addLiquidity', async function() {
+      it('add USDT, WBTC and ETH to pool by addLiquidity', async function () {
         const token0Amount = new BN('1000000000'); // 1e9
         const token1Amount = new BN('10000000'); // 1e7
         const value = ether('1');
@@ -301,7 +301,7 @@ contract('Curve Crypto', function([_, user]) {
         );
       });
 
-      it('add USDT, WBTC and ETH to pool by addLiquidity with max amount', async function() {
+      it('add USDT, WBTC and ETH to pool by addLiquidity with max amount', async function () {
         const token0Amount = new BN('1000000000'); // 1e9
         const token1Amount = new BN('10000000'); // 1e7
         const value = ether('1');
@@ -352,7 +352,7 @@ contract('Curve Crypto', function([_, user]) {
         );
       });
 
-      it('remove from pool to USDT by removeLiquidityOneCoinUint256', async function() {
+      it('remove from pool to USDT by removeLiquidityOneCoinUint256', async function () {
         const amount = ether('0.1');
         answer = await this.tricryptoSwap.methods[
           'calc_withdraw_one_coin(uint256,uint256)'
@@ -383,7 +383,7 @@ contract('Curve Crypto', function([_, user]) {
         );
       });
 
-      it('remove from pool to ETH by removeLiquidityOneCoinUint256', async function() {
+      it('remove from pool to ETH by removeLiquidityOneCoinUint256', async function () {
         const amount = ether('0.1');
         answer = await this.tricryptoSwap.methods[
           'calc_withdraw_one_coin(uint256,uint256)'

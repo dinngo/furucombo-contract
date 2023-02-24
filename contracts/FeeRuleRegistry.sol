@@ -54,12 +54,10 @@ contract FeeRuleRegistry is IFeeRuleRegistry, Ownable {
         emit UnregisteredRule(ruleIndex_);
     }
 
-    function calFeeRateMulti(address usr_, uint256[] calldata ruleIndexes_)
-        external
-        view
-        override
-        returns (uint256 scaledRate)
-    {
+    function calFeeRateMulti(
+        address usr_,
+        uint256[] calldata ruleIndexes_
+    ) external view override returns (uint256 scaledRate) {
         scaledRate =
             (calFeeRateMultiWithoutBasis(usr_, ruleIndexes_) * basisFeeRate) /
             BASE;
@@ -87,32 +85,27 @@ contract FeeRuleRegistry is IFeeRuleRegistry, Ownable {
         }
     }
 
-    function calFeeRate(address usr_, uint256 ruleIndex_)
-        external
-        view
-        override
-        returns (uint256 scaledRate)
-    {
+    function calFeeRate(
+        address usr_,
+        uint256 ruleIndex_
+    ) external view override returns (uint256 scaledRate) {
         scaledRate =
             (calFeeRateWithoutBasis(usr_, ruleIndex_) * basisFeeRate) /
             BASE;
     }
 
-    function calFeeRateWithoutBasis(address usr_, uint256 ruleIndex_)
-        public
-        view
-        override
-        returns (uint256 scaledRate)
-    {
+    function calFeeRateWithoutBasis(
+        address usr_,
+        uint256 ruleIndex_
+    ) public view override returns (uint256 scaledRate) {
         scaledRate = _calDiscount(usr_, rules[ruleIndex_]);
     }
 
     /* Internal Functions */
-    function _calDiscount(address usr_, address rule_)
-        internal
-        view
-        returns (uint256 discount)
-    {
+    function _calDiscount(
+        address usr_,
+        address rule_
+    ) internal view returns (uint256 discount) {
         if (rule_ != address(0)) {
             discount = IRule(rule_).calDiscount(usr_);
             require(discount <= BASE, "Discount out of range");

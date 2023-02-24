@@ -21,10 +21,10 @@ const Foo4Handler = artifacts.require('Foo4Handler');
 const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('ProxyMock');
 
-contract('ProxyLog', function([_, deployer, user]) {
+contract('ProxyLog', function ([_, deployer, user]) {
   let id;
 
-  before(async function() {
+  before(async function () {
     this.registry = await Registry.new();
     this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);
     this.proxy = await Proxy.new(
@@ -33,16 +33,16 @@ contract('ProxyLog', function([_, deployer, user]) {
     );
   });
 
-  beforeEach(async function() {
+  beforeEach(async function () {
     id = await evmSnapshot();
   });
 
-  afterEach(async function() {
+  afterEach(async function () {
     await evmRevert(id);
   });
 
-  describe('execute', function() {
-    beforeEach(async function() {
+  describe('execute', function () {
+    beforeEach(async function () {
       this.fooFactory = await FooFactory.new({ from: deployer });
       await this.fooFactory.createFoo();
       await this.fooFactory.createFoo();
@@ -56,7 +56,7 @@ contract('ProxyLog', function([_, deployer, user]) {
       );
     });
 
-    it('multiple', async function() {
+    it('multiple', async function () {
       const indices = [0, 1, 2];
       const nums = [new BN('25'), new BN('26'), new BN('27')];
       const tos = [
@@ -119,8 +119,8 @@ contract('ProxyLog', function([_, deployer, user]) {
     });
   });
 
-  describe('dynamic parameter', function() {
-    before(async function() {
+  describe('dynamic parameter', function () {
+    before(async function () {
       this.foo = await Foo4.new();
       this.fooHandler = await Foo4Handler.new();
       await this.registry.register(
@@ -129,7 +129,7 @@ contract('ProxyLog', function([_, deployer, user]) {
       );
     });
 
-    it('static parameter', async function() {
+    it('static parameter', async function () {
       const tos = [this.fooHandler.address];
       const a =
         '0x00000000000000000000000000000000000000000000000000000000000000ff';
@@ -166,7 +166,7 @@ contract('ProxyLog', function([_, deployer, user]) {
       });
     });
 
-    it('replace parameter', async function() {
+    it('replace parameter', async function () {
       const tos = [this.fooHandler.address, this.fooHandler.address];
       const r = await this.foo.bar.call();
       const a =
@@ -223,7 +223,7 @@ contract('ProxyLog', function([_, deployer, user]) {
       });
     });
 
-    it('replace parameter with dynamic array return', async function() {
+    it('replace parameter with dynamic array return', async function () {
       const tos = [this.fooHandler.address, this.fooHandler.address];
       const secAmt = ether('1');
       const ratio = ether('0.7');
@@ -296,7 +296,7 @@ contract('ProxyLog', function([_, deployer, user]) {
       });
     });
 
-    it('replace third parameter', async function() {
+    it('replace third parameter', async function () {
       const tos = [this.fooHandler.address, this.fooHandler.address];
       const r = await this.foo.bar.call();
       const a =
@@ -358,7 +358,7 @@ contract('ProxyLog', function([_, deployer, user]) {
       });
     });
 
-    it('replace parameter by 50% of ref value', async function() {
+    it('replace parameter by 50% of ref value', async function () {
       const tos = [this.fooHandler.address, this.fooHandler.address];
       const r = await this.foo.barUint.call();
       const a = ether('0.5');

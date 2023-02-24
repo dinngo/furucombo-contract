@@ -40,14 +40,14 @@ const IToken = artifacts.require('IERC20');
 const IPoSLocker = artifacts.require('IPredicate');
 const IPlasmaLocker = artifacts.require('IDepositManager');
 
-contract('Polygon Token Bridge', function([_, user]) {
+contract('Polygon Token Bridge', function ([_, user]) {
   const tokenAddress = DAI_TOKEN;
 
   let id;
   let providerAddress;
   let maticProviderAddress;
 
-  before(async function() {
+  before(async function () {
     providerAddress = await tokenProviderUniV2(tokenAddress);
     maticProviderAddress = await tokenProviderUniV2(MATIC_TOKEN);
 
@@ -69,16 +69,16 @@ contract('Polygon Token Bridge', function([_, user]) {
     this.lockerPlasma = await IPlasmaLocker.at(POLYGON_PLASMA_DEPOSIT_MANAGER);
   });
 
-  beforeEach(async function() {
+  beforeEach(async function () {
     id = await evmSnapshot();
   });
 
-  afterEach(async function() {
+  afterEach(async function () {
     await evmRevert(id);
   });
 
-  describe('PoS Bridge', function() {
-    beforeEach(async function() {
+  describe('PoS Bridge', function () {
+    beforeEach(async function () {
       tokenUserAmount = await this.token.balanceOf.call(user);
       balanceProxy = await tracker(this.proxy.address);
       balanceUser = await tracker(user);
@@ -89,8 +89,8 @@ contract('Polygon Token Bridge', function([_, user]) {
       balanceBridge = await tracker(POLYGON_POS_PREDICATE_ETH);
     });
 
-    describe('ether', function() {
-      it('normal', async function() {
+    describe('ether', function () {
+      it('normal', async function () {
         // Prepare handler data
         const value = ether('10');
         const to = this.hPolygon.address;
@@ -132,7 +132,7 @@ contract('Polygon Token Bridge', function([_, user]) {
         profileGas(receipt);
       });
 
-      it('max amount', async function() {
+      it('max amount', async function () {
         // Prepare handler data
         const value = ether('10');
         const to = this.hPolygon.address;
@@ -175,8 +175,8 @@ contract('Polygon Token Bridge', function([_, user]) {
       });
     });
 
-    describe('token', function() {
-      it('normal', async function() {
+    describe('token', function () {
+      it('normal', async function () {
         // Prepare handler data
         const token = this.token.address;
         const value = ether('100');
@@ -232,7 +232,7 @@ contract('Polygon Token Bridge', function([_, user]) {
         profileGas(receipt);
       });
 
-      it('max amount', async function() {
+      it('max amount', async function () {
         // Prepare handler data
         const token = this.token.address;
         const value = ether('100');
@@ -293,8 +293,8 @@ contract('Polygon Token Bridge', function([_, user]) {
     });
   });
 
-  describe('Plasma Bridge', function() {
-    beforeEach(async function() {
+  describe('Plasma Bridge', function () {
+    beforeEach(async function () {
       maticUserAmount = await this.matic.balanceOf.call(user);
       balanceProxy = await tracker(this.proxy.address);
       balanceUser = await tracker(user);
@@ -304,8 +304,8 @@ contract('Polygon Token Bridge', function([_, user]) {
       );
     });
 
-    describe('MATIC', function() {
-      it('normal', async function() {
+    describe('MATIC', function () {
+      it('normal', async function () {
         // Prepare handler data
         const token = this.matic.address;
         const value = ether('100');
@@ -360,7 +360,7 @@ contract('Polygon Token Bridge', function([_, user]) {
         profileGas(receipt);
       });
 
-      it('max amount', async function() {
+      it('max amount', async function () {
         // Prepare handler data
         const token = this.matic.address;
         const value = ether('100');

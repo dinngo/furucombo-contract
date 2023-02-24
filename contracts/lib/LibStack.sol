@@ -13,16 +13,16 @@ library LibStack {
         _stack.push(_input);
     }
 
-    function setHandlerType(bytes32[] storage _stack, Config.HandlerType _input)
-        internal
-    {
+    function setHandlerType(
+        bytes32[] storage _stack,
+        Config.HandlerType _input
+    ) internal {
         _stack.push(bytes12(uint96(_input)));
     }
 
-    function getAddress(bytes32[] storage _stack)
-        internal
-        returns (address ret)
-    {
+    function getAddress(
+        bytes32[] storage _stack
+    ) internal returns (address ret) {
         ret = address(uint160(uint256(peek(_stack))));
         _stack.pop();
     }
@@ -37,21 +37,18 @@ library LibStack {
         _stack.pop();
     }
 
-    function peek(bytes32[] storage _stack)
-        internal
-        view
-        returns (bytes32 ret)
-    {
+    function peek(
+        bytes32[] storage _stack
+    ) internal view returns (bytes32 ret) {
         uint256 length = _stack.length;
         require(length > 0, "stack empty");
         ret = _stack[length - 1];
     }
 
-    function peek(bytes32[] storage _stack, uint256 _index)
-        internal
-        view
-        returns (bytes32 ret)
-    {
+    function peek(
+        bytes32[] storage _stack,
+        uint256 _index
+    ) internal view returns (bytes32 ret) {
         uint256 length = _stack.length;
         require(length > 0, "stack empty");
         require(length > _index, "not enough elements in stack");

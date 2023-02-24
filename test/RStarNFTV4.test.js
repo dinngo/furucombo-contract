@@ -28,10 +28,10 @@ const STAR_NFTV4_DISCOUNTB = ether('0.5'); // 50%
 const STAR_NFTV4_DISCOUNTC = ether('0.15'); // 15%
 const STAR_NFTV4_DISCOUNT_ZERO = ether('0'); // 0%
 
-contract('RStarNFTV4', function([_, feeCollector, user, someone]) {
+contract('RStarNFTV4', function ([_, feeCollector, user, someone]) {
   let id;
 
-  before(async function() {
+  before(async function () {
     this.starNFT = await IStarNFTV4.at(STAR_NFTV4);
     this.registry = await FeeRuleRegistry.new(BASIS_FEE_RATE, feeCollector);
     this.starNFTRuleA = await RStarNFTV4.new(STAR_NFTV4, STAR_NFTV4_DISCOUNTA);
@@ -61,26 +61,26 @@ contract('RStarNFTV4', function([_, feeCollector, user, someone]) {
     expect(await this.starNFT.balanceOf(user)).to.be.bignumber.gte(new BN(1));
     expect(await this.starNFT.balanceOf(someone)).to.be.bignumber.zero;
   });
-  beforeEach(async function() {
+  beforeEach(async function () {
     id = await evmSnapshot();
   });
 
-  afterEach(async function() {
+  afterEach(async function () {
     await evmRevert(id);
   });
 
-  describe('StarNFTV4', function() {
-    describe('calculate single', function() {
+  describe('StarNFTV4', function () {
+    describe('calculate single', function () {
       // Rule discount higher then fee higher. Rule discount lower then fee lower.
-      describe('high rule discount', function() {
-        beforeEach(async function() {
+      describe('high rule discount', function () {
+        beforeEach(async function () {
           await this.registry.registerRule(this.starNFTRuleA.address);
           expect(await this.registry.rules.call('0')).to.be.eq(
             this.starNFTRuleA.address
           );
         });
 
-        it('qualified without basis', async function() {
+        it('qualified without basis', async function () {
           const queryAddr = user;
           const rate = await this.registry.calFeeRateWithoutBasis.call(
             queryAddr,
@@ -89,7 +89,7 @@ contract('RStarNFTV4', function([_, feeCollector, user, someone]) {
           expect(rate).to.be.bignumber.eq(STAR_NFTV4_DISCOUNTA);
         });
 
-        it('qualified with basis', async function() {
+        it('qualified with basis', async function () {
           const queryAddr = user;
           const rate = await this.registry.calFeeRate.call(queryAddr, '0');
           expect(rate).to.be.bignumber.eq(
@@ -97,7 +97,7 @@ contract('RStarNFTV4', function([_, feeCollector, user, someone]) {
           );
         });
 
-        it('not qualified without basis', async function() {
+        it('not qualified without basis', async function () {
           const queryAddr = someone;
           const rate = await this.registry.calFeeRateWithoutBasis.call(
             queryAddr,
@@ -106,15 +106,15 @@ contract('RStarNFTV4', function([_, feeCollector, user, someone]) {
           expect(rate).to.be.bignumber.eq(BASE);
         });
 
-        it('not qualified with basis', async function() {
+        it('not qualified with basis', async function () {
           const queryAddr = someone;
           const rate = await this.registry.calFeeRate.call(queryAddr, '0');
           expect(rate).to.be.bignumber.eq(BASIS_FEE_RATE);
         });
       });
 
-      describe('middle rule discount', function() {
-        beforeEach(async function() {
+      describe('middle rule discount', function () {
+        beforeEach(async function () {
           const receipt = await this.registry.registerRule(
             this.starNFTRuleB.address
           );
@@ -123,7 +123,7 @@ contract('RStarNFTV4', function([_, feeCollector, user, someone]) {
           );
         });
 
-        it('qualified without basis', async function() {
+        it('qualified without basis', async function () {
           const queryAddr = user;
           const rate = await this.registry.calFeeRateWithoutBasis.call(
             queryAddr,
@@ -132,7 +132,7 @@ contract('RStarNFTV4', function([_, feeCollector, user, someone]) {
           expect(rate).to.be.bignumber.eq(STAR_NFTV4_DISCOUNTB);
         });
 
-        it('qualified with basis', async function() {
+        it('qualified with basis', async function () {
           const queryAddr = user;
           const rate = await this.registry.calFeeRate.call(queryAddr, '0');
           expect(rate).to.be.bignumber.eq(
@@ -140,7 +140,7 @@ contract('RStarNFTV4', function([_, feeCollector, user, someone]) {
           );
         });
 
-        it('not qualified without basis', async function() {
+        it('not qualified without basis', async function () {
           const queryAddr = someone;
           const rate = await this.registry.calFeeRateWithoutBasis.call(
             queryAddr,
@@ -149,15 +149,15 @@ contract('RStarNFTV4', function([_, feeCollector, user, someone]) {
           expect(rate).to.be.bignumber.eq(BASE);
         });
 
-        it('not qualified with basis', async function() {
+        it('not qualified with basis', async function () {
           const queryAddr = someone;
           const rate = await this.registry.calFeeRate.call(queryAddr, '0');
           expect(rate).to.be.bignumber.eq(BASIS_FEE_RATE);
         });
       });
 
-      describe('low rule discount', function() {
-        beforeEach(async function() {
+      describe('low rule discount', function () {
+        beforeEach(async function () {
           const receipt = await this.registry.registerRule(
             this.starNFTRuleC.address
           );
@@ -166,7 +166,7 @@ contract('RStarNFTV4', function([_, feeCollector, user, someone]) {
           );
         });
 
-        it('qualified without basis', async function() {
+        it('qualified without basis', async function () {
           const queryAddr = user;
           const rate = await this.registry.calFeeRateWithoutBasis.call(
             queryAddr,
@@ -175,7 +175,7 @@ contract('RStarNFTV4', function([_, feeCollector, user, someone]) {
           expect(rate).to.be.bignumber.eq(STAR_NFTV4_DISCOUNTC);
         });
 
-        it('qualified with basis', async function() {
+        it('qualified with basis', async function () {
           const queryAddr = user;
           const rate = await this.registry.calFeeRate.call(queryAddr, '0');
           expect(rate).to.be.bignumber.eq(
@@ -183,7 +183,7 @@ contract('RStarNFTV4', function([_, feeCollector, user, someone]) {
           );
         });
 
-        it('not qualified without basis', async function() {
+        it('not qualified without basis', async function () {
           const queryAddr = someone;
           const rate = await this.registry.calFeeRateWithoutBasis.call(
             queryAddr,
@@ -192,15 +192,15 @@ contract('RStarNFTV4', function([_, feeCollector, user, someone]) {
           expect(rate).to.be.bignumber.eq(BASE);
         });
 
-        it('not qualified with basis', async function() {
+        it('not qualified with basis', async function () {
           const queryAddr = someone;
           const rate = await this.registry.calFeeRate.call(queryAddr, '0');
           expect(rate).to.be.bignumber.eq(BASIS_FEE_RATE);
         });
       });
 
-      describe('zero rule discount', function() {
-        beforeEach(async function() {
+      describe('zero rule discount', function () {
+        beforeEach(async function () {
           const receipt = await this.registry.registerRule(
             this.starNFTRuleZero.address
           );
@@ -209,7 +209,7 @@ contract('RStarNFTV4', function([_, feeCollector, user, someone]) {
           );
         });
 
-        it('qualified without basis', async function() {
+        it('qualified without basis', async function () {
           const queryAddr = user;
           const rate = await this.registry.calFeeRateWithoutBasis.call(
             queryAddr,
@@ -218,13 +218,13 @@ contract('RStarNFTV4', function([_, feeCollector, user, someone]) {
           expect(rate).to.be.bignumber.zero;
         });
 
-        it('qualified with basis', async function() {
+        it('qualified with basis', async function () {
           const queryAddr = user;
           const rate = await this.registry.calFeeRate.call(queryAddr, '0');
           expect(rate).to.be.bignumber.zero;
         });
 
-        it('not qualified without basis', async function() {
+        it('not qualified without basis', async function () {
           const queryAddr = someone;
           const rate = await this.registry.calFeeRateWithoutBasis.call(
             queryAddr,
@@ -233,7 +233,7 @@ contract('RStarNFTV4', function([_, feeCollector, user, someone]) {
           expect(rate).to.be.bignumber.eq(BASE);
         });
 
-        it('not qualified with basis', async function() {
+        it('not qualified with basis', async function () {
           const queryAddr = someone;
           const rate = await this.registry.calFeeRate.call(queryAddr, '0');
           expect(rate).to.be.bignumber.eq(BASIS_FEE_RATE);
@@ -241,8 +241,8 @@ contract('RStarNFTV4', function([_, feeCollector, user, someone]) {
       });
     });
 
-    describe('calculate multi', function() {
-      beforeEach(async function() {
+    describe('calculate multi', function () {
+      beforeEach(async function () {
         // register rules
         await this.registry.registerRule(this.starNFTRuleA.address);
         expect(await this.registry.rules.call('0')).to.be.eq(
@@ -259,7 +259,7 @@ contract('RStarNFTV4', function([_, feeCollector, user, someone]) {
         );
       });
 
-      it('multiple indexes: qualified for all without basis', async function() {
+      it('multiple indexes: qualified for all without basis', async function () {
         const queryAddr = user;
         const indexes = ['0', '1', '2'];
         const rate = await this.registry.calFeeRateMultiWithoutBasis.call(
@@ -274,7 +274,7 @@ contract('RStarNFTV4', function([_, feeCollector, user, someone]) {
         );
       });
 
-      it('multiple indexes: qualified for all with basis', async function() {
+      it('multiple indexes: qualified for all with basis', async function () {
         const queryAddr = user;
         const indexes = ['0', '1', '2'];
         const rate = await this.registry.calFeeRateMulti.call(
@@ -291,7 +291,7 @@ contract('RStarNFTV4', function([_, feeCollector, user, someone]) {
         );
       });
 
-      it('multiple indexes: qualified for both of all without basis', async function() {
+      it('multiple indexes: qualified for both of all without basis', async function () {
         const queryAddr = user;
         const indexes = ['0', '1'];
         const rate = await this.registry.calFeeRateMultiWithoutBasis.call(
@@ -303,7 +303,7 @@ contract('RStarNFTV4', function([_, feeCollector, user, someone]) {
         );
       });
 
-      it('multiple indexes: qualified for both with basis', async function() {
+      it('multiple indexes: qualified for both with basis', async function () {
         const queryAddr = user;
         const indexes = ['0', '1'];
         const rate = await this.registry.calFeeRateMulti.call(
@@ -318,7 +318,7 @@ contract('RStarNFTV4', function([_, feeCollector, user, someone]) {
         );
       });
 
-      it('multiple indexes: not qualified without basis', async function() {
+      it('multiple indexes: not qualified without basis', async function () {
         const queryAddr = someone;
         const indexes = ['0', '1', '2'];
         const rate = await this.registry.calFeeRateMultiWithoutBasis.call(
@@ -328,7 +328,7 @@ contract('RStarNFTV4', function([_, feeCollector, user, someone]) {
         expect(rate).to.be.bignumber.eq(BASE);
       });
 
-      it('multiple indexes: not qualified with basis', async function() {
+      it('multiple indexes: not qualified with basis', async function () {
         const queryAddr = someone;
         const indexes = ['0', '1', '2'];
         const rate = await this.registry.calFeeRateMulti.call(

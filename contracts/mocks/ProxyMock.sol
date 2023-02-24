@@ -12,17 +12,17 @@ contract ProxyMock is Proxy, GasProfiler, IHandlerEvents {
     using LibStack for bytes32[];
     using LibFeeStorage for mapping(bytes32 => bytes32);
 
-    constructor(address registry, address feeRuleRegistry)
-        Proxy(registry, feeRuleRegistry)
-    {}
+    constructor(
+        address registry,
+        address feeRuleRegistry
+    ) Proxy(registry, feeRuleRegistry) {}
 
     event RecordHandlerResult(bytes value);
 
-    function execMock(address to, bytes memory data)
-        external
-        payable
-        returns (bytes memory result)
-    {
+    function execMock(
+        address to,
+        bytes memory data
+    ) external payable returns (bytes memory result) {
         uint256[] memory rules = new uint256[](0);
         _preProcess(rules);
         _setBase();

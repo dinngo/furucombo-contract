@@ -42,11 +42,11 @@ const Proxy = artifacts.require('ProxyMock');
 const IToken = artifacts.require('IERC20');
 const IUniswapV2Router = artifacts.require('IUniswapV2Router02');
 
-contract('QuickSwap Swap', function([_, user, someone]) {
+contract('QuickSwap Swap', function ([_, user, someone]) {
   let id;
   const slippage = new BN('3');
 
-  before(async function() {
+  before(async function () {
     this.registry = await Registry.new();
     this.hQuickSwap = await HQuickSwap.new();
     await this.registry.register(
@@ -61,33 +61,33 @@ contract('QuickSwap Swap', function([_, user, someone]) {
     );
   });
 
-  beforeEach(async function() {
+  beforeEach(async function () {
     id = await evmSnapshot();
   });
 
-  afterEach(async function() {
+  afterEach(async function () {
     await evmRevert(id);
   });
 
-  describe('Matic to Token', function() {
+  describe('Matic to Token', function () {
     const tokenAddress = WETH_TOKEN;
 
     let balanceUser;
     let balanceProxy;
     let tokenUser;
 
-    before(async function() {
+    before(async function () {
       this.token = await IToken.at(tokenAddress);
     });
 
-    beforeEach(async function() {
+    beforeEach(async function () {
       balanceUser = await tracker(user);
       balanceProxy = await tracker(this.proxy.address);
       tokenUser = await this.token.balanceOf(user);
     });
 
-    describe('Exact input', function() {
-      it('normal', async function() {
+    describe('Exact input', function () {
+      it('normal', async function () {
         const value = ether('1');
         const to = this.hQuickSwap.address;
         const path = [WMATIC_TOKEN, tokenAddress];
@@ -126,7 +126,7 @@ contract('QuickSwap Swap', function([_, user, someone]) {
         profileGas(receipt);
       });
 
-      it('max amount', async function() {
+      it('max amount', async function () {
         const value = ether('1');
         const to = this.hQuickSwap.address;
         const path = [WMATIC_TOKEN, tokenAddress];
@@ -165,7 +165,7 @@ contract('QuickSwap Swap', function([_, user, someone]) {
         profileGas(receipt);
       });
 
-      it('min amount too high', async function() {
+      it('min amount too high', async function () {
         const value = ether('1');
         const to = this.hQuickSwap.address;
         const path = [WMATIC_TOKEN, tokenAddress];
@@ -190,7 +190,7 @@ contract('QuickSwap Swap', function([_, user, someone]) {
         expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
       });
 
-      it('invalid path', async function() {
+      it('invalid path', async function () {
         const value = ether('1');
         const to = this.hQuickSwap.address;
         const path = [tokenAddress, WMATIC_TOKEN];
@@ -207,8 +207,8 @@ contract('QuickSwap Swap', function([_, user, someone]) {
       });
     });
 
-    describe('Exact output', function() {
-      it('normal', async function() {
+    describe('Exact output', function () {
+      it('normal', async function () {
         const value = ether('10');
         const buyAmt = ether('0.001');
         const to = this.hQuickSwap.address;
@@ -247,7 +247,7 @@ contract('QuickSwap Swap', function([_, user, someone]) {
         profileGas(receipt);
       });
 
-      it('max amount', async function() {
+      it('max amount', async function () {
         const value = ether('10');
         const buyAmt = ether('0.001');
         const to = this.hQuickSwap.address;
@@ -286,7 +286,7 @@ contract('QuickSwap Swap', function([_, user, someone]) {
         profileGas(receipt);
       });
 
-      it('insufficient matic', async function() {
+      it('insufficient matic', async function () {
         const buyAmt = ether('0.1');
         const to = this.hQuickSwap.address;
         const path = [WMATIC_TOKEN, tokenAddress];
@@ -309,7 +309,7 @@ contract('QuickSwap Swap', function([_, user, someone]) {
         );
       });
 
-      it('invalid path', async function() {
+      it('invalid path', async function () {
         const value = ether('1');
         const buyAmt = ether('100');
         const to = this.hQuickSwap.address;
@@ -331,7 +331,7 @@ contract('QuickSwap Swap', function([_, user, someone]) {
     });
   });
 
-  describe('Token to Matic', function() {
+  describe('Token to Matic', function () {
     const tokenAddress = WETH_TOKEN;
 
     let balanceUser;
@@ -339,20 +339,20 @@ contract('QuickSwap Swap', function([_, user, someone]) {
     let tokenUser;
     let providerAddress;
 
-    before(async function() {
+    before(async function () {
       providerAddress = await tokenProviderSushi(tokenAddress);
 
       this.token = await IToken.at(tokenAddress);
     });
 
-    beforeEach(async function() {
+    beforeEach(async function () {
       balanceUser = await tracker(user);
       balanceProxy = await tracker(this.proxy.address);
       tokenUser = await this.token.balanceOf(user);
     });
 
-    describe('Exact input', function() {
-      it('normal', async function() {
+    describe('Exact input', function () {
+      it('normal', async function () {
         const value = ether('1');
         const to = this.hQuickSwap.address;
         const path = [tokenAddress, WMATIC_TOKEN];
@@ -391,7 +391,7 @@ contract('QuickSwap Swap', function([_, user, someone]) {
         profileGas(receipt);
       });
 
-      it('max amount', async function() {
+      it('max amount', async function () {
         const value = ether('1');
         const to = this.hQuickSwap.address;
         const path = [tokenAddress, WMATIC_TOKEN];
@@ -430,7 +430,7 @@ contract('QuickSwap Swap', function([_, user, someone]) {
         profileGas(receipt);
       });
 
-      it('min output too high', async function() {
+      it('min output too high', async function () {
         const value = ether('1');
         const to = this.hQuickSwap.address;
         const path = [tokenAddress, WMATIC_TOKEN];
@@ -453,7 +453,7 @@ contract('QuickSwap Swap', function([_, user, someone]) {
         );
       });
 
-      it('invalid path', async function() {
+      it('invalid path', async function () {
         const value = ether('1');
         const to = this.hQuickSwap.address;
         const path = [tokenAddress, WMATIC_TOKEN, tokenAddress];
@@ -474,8 +474,8 @@ contract('QuickSwap Swap', function([_, user, someone]) {
       });
     });
 
-    describe('Exact output', function() {
-      it('normal', async function() {
+    describe('Exact output', function () {
+      it('normal', async function () {
         const value = ether('1');
         const buyAmt = ether('1');
         const to = this.hQuickSwap.address;
@@ -512,7 +512,7 @@ contract('QuickSwap Swap', function([_, user, someone]) {
         profileGas(receipt);
       });
 
-      it('max amount', async function() {
+      it('max amount', async function () {
         const value = ether('1');
         const buyAmt = ether('1');
         const to = this.hQuickSwap.address;
@@ -549,7 +549,7 @@ contract('QuickSwap Swap', function([_, user, someone]) {
         profileGas(receipt);
       });
 
-      it('insufficient input token', async function() {
+      it('insufficient input token', async function () {
         const value = ether('1');
         const buyAmt = ether('10000');
         const to = this.hQuickSwap.address;
@@ -570,7 +570,7 @@ contract('QuickSwap Swap', function([_, user, someone]) {
         );
       });
 
-      it('invalid path', async function() {
+      it('invalid path', async function () {
         const value = ether('1');
         const buyAmt = ether('1');
         const to = this.hQuickSwap.address;
@@ -593,7 +593,7 @@ contract('QuickSwap Swap', function([_, user, someone]) {
     });
   });
 
-  describe('Token to Token', function() {
+  describe('Token to Token', function () {
     const token0Address = WETH_TOKEN;
     const token1Address = USDC_TOKEN;
 
@@ -601,20 +601,20 @@ contract('QuickSwap Swap', function([_, user, someone]) {
     let token1User;
     let providerAddress;
 
-    before(async function() {
+    before(async function () {
       providerAddress = await tokenProviderSushi(token0Address);
 
       this.token0 = await IToken.at(token0Address);
       this.token1 = await IToken.at(token1Address);
     });
 
-    beforeEach(async function() {
+    beforeEach(async function () {
       token0User = await this.token0.balanceOf(user);
       token1User = await this.token1.balanceOf(user);
     });
 
-    describe('Exact input', function() {
-      it('normal', async function() {
+    describe('Exact input', function () {
+      it('normal', async function () {
         const value = ether('1');
         const to = this.hQuickSwap.address;
         const path = [token0Address, WMATIC_TOKEN, token1Address];
@@ -654,7 +654,7 @@ contract('QuickSwap Swap', function([_, user, someone]) {
         profileGas(receipt);
       });
 
-      it('max amount', async function() {
+      it('max amount', async function () {
         const value = ether('1');
         const to = this.hQuickSwap.address;
         const path = [token0Address, WMATIC_TOKEN, token1Address];
@@ -694,7 +694,7 @@ contract('QuickSwap Swap', function([_, user, someone]) {
         profileGas(receipt);
       });
 
-      it('min output too high', async function() {
+      it('min output too high', async function () {
         const value = ether('1');
         const to = this.hQuickSwap.address;
         const path = [token0Address, WMATIC_TOKEN, token1Address];
@@ -719,7 +719,7 @@ contract('QuickSwap Swap', function([_, user, someone]) {
           'HQuickSwap_swapExactTokensForTokens: UniswapV2Router: INSUFFICIENT_OUTPUT_AMOUNT'
         );
       });
-      it('identical addresses', async function() {
+      it('identical addresses', async function () {
         const value = ether('1');
         const to = this.hQuickSwap.address;
         const path = [token0Address, token0Address, token1Address];
@@ -740,8 +740,8 @@ contract('QuickSwap Swap', function([_, user, someone]) {
       });
     });
 
-    describe('Exact output', function() {
-      it('normal', async function() {
+    describe('Exact output', function () {
+      it('normal', async function () {
         const value = ether('1');
         const buyAmt = mwei('1');
         const to = this.hQuickSwap.address;
@@ -786,7 +786,7 @@ contract('QuickSwap Swap', function([_, user, someone]) {
         profileGas(receipt);
       });
 
-      it('max amount', async function() {
+      it('max amount', async function () {
         const value = ether('1');
         const buyAmt = mwei('1');
         const to = this.hQuickSwap.address;
@@ -831,7 +831,7 @@ contract('QuickSwap Swap', function([_, user, someone]) {
         profileGas(receipt);
       });
 
-      it('excessive input amount', async function() {
+      it('excessive input amount', async function () {
         const value = ether('1');
         const buyAmt = mwei('100000');
         const to = this.hQuickSwap.address;
@@ -852,7 +852,7 @@ contract('QuickSwap Swap', function([_, user, someone]) {
         );
       });
 
-      it('identical addresses', async function() {
+      it('identical addresses', async function () {
         const value = ether('1');
         const buyAmt = mwei('1');
         const to = this.hQuickSwap.address;

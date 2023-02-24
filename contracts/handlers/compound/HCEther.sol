@@ -67,11 +67,9 @@ contract HCEther is HandlerBase {
         return (afterRedeemAmount - beforeRedeemAmount);
     }
 
-    function redeemUnderlying(uint256 redeemAmount)
-        external
-        payable
-        returns (uint256)
-    {
+    function redeemUnderlying(
+        uint256 redeemAmount
+    ) external payable returns (uint256) {
         // Get cether balance of proxy before redeemUnderlying
         ICEther compound = ICEther(CETHER);
         uint256 beforeCEtherAmount = compound.balanceOf(address(this));
@@ -95,11 +93,10 @@ contract HCEther is HandlerBase {
         return (beforeCEtherAmount - afterCEtherAmount);
     }
 
-    function repayBorrowBehalf(uint256 amount, address borrower)
-        external
-        payable
-        returns (uint256)
-    {
+    function repayBorrowBehalf(
+        uint256 amount,
+        address borrower
+    ) external payable returns (uint256) {
         ICEther compound = ICEther(CETHER);
         uint256 debt = compound.borrowBalanceCurrent(borrower);
 

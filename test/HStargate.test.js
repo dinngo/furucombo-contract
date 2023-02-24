@@ -72,8 +72,8 @@ function stargateFormat(num) {
   return num.toString().padEnd(66, '0'); // include 0x for a 32 bit data
 }
 
-contract('Stargate', function([_, user, user2]) {
-  before(async function() {
+contract('Stargate', function ([_, user, user2]) {
+  before(async function () {
     wrappedNativeTokenProviderAddress = await getTokenProvider(
       WRAPPED_NATIVE_TOKEN
     );
@@ -104,17 +104,17 @@ contract('Stargate', function([_, user, user2]) {
     this.stargateWidget = await IStargateWidget.at(STARGATE_WIDGET_SWAP);
   });
 
-  beforeEach(async function() {
+  beforeEach(async function () {
     id = await evmSnapshot();
     balanceUser = await tracker(user);
     balanceProxy = await tracker(this.proxy.address);
   });
 
-  afterEach(async function() {
+  afterEach(async function () {
     await evmRevert(id);
   });
 
-  describe('Swap', function() {
+  describe('Swap', function () {
     const dstChainId = STARGATE_DESTINATION_CHAIN_ID;
     const amountOutMin = 0;
     const receiver = user;
@@ -122,20 +122,20 @@ contract('Stargate', function([_, user, user2]) {
     const funcType = TYPE_SWAP_REMOTE;
     const payload = '0x';
 
-    describe('Native', function() {
+    describe('Native', function () {
       if (chainId == 137 || chainId == 43114) {
         // Stargate does not support MATIC / AVAX for now
         return;
       }
 
-      beforeEach(async function() {
+      beforeEach(async function () {
         balanceVaultETH = await tracker(STARGATE_VAULT_ETH);
       });
 
       const amountIn = ether('10');
 
       // to the same address and amountOutMin = 0
-      it('normal', async function() {
+      it('normal', async function () {
         // Prep
         const refundAddress = this.proxy.address;
         const to = this.hStargate.address;
@@ -180,7 +180,7 @@ contract('Stargate', function([_, user, user2]) {
         profileGas(receipt);
       });
 
-      it('to a different address', async function() {
+      it('to a different address', async function () {
         // Prep
         const receiver = user2;
         const refundAddress = this.proxy.address;
@@ -226,7 +226,7 @@ contract('Stargate', function([_, user, user2]) {
         profileGas(receipt);
       });
 
-      it('refund extra fee', async function() {
+      it('refund extra fee', async function () {
         // Prep
         const refundAddress = this.proxy.address;
         const to = this.hStargate.address;
@@ -260,9 +260,7 @@ contract('Stargate', function([_, user, user2]) {
         // Verify
         expect(await balanceProxy.get()).to.be.bignumber.zero;
         expect(await balanceUser.delta()).to.be.bignumber.eq(
-          ether('0')
-            .sub(value)
-            .add(extraFee)
+          ether('0').sub(value).add(extraFee)
         );
         expect(await balanceVaultETH.delta()).to.be.bignumber.eq(amountIn);
 
@@ -276,7 +274,7 @@ contract('Stargate', function([_, user, user2]) {
       });
 
       // chain
-      it('should revert: to unsupported chain', async function() {
+      it('should revert: to unsupported chain', async function () {
         // Prep
         const dstChainId = STARGATE_UNSUPPORT_ETH_DEST_CHAIN_ID;
         const refundAddress = this.proxy.address;
@@ -310,7 +308,7 @@ contract('Stargate', function([_, user, user2]) {
         );
       });
 
-      it('should revert: to unknown chain', async function() {
+      it('should revert: to unknown chain', async function () {
         // Prep
         const dstChainId = STARGATE_UNKNOWN_CHAIN_ID;
         const refundAddress = this.proxy.address;
@@ -337,7 +335,7 @@ contract('Stargate', function([_, user, user2]) {
         );
       });
 
-      it('should revert: to stable token', async function() {
+      it('should revert: to stable token', async function () {
         // Prep
         const srcPoolId = STARGATE_POOL_ID_ETH;
         const dstPoolId = STARGATE_POOL_ID_USDC;
@@ -369,7 +367,7 @@ contract('Stargate', function([_, user, user2]) {
       });
 
       // fee
-      it('should revert: without fee', async function() {
+      it('should revert: without fee', async function () {
         // Prep
         const refundAddress = this.proxy.address;
         const to = this.hStargate.address;
@@ -395,7 +393,7 @@ contract('Stargate', function([_, user, user2]) {
         );
       });
 
-      it('should revert: insufficient fee', async function() {
+      it('should revert: insufficient fee', async function () {
         // Prep
         const refundAddress = this.proxy.address;
         const to = this.hStargate.address;
@@ -429,7 +427,7 @@ contract('Stargate', function([_, user, user2]) {
       });
 
       // amount
-      it('should revert: amountIn = 0', async function() {
+      it('should revert: amountIn = 0', async function () {
         // Prep
         const amountIn = ether('0');
         const refundAddress = this.proxy.address;
@@ -463,7 +461,7 @@ contract('Stargate', function([_, user, user2]) {
         );
       });
 
-      it('should revert: amountOutMin = amountIn', async function() {
+      it('should revert: amountOutMin = amountIn', async function () {
         // Prep
         const amountOutMin = amountIn;
         const refundAddress = this.proxy.address;
@@ -497,7 +495,7 @@ contract('Stargate', function([_, user, user2]) {
         );
       });
 
-      it('should revert: amountIn = pool total balance', async function() {
+      it('should revert: amountIn = pool total balance', async function () {
         // Prep
         const amountIn = await balanceVaultETH.get();
         await network.provider.send('hardhat_setBalance', [
@@ -536,7 +534,7 @@ contract('Stargate', function([_, user, user2]) {
       });
 
       // address
-      it('should revert: refund zero address', async function() {
+      it('should revert: refund zero address', async function () {
         // Prep
         const refundAddress = constants.ZERO_ADDRESS;
         const to = this.hStargate.address;
@@ -569,7 +567,7 @@ contract('Stargate', function([_, user, user2]) {
         );
       });
 
-      it('should revert: to zero address', async function() {
+      it('should revert: to zero address', async function () {
         // Prep
         const receiver = constants.ZERO_ADDRESS;
         const refundAddress = this.proxy.address;
@@ -604,7 +602,7 @@ contract('Stargate', function([_, user, user2]) {
       });
     });
 
-    describe('Stable', function() {
+    describe('Stable', function () {
       const inputTokenAddr = USDC_TOKEN;
       const INPUT_TOKEN_BALANCE_SLOT_NUM = 9;
 
@@ -614,12 +612,12 @@ contract('Stargate', function([_, user, user2]) {
 
       let inputTokenPoolBefore;
 
-      before(async function() {
+      before(async function () {
         inputTokenProvider = await getTokenProvider(inputTokenAddr);
         this.inputToken = await IToken.at(inputTokenAddr);
       });
 
-      this.beforeEach(async function() {
+      this.beforeEach(async function () {
         await this.inputToken.transfer(this.proxy.address, amountIn, {
           from: inputTokenProvider,
         });
@@ -631,7 +629,7 @@ contract('Stargate', function([_, user, user2]) {
       });
 
       // to the same address and amountOutMin = 0
-      it('normal', async function() {
+      it('normal', async function () {
         // Prep
         const refundAddress = this.proxy.address;
         const to = this.hStargate.address;
@@ -683,7 +681,7 @@ contract('Stargate', function([_, user, user2]) {
         profileGas(receipt);
       });
 
-      it('to a different address', async function() {
+      it('to a different address', async function () {
         // Prep
         const receiver = user2;
         const refundAddress = this.proxy.address;
@@ -736,7 +734,7 @@ contract('Stargate', function([_, user, user2]) {
         profileGas(receipt);
       });
 
-      it('refund extra fee', async function() {
+      it('refund extra fee', async function () {
         // Prep
         const refundAddress = this.proxy.address;
         const to = this.hStargate.address;
@@ -775,9 +773,7 @@ contract('Stargate', function([_, user, user2]) {
           await this.inputToken.balanceOf(this.proxy.address)
         ).to.be.bignumber.zero;
         expect(await balanceUser.delta()).to.be.bignumber.eq(
-          ether('0')
-            .sub(value)
-            .add(extraFee)
+          ether('0').sub(value).add(extraFee)
         );
         expect(
           await this.inputToken.balanceOf(STARGATE_POOL_USDC)
@@ -793,7 +789,7 @@ contract('Stargate', function([_, user, user2]) {
       });
 
       // chain
-      it('should revert: to unknown chain', async function() {
+      it('should revert: to unknown chain', async function () {
         // Prep
         const dstChainId = STARGATE_UNKNOWN_CHAIN_ID;
         const refundAddress = this.proxy.address;
@@ -823,7 +819,7 @@ contract('Stargate', function([_, user, user2]) {
       });
 
       // token
-      it('should revert: from unknown src token', async function() {
+      it('should revert: from unknown src token', async function () {
         // Prep
         const srcPoolId = STARGATE_UNKNOWN_POOL_ID;
         const refundAddress = this.proxy.address;
@@ -852,7 +848,7 @@ contract('Stargate', function([_, user, user2]) {
         );
       });
 
-      it('should revert: to unknown token', async function() {
+      it('should revert: to unknown token', async function () {
         // Prep
         const dstPoolId = STARGATE_UNKNOWN_POOL_ID;
         const refundAddress = this.proxy.address;
@@ -881,7 +877,7 @@ contract('Stargate', function([_, user, user2]) {
         );
       });
 
-      it('should revert: to disallowed stable token', async function() {
+      it('should revert: to disallowed stable token', async function () {
         // Prep
         const dstPoolId = STARGATE_USDC_TO_DISALLOW_TOKEN_ID;
         const refundAddress = this.proxy.address;
@@ -910,7 +906,7 @@ contract('Stargate', function([_, user, user2]) {
         );
       });
 
-      it('should revert: to native token', async function() {
+      it('should revert: to native token', async function () {
         // Prep
         const dstPoolId = STARGATE_POOL_ID_ETH;
         const refundAddress = this.proxy.address;
@@ -940,7 +936,7 @@ contract('Stargate', function([_, user, user2]) {
       });
 
       // fee
-      it('should revert: insufficient fee', async function() {
+      it('should revert: insufficient fee', async function () {
         // Prep
         const refundAddress = this.proxy.address;
         const to = this.hStargate.address;
@@ -969,7 +965,7 @@ contract('Stargate', function([_, user, user2]) {
       });
 
       // amount
-      it('should revert: amountIn = 0', async function() {
+      it('should revert: amountIn = 0', async function () {
         // Prep
         const amountIn = ether('0');
         const refundAddress = this.proxy.address;
@@ -1005,7 +1001,7 @@ contract('Stargate', function([_, user, user2]) {
         );
       });
 
-      it('should revert: amountOutMin = amountIn', async function() {
+      it('should revert: amountOutMin = amountIn', async function () {
         // Prep
         const amountOutMin = amountIn;
         const refundAddress = this.proxy.address;
@@ -1041,7 +1037,7 @@ contract('Stargate', function([_, user, user2]) {
         );
       });
 
-      it('should revert: amountIn = pool total balance', async function() {
+      it('should revert: amountIn = pool total balance', async function () {
         // Prep
         const amountIn = inputTokenPoolBefore;
         const refundAddress = this.proxy.address;
@@ -1086,7 +1082,7 @@ contract('Stargate', function([_, user, user2]) {
       });
 
       // address
-      it('should revert: refund zero address', async function() {
+      it('should revert: refund zero address', async function () {
         // Prep
         const refundAddress = constants.ZERO_ADDRESS;
         const to = this.hStargate.address;
@@ -1121,7 +1117,7 @@ contract('Stargate', function([_, user, user2]) {
         );
       });
 
-      it('should revert: to zero address', async function() {
+      it('should revert: to zero address', async function () {
         // Prep
         const refundAddress = this.proxy.address;
         const receiver = constants.ZERO_ADDRESS;

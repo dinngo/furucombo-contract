@@ -48,7 +48,7 @@ const StakingRewardsAdapterRegistry = artifacts.require(
 );
 const IToken = artifacts.require('IERC20');
 
-contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
+contract('StakingRewardsAdapter - Handler', function ([_, user, someone]) {
   let id;
   let balanceUser;
   /// st = stakingToken
@@ -59,7 +59,7 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
   let stProviderAddress;
   let rtProviderAddress;
 
-  before(async function() {
+  before(async function () {
     stProviderAddress = await tokenProviderUniV2(stAddress);
     rtProviderAddress = await tokenProviderUniV2(rtAddress);
 
@@ -121,21 +121,21 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
     );
   });
 
-  beforeEach(async function() {
+  beforeEach(async function () {
     id = await evmSnapshot();
   });
 
-  afterEach(async function() {
+  afterEach(async function () {
     await evmRevert(id);
   });
 
-  describe('Stake', function() {
-    beforeEach(async function() {
+  describe('Stake', function () {
+    beforeEach(async function () {
       rewardUserAmount = await this.rt.balanceOf.call(user);
       balanceUser = await tracker(user);
     });
 
-    it('stake for msg.sender', async function() {
+    it('stake for msg.sender', async function () {
       // Prepare staking data
       const sValue = ether('100');
       const rValue = ether('6048');
@@ -189,7 +189,7 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
       profileGas(receipt);
     });
 
-    it('stake for others', async function() {
+    it('stake for others', async function () {
       // Prepare staking data
       const sValue = ether('100');
       const rValue = ether('6048');
@@ -251,7 +251,7 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
       profileGas(receipt);
     });
 
-    it('unregistered adapter: stake', async function() {
+    it('unregistered adapter: stake', async function () {
       // Prepare staking data
       const sValue = ether('100');
       // Transfer stakingToken to proxy
@@ -275,7 +275,7 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
       );
     });
 
-    it('unregistered adapter: stakeFor', async function() {
+    it('unregistered adapter: stakeFor', async function () {
       // Prepare staking data
       const sValue = ether('100');
       // Transfer stakingToken to proxy
@@ -301,13 +301,13 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
     });
   });
 
-  describe('Withdraw', function() {
-    beforeEach(async function() {
+  describe('Withdraw', function () {
+    beforeEach(async function () {
       rewardUserAmount = await this.rt.balanceOf.call(user);
       balanceUser = await tracker(user);
     });
 
-    it('authorized', async function() {
+    it('authorized', async function () {
       // Prepare staking data
       const sValue = ether('100');
       const rValue = ether('6048');
@@ -362,7 +362,7 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
       profileGas(receipt);
     });
 
-    it('unauthorized', async function() {
+    it('unauthorized', async function () {
       // Prepare staking data
       const sValue = ether('100');
       const rValue = ether('6048');
@@ -397,7 +397,7 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
       );
     });
 
-    it('unregistered adapter', async function() {
+    it('unregistered adapter', async function () {
       // Prepare staking data
       const sValue = ether('100');
       const rValue = ether('6048');
@@ -436,13 +436,13 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
     });
   });
 
-  describe('Exit', function() {
-    beforeEach(async function() {
+  describe('Exit', function () {
+    beforeEach(async function () {
       rewardUserAmount = await this.rt.balanceOf.call(user);
       balanceUser = await tracker(user);
     });
 
-    it('authorized', async function() {
+    it('authorized', async function () {
       // Prepare staking data
       const sValue = ether('100');
       const rValue = ether('6048');
@@ -507,7 +507,7 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
       profileGas(receipt);
     });
 
-    it('unauthorized', async function() {
+    it('unauthorized', async function () {
       // Prepare staking data
       const sValue = ether('100');
       const rValue = ether('6048');
@@ -537,7 +537,7 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
       );
     });
 
-    it('unregistered adapter', async function() {
+    it('unregistered adapter', async function () {
       // Prepare staking data
       const sValue = ether('100');
       const rValue = ether('6048');
@@ -575,13 +575,13 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
     });
   });
 
-  describe('GetReward', function() {
-    beforeEach(async function() {
+  describe('GetReward', function () {
+    beforeEach(async function () {
       rewardUserAmount = await this.rt.balanceOf.call(user);
       balanceUser = await tracker(user);
     });
 
-    it('authorized', async function() {
+    it('authorized', async function () {
       // Prepare staking data
       const sValue = ether('100');
       const rValue = ether('6048');
@@ -639,7 +639,7 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
       profileGas(receipt);
     });
 
-    it('unauthorized', async function() {
+    it('unauthorized', async function () {
       // Prepare staking data
       const sValue = ether('100');
       const rValue = ether('6048');
@@ -670,7 +670,7 @@ contract('StakingRewardsAdapter - Handler', function([_, user, someone]) {
       );
     });
 
-    it('unregistered adapter', async function() {
+    it('unregistered adapter', async function () {
       // Prepare staking data
       const sValue = ether('100');
       const rValue = ether('6048');

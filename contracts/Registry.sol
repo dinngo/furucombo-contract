@@ -76,10 +76,10 @@ contract Registry is IRegistry, Ownable {
      * In this case, registration is the Dapp address and the leading 20 bytes
      * of info is the handler address.
      */
-    function registerCaller(address registration, bytes32 info)
-        external
-        onlyOwner
-    {
+    function registerCaller(
+        address registration,
+        bytes32 info
+    ) external onlyOwner {
         require(registration != address(0), "zero address");
         require(info != DEPRECATED, "unregistered info");
         require(callers[registration] != DEPRECATED, "unregistered");
@@ -120,12 +120,9 @@ contract Registry is IRegistry, Ownable {
      * @notice Check if the handler is valid.
      * @param handler The handler to be verified.
      */
-    function isValidHandler(address handler)
-        external
-        view
-        override
-        returns (bool)
-    {
+    function isValidHandler(
+        address handler
+    ) external view override returns (bool) {
         return handlers[handler] != 0 && handlers[handler] != DEPRECATED;
     }
 
@@ -133,12 +130,9 @@ contract Registry is IRegistry, Ownable {
      * @notice Check if the caller is valid.
      * @param caller The caller to be verified.
      */
-    function isValidCaller(address caller)
-        external
-        view
-        override
-        returns (bool)
-    {
+    function isValidCaller(
+        address caller
+    ) external view override returns (bool) {
         return callers[caller] != 0 && callers[caller] != DEPRECATED;
     }
 
