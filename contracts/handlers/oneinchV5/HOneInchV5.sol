@@ -22,8 +22,10 @@ contract HOneInchV5 is HandlerBase {
         bytes calldata data
     ) external payable returns (uint256 returnAmount) {
         // Get dstToken balance before executing swap
-        uint256 dstTokenBalanceBefore =
-            _getBalance(address(dstToken), type(uint256).max);
+        uint256 dstTokenBalanceBefore = _getBalance(
+            address(dstToken),
+            type(uint256).max
+        );
 
         // Interact with 1inch
         if (_isNotNativeToken(address(srcToken))) {
@@ -36,8 +38,10 @@ contract HOneInchV5 is HandlerBase {
         }
 
         // Check, dstToken balance should be increased
-        uint256 dstTokenBalanceAfter =
-            _getBalance(address(dstToken), type(uint256).max);
+        uint256 dstTokenBalanceAfter = _getBalance(
+            address(dstToken),
+            type(uint256).max
+        );
         _requireMsg(
             dstTokenBalanceAfter - dstTokenBalanceBefore == returnAmount,
             "swap",
@@ -50,13 +54,14 @@ contract HOneInchV5 is HandlerBase {
         }
     }
 
-    function _oneInchswapCall(uint256 value, bytes calldata data)
-        internal
-        returns (uint256 returnAmount)
-    {
+    function _oneInchswapCall(
+        uint256 value,
+        bytes calldata data
+    ) internal returns (uint256 returnAmount) {
         // Interact with 1inch through contract call with data
-        (bool success, bytes memory returnData) =
-            oneInchRouter.call{value: value}(data);
+        (bool success, bytes memory returnData) = oneInchRouter.call{
+            value: value
+        }(data);
 
         // Verify return status and data
         if (success) {

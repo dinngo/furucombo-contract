@@ -286,11 +286,7 @@ contract HMaker is HandlerBase {
         _updateToken(DAI_TOKEN);
     }
 
-    function wipe(
-        address daiJoin,
-        uint256 cdp,
-        uint256 wad
-    ) external payable {
+    function wipe(address daiJoin, uint256 cdp, uint256 wad) external payable {
         IDSProxy proxy = IDSProxy(_getProxy(address(this)));
         _tokenApprove(DAI_TOKEN, address(proxy), wad);
         try

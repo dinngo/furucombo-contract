@@ -38,12 +38,12 @@ const HWrapper = artifacts.require('HWrappedNativeToken');
 const IProviderV2 = artifacts.require('ILendingPoolAddressesProviderV2');
 const IProviderV3 = artifacts.require('IPoolAddressesProvider');
 
-contract('CubeCounting', function([_, user]) {
+contract('CubeCounting', function ([_, user]) {
   const wrappedTokenAddress = WRAPPED_NATIVE_TOKEN;
 
   let id;
 
-  before(async function() {
+  before(async function () {
     this.registry = await Registry.new();
 
     this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);
@@ -75,7 +75,10 @@ contract('CubeCounting', function([_, user]) {
         this.hAaveV2.address
       );
     } else {
-      this.hAaveV3 = await HAaveV3.new(wrappedTokenAddress);
+      this.hAaveV3 = await HAaveV3.new(
+        wrappedTokenAddress,
+        AAVEPROTOCOL_V3_PROVIDER
+      );
       await this.registry.register(
         this.hAaveV3.address,
         utils.asciiToHex('HAaveProtocolV3')
@@ -86,16 +89,16 @@ contract('CubeCounting', function([_, user]) {
     }
   });
 
-  beforeEach(async function() {
+  beforeEach(async function () {
     id = await evmSnapshot();
   });
 
-  afterEach(async function() {
+  afterEach(async function () {
     await evmRevert(id);
   });
 
-  describe('Wrapper', function() {
-    it('simply revert', async function() {
+  describe('Wrapper', function () {
+    it('simply revert', async function () {
       const value = ether('1');
       const to = [this.hWrapper.address];
       const config = [ZERO_BYTES32];
@@ -110,8 +113,8 @@ contract('CubeCounting', function([_, user]) {
     });
   });
 
-  describe('FlashLoan', function() {
-    it('silently revert', async function() {
+  describe('FlashLoan', function () {
+    it('silently revert', async function () {
       if (chainId == 1) {
         // FlashLoan with invalid callback data
         const value = ether('1');
@@ -161,7 +164,7 @@ contract('CubeCounting', function([_, user]) {
       }
     });
 
-    it('insufficient fee revert', async function() {
+    it('insufficient fee revert', async function () {
       if (chainId == 1) {
         // FlashLoan with empty callback data
         const value = ether('1');
@@ -227,7 +230,7 @@ contract('CubeCounting', function([_, user]) {
       }
     });
 
-    it('0 -> 0 revert', async function() {
+    it('0 -> 0 revert', async function () {
       if (chainId == 1) {
         // FlashLoan wrapped token -> withdraw revert
         const value = ether('1');
@@ -299,7 +302,7 @@ contract('CubeCounting', function([_, user]) {
       }
     });
 
-    it('0 -> 1 revert', async function() {
+    it('0 -> 1 revert', async function () {
       if (chainId == 1) {
         // FlashLoan wrapped token -> withdraw -> deposit revert
         const value = ether('1');
@@ -371,7 +374,7 @@ contract('CubeCounting', function([_, user]) {
       }
     });
 
-    it('1 -> 0 revert', async function() {
+    it('1 -> 0 revert', async function () {
       if (chainId == 1) {
         // Dummy deposit -> FlashLoan wrapped token -> withdraw revert
         const value = ether('1');
@@ -446,9 +449,9 @@ contract('CubeCounting', function([_, user]) {
     });
   });
 
-  describe('Existing handler', function() {
+  describe('Existing handler', function () {
     if (chainId == 1) {
-      it('0_0 revert', async function() {
+      it('0_0 revert', async function () {
         // Register existing wrapper
         const existingWrapper = '0x9e2Ba701cf5Dc47096060BB0a773e732BEE68dE6';
 

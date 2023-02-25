@@ -27,10 +27,10 @@ const NFT_DISCOUNTB = ether('0.5'); // 50%
 const NFT_DISCOUNTC = ether('0.15'); // 15%
 const NFT_DISCOUNT_ZERO = ether('0'); // 0%
 
-contract('RERC1155NFT', function([owner, feeCollector, user, someone]) {
+contract('RERC1155NFT', function ([owner, feeCollector, user, someone]) {
   let id;
 
-  before(async function() {
+  before(async function () {
     this.nft = await ERC1155Mock.new();
     this.nftTokenID = await this.nft.tokenId();
     this.registry = await FeeRuleRegistry.new(BASIS_FEE_RATE, feeCollector);
@@ -68,26 +68,26 @@ contract('RERC1155NFT', function([owner, feeCollector, user, someone]) {
     ).to.be.bignumber.zero;
   });
 
-  beforeEach(async function() {
+  beforeEach(async function () {
     id = await evmSnapshot();
   });
 
-  afterEach(async function() {
+  afterEach(async function () {
     await evmRevert(id);
   });
 
-  describe('RERC1155NFT', function() {
-    describe('calculate single', function() {
+  describe('RERC1155NFT', function () {
+    describe('calculate single', function () {
       //  The fee is higher if the Rule discount is higher. The fee is lower if the Rule discount is lower.
-      describe('high rule discount', function() {
-        beforeEach(async function() {
+      describe('high rule discount', function () {
+        beforeEach(async function () {
           await this.registry.registerRule(this.nftRuleA.address);
           expect(await this.registry.rules.call('0')).to.be.eq(
             this.nftRuleA.address
           );
         });
 
-        it('qualified without basis', async function() {
+        it('qualified without basis', async function () {
           const queryAddr = user;
           const rate = await this.registry.calFeeRateWithoutBasis.call(
             queryAddr,
@@ -96,7 +96,7 @@ contract('RERC1155NFT', function([owner, feeCollector, user, someone]) {
           expect(rate).to.be.bignumber.eq(NFT_DISCOUNTA);
         });
 
-        it('qualified with basis', async function() {
+        it('qualified with basis', async function () {
           const queryAddr = user;
           const rate = await this.registry.calFeeRate.call(queryAddr, '0');
           expect(rate).to.be.bignumber.eq(
@@ -104,7 +104,7 @@ contract('RERC1155NFT', function([owner, feeCollector, user, someone]) {
           );
         });
 
-        it('not qualified without basis', async function() {
+        it('not qualified without basis', async function () {
           const queryAddr = someone;
           const rate = await this.registry.calFeeRateWithoutBasis.call(
             queryAddr,
@@ -113,15 +113,15 @@ contract('RERC1155NFT', function([owner, feeCollector, user, someone]) {
           expect(rate).to.be.bignumber.eq(BASE);
         });
 
-        it('not qualified with basis', async function() {
+        it('not qualified with basis', async function () {
           const queryAddr = someone;
           const rate = await this.registry.calFeeRate.call(queryAddr, '0');
           expect(rate).to.be.bignumber.eq(BASIS_FEE_RATE);
         });
       });
 
-      describe('middle rule discount', function() {
-        beforeEach(async function() {
+      describe('middle rule discount', function () {
+        beforeEach(async function () {
           const receipt = await this.registry.registerRule(
             this.nftRuleB.address
           );
@@ -130,7 +130,7 @@ contract('RERC1155NFT', function([owner, feeCollector, user, someone]) {
           );
         });
 
-        it('qualified without basis', async function() {
+        it('qualified without basis', async function () {
           const queryAddr = user;
           const rate = await this.registry.calFeeRateWithoutBasis.call(
             queryAddr,
@@ -139,7 +139,7 @@ contract('RERC1155NFT', function([owner, feeCollector, user, someone]) {
           expect(rate).to.be.bignumber.eq(NFT_DISCOUNTB);
         });
 
-        it('qualified with basis', async function() {
+        it('qualified with basis', async function () {
           const queryAddr = user;
           const rate = await this.registry.calFeeRate.call(queryAddr, '0');
           expect(rate).to.be.bignumber.eq(
@@ -147,7 +147,7 @@ contract('RERC1155NFT', function([owner, feeCollector, user, someone]) {
           );
         });
 
-        it('not qualified without basis', async function() {
+        it('not qualified without basis', async function () {
           const queryAddr = someone;
           const rate = await this.registry.calFeeRateWithoutBasis.call(
             queryAddr,
@@ -156,15 +156,15 @@ contract('RERC1155NFT', function([owner, feeCollector, user, someone]) {
           expect(rate).to.be.bignumber.eq(BASE);
         });
 
-        it('not qualified with basis', async function() {
+        it('not qualified with basis', async function () {
           const queryAddr = someone;
           const rate = await this.registry.calFeeRate.call(queryAddr, '0');
           expect(rate).to.be.bignumber.eq(BASIS_FEE_RATE);
         });
       });
 
-      describe('low rule discount', function() {
-        beforeEach(async function() {
+      describe('low rule discount', function () {
+        beforeEach(async function () {
           const receipt = await this.registry.registerRule(
             this.nftRuleC.address
           );
@@ -173,7 +173,7 @@ contract('RERC1155NFT', function([owner, feeCollector, user, someone]) {
           );
         });
 
-        it('qualified without basis', async function() {
+        it('qualified without basis', async function () {
           const queryAddr = user;
           const rate = await this.registry.calFeeRateWithoutBasis.call(
             queryAddr,
@@ -182,7 +182,7 @@ contract('RERC1155NFT', function([owner, feeCollector, user, someone]) {
           expect(rate).to.be.bignumber.eq(NFT_DISCOUNTC);
         });
 
-        it('qualified with basis', async function() {
+        it('qualified with basis', async function () {
           const queryAddr = user;
           const rate = await this.registry.calFeeRate.call(queryAddr, '0');
           expect(rate).to.be.bignumber.eq(
@@ -190,7 +190,7 @@ contract('RERC1155NFT', function([owner, feeCollector, user, someone]) {
           );
         });
 
-        it('not qualified without basis', async function() {
+        it('not qualified without basis', async function () {
           const queryAddr = someone;
           const rate = await this.registry.calFeeRateWithoutBasis.call(
             queryAddr,
@@ -199,15 +199,15 @@ contract('RERC1155NFT', function([owner, feeCollector, user, someone]) {
           expect(rate).to.be.bignumber.eq(BASE);
         });
 
-        it('not qualified with basis', async function() {
+        it('not qualified with basis', async function () {
           const queryAddr = someone;
           const rate = await this.registry.calFeeRate.call(queryAddr, '0');
           expect(rate).to.be.bignumber.eq(BASIS_FEE_RATE);
         });
       });
 
-      describe('zero rule discount', function() {
-        beforeEach(async function() {
+      describe('zero rule discount', function () {
+        beforeEach(async function () {
           const receipt = await this.registry.registerRule(
             this.nftRuleZero.address
           );
@@ -216,7 +216,7 @@ contract('RERC1155NFT', function([owner, feeCollector, user, someone]) {
           );
         });
 
-        it('qualified without basis', async function() {
+        it('qualified without basis', async function () {
           const queryAddr = user;
           const rate = await this.registry.calFeeRateWithoutBasis.call(
             queryAddr,
@@ -225,13 +225,13 @@ contract('RERC1155NFT', function([owner, feeCollector, user, someone]) {
           expect(rate).to.be.bignumber.zero;
         });
 
-        it('qualified with basis', async function() {
+        it('qualified with basis', async function () {
           const queryAddr = user;
           const rate = await this.registry.calFeeRate.call(queryAddr, '0');
           expect(rate).to.be.bignumber.zero;
         });
 
-        it('not qualified without basis', async function() {
+        it('not qualified without basis', async function () {
           const queryAddr = someone;
           const rate = await this.registry.calFeeRateWithoutBasis.call(
             queryAddr,
@@ -240,7 +240,7 @@ contract('RERC1155NFT', function([owner, feeCollector, user, someone]) {
           expect(rate).to.be.bignumber.eq(BASE);
         });
 
-        it('not qualified with basis', async function() {
+        it('not qualified with basis', async function () {
           const queryAddr = someone;
           const rate = await this.registry.calFeeRate.call(queryAddr, '0');
           expect(rate).to.be.bignumber.eq(BASIS_FEE_RATE);
@@ -248,8 +248,8 @@ contract('RERC1155NFT', function([owner, feeCollector, user, someone]) {
       });
     });
 
-    describe('calculate multi', function() {
-      beforeEach(async function() {
+    describe('calculate multi', function () {
+      beforeEach(async function () {
         // register rules
         await this.registry.registerRule(this.nftRuleA.address);
         expect(await this.registry.rules.call('0')).to.be.eq(
@@ -266,7 +266,7 @@ contract('RERC1155NFT', function([owner, feeCollector, user, someone]) {
         );
       });
 
-      it('multiple indexes: qualified for all without basis', async function() {
+      it('multiple indexes: qualified for all without basis', async function () {
         const queryAddr = user;
         const indexes = ['0', '1', '2'];
         const rate = await this.registry.calFeeRateMultiWithoutBasis.call(
@@ -281,7 +281,7 @@ contract('RERC1155NFT', function([owner, feeCollector, user, someone]) {
         );
       });
 
-      it('multiple indexes: qualified for all with basis', async function() {
+      it('multiple indexes: qualified for all with basis', async function () {
         const queryAddr = user;
         const indexes = ['0', '1', '2'];
         const rate = await this.registry.calFeeRateMulti.call(
@@ -298,7 +298,7 @@ contract('RERC1155NFT', function([owner, feeCollector, user, someone]) {
         );
       });
 
-      it('multiple indexes: qualified for both of all without basis', async function() {
+      it('multiple indexes: qualified for both of all without basis', async function () {
         const queryAddr = user;
         const indexes = ['0', '1'];
         const rate = await this.registry.calFeeRateMultiWithoutBasis.call(
@@ -310,7 +310,7 @@ contract('RERC1155NFT', function([owner, feeCollector, user, someone]) {
         );
       });
 
-      it('multiple indexes: qualified for both with basis', async function() {
+      it('multiple indexes: qualified for both with basis', async function () {
         const queryAddr = user;
         const indexes = ['0', '1'];
         const rate = await this.registry.calFeeRateMulti.call(
@@ -325,7 +325,7 @@ contract('RERC1155NFT', function([owner, feeCollector, user, someone]) {
         );
       });
 
-      it('multiple indexes: not qualified without basis', async function() {
+      it('multiple indexes: not qualified without basis', async function () {
         const queryAddr = someone;
         const indexes = ['0', '1', '2'];
         const rate = await this.registry.calFeeRateMultiWithoutBasis.call(
@@ -335,7 +335,7 @@ contract('RERC1155NFT', function([owner, feeCollector, user, someone]) {
         expect(rate).to.be.bignumber.eq(BASE);
       });
 
-      it('multiple indexes: not qualified with basis', async function() {
+      it('multiple indexes: not qualified with basis', async function () {
         const queryAddr = someone;
         const indexes = ['0', '1', '2'];
         const rate = await this.registry.calFeeRateMulti.call(

@@ -46,7 +46,7 @@ const IToken = artifacts.require('IERC20');
 const ISwapRouter = artifacts.require('ISwapRouter');
 const IQuoter = artifacts.require('IQuoter');
 
-contract('UniswapV3 Swap', function([_, user, someone]) {
+contract('UniswapV3 Swap', function ([_, user, someone]) {
   let id;
   const tokenAddress = DAI_TOKEN;
   const tokenBAddress = USDC_TOKEN;
@@ -60,7 +60,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
   let tokenProvider;
   let tokenProviderB;
 
-  before(async function() {
+  before(async function () {
     // Use pool from other swap to avoid lack of liquidity
     tokenProvider = await getTokenProvider(tokenAddress, tokenBAddress);
     tokenProviderB = await getTokenProvider(tokenCAddress, tokenBAddress);
@@ -85,7 +85,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
     this.wmatic = await IToken.at(WMATIC_TOKEN);
   });
 
-  beforeEach(async function() {
+  beforeEach(async function () {
     id = await evmSnapshot();
     balanceUser = await tracker(user);
     balanceProxy = await tracker(this.proxy.address);
@@ -95,14 +95,14 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
     wmaticUser = await this.wmatic.balanceOf.call(user);
   });
 
-  afterEach(async function() {
+  afterEach(async function () {
     await evmRevert(id);
   });
 
-  describe('Matic to Token', function() {
-    describe('Exact input', function() {
-      describe('single path', function() {
-        it('normal', async function() {
+  describe('Matic to Token', function () {
+    describe('Exact input', function () {
+      describe('single path', function () {
+        it('normal', async function () {
           const value = ether('1');
           const to = this.hUniswapV3.address;
 
@@ -157,7 +157,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           );
         });
 
-        it('max amount', async function() {
+        it('max amount', async function () {
           const value = ether('1');
           const to = this.hUniswapV3.address;
           // Set swap info
@@ -211,7 +211,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           );
         });
 
-        it('should revert: insufficient Matic', async function() {
+        it('should revert: insufficient Matic', async function () {
           const value = ether('1');
           const to = this.hUniswapV3.address;
 
@@ -239,7 +239,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           );
         });
 
-        it('should revert: desired amount too high', async function() {
+        it('should revert: desired amount too high', async function () {
           const value = ether('1');
           const to = this.hUniswapV3.address;
 
@@ -269,8 +269,8 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
         });
       });
 
-      describe('multi-path', function() {
-        it('normal', async function() {
+      describe('multi-path', function () {
+        it('normal', async function () {
           const value = ether('1');
           const to = this.hUniswapV3.address;
 
@@ -316,7 +316,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           );
         });
 
-        it('max amount', async function() {
+        it('max amount', async function () {
           const value = ether('1');
           const to = this.hUniswapV3.address;
           // Set swap info
@@ -361,7 +361,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           );
         });
 
-        it('should revert: insufficient Matic', async function() {
+        it('should revert: insufficient Matic', async function () {
           const value = ether('1');
           const to = this.hUniswapV3.address;
           // Set swap info
@@ -386,7 +386,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           );
         });
 
-        it('should revert: desired amount too high', async function() {
+        it('should revert: desired amount too high', async function () {
           const value = ether('1');
           const to = this.hUniswapV3.address;
 
@@ -413,7 +413,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           );
         });
 
-        it('from non Matic token', async function() {
+        it('from non Matic token', async function () {
           const value = ether('1');
           const to = this.hUniswapV3.address;
 
@@ -447,9 +447,9 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
       });
     });
 
-    describe('Exact output', function() {
-      describe('single path', function() {
-        it('normal', async function() {
+    describe('Exact output', function () {
+      describe('single path', function () {
+        it('normal', async function () {
           const value = ether('10');
           const to = this.hUniswapV3.address;
 
@@ -504,7 +504,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           );
         });
 
-        it('max amount', async function() {
+        it('max amount', async function () {
           const value = ether('10');
           const to = this.hUniswapV3.address;
 
@@ -558,7 +558,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           );
         });
 
-        it('should revert: insufficient Matic', async function() {
+        it('should revert: insufficient Matic', async function () {
           const value = ether('1');
           const to = this.hUniswapV3.address;
           // Set swap info
@@ -585,7 +585,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           );
         });
 
-        it('should revert: desired amount too high', async function() {
+        it('should revert: desired amount too high', async function () {
           const value = ether('1');
           const to = this.hUniswapV3.address;
           // Set swap info
@@ -614,8 +614,8 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
         });
       });
 
-      describe('multi-path', function() {
-        it('normal', async function() {
+      describe('multi-path', function () {
+        it('normal', async function () {
           const value = ether('1000');
           const to = this.hUniswapV3.address;
 
@@ -665,7 +665,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           );
         });
 
-        it('max amount', async function() {
+        it('max amount', async function () {
           const value = ether('1000');
           const to = this.hUniswapV3.address;
 
@@ -713,7 +713,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           );
         });
 
-        it('should revert: desired amount too high', async function() {
+        it('should revert: desired amount too high', async function () {
           const value = ether('1');
           const to = this.hUniswapV3.address;
 
@@ -740,7 +740,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           );
         });
 
-        it('should revert: insufficient Matic', async function() {
+        it('should revert: insufficient Matic', async function () {
           const value = ether('1');
           const to = this.hUniswapV3.address;
 
@@ -769,10 +769,10 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
     });
   });
 
-  describe('Token to Matic', function() {
-    describe('Exact input', function() {
-      describe('single path', function() {
-        it('normal', async function() {
+  describe('Token to Matic', function () {
+    describe('Exact input', function () {
+      describe('single path', function () {
+        it('normal', async function () {
           const value = mwei('1');
           const to = this.hUniswapV3.address;
 
@@ -829,7 +829,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           );
         });
 
-        it('max amount', async function() {
+        it('max amount', async function () {
           const value = mwei('1');
           const to = this.hUniswapV3.address;
 
@@ -887,7 +887,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           );
         });
 
-        it('should revert: insufficient token', async function() {
+        it('should revert: insufficient token', async function () {
           const value = mwei('1');
           const to = this.hUniswapV3.address;
 
@@ -924,7 +924,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           );
         });
 
-        it('should revert: desired amount too high', async function() {
+        it('should revert: desired amount too high', async function () {
           const value = mwei('1');
           const to = this.hUniswapV3.address;
 
@@ -958,8 +958,8 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
         });
       });
 
-      describe('multi-path', function() {
-        it('normal', async function() {
+      describe('multi-path', function () {
+        it('normal', async function () {
           const value = ether('1');
           const to = this.hUniswapV3.address;
 
@@ -1008,7 +1008,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           );
         });
 
-        it('max amount', async function() {
+        it('max amount', async function () {
           const value = ether('1');
           const to = this.hUniswapV3.address;
 
@@ -1057,7 +1057,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           );
         });
 
-        it('should revert: insufficient token', async function() {
+        it('should revert: insufficient token', async function () {
           const value = ether('1');
           const to = this.hUniswapV3.address;
 
@@ -1092,7 +1092,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           );
         });
 
-        it('should revert: desired amount too high', async function() {
+        it('should revert: desired amount too high', async function () {
           const value = ether('1');
           const to = this.hUniswapV3.address;
 
@@ -1123,7 +1123,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           );
         });
 
-        it('should revert: token out is not Matic', async function() {
+        it('should revert: token out is not Matic', async function () {
           const value = ether('1');
           const to = this.hUniswapV3.address;
 
@@ -1156,9 +1156,9 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
       });
     });
 
-    describe('Exact output', function() {
-      describe('single path', function() {
-        it('normal', async function() {
+    describe('Exact output', function () {
+      describe('single path', function () {
+        it('normal', async function () {
           const value = ether('1');
           const to = this.hUniswapV3.address;
 
@@ -1218,7 +1218,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           );
         });
 
-        it('max amount', async function() {
+        it('max amount', async function () {
           const value = ether('1');
           const to = this.hUniswapV3.address;
 
@@ -1278,7 +1278,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           );
         });
 
-        it('should revert: desired amount too high', async function() {
+        it('should revert: desired amount too high', async function () {
           const value = ether('1');
           const to = this.hUniswapV3.address;
 
@@ -1312,8 +1312,8 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
         });
       });
 
-      describe('multi-path', function() {
-        it('normal', async function() {
+      describe('multi-path', function () {
+        it('normal', async function () {
           const value = ether('1');
           const to = this.hUniswapV3.address;
 
@@ -1367,7 +1367,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           );
         });
 
-        it('max amount', async function() {
+        it('max amount', async function () {
           const value = ether('1');
           const to = this.hUniswapV3.address;
 
@@ -1421,7 +1421,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           );
         });
 
-        it('should revert: desired amount too high', async function() {
+        it('should revert: desired amount too high', async function () {
           const value = ether('1');
           const to = this.hUniswapV3.address;
 
@@ -1452,7 +1452,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           );
         });
 
-        it('should revert: tokenOut is not Matic', async function() {
+        it('should revert: tokenOut is not Matic', async function () {
           const value = ether('1');
           const to = this.hUniswapV3.address;
 
@@ -1486,10 +1486,10 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
     });
   });
 
-  describe('Token to Token', function() {
-    describe('Exact input', function() {
-      describe('single path', function() {
-        it('normal', async function() {
+  describe('Token to Token', function () {
+    describe('Exact input', function () {
+      describe('single path', function () {
+        it('normal', async function () {
           const value = ether('1');
           const to = this.hUniswapV3.address;
 
@@ -1549,7 +1549,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           );
         });
 
-        it('max amount', async function() {
+        it('max amount', async function () {
           const value = ether('1');
           const to = this.hUniswapV3.address;
 
@@ -1609,7 +1609,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           );
         });
 
-        it('should revert: insufficient token', async function() {
+        it('should revert: insufficient token', async function () {
           const value = ether('1');
           const to = this.hUniswapV3.address;
 
@@ -1648,7 +1648,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           );
         });
 
-        it('should revert: desired amount too high', async function() {
+        it('should revert: desired amount too high', async function () {
           const value = ether('1');
           const to = this.hUniswapV3.address;
 
@@ -1684,8 +1684,8 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
         });
       });
 
-      describe('multi-path', function() {
-        it('normal', async function() {
+      describe('multi-path', function () {
+        it('normal', async function () {
           const value = ether('1');
           const to = this.hUniswapV3.address;
 
@@ -1735,7 +1735,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           );
         });
 
-        it('max amount', async function() {
+        it('max amount', async function () {
           const value = ether('1');
           const to = this.hUniswapV3.address;
 
@@ -1785,7 +1785,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           );
         });
 
-        it('should revert: insufficient token', async function() {
+        it('should revert: insufficient token', async function () {
           const value = ether('1');
           const to = this.hUniswapV3.address;
 
@@ -1821,7 +1821,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           );
         });
 
-        it('should revert: desired amount too high', async function() {
+        it('should revert: desired amount too high', async function () {
           const value = ether('1');
           const to = this.hUniswapV3.address;
 
@@ -1855,9 +1855,9 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
       });
     });
 
-    describe('Exact output', function() {
-      describe('single path', function() {
-        it('normal', async function() {
+    describe('Exact output', function () {
+      describe('single path', function () {
+        it('normal', async function () {
           const value = ether('1');
           const to = this.hUniswapV3.address;
 
@@ -1919,7 +1919,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           );
         });
 
-        it('max amount', async function() {
+        it('max amount', async function () {
           const value = ether('1');
           const to = this.hUniswapV3.address;
 
@@ -1981,7 +1981,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           );
         });
 
-        it('should revert: insufficient token', async function() {
+        it('should revert: insufficient token', async function () {
           const value = ether('1');
           const to = this.hUniswapV3.address;
 
@@ -2020,7 +2020,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           );
         });
 
-        it('should revert: desired amount too high', async function() {
+        it('should revert: desired amount too high', async function () {
           const value = ether('1');
           const to = this.hUniswapV3.address;
 
@@ -2056,8 +2056,8 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
         });
       });
 
-      describe('multi-path', function() {
-        it('normal', async function() {
+      describe('multi-path', function () {
+        it('normal', async function () {
           const value = ether('1');
           const to = this.hUniswapV3.address;
 
@@ -2114,7 +2114,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           );
         });
 
-        it('max amount', async function() {
+        it('max amount', async function () {
           const value = ether('1');
           const to = this.hUniswapV3.address;
 
@@ -2169,7 +2169,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           );
         });
 
-        it('should revert: insufficient token', async function() {
+        it('should revert: insufficient token', async function () {
           const value = ether('1');
           const to = this.hUniswapV3.address;
 
@@ -2204,7 +2204,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           );
         });
 
-        it('should revert: desired amount too high', async function() {
+        it('should revert: desired amount too high', async function () {
           const value = ether('1');
           const to = this.hUniswapV3.address;
 

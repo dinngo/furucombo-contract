@@ -54,7 +54,7 @@ const SimpleToken = artifacts.require('SimpleToken');
 const IStableDebtToken = artifacts.require('IStableDebtToken');
 const IVariableDebtToken = artifacts.require('IVariableDebtToken');
 
-contract('Aave V2', function([_, user, someone]) {
+contract('Aave V2', function ([_, user, someone]) {
   const aTokenAddress = ADAI_V2;
   const tokenAddress = DAI_TOKEN;
 
@@ -63,7 +63,7 @@ contract('Aave V2', function([_, user, someone]) {
   let balanceProxy;
   let providerAddress;
 
-  before(async function() {
+  before(async function () {
     providerAddress = await getTokenProvider(tokenAddress);
 
     this.registry = await Registry.new();
@@ -89,17 +89,17 @@ contract('Aave V2', function([_, user, someone]) {
     this.mockToken = await SimpleToken.new();
   });
 
-  beforeEach(async function() {
+  beforeEach(async function () {
     id = await evmSnapshot();
     balanceUser = await tracker(user);
     balanceProxy = await tracker(this.proxy.address);
   });
 
-  afterEach(async function() {
+  afterEach(async function () {
     await evmRevert(id);
   });
 
-  describe('Borrow with Stable Rate', function() {
+  describe('Borrow with Stable Rate', function () {
     if (chainId == 137) {
       // Stable Rate borrow is not available on Polygon.
       return;
@@ -114,14 +114,14 @@ contract('Aave V2', function([_, user, someone]) {
     let debtTokenUserBefore;
     let debtWETHUserBefore;
 
-    before(async function() {
+    before(async function () {
       this.borrowToken = await IToken.at(borrowTokenAddr);
       this.weth = await IToken.at(WETH_TOKEN);
       this.debtWETH = await IStableDebtToken.at(debtWETHAddr);
       this.debtToken = await IStableDebtToken.at(debtTokenAddr);
     });
 
-    beforeEach(async function() {
+    beforeEach(async function () {
       // Deposit
       await this.token.approve(this.lendingPool.address, depositAmount, {
         from: providerAddress,
@@ -142,7 +142,7 @@ contract('Aave V2', function([_, user, someone]) {
       debtWETHUserBefore = await this.debtWETH.balanceOf.call(user);
     });
 
-    it('borrow token', async function() {
+    it('borrow token', async function () {
       const borrowAmount = ether('100');
       const to = this.hAaveV2.address;
       const data = abi.simpleEncode(
@@ -186,7 +186,7 @@ contract('Aave V2', function([_, user, someone]) {
       profileGas(receipt);
     });
 
-    it('borrow weth', async function() {
+    it('borrow weth', async function () {
       const borrowAmount = ether('1');
       const to = this.hAaveV2.address;
       const data = abi.simpleEncode(
@@ -231,7 +231,7 @@ contract('Aave V2', function([_, user, someone]) {
       profileGas(receipt);
     });
 
-    it('borrow eth', async function() {
+    it('borrow eth', async function () {
       const borrowAmount = ether('1');
       const to = this.hAaveV2.address;
       const data = abi.simpleEncode(
@@ -271,7 +271,7 @@ contract('Aave V2', function([_, user, someone]) {
       profileGas(receipt);
     });
 
-    it('should revert: borrow token over the collateral value', async function() {
+    it('should revert: borrow token over the collateral value', async function () {
       const borrowAmount = ether('20000');
       const to = this.hAaveV2.address;
       const data = abi.simpleEncode(
@@ -290,7 +290,7 @@ contract('Aave V2', function([_, user, someone]) {
       );
     });
 
-    it('should revert: borrow token without approveDelegation', async function() {
+    it('should revert: borrow token without approveDelegation', async function () {
       const borrowAmount = ether('2');
       const to = this.hAaveV2.address;
       const data = abi.simpleEncode(
@@ -306,7 +306,7 @@ contract('Aave V2', function([_, user, someone]) {
       );
     });
 
-    it('should revert: borrow token approveDelegation < borrow amount', async function() {
+    it('should revert: borrow token approveDelegation < borrow amount', async function () {
       const borrowAmount = ether('2');
       const to = this.hAaveV2.address;
       const data = abi.simpleEncode(
@@ -330,7 +330,7 @@ contract('Aave V2', function([_, user, someone]) {
       );
     });
 
-    it('should revert: borrow token that is not in aaveV2 pool', async function() {
+    it('should revert: borrow token that is not in aaveV2 pool', async function () {
       const borrowAmount = ether('2');
       const to = this.hAaveV2.address;
       const data = abi.simpleEncode(
@@ -346,7 +346,7 @@ contract('Aave V2', function([_, user, someone]) {
       );
     });
 
-    it('should revert: borrow token with no collateral ', async function() {
+    it('should revert: borrow token with no collateral ', async function () {
       const borrowAmount = ether('2');
       const to = this.hAaveV2.address;
       const data = abi.simpleEncode(
@@ -362,7 +362,7 @@ contract('Aave V2', function([_, user, someone]) {
       );
     });
 
-    it('should revert: borrow token is the same with collateral', async function() {
+    it('should revert: borrow token is the same with collateral', async function () {
       const borrowAmount = ether('2');
       const to = this.hAaveV2.address;
       const data = abi.simpleEncode(
@@ -379,7 +379,7 @@ contract('Aave V2', function([_, user, someone]) {
     });
   });
 
-  describe('Borrow with Variable Rate', function() {
+  describe('Borrow with Variable Rate', function () {
     const depositAmount = ether('10000');
     const borrowTokenAddr = USDT_TOKEN;
     const rateMode = AAVE_RATEMODE.VARIABLE;
@@ -390,7 +390,7 @@ contract('Aave V2', function([_, user, someone]) {
     let debtTokenUserBefore;
     let debtWrappedNativeTokenUserBefore;
 
-    before(async function() {
+    before(async function () {
       this.borrowToken = await IToken.at(borrowTokenAddr);
       this.wrappedNativeToken = await IToken.at(WRAPPED_NATIVE_TOKEN);
       this.debtWrappedNativeToken = await IVariableDebtToken.at(
@@ -399,7 +399,7 @@ contract('Aave V2', function([_, user, someone]) {
       this.debtToken = await IVariableDebtToken.at(debtTokenAddr);
     });
 
-    beforeEach(async function() {
+    beforeEach(async function () {
       // Deposit
       await this.token.approve(this.lendingPool.address, depositAmount, {
         from: providerAddress,
@@ -416,16 +416,14 @@ contract('Aave V2', function([_, user, someone]) {
       expectEqWithinBps(await this.aToken.balanceOf.call(user), depositAmount);
 
       borrowTokenUserBefore = await this.borrowToken.balanceOf.call(user);
-      borrowWrappedNativeTokenUserBefore = await this.wrappedNativeToken.balanceOf.call(
-        user
-      );
+      borrowWrappedNativeTokenUserBefore =
+        await this.wrappedNativeToken.balanceOf.call(user);
       debtTokenUserBefore = await this.debtToken.balanceOf.call(user);
-      debtWrappedNativeTokenUserBefore = await this.debtWrappedNativeToken.balanceOf.call(
-        user
-      );
+      debtWrappedNativeTokenUserBefore =
+        await this.debtWrappedNativeToken.balanceOf.call(user);
     });
 
-    it('borrow token', async function() {
+    it('borrow token', async function () {
       const borrowAmount = mwei('100');
       const to = this.hAaveV2.address;
       const data = abi.simpleEncode(
@@ -471,7 +469,7 @@ contract('Aave V2', function([_, user, someone]) {
       profileGas(receipt);
     });
 
-    it('borrow weth', async function() {
+    it('borrow weth', async function () {
       const borrowAmount = ether('1');
       const to = this.hAaveV2.address;
       const data = abi.simpleEncode(
@@ -494,9 +492,8 @@ contract('Aave V2', function([_, user, someone]) {
         value: ether('0.1'),
       });
 
-      const debtWrappedNativeTokenUserAfter = await this.debtWrappedNativeToken.balanceOf.call(
-        user
-      );
+      const debtWrappedNativeTokenUserAfter =
+        await this.debtWrappedNativeToken.balanceOf.call(user);
       // Verify proxy balance
       expect(await balanceProxy.get()).to.be.bignumber.zero;
       expect(
@@ -523,7 +520,7 @@ contract('Aave V2', function([_, user, someone]) {
       profileGas(receipt);
     });
 
-    it('borrow eth', async function() {
+    it('borrow eth', async function () {
       const borrowAmount = ether('1');
       const to = this.hAaveV2.address;
       const data = abi.simpleEncode(
@@ -545,9 +542,8 @@ contract('Aave V2', function([_, user, someone]) {
       });
 
       const balancerUserAfter = await balanceUser.get();
-      const debtWrappedNativeTokenUserAfter = await this.debtWrappedNativeToken.balanceOf.call(
-        user
-      );
+      const debtWrappedNativeTokenUserAfter =
+        await this.debtWrappedNativeToken.balanceOf.call(user);
       // Verify proxy balance
       expect(await balanceProxy.get()).to.be.bignumber.zero;
       expect(
@@ -570,7 +566,7 @@ contract('Aave V2', function([_, user, someone]) {
       profileGas(receipt);
     });
 
-    it('should revert: borrow token over the collateral value', async function() {
+    it('should revert: borrow token over the collateral value', async function () {
       const borrowAmount = ether('20000');
       const to = this.hAaveV2.address;
       const data = abi.simpleEncode(
@@ -593,7 +589,7 @@ contract('Aave V2', function([_, user, someone]) {
       );
     });
 
-    it('should revert: borrow token without approveDelegation', async function() {
+    it('should revert: borrow token without approveDelegation', async function () {
       const borrowAmount = mwei('2');
       const to = this.hAaveV2.address;
       const data = abi.simpleEncode(
@@ -609,7 +605,7 @@ contract('Aave V2', function([_, user, someone]) {
       );
     });
 
-    it('should revert: borrow token that is not in aaveV2 pool', async function() {
+    it('should revert: borrow token that is not in aaveV2 pool', async function () {
       const borrowAmount = ether('2');
       const to = this.hAaveV2.address;
       const data = abi.simpleEncode(
@@ -632,7 +628,7 @@ contract('Aave V2', function([_, user, someone]) {
       }
     });
 
-    it('should revert: borrow token with no collateral', async function() {
+    it('should revert: borrow token with no collateral', async function () {
       const borrowAmount = ether('2');
       const to = this.hAaveV2.address;
       const data = abi.simpleEncode(
@@ -648,7 +644,7 @@ contract('Aave V2', function([_, user, someone]) {
       );
     });
 
-    it('should revert: borrow token is the same with collateral', async function() {
+    it('should revert: borrow token is the same with collateral', async function () {
       const borrowAmount = ether('2');
       const to = this.hAaveV2.address;
       const data = abi.simpleEncode(

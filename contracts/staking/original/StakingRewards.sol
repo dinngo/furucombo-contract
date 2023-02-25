@@ -55,12 +55,9 @@ contract StakingRewards is
         return _totalSupply;
     }
 
-    function balanceOf(address account)
-        external
-        view
-        override
-        returns (uint256)
-    {
+    function balanceOf(
+        address account
+    ) external view override returns (uint256) {
         return _balances[account];
     }
 
@@ -92,13 +89,9 @@ contract StakingRewards is
 
     /* ========== MUTATIVE FUNCTIONS ========== */
 
-    function stake(uint256 amount)
-        external
-        override
-        nonReentrant
-        notPaused
-        updateReward(msg.sender)
-    {
+    function stake(
+        uint256 amount
+    ) external override nonReentrant notPaused updateReward(msg.sender) {
         require(amount > 0, "Cannot stake 0");
         _totalSupply = _totalSupply + amount;
         _balances[msg.sender] = _balances[msg.sender] + amount;
@@ -106,12 +99,9 @@ contract StakingRewards is
         emit Staked(msg.sender, amount);
     }
 
-    function withdraw(uint256 amount)
-        public
-        override
-        nonReentrant
-        updateReward(msg.sender)
-    {
+    function withdraw(
+        uint256 amount
+    ) public override nonReentrant updateReward(msg.sender) {
         require(amount > 0, "Cannot withdraw 0");
         _totalSupply = _totalSupply - amount;
         _balances[msg.sender] = _balances[msg.sender] - amount;
@@ -135,7 +125,9 @@ contract StakingRewards is
 
     /* ========== RESTRICTED FUNCTIONS ========== */
 
-    function notifyRewardAmount(uint256 reward)
+    function notifyRewardAmount(
+        uint256 reward
+    )
         external
         override(IStakingRewards, RewardsDistributionRecipient)
         onlyRewardsDistribution
@@ -165,14 +157,13 @@ contract StakingRewards is
     }
 
     // Added to support recovering LP Rewards from other systems to be distributed to holders
-    function recoverERC20(address tokenAddress, uint256 tokenAmount)
-        external
-        onlyOwner
-    {
+    function recoverERC20(
+        address tokenAddress,
+        uint256 tokenAmount
+    ) external onlyOwner {
         // If it's SNX we have to query the token symbol to ensure its not a proxy or underlying
-        bool isSNX =
-            (keccak256(bytes("SNX")) ==
-                keccak256(bytes(ERC20(tokenAddress).symbol())));
+        bool isSNX = (keccak256(bytes("SNX")) ==
+            keccak256(bytes(ERC20(tokenAddress).symbol())));
         // Cannot recover the staking token or the rewards token
         require(
             tokenAddress != address(stakingToken) &&

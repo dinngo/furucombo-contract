@@ -41,11 +41,10 @@ library LibCache {
         ret = uint256(_cache[_key]);
     }
 
-    function get(mapping(bytes32 => bytes32) storage _cache, bytes32 _key)
-        internal
-        view
-        returns (bytes32 ret)
-    {
+    function get(
+        mapping(bytes32 => bytes32) storage _cache,
+        bytes32 _key
+    ) internal view returns (bytes32 ret) {
         ret = _cache[_key];
     }
 }

@@ -9,6 +9,11 @@ All notable changes to this project will be documented in this file.
 - Add send token to addresses in `HFunds`.
 - Support swap of Stargate token bridge.
 - Add `setTokenBalance` in utils.js to manipulate token balance for unit testing.
+- Support Aave Protocol V3 on Ethereum.
+
+### Changed
+
+- Use fixed prettier version 2.8.4 and fixed prettier solidity plugin version 1.1.2.
 
 ## [2.3.2] - 2022-12-21
 

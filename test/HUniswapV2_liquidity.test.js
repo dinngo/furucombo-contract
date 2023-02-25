@@ -40,7 +40,7 @@ const Proxy = artifacts.require('ProxyMock');
 const IToken = artifacts.require('IERC20');
 const UniswapV2Router02 = artifacts.require('IUniswapV2Router02');
 
-contract('UniswapV2 Liquidity', function([_, user]) {
+contract('UniswapV2 Liquidity', function ([_, user]) {
   let id;
   const tokenAAddress = DAI_TOKEN;
   const tokenBAddress = BAT_TOKEN;
@@ -53,7 +53,7 @@ contract('UniswapV2 Liquidity', function([_, user]) {
   let tokenAProviderAddress;
   let tokenBProviderAddress;
 
-  before(async function() {
+  before(async function () {
     tokenAProviderAddress = await tokenProviderSushi(tokenAAddress);
     tokenBProviderAddress = await tokenProviderUniV2(tokenBAddress);
 
@@ -75,7 +75,7 @@ contract('UniswapV2 Liquidity', function([_, user]) {
     this.router = await UniswapV2Router02.at(uniswapV2RouterAddress);
   });
 
-  beforeEach(async function() {
+  beforeEach(async function () {
     id = await evmSnapshot();
 
     await this.tokenA.transfer(user, ether('1000'), {
@@ -93,16 +93,16 @@ contract('UniswapV2 Liquidity', function([_, user]) {
     uniTokenTokenUserAmount = await this.uniTokenToken.balanceOf.call(user);
   });
 
-  afterEach(async function() {
+  afterEach(async function () {
     await evmRevert(id);
   });
 
-  describe('Add ETH', function() {
-    beforeEach(async function() {
+  describe('Add ETH', function () {
+    beforeEach(async function () {
       uniTokenUserAmount = await this.uniTokenEth.balanceOf.call(user);
     });
 
-    it('normal', async function() {
+    it('normal', async function () {
       // Prepare handler data
       const tokenAmount = ether('0.002');
       const minTokenAmount = ether('0.0000001');
@@ -181,7 +181,7 @@ contract('UniswapV2 Liquidity', function([_, user]) {
       profileGas(receipt);
     });
 
-    it('max amount', async function() {
+    it('max amount', async function () {
       // Prepare handler data
       const tokenAmount = ether('0.002');
       const minTokenAmount = ether('0.0000001');
@@ -261,12 +261,12 @@ contract('UniswapV2 Liquidity', function([_, user]) {
     });
   });
 
-  describe('Add Token', function() {
-    beforeEach(async function() {
+  describe('Add Token', function () {
+    beforeEach(async function () {
       uniTokenUserAmount = await this.uniTokenToken.balanceOf.call(user);
     });
 
-    it('normal', async function() {
+    it('normal', async function () {
       // Prepare handler data
       const tokenAAmount = ether('0.002');
       const tokenBAmount = ether('0.002');
@@ -352,7 +352,7 @@ contract('UniswapV2 Liquidity', function([_, user]) {
       profileGas(receipt);
     });
 
-    it('max amount', async function() {
+    it('max amount', async function () {
       // Prepare handler data
       const tokenAAmount = ether('0.002');
       const tokenBAmount = ether('0.002');
@@ -438,10 +438,10 @@ contract('UniswapV2 Liquidity', function([_, user]) {
     });
   });
 
-  describe('Remove ETH', function() {
+  describe('Remove ETH', function () {
     let deadline;
 
-    beforeEach(async function() {
+    beforeEach(async function () {
       // Add liquidity for getting uniToken before remove liquidity
       await this.tokenA.approve(this.router.address, ether('1000'), {
         from: user,
@@ -465,7 +465,7 @@ contract('UniswapV2 Liquidity', function([_, user]) {
       uniTokenUserAmount = await this.uniTokenEth.balanceOf.call(user);
     });
 
-    it('normal', async function() {
+    it('normal', async function () {
       // Get simulation result
       await this.uniTokenEth.approve(this.router.address, uniTokenUserAmount, {
         from: user,
@@ -533,7 +533,7 @@ contract('UniswapV2 Liquidity', function([_, user]) {
       profileGas(receipt);
     });
 
-    it('max amount', async function() {
+    it('max amount', async function () {
       // Get simulation result
       await this.uniTokenEth.approve(this.router.address, uniTokenUserAmount, {
         from: user,
@@ -602,10 +602,10 @@ contract('UniswapV2 Liquidity', function([_, user]) {
     });
   });
 
-  describe('Remove Token', function() {
+  describe('Remove Token', function () {
     let deadline;
 
-    beforeEach(async function() {
+    beforeEach(async function () {
       await this.tokenA.transfer(user, ether('100'), {
         from: tokenAProviderAddress,
       });
@@ -640,7 +640,7 @@ contract('UniswapV2 Liquidity', function([_, user]) {
       uniTokenUserAmount = await this.uniTokenToken.balanceOf.call(user);
     });
 
-    it('normal', async function() {
+    it('normal', async function () {
       // Get simulation result
       await this.uniTokenToken.approve(
         this.router.address,
@@ -726,7 +726,7 @@ contract('UniswapV2 Liquidity', function([_, user]) {
       profileGas(receipt);
     });
 
-    it('max amount', async function() {
+    it('max amount', async function () {
       // Get simulation result
       await this.uniTokenToken.approve(
         this.router.address,

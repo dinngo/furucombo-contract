@@ -52,14 +52,14 @@ const ICEther = artifacts.require('ICEther');
 const ICToken = artifacts.require('ICToken');
 const IToken = artifacts.require('IERC20');
 
-contract('Compound x Smart Wallet', function([_, user, someone]) {
+contract('Compound x Smart Wallet', function ([_, user, someone]) {
   let id;
   const tokenAddress = DAI_TOKEN;
   const cTokenAddress = CDAI;
 
   let providerAddress;
 
-  before(async function() {
+  before(async function () {
     providerAddress = await tokenProviderUniV2(tokenAddress);
 
     this.registry = await Registry.new();
@@ -100,16 +100,16 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
     this.comptroller = await IComptroller.at(COMPOUND_COMPTROLLER);
   });
 
-  beforeEach(async function() {
+  beforeEach(async function () {
     id = await evmSnapshot();
   });
 
-  afterEach(async function() {
+  afterEach(async function () {
     await evmRevert(id);
   });
 
-  describe('Deposit', function() {
-    it('ether', async function() {
+  describe('Deposit', function () {
+    it('ether', async function () {
       const amount = ether('1');
       const to = this.hsCompound.address;
       const data = abi.simpleEncode(
@@ -133,7 +133,7 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
       profileGas(receipt);
     });
 
-    it('token', async function() {
+    it('token', async function () {
       const amount = ether('50');
       const to = this.hsCompound.address;
       const data = abi.simpleEncode(
@@ -165,7 +165,7 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
       profileGas(receipt);
     });
 
-    it('should revert: not dsproxy owner', async function() {
+    it('should revert: not dsproxy owner', async function () {
       const amount = ether('50');
       const to = this.hsCompound.address;
       const data = abi.simpleEncode(
@@ -189,8 +189,8 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
     });
   });
 
-  describe('Withdraw', function() {
-    it('ether', async function() {
+  describe('Withdraw', function () {
+    it('ether', async function () {
       const amount = ether('5');
       const to = this.hsCompound.address;
       const data = abi.simpleEncode(
@@ -218,7 +218,7 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
       profileGas(receipt);
     });
 
-    it('token', async function() {
+    it('token', async function () {
       const amount = ether('50');
       const to = this.hsCompound.address;
       const data = abi.simpleEncode(
@@ -249,7 +249,7 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
       profileGas(receipt);
     });
 
-    it('should revert: not dsproxy owner', async function() {
+    it('should revert: not dsproxy owner', async function () {
       const amount = ether('50');
       const to = this.hsCompound.address;
       const data = abi.simpleEncode(
@@ -272,9 +272,9 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
     });
   });
 
-  describe('Market', function() {
-    describe('Enter Single', function() {
-      it('normal', async function() {
+  describe('Market', function () {
+    describe('Enter Single', function () {
+      it('normal', async function () {
         const tokenToEnter = this.cToken.address;
         const to = this.hsCompound.address;
         const data = abi.simpleEncode(
@@ -303,7 +303,7 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
         profileGas(receipt);
       });
 
-      it('should revert: not dsproxy owner', async function() {
+      it('should revert: not dsproxy owner', async function () {
         const tokenToEnter = this.cToken.address;
         const to = this.hsCompound.address;
         const data = abi.simpleEncode(
@@ -328,8 +328,8 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
       });
     });
 
-    describe('Enter Multiple', function() {
-      it('normal', async function() {
+    describe('Enter Multiple', function () {
+      it('normal', async function () {
         const tokensToEnter = [this.cToken.address, CWBTC];
         const to = this.hsCompound.address;
         const data = abi.simpleEncode(
@@ -370,7 +370,7 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
         profileGas(receipt);
       });
 
-      it('should revert: not dsproxy owner', async function() {
+      it('should revert: not dsproxy owner', async function () {
         const tokensToEnter = [this.cToken.address, CWBTC];
         const to = this.hsCompound.address;
         const data = abi.simpleEncode(
@@ -401,8 +401,8 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
       });
     });
 
-    describe('Exit', function() {
-      it('normal', async function() {
+    describe('Exit', function () {
+      it('normal', async function () {
         const tokenToExit = this.cToken.address;
         const to = this.hsCompound.address;
         // Enter market first
@@ -441,7 +441,7 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
         profileGas(receipt);
       });
 
-      it('should revert: not dsproxy owner', async function() {
+      it('should revert: not dsproxy owner', async function () {
         const tokenToExit = this.cToken.address;
         const to = this.hsCompound.address;
         // Enter market first
@@ -477,8 +477,8 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
     });
   });
 
-  describe('Borrow', function() {
-    beforeEach(async function() {
+  describe('Borrow', function () {
+    beforeEach(async function () {
       // Mint
       await this.cEther.mint({
         from: _,
@@ -490,10 +490,10 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
       });
     });
 
-    describe('Ether', function() {
+    describe('Ether', function () {
       // We only test `enterMarket = true` here since collateral and debt are both cEther in this case,
       // and leave the `enterMarket = false` test in `borrow token` section
-      it('normal', async function() {
+      it('normal', async function () {
         const cAmountIn = cUnit('300');
         const borrowAmount = ether('1');
         const to = this.hsCompound.address;
@@ -549,7 +549,7 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
         profileGas(receipt);
       });
 
-      it('only input (deposit collateral)', async function() {
+      it('only input (deposit collateral)', async function () {
         const cAmountIn = cUnit('300');
         const borrowAmount = ether('0');
         const to = this.hsCompound.address;
@@ -603,7 +603,7 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
         profileGas(receipt);
       });
 
-      it('only output (borrow without new collateral)', async function() {
+      it('only output (borrow without new collateral)', async function () {
         const collateralAmount = cUnit('300');
         // Directly transfer collateral to DSProxy first
         await this.cEther.transfer(this.userProxy.address, collateralAmount, {
@@ -669,8 +669,8 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
       });
     });
 
-    describe('Token', function() {
-      it('borrow token with enter market', async function() {
+    describe('Token', function () {
+      it('borrow token with enter market', async function () {
         const cAmountIn = cUnit('300'); // cEther
         const borrowAmount = ether('10'); // token
         const to = this.hsCompound.address;
@@ -724,7 +724,7 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
         profileGas(receipt);
       });
 
-      it('should revert: borrow token without enter market', async function() {
+      it('should revert: borrow token without enter market', async function () {
         const cAmountIn = cUnit('300'); // cEther
         const borrowAmount = ether('10'); // token
         const to = this.hsCompound.address;
@@ -758,7 +758,7 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
         );
       });
 
-      it('should revert: not dsproxy owner', async function() {
+      it('should revert: not dsproxy owner', async function () {
         const cAmountIn = cUnit('300'); // cEther
         const borrowAmount = ether('10'); // token
         const to = this.hsCompound.address;
@@ -794,11 +794,11 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
     });
   });
 
-  describe('Repay', function() {
-    describe('Repay Ether', function() {
+  describe('Repay', function () {
+    describe('Repay Ether', function () {
       const mintAmount = ether('10');
       const borrowAmount = ether('1');
-      beforeEach(async function() {
+      beforeEach(async function () {
         // Mint
         await this.cEther.mint({
           from: _,
@@ -830,7 +830,7 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
         ).to.be.bignumber.eq(borrowAmount);
       });
 
-      it('repay whole', async function() {
+      it('repay whole', async function () {
         const repayAmount = ether('5'); // ether
         const cWithdrawAmount = cUnit('450'); // cEther
         const to = this.hsCompound.address;
@@ -878,10 +878,10 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
       });
     });
 
-    describe('Repay Token', function() {
+    describe('Repay Token', function () {
       const mintAmount = ether('10');
       const borrowAmount = ether('100');
-      beforeEach(async function() {
+      beforeEach(async function () {
         // Mint
         await this.cEther.mint({
           from: _,
@@ -925,7 +925,7 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
         ).to.be.bignumber.zero;
       });
 
-      it('repay whole', async function() {
+      it('repay whole', async function () {
         const repayAmount = ether('200'); // token
         const cWithdrawAmount = cUnit('450'); // cEther
         const to = this.hsCompound.address;
@@ -985,7 +985,7 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
         profileGas(receipt);
       });
 
-      it('only input (repay but not withdraw)', async function() {
+      it('only input (repay but not withdraw)', async function () {
         const repayAmount = ether('200'); // token
         const cWithdrawAmount = cUnit('0'); // cEther
         const to = this.hsCompound.address;
@@ -1051,7 +1051,7 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
         profileGas(receipt);
       });
 
-      it('only output (withdraw token)', async function() {
+      it('only output (withdraw token)', async function () {
         const repayAmount = ether('0'); // token
         const cWithdrawAmount = cUnit('50'); // cEther
         const to = this.hsCompound.address;
@@ -1115,7 +1115,7 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
         profileGas(receipt);
       });
 
-      it('should revert: not dsproxy owner', async function() {
+      it('should revert: not dsproxy owner', async function () {
         const repayAmount = ether('200'); // token
         const cWithdrawAmount = cUnit('450'); // cEther
         const to = this.hsCompound.address;
@@ -1142,13 +1142,13 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
   });
 
   // TODO: Enable when cEther compSupplySpeeds > 0
-  describe.skip('Claim COMP', function() {
+  describe.skip('Claim COMP', function () {
     let compUserProxyBefore;
-    before(async function() {
+    before(async function () {
       await this.comptroller.claimComp(this.userProxy.address);
     });
 
-    beforeEach(async function() {
+    beforeEach(async function () {
       await this.cEther.mint({
         from: _,
         value: ether('10'),
@@ -1163,7 +1163,7 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
       );
     });
 
-    it('normal', async function() {
+    it('normal', async function () {
       const to = this.hsCompound.address;
       const data = abi.simpleEncode(
         'claimComp(address)',
@@ -1190,7 +1190,7 @@ contract('Compound x Smart Wallet', function([_, user, someone]) {
       profileGas(receipt);
     });
 
-    it('should revert: not dsproxy owner', async function() {
+    it('should revert: not dsproxy owner', async function () {
       const to = this.hsCompound.address;
       const data = abi.simpleEncode(
         'claimComp(address)',

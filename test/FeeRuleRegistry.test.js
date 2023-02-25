@@ -26,12 +26,12 @@ const RULE1_DISCOUNT = ether('0.9'); // should match DISCOUNT of RuleMock1
 const RULE2_DISCOUNT = ether('0.8'); // should match DISCOUNT of RuleMock2
 const RULE1_REQUIREMENT = ether('50'); // should match the verify requirement in RuleMock1
 
-contract('FeeRuleRegistry', function([_, feeCollector, user, someone]) {
+contract('FeeRuleRegistry', function ([_, feeCollector, user, someone]) {
   const tokenAddress = LINK_TOKEN; // should match the verify requirement token in RuleMock1
 
   let id;
 
-  before(async function() {
+  before(async function () {
     this.registry = await FeeRuleRegistry.new(BASIS_FEE_RATE, feeCollector);
     this.rule1 = await RuleMock1.new(tokenAddress);
     this.rule2 = await RuleMock2.new();
@@ -43,16 +43,16 @@ contract('FeeRuleRegistry', function([_, feeCollector, user, someone]) {
     );
   });
 
-  beforeEach(async function() {
+  beforeEach(async function () {
     id = await evmSnapshot();
   });
 
-  afterEach(async function() {
+  afterEach(async function () {
     await evmRevert(id);
   });
 
-  describe('set basis fee rate', function() {
-    it('normal', async function() {
+  describe('set basis fee rate', function () {
+    it('normal', async function () {
       const newFeeRate = ether('0.05');
       const receipt = await this.registry.setBasisFeeRate(newFeeRate);
       expect(await this.registry.basisFeeRate.call()).to.be.bignumber.eq(
@@ -63,21 +63,21 @@ contract('FeeRuleRegistry', function([_, feeCollector, user, someone]) {
       });
     });
 
-    it('should revert: out of range', async function() {
+    it('should revert: out of range', async function () {
       await expectRevert(
         this.registry.setBasisFeeRate(ether('2')),
         'Out of range'
       );
     });
 
-    it('should revert: same as current one', async function() {
+    it('should revert: same as current one', async function () {
       await expectRevert(
         this.registry.setBasisFeeRate(BASIS_FEE_RATE),
         'Same as current one'
       );
     });
 
-    it('should revert: not owner', async function() {
+    it('should revert: not owner', async function () {
       const newFeeRate = ether('0.05');
       await expectRevert(
         this.registry.setBasisFeeRate(newFeeRate, { from: someone }),
@@ -86,8 +86,8 @@ contract('FeeRuleRegistry', function([_, feeCollector, user, someone]) {
     });
   });
 
-  describe('set fee collector', function() {
-    it('normal', async function() {
+  describe('set fee collector', function () {
+    it('normal', async function () {
       const receipt = await this.registry.setFeeCollector(someone);
       expect(await this.registry.feeCollector.call()).to.be.eq(someone);
       expectEvent(receipt, 'SetFeeCollector', {
@@ -95,21 +95,21 @@ contract('FeeRuleRegistry', function([_, feeCollector, user, someone]) {
       });
     });
 
-    it('should revert: zero address', async function() {
+    it('should revert: zero address', async function () {
       await expectRevert(
         this.registry.setFeeCollector(ZERO_ADDRESS),
         'Zero address'
       );
     });
 
-    it('should revert: same as current one', async function() {
+    it('should revert: same as current one', async function () {
       await expectRevert(
         this.registry.setFeeCollector(feeCollector),
         'Same as current one'
       );
     });
 
-    it('should revert: not owner', async function() {
+    it('should revert: not owner', async function () {
       await expectRevert(
         this.registry.setFeeCollector(someone, { from: someone }),
         'Ownable: caller is not the owner'
@@ -117,8 +117,8 @@ contract('FeeRuleRegistry', function([_, feeCollector, user, someone]) {
     });
   });
 
-  describe('register', function() {
-    it('normal', async function() {
+  describe('register', function () {
+    it('normal', async function () {
       // register first rule
       const receipt1 = await this.registry.registerRule(this.rule1.address);
       expect(await this.registry.rules.call('0')).to.be.eq(this.rule1.address);
@@ -141,14 +141,14 @@ contract('FeeRuleRegistry', function([_, feeCollector, user, someone]) {
       });
     });
 
-    it('should revert: rule is zero address', async function() {
+    it('should revert: rule is zero address', async function () {
       await expectRevert(
         this.registry.registerRule(ZERO_ADDRESS),
         'Not allow to register zero address'
       );
     });
 
-    it('should revert: not owner', async function() {
+    it('should revert: not owner', async function () {
       await expectRevert(
         this.registry.registerRule(this.rule1.address, { from: someone }),
         'Ownable: caller is not the owner'
@@ -156,8 +156,8 @@ contract('FeeRuleRegistry', function([_, feeCollector, user, someone]) {
     });
   });
 
-  describe('unregister', function() {
-    beforeEach(async function() {
+  describe('unregister', function () {
+    beforeEach(async function () {
       // register first rule
       const receipt1 = await this.registry.registerRule(this.rule1.address);
       expect(await this.registry.rules.call('0')).to.be.eq(this.rule1.address);
@@ -166,7 +166,7 @@ contract('FeeRuleRegistry', function([_, feeCollector, user, someone]) {
       expect(await this.registry.rules.call('1')).to.be.eq(this.rule2.address);
     });
 
-    it('normal', async function() {
+    it('normal', async function () {
       // unregister first rule
       const receipt = await this.registry.unregisterRule('0');
       expect(await this.registry.rules.call('0')).to.be.eq(ZERO_ADDRESS);
@@ -181,14 +181,14 @@ contract('FeeRuleRegistry', function([_, feeCollector, user, someone]) {
       expect(await this.registry.rules.call('1')).to.be.eq(this.rule2.address);
     });
 
-    it('should revert: index not registered', async function() {
+    it('should revert: index not registered', async function () {
       await expectRevert(
         this.registry.unregisterRule('10'),
         'Rule not set or unregistered'
       );
     });
 
-    it('should revert: already unregistered', async function() {
+    it('should revert: already unregistered', async function () {
       await this.registry.unregisterRule('0');
       await expectRevert(
         this.registry.unregisterRule('0'),
@@ -196,7 +196,7 @@ contract('FeeRuleRegistry', function([_, feeCollector, user, someone]) {
       );
     });
 
-    it('should revert: not owner', async function() {
+    it('should revert: not owner', async function () {
       await expectRevert(
         this.registry.unregisterRule('0', { from: someone }),
         'Ownable: caller is not the owner'
@@ -204,8 +204,8 @@ contract('FeeRuleRegistry', function([_, feeCollector, user, someone]) {
     });
   });
 
-  describe('calculate single', function() {
-    beforeEach(async function() {
+  describe('calculate single', function () {
+    beforeEach(async function () {
       const receipt = await this.registry.registerRule(this.rule1.address);
       expect(await this.registry.rules.call('0')).to.be.eq(this.rule1.address);
       // transfer some token to user to make him qualified for rule1
@@ -218,7 +218,7 @@ contract('FeeRuleRegistry', function([_, feeCollector, user, someone]) {
       );
     });
 
-    it('qualified without basis', async function() {
+    it('qualified without basis', async function () {
       const queryAddr = user;
       const rate = await this.registry.calFeeRateWithoutBasis.call(
         queryAddr,
@@ -227,7 +227,7 @@ contract('FeeRuleRegistry', function([_, feeCollector, user, someone]) {
       expect(rate).to.be.bignumber.eq(RULE1_DISCOUNT);
     });
 
-    it('qualified with basis', async function() {
+    it('qualified with basis', async function () {
       const queryAddr = user;
       const rate = await this.registry.calFeeRate.call(queryAddr, '0');
       expect(rate).to.be.bignumber.eq(
@@ -235,7 +235,7 @@ contract('FeeRuleRegistry', function([_, feeCollector, user, someone]) {
       );
     });
 
-    it('not qualified without basis', async function() {
+    it('not qualified without basis', async function () {
       const queryAddr = someone;
       const rate = await this.registry.calFeeRateWithoutBasis.call(
         queryAddr,
@@ -244,13 +244,13 @@ contract('FeeRuleRegistry', function([_, feeCollector, user, someone]) {
       expect(rate).to.be.bignumber.eq(BASE);
     });
 
-    it('not qualified with basis', async function() {
+    it('not qualified with basis', async function () {
       const queryAddr = someone;
       const rate = await this.registry.calFeeRate.call(queryAddr, '0');
       expect(rate).to.be.bignumber.eq(BASIS_FEE_RATE);
     });
 
-    it('index not registered', async function() {
+    it('index not registered', async function () {
       const queryAddr = user;
       const rate = await this.registry.calFeeRateWithoutBasis.call(
         queryAddr,
@@ -259,7 +259,7 @@ contract('FeeRuleRegistry', function([_, feeCollector, user, someone]) {
       expect(rate).to.be.bignumber.eq(BASE);
     });
 
-    it('index unregistered', async function() {
+    it('index unregistered', async function () {
       // unregister rule first
       const receipt = await this.registry.unregisterRule('0');
       expect(await this.registry.rules.call('0')).to.be.eq(ZERO_ADDRESS);
@@ -273,8 +273,8 @@ contract('FeeRuleRegistry', function([_, feeCollector, user, someone]) {
     });
   });
 
-  describe('calculate multi', function() {
-    beforeEach(async function() {
+  describe('calculate multi', function () {
+    beforeEach(async function () {
       // register first rule
       const receipt1 = await this.registry.registerRule(this.rule1.address);
       expect(await this.registry.rules.call('0')).to.be.eq(this.rule1.address);
@@ -292,7 +292,7 @@ contract('FeeRuleRegistry', function([_, feeCollector, user, someone]) {
       );
     });
 
-    it('multiple indexes: qualified for both without basis', async function() {
+    it('multiple indexes: qualified for both without basis', async function () {
       const queryAddr = user;
       const indexes = ['0', '1'];
       const rate = await this.registry.calFeeRateMultiWithoutBasis.call(
@@ -304,7 +304,7 @@ contract('FeeRuleRegistry', function([_, feeCollector, user, someone]) {
       );
     });
 
-    it('multiple indexes: qualified for both with basis', async function() {
+    it('multiple indexes: qualified for both with basis', async function () {
       const queryAddr = user;
       const indexes = ['0', '1'];
       const rate = await this.registry.calFeeRateMulti.call(queryAddr, indexes);
@@ -316,7 +316,7 @@ contract('FeeRuleRegistry', function([_, feeCollector, user, someone]) {
       );
     });
 
-    it('multiple indexes: qualified for single without basis', async function() {
+    it('multiple indexes: qualified for single without basis', async function () {
       const queryAddr = someone;
       const indexes = ['0', '1'];
       const rate = await this.registry.calFeeRateMultiWithoutBasis.call(
@@ -326,7 +326,7 @@ contract('FeeRuleRegistry', function([_, feeCollector, user, someone]) {
       expect(rate).to.be.bignumber.eq(RULE2_DISCOUNT);
     });
 
-    it('multiple indexes: qualified for single with basis', async function() {
+    it('multiple indexes: qualified for single with basis', async function () {
       const queryAddr = someone;
       const indexes = ['0', '1'];
       const rate = await this.registry.calFeeRateMulti.call(queryAddr, indexes);
@@ -335,7 +335,7 @@ contract('FeeRuleRegistry', function([_, feeCollector, user, someone]) {
       );
     });
 
-    it('multiple indexes: not qualified without basis', async function() {
+    it('multiple indexes: not qualified without basis', async function () {
       // empty 'someone' to make him not qualified for rule2
       await send.ether(
         someone,
@@ -352,7 +352,7 @@ contract('FeeRuleRegistry', function([_, feeCollector, user, someone]) {
       expect(rate).to.be.bignumber.eq(BASE);
     });
 
-    it('multiple indexes: not qualified with basis', async function() {
+    it('multiple indexes: not qualified with basis', async function () {
       // empty 'someone' to make him not qualified for rule2
       await send.ether(
         someone,
@@ -367,7 +367,7 @@ contract('FeeRuleRegistry', function([_, feeCollector, user, someone]) {
       expect(rate).to.be.bignumber.eq(BASIS_FEE_RATE);
     });
 
-    it('single index: qualified without basis', async function() {
+    it('single index: qualified without basis', async function () {
       const queryAddr = user;
       const indexes = ['0'];
       const rate = await this.registry.calFeeRateMultiWithoutBasis.call(
@@ -377,7 +377,7 @@ contract('FeeRuleRegistry', function([_, feeCollector, user, someone]) {
       expect(rate).to.be.bignumber.eq(RULE1_DISCOUNT);
     });
 
-    it('single index: qualified with basis', async function() {
+    it('single index: qualified with basis', async function () {
       const queryAddr = user;
       const indexes = ['0'];
       const rate = await this.registry.calFeeRateMulti.call(queryAddr, indexes);
@@ -386,7 +386,7 @@ contract('FeeRuleRegistry', function([_, feeCollector, user, someone]) {
       );
     });
 
-    it('single index: not qualified without basis', async function() {
+    it('single index: not qualified without basis', async function () {
       const queryAddr = someone;
       const indexes = ['0'];
       const rate = await this.registry.calFeeRateMultiWithoutBasis.call(
@@ -396,14 +396,14 @@ contract('FeeRuleRegistry', function([_, feeCollector, user, someone]) {
       expect(rate).to.be.bignumber.eq(BASE);
     });
 
-    it('single index: not qualified with basis', async function() {
+    it('single index: not qualified with basis', async function () {
       const queryAddr = someone;
       const indexes = ['0'];
       const rate = await this.registry.calFeeRateMulti.call(queryAddr, indexes);
       expect(rate).to.be.bignumber.eq(BASIS_FEE_RATE);
     });
 
-    it('no index specified', async function() {
+    it('no index specified', async function () {
       const queryAddr = user;
       const indexes = [];
       const rate = await this.registry.calFeeRateMultiWithoutBasis.call(
@@ -413,7 +413,7 @@ contract('FeeRuleRegistry', function([_, feeCollector, user, someone]) {
       expect(rate).to.be.bignumber.eq(BASE);
     });
 
-    it('should revert: duplicate index', async function() {
+    it('should revert: duplicate index', async function () {
       const queryAddr = user;
       const indexes = ['0', '0'];
       await expectRevert(
@@ -422,7 +422,7 @@ contract('FeeRuleRegistry', function([_, feeCollector, user, someone]) {
       );
     });
 
-    it('should revert: not ascending order', async function() {
+    it('should revert: not ascending order', async function () {
       const queryAddr = user;
       const indexes = ['1', '0'];
       await expectRevert(

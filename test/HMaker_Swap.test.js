@@ -62,12 +62,12 @@ async function approveCdp(cdp, owner, user) {
   await proxy.execute(MAKER_PROXY_ACTIONS, data, { from: owner });
 }
 
-contract('Maker', function([_, user]) {
+contract('Maker', function ([_, user]) {
   let id;
   const tokenAddress = DAI_TOKEN;
   let providerAddress;
 
-  before(async function() {
+  before(async function () {
     providerAddress = await tokenProviderUniV2(tokenAddress);
 
     this.registry = await Registry.new();
@@ -105,41 +105,39 @@ contract('Maker', function([_, user]) {
     this.dai = await IToken.at(DAI_TOKEN);
   });
 
-  beforeEach(async function() {
+  beforeEach(async function () {
     id = await evmSnapshot();
   });
 
-  afterEach(async function() {
+  afterEach(async function () {
     await evmRevert(id);
   });
 
-  describe('Open new cdp', function() {
-    describe('Lock Ether', function() {
-      describe('Draw Dai and swap', function() {
+  describe('Open new cdp', function () {
+    describe('Lock Ether', function () {
+      describe('Draw Dai and swap', function () {
         let balanceUser;
 
-        before(async function() {
+        before(async function () {
           this.token = await IToken.at(tokenAddress);
           this.router = await IUniswapV2Router.at(UNISWAPV2_ROUTER02);
         });
 
-        beforeEach(async function() {
+        beforeEach(async function () {
           balanceUser = await tracker(user);
           balanceProxy = await tracker(this.proxy.address);
           tokenUser = await this.token.balanceOf(user);
         });
 
-        it('normal', async function() {
+        it('normal', async function () {
           const daiUser = await this.dai.balanceOf.call(user);
           const config = [ZERO_BYTES32, ZERO_BYTES32];
           const ruleIndex = [];
           const to1 = this.hMaker.address;
           const ilkEth = utils.padRight(utils.asciiToHex('ETH-A'), 64);
 
-          const [
-            generateLimit,
-            minCollateral,
-          ] = await getGenerateLimitAndMinCollateral(ilkEth);
+          const [generateLimit, minCollateral] =
+            await getGenerateLimitAndMinCollateral(ilkEth);
           const value1 = minCollateral;
           const wadD = generateLimit;
           const data1 = abi.simpleEncode(

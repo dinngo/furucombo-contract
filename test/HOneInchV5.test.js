@@ -50,10 +50,10 @@ const IToken = artifacts.require('IERC20');
 const URL_1INCH = 'https://api.1inch.exchange/v5.0/' + chainId + '/';
 const URL_1INCH_SWAP = URL_1INCH + 'swap';
 
-contract('OneInchV5 Swap', function([_, user]) {
+contract('OneInchV5 Swap', function ([_, user]) {
   let id;
 
-  before(async function() {
+  before(async function () {
     // ============= 1inch API Health Check =============
     const healthCkeck = await callExternalApi(URL_1INCH + 'healthcheck');
     if (!healthCkeck.ok) {
@@ -79,33 +79,33 @@ contract('OneInchV5 Swap', function([_, user]) {
     );
   });
 
-  beforeEach(async function() {
+  beforeEach(async function () {
     id = await evmSnapshot();
   });
 
-  afterEach(async function() {
+  afterEach(async function () {
     await evmRevert(id);
   });
 
-  describe('Ether to Token', function() {
+  describe('Ether to Token', function () {
     const tokenAddress = DAI_TOKEN;
 
     let balanceUser;
     let balanceProxy;
     let tokenUser;
 
-    before(async function() {
+    before(async function () {
       this.token = await IToken.at(tokenAddress);
     });
 
-    beforeEach(async function() {
+    beforeEach(async function () {
       balanceUser = await tracker(user);
       balanceProxy = await tracker(this.proxy.address);
       tokenUser = await this.token.balanceOf.call(user);
     });
 
-    describe('Swap', function() {
-      it('normal', async function() {
+    describe('Swap', function () {
+      it('normal', async function () {
         // Prepare data
         const value = ether('0.1');
         const to = this.hOneInch.address;
@@ -166,7 +166,7 @@ contract('OneInchV5 Swap', function([_, user]) {
         profileGas(receipt);
       });
 
-      it('msg.value greater than input ether amount', async function() {
+      it('msg.value greater than input ether amount', async function () {
         const value = ether('0.1');
         const to = this.hOneInch.address;
         const slippage = 3;
@@ -227,7 +227,7 @@ contract('OneInchV5 Swap', function([_, user]) {
         profileGas(receipt);
       });
 
-      it('should revert: wrong src token amount(ether)', async function() {
+      it('should revert: wrong src token amount(ether)', async function () {
         const value = ether('0.1');
         const to = this.hOneInch.address;
         const slippage = 3;
@@ -264,7 +264,7 @@ contract('OneInchV5 Swap', function([_, user]) {
     });
   });
 
-  describe('Token to Ether', function() {
+  describe('Token to Ether', function () {
     const tokenAddress = DAI_TOKEN;
 
     let balanceUser;
@@ -272,20 +272,20 @@ contract('OneInchV5 Swap', function([_, user]) {
     let tokenUser;
     let providerAddress;
 
-    before(async function() {
+    before(async function () {
       providerAddress = await getTokenProvider(tokenAddress);
 
       this.token = await IToken.at(tokenAddress);
     });
 
-    beforeEach(async function() {
+    beforeEach(async function () {
       balanceUser = await tracker(user);
       balanceProxy = await tracker(this.proxy.address);
       tokenUser = await this.token.balanceOf.call(user);
     });
 
-    describe('Swap', function() {
-      it('normal', async function() {
+    describe('Swap', function () {
+      it('normal', async function () {
         // Prepare data
         const value = ether('100');
         const to = this.hOneInch.address;
@@ -354,7 +354,7 @@ contract('OneInchV5 Swap', function([_, user]) {
     });
   });
 
-  describe('Token to Token', function() {
+  describe('Token to Token', function () {
     const token0Address = DAI_TOKEN;
     const token1Address = USDC_TOKEN;
 
@@ -366,7 +366,7 @@ contract('OneInchV5 Swap', function([_, user]) {
     let wethProxy;
     let providerAddress;
 
-    before(async function() {
+    before(async function () {
       providerAddress = await getTokenProvider(token0Address);
 
       this.token0 = await IToken.at(token0Address);
@@ -374,7 +374,7 @@ contract('OneInchV5 Swap', function([_, user]) {
       this.weth = await IToken.at(WETH_TOKEN);
     });
 
-    beforeEach(async function() {
+    beforeEach(async function () {
       balanceUser = await tracker(user);
       balanceProxy = await tracker(this.proxy.address);
       token0User = await this.token0.balanceOf.call(user);
@@ -383,8 +383,8 @@ contract('OneInchV5 Swap', function([_, user]) {
       wethProxy = await this.weth.balanceOf.call(this.proxy.address);
     });
 
-    describe('Swap', function() {
-      it('normal', async function() {
+    describe('Swap', function () {
+      it('normal', async function () {
         // Prepare data
         const value = ether('100');
         const to = this.hOneInch.address;
@@ -457,7 +457,7 @@ contract('OneInchV5 Swap', function([_, user]) {
         profileGas(receipt);
       });
 
-      it('to weth', async function() {
+      it('to weth', async function () {
         // Prepare data
         const value = ether('100');
         const to = this.hOneInch.address;
@@ -530,7 +530,7 @@ contract('OneInchV5 Swap', function([_, user]) {
         profileGas(receipt);
       });
 
-      it('append extra data to API data at the end', async function() {
+      it('append extra data to API data at the end', async function () {
         // Prepare data
         const appendData = 'ff0000ff';
         const value = ether('100');
@@ -605,7 +605,7 @@ contract('OneInchV5 Swap', function([_, user]) {
         profileGas(receipt);
       });
 
-      it('should revert: wrong dst token(ether)', async function() {
+      it('should revert: wrong dst token(ether)', async function () {
         // Prepare data
         const value = ether('100');
         const to = this.hOneInch.address;
@@ -647,7 +647,7 @@ contract('OneInchV5 Swap', function([_, user]) {
         );
       });
 
-      it('should revert: wrong dst token(erc20)', async function() {
+      it('should revert: wrong dst token(erc20)', async function () {
         // Prepare data
         const value = ether('100');
         const to = this.hOneInch.address;
@@ -689,7 +689,7 @@ contract('OneInchV5 Swap', function([_, user]) {
         );
       });
 
-      it('should revert: wrong src token(ether)', async function() {
+      it('should revert: wrong src token(ether)', async function () {
         // Prepare data
         const value = ether('100');
         const to = this.hOneInch.address;
@@ -730,7 +730,7 @@ contract('OneInchV5 Swap', function([_, user]) {
         );
       });
 
-      it('should revert: wrong src token(erc20)', async function() {
+      it('should revert: wrong src token(erc20)', async function () {
         // Prepare data
         const value = ether('100');
         const to = this.hOneInch.address;
@@ -771,7 +771,7 @@ contract('OneInchV5 Swap', function([_, user]) {
         );
       });
 
-      it('should revert: wrong src token amount(erc20)', async function() {
+      it('should revert: wrong src token amount(erc20)', async function () {
         // Prepare data
         const value = ether('100');
         const to = this.hOneInch.address;

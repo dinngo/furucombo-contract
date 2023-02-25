@@ -10,5 +10,9 @@ contract Config {
     uint256 public constant PERCENTAGE_BASE = 1 ether;
 
     // Handler post-process type. Others should not happen now.
-    enum HandlerType {Token, Custom, Others}
+    enum HandlerType {
+        Token,
+        Custom,
+        Others
+    }
 }

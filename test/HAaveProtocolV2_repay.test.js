@@ -47,7 +47,7 @@ const ILendingPool = artifacts.require('ILendingPoolV2');
 const IProvider = artifacts.require('ILendingPoolAddressesProviderV2');
 const SimpleToken = artifacts.require('SimpleToken');
 
-contract('Aave V2', function([_, user]) {
+contract('Aave V2', function ([_, user]) {
   const aTokenAddress = ADAI_V2;
   const tokenAddress = DAI_TOKEN;
 
@@ -55,7 +55,7 @@ contract('Aave V2', function([_, user]) {
   let balanceUser;
   let providerAddress;
 
-  before(async function() {
+  before(async function () {
     providerAddress = await getTokenProvider(tokenAddress);
 
     this.registry = await Registry.new();
@@ -80,17 +80,17 @@ contract('Aave V2', function([_, user]) {
     this.mockToken = await SimpleToken.new();
   });
 
-  beforeEach(async function() {
+  beforeEach(async function () {
     id = await evmSnapshot();
     balanceUser = await tracker(user);
     balanceProxy = await tracker(this.proxy.address);
   });
 
-  afterEach(async function() {
+  afterEach(async function () {
     await evmRevert(id);
   });
 
-  describe('Repay Stable Rate', function() {
+  describe('Repay Stable Rate', function () {
     if (chainId == 137) {
       // Stable Rate borrow is not available on Polygon.
       return;
@@ -107,14 +107,14 @@ contract('Aave V2', function([_, user]) {
 
     let borrowTokenProvider;
 
-    before(async function() {
+    before(async function () {
       borrowTokenProvider = await getTokenProvider(borrowTokenAddr);
 
       this.borrowToken = await IToken.at(borrowTokenAddr);
       this.debtToken = await IToken.at(debtTokenAddr);
     });
 
-    beforeEach(async function() {
+    beforeEach(async function () {
       // Deposit
       await this.token.approve(this.lendingPool.address, depositAmount, {
         from: providerAddress,
@@ -147,7 +147,7 @@ contract('Aave V2', function([_, user]) {
       );
     });
 
-    it('partial', async function() {
+    it('partial', async function () {
       const value = borrowAmount.div(new BN('2'));
       const to = this.hAaveV2.address;
       const data = abi.simpleEncode(
@@ -198,7 +198,7 @@ contract('Aave V2', function([_, user]) {
       profileGas(receipt);
     });
 
-    it('partial by ETH', async function() {
+    it('partial by ETH', async function () {
       const value = borrowAmount.div(new BN('2'));
       const to = this.hAaveV2.address;
       const data = abi.simpleEncode(
@@ -245,7 +245,7 @@ contract('Aave V2', function([_, user]) {
       profileGas(receipt);
     });
 
-    it('whole', async function() {
+    it('whole', async function () {
       const extraNeed = ether('1');
       const value = borrowAmount.add(extraNeed);
       const to = this.hAaveV2.address;
@@ -295,7 +295,7 @@ contract('Aave V2', function([_, user]) {
       profileGas(receipt);
     });
 
-    it('whole by ETH', async function() {
+    it('whole by ETH', async function () {
       const extraNeed = ether('1');
       const value = borrowAmount.add(extraNeed);
       const to = this.hAaveV2.address;
@@ -332,14 +332,12 @@ contract('Aave V2', function([_, user]) {
         ether('0').sub(borrowAmount)
       );
       expect(await balanceUser.delta()).to.be.bignumber.gt(
-        ether('0')
-          .sub(borrowAmount)
-          .sub(interestMax)
+        ether('0').sub(borrowAmount).sub(interestMax)
       );
       profileGas(receipt);
     });
 
-    it('should revert: not enough balance', async function() {
+    it('should revert: not enough balance', async function () {
       const value = ether('0.5');
       const to = this.hAaveV2.address;
       const data = abi.simpleEncode(
@@ -361,7 +359,7 @@ contract('Aave V2', function([_, user]) {
       );
     });
 
-    it('should revert: not supported token', async function() {
+    it('should revert: not supported token', async function () {
       const value = ether('0.5');
       const to = this.hAaveV2.address;
       const data = abi.simpleEncode(
@@ -379,7 +377,7 @@ contract('Aave V2', function([_, user]) {
       );
     });
 
-    it('should revert: wrong rate mode', async function() {
+    it('should revert: wrong rate mode', async function () {
       const value = ether('0.5');
       const to = this.hAaveV2.address;
       const unborrowedRateMode = (rateMode % 2) + 1;
@@ -401,7 +399,7 @@ contract('Aave V2', function([_, user]) {
     });
   });
 
-  describe('Repay Variable Rate', function() {
+  describe('Repay Variable Rate', function () {
     var depositAmount = ether('10000');
     const borrowAmount = ether('1');
     const borrowTokenAddr = WRAPPED_NATIVE_TOKEN;
@@ -410,14 +408,14 @@ contract('Aave V2', function([_, user]) {
 
     let borrowTokenProvider;
 
-    before(async function() {
+    before(async function () {
       borrowTokenProvider = await getTokenProvider(borrowTokenAddr);
 
       this.borrowToken = await IToken.at(borrowTokenAddr);
       this.debtToken = await IToken.at(debtTokenAddr);
     });
 
-    beforeEach(async function() {
+    beforeEach(async function () {
       // Deposit
       await this.token.approve(this.lendingPool.address, depositAmount, {
         from: providerAddress,
@@ -450,7 +448,7 @@ contract('Aave V2', function([_, user]) {
       );
     });
 
-    it('partial', async function() {
+    it('partial', async function () {
       const value = borrowAmount.div(new BN('2'));
       const to = this.hAaveV2.address;
       const data = abi.simpleEncode(
@@ -506,7 +504,7 @@ contract('Aave V2', function([_, user]) {
       profileGas(receipt);
     });
 
-    it('partial by ETH', async function() {
+    it('partial by ETH', async function () {
       const value = borrowAmount.div(new BN('2'));
       const to = this.hAaveV2.address;
       const data = abi.simpleEncode(
@@ -556,7 +554,7 @@ contract('Aave V2', function([_, user]) {
       profileGas(receipt);
     });
 
-    it('whole', async function() {
+    it('whole', async function () {
       const extraNeed = ether('1');
       const value = borrowAmount.add(extraNeed);
       const to = this.hAaveV2.address;
@@ -606,7 +604,7 @@ contract('Aave V2', function([_, user]) {
       profileGas(receipt);
     });
 
-    it('whole by ETH', async function() {
+    it('whole by ETH', async function () {
       const extraNeed = ether('1');
       const value = borrowAmount.add(extraNeed);
       const to = this.hAaveV2.address;
@@ -643,14 +641,12 @@ contract('Aave V2', function([_, user]) {
         ether('0').sub(borrowAmount)
       );
       expect(await balanceUser.delta()).to.be.bignumber.gt(
-        ether('0')
-          .sub(borrowAmount)
-          .sub(interestMax)
+        ether('0').sub(borrowAmount).sub(interestMax)
       );
       profileGas(receipt);
     });
 
-    it('should revert: not enough balance', async function() {
+    it('should revert: not enough balance', async function () {
       const value = ether('0.5');
       const to = this.hAaveV2.address;
       const data = abi.simpleEncode(
@@ -672,7 +668,7 @@ contract('Aave V2', function([_, user]) {
       );
     });
 
-    it('should revert: not supported token', async function() {
+    it('should revert: not supported token', async function () {
       const value = ether('0.5');
       const to = this.hAaveV2.address;
       const data = abi.simpleEncode(
@@ -690,7 +686,7 @@ contract('Aave V2', function([_, user]) {
       );
     });
 
-    it('should revert: wrong rate mode', async function() {
+    it('should revert: wrong rate mode', async function () {
       const value = ether('0.5');
       const to = this.hAaveV2.address;
       const unborrowedRateMode = (rateMode % 2) + 1;

@@ -48,7 +48,7 @@ const RULE1_DISCOUNT = ether('0.9'); // should match DISCOUNT of RuleMock1
 const RULE2_DISCOUNT = ether('0.8'); // should match DISCOUNT of RuleMock2
 const RULE1_REQUIREMENT = ether('50'); // should match the verify requirement in RuleMock1
 
-contract('Fee', function([_, feeCollector, user]) {
+contract('Fee', function ([_, feeCollector, user]) {
   const tokenAddress = DAI_TOKEN;
   const token2Address = WETH_TOKEN;
 
@@ -67,7 +67,7 @@ contract('Fee', function([_, feeCollector, user]) {
   let balanceProxy;
   let balanceFeeCollector;
 
-  before(async function() {
+  before(async function () {
     beforeId = await evmSnapshot();
 
     // Handlers related
@@ -135,24 +135,24 @@ contract('Fee', function([_, feeCollector, user]) {
     }
   });
 
-  beforeEach(async function() {
+  beforeEach(async function () {
     id = await evmSnapshot();
     balanceUser = await tracker(user);
     balanceProxy = await tracker(this.proxy.address);
     balanceFeeCollector = await tracker(feeCollector);
   });
 
-  afterEach(async function() {
+  afterEach(async function () {
     await checkCacheClean(this.proxy.address);
     await evmRevert(id);
   });
 
-  after(async function() {
+  after(async function () {
     await evmRevert(beforeId);
   });
 
-  describe('single token', function() {
-    it('eth - fee collector (EOA)', async function() {
+  describe('single token', function () {
+    it('eth - fee collector (EOA)', async function () {
       const tos = [this.hFunds.address];
       const configs = [ZERO_BYTES32];
       const ruleIndexes = ['0', '1'];
@@ -190,7 +190,7 @@ contract('Fee', function([_, feeCollector, user]) {
       );
     });
 
-    it('eth - fee collector (Contract)', async function() {
+    it('eth - fee collector (Contract)', async function () {
       await this.feeRuleRegistry.setFeeCollector(this.feeCollectorMock.address);
       balanceFeeCollector = await tracker(this.feeCollectorMock.address);
 
@@ -231,7 +231,7 @@ contract('Fee', function([_, feeCollector, user]) {
       );
     });
 
-    it('DAI', async function() {
+    it('DAI', async function () {
       const tos = [this.hFunds.address];
       const configs = [ZERO_BYTES32];
       const ruleIndexes = ['0', '1'];
@@ -278,7 +278,7 @@ contract('Fee', function([_, feeCollector, user]) {
       );
     });
 
-    it('USDT', async function() {
+    it('USDT', async function () {
       const tos = [this.hFunds.address];
       const configs = [ZERO_BYTES32];
       const ruleIndexes = ['0', '1'];
@@ -326,7 +326,7 @@ contract('Fee', function([_, feeCollector, user]) {
     });
 
     if (network.config.chainId == 1) {
-      it('HBTC', async function() {
+      it('HBTC', async function () {
         const tos = [this.hFunds.address];
         const configs = [ZERO_BYTES32];
         const ruleIndexes = ['0', '1'];
@@ -373,7 +373,7 @@ contract('Fee', function([_, feeCollector, user]) {
         );
       });
 
-      it('OMG', async function() {
+      it('OMG', async function () {
         const tos = [this.hFunds.address];
         const configs = [ZERO_BYTES32];
         const ruleIndexes = ['0', '1'];
@@ -422,8 +422,8 @@ contract('Fee', function([_, feeCollector, user]) {
     }
   });
 
-  describe('multiple token', function() {
-    it('eth + token -> no index', async function() {
+  describe('multiple token', function () {
+    it('eth + token -> no index', async function () {
       const tos = [this.hFunds.address];
       const configs = [ZERO_BYTES32];
       const ruleIndexes = [];
@@ -477,7 +477,7 @@ contract('Fee', function([_, feeCollector, user]) {
       );
     });
 
-    it('eth + token', async function() {
+    it('eth + token', async function () {
       const tos = [this.hFunds.address];
       const configs = [ZERO_BYTES32];
       const ruleIndexes = ['0', '1'];
@@ -534,7 +534,7 @@ contract('Fee', function([_, feeCollector, user]) {
       );
     });
 
-    it('token + token', async function() {
+    it('token + token', async function () {
       const tos = [this.hFunds.address];
       const configs = [ZERO_BYTES32];
       const ruleIndexes = ['0', '1'];
@@ -597,7 +597,7 @@ contract('Fee', function([_, feeCollector, user]) {
       ).to.be.bignumber.eq(token2UserBalanceBefore);
     });
 
-    it('zero fee', async function() {
+    it('zero fee', async function () {
       // Set basis fee rate to 0
       await this.feeRuleRegistry.setBasisFeeRate(ether('0'));
       expect(await this.feeRuleRegistry.basisFeeRate.call()).to.be.zero;

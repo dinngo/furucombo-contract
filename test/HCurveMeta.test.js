@@ -31,10 +31,10 @@ const HCurve = artifacts.require('HCurve');
 const ICurveHandler = artifacts.require('ICurveHandler');
 const IToken = artifacts.require('IERC20');
 
-contract('Curve Meta', function([_, user]) {
+contract('Curve Meta', function ([_, user]) {
   const slippage = new BN('3');
   let id;
-  before(async function() {
+  before(async function () {
     this.registry = await Registry.new();
     this.hCurve = await HCurve.new();
     await this.registry.register(
@@ -51,15 +51,15 @@ contract('Curve Meta', function([_, user]) {
     this.usdnDeposit = await ICurveHandler.at(CURVE_USDN_DEPOSIT);
   });
 
-  beforeEach(async function() {
+  beforeEach(async function () {
     id = await evmSnapshot();
   });
 
-  afterEach(async function() {
+  afterEach(async function () {
     await evmRevert(id);
   });
 
-  describe('Exchange underlying', function() {
+  describe('Exchange underlying', function () {
     const token0Address = USDT_TOKEN;
     const token1Address = USDN_TOKEN;
 
@@ -67,20 +67,20 @@ contract('Curve Meta', function([_, user]) {
     let token1User;
     let providerAddress;
 
-    before(async function() {
+    before(async function () {
       providerAddress = await tokenProviderUniV2(token0Address);
 
       this.token0 = await IToken.at(token0Address);
       this.token1 = await IToken.at(token1Address);
     });
 
-    beforeEach(async function() {
+    beforeEach(async function () {
       token0User = await this.token0.balanceOf.call(user);
       token1User = await this.token1.balanceOf.call(user);
     });
 
-    describe('usdn meta pool', function() {
-      it('Exact input swap USDT to USDN by exchangeUnderlying', async function() {
+    describe('usdn meta pool', function () {
+      it('Exact input swap USDT to USDN by exchangeUnderlying', async function () {
         // 0: USDN, 1: DAI, 2: USDC, 3: USDT
         const value = new BN('1000000');
         const answer = await this.usdnSwap.methods[
@@ -127,7 +127,7 @@ contract('Curve Meta', function([_, user]) {
     });
   });
 
-  describe('Liquidity', function() {
+  describe('Liquidity', function () {
     const token0Address = USDN_TOKEN;
     const token1Address = USDT_TOKEN;
     const poolTokenAddress = CURVE_USDNCRV;
@@ -138,7 +138,7 @@ contract('Curve Meta', function([_, user]) {
     let provider1Address;
     let poolTokenProvider;
 
-    before(async function() {
+    before(async function () {
       provider0Address = await tokenProviderUniV2(token0Address);
       provider1Address = await tokenProviderUniV2(token1Address);
       poolTokenProvider = await tokenProviderCurveGauge(poolTokenAddress);
@@ -148,13 +148,13 @@ contract('Curve Meta', function([_, user]) {
       this.poolToken = await IToken.at(poolTokenAddress);
     });
 
-    beforeEach(async function() {
+    beforeEach(async function () {
       token0User = await this.token0.balanceOf.call(user);
       token1User = await this.token1.balanceOf.call(user);
     });
 
-    describe('usdn meta pool', function() {
-      it('Add USDN and USDT to pool by addLiquidity', async function() {
+    describe('usdn meta pool', function () {
+      it('Add USDN and USDT to pool by addLiquidity', async function () {
         const token0Amount = ether('1');
         const token1Amount = new BN('1000000');
         const tokens = [
@@ -221,7 +221,7 @@ contract('Curve Meta', function([_, user]) {
         profileGas(receipt);
       });
 
-      it('Remove from pool to USDN by removeLiquidityOneCoin', async function() {
+      it('Remove from pool to USDN by removeLiquidityOneCoin', async function () {
         const poolTokenUser = ether('1');
         const token0UserBefore = await this.token0.balanceOf.call(user);
         const answer = await this.usdnDeposit.methods[

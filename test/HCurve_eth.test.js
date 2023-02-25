@@ -52,10 +52,10 @@ const ICurveHandler = artifacts.require('ICurveHandler');
 const IToken = artifacts.require('IERC20');
 const IYToken = artifacts.require('IYToken');
 
-contract('Curve_eth', function([_, user]) {
+contract('Curve_eth', function ([_, user]) {
   const slippage = new BN('3');
   let id;
-  before(async function() {
+  before(async function () {
     this.registry = await Registry.new();
     this.hCurve = await HCurve.new();
     await this.registry.register(
@@ -75,15 +75,15 @@ contract('Curve_eth', function([_, user]) {
     this.aaveSwap = await ICurveHandler.at(CURVE_AAVE_SWAP);
   });
 
-  beforeEach(async function() {
+  beforeEach(async function () {
     id = await evmSnapshot();
   });
 
-  afterEach(async function() {
+  afterEach(async function () {
     await evmRevert(id);
   });
 
-  describe('Exchange underlying', function() {
+  describe('Exchange underlying', function () {
     const token0Address = USDT_TOKEN;
     const token1Address = DAI_TOKEN;
 
@@ -91,20 +91,20 @@ contract('Curve_eth', function([_, user]) {
     let token1User;
     let providerAddress;
 
-    before(async function() {
+    before(async function () {
       providerAddress = await tokenProviderUniV2(token0Address);
 
       this.token0 = await IToken.at(token0Address);
       this.token1 = await IToken.at(token1Address);
     });
 
-    beforeEach(async function() {
+    beforeEach(async function () {
       token0User = await this.token0.balanceOf.call(user);
       token1User = await this.token1.balanceOf.call(user);
     });
 
-    describe('y pool', function() {
-      it('Exact input swap USDT to DAI by exchangeUnderlying', async function() {
+    describe('y pool', function () {
+      it('Exact input swap USDT to DAI by exchangeUnderlying', async function () {
         const value = new BN('1000000');
         const answer = await this.ySwap.methods[
           'get_dy_underlying(int128,int128,uint256)'
@@ -154,7 +154,7 @@ contract('Curve_eth', function([_, user]) {
         profileGas(receipt);
       });
 
-      it('Exact input swap USDT to DAI by exchangeUnderlying with max amount', async function() {
+      it('Exact input swap USDT to DAI by exchangeUnderlying with max amount', async function () {
         const value = new BN('1000000');
         const answer = await this.ySwap.methods[
           'get_dy_underlying(int128,int128,uint256)'
@@ -206,8 +206,8 @@ contract('Curve_eth', function([_, user]) {
     });
   });
 
-  describe('Exchange', function() {
-    describe('3pool pool', function() {
+  describe('Exchange', function () {
+    describe('3pool pool', function () {
       const token0Address = DAI_TOKEN;
       const token1Address = USDT_TOKEN;
 
@@ -215,18 +215,18 @@ contract('Curve_eth', function([_, user]) {
       let token1User;
       let providerAddress;
 
-      before(async function() {
+      before(async function () {
         providerAddress = await tokenProviderUniV2(token0Address);
         this.token0 = await IToken.at(token0Address);
         this.token1 = await IToken.at(token1Address);
       });
 
-      beforeEach(async function() {
+      beforeEach(async function () {
         token0User = await this.token0.balanceOf.call(user);
         token1User = await this.token1.balanceOf.call(user);
       });
 
-      it('Exact input swap DAI to USDT by exchange', async function() {
+      it('Exact input swap DAI to USDT by exchange', async function () {
         const value = ether('1');
         const answer = await this.threeSwap.methods[
           'get_dy(int128,int128,uint256)'
@@ -278,7 +278,7 @@ contract('Curve_eth', function([_, user]) {
         profileGas(receipt);
       });
 
-      it('Exact input swap DAI to USDT by exchange with max amount', async function() {
+      it('Exact input swap DAI to USDT by exchange with max amount', async function () {
         const value = ether('1');
         const answer = await this.threeSwap.methods[
           'get_dy(int128,int128,uint256)'
@@ -330,7 +330,7 @@ contract('Curve_eth', function([_, user]) {
       });
     });
 
-    describe('hbtc pool', function() {
+    describe('hbtc pool', function () {
       const tokenAddress = HBTC_TOKEN;
 
       let balanceUser;
@@ -338,18 +338,18 @@ contract('Curve_eth', function([_, user]) {
       let tokenUser;
       let providerAddress = HBTC_PROVIDER;
 
-      before(async function() {
+      before(async function () {
         impersonateAndInjectEther(providerAddress);
         this.token = await IToken.at(tokenAddress);
       });
 
-      beforeEach(async function() {
+      beforeEach(async function () {
         balanceUser = await tracker(user);
         balanceProxy = await tracker(this.proxy.address);
         tokenUser = await this.token.balanceOf.call(user);
       });
 
-      it('Exact input swap HBTC to WBTC by exchange', async function() {
+      it('Exact input swap HBTC to WBTC by exchange', async function () {
         const value = ether('1');
         const answer = await this.hbtcSwap.methods[
           'get_dy(int128,int128,uint256)'
@@ -398,7 +398,7 @@ contract('Curve_eth', function([_, user]) {
       });
     });
 
-    describe('seth pool', function() {
+    describe('seth pool', function () {
       const tokenAddress = SETH_TOKEN;
 
       let balanceUser;
@@ -406,19 +406,19 @@ contract('Curve_eth', function([_, user]) {
       let tokenUser;
       let providerAddress;
 
-      before(async function() {
+      before(async function () {
         providerAddress = await tokenProviderUniV2(tokenAddress);
 
         this.token = await IToken.at(tokenAddress);
       });
 
-      beforeEach(async function() {
+      beforeEach(async function () {
         balanceUser = await tracker(user);
         balanceProxy = await tracker(this.proxy.address);
         tokenUser = await this.token.balanceOf.call(user);
       });
 
-      it('Exact input swap ETH to sETH by exchange', async function() {
+      it('Exact input swap ETH to sETH by exchange', async function () {
         const value = ether('1');
         const answer = await this.sethSwap.methods[
           'get_dy(int128,int128,uint256)'
@@ -460,7 +460,7 @@ contract('Curve_eth', function([_, user]) {
         profileGas(receipt);
       });
 
-      it('Exact input swap sETH to ETH by exchange', async function() {
+      it('Exact input swap sETH to ETH by exchange', async function () {
         const value = ether('1');
 
         const answer = await this.sethSwap.methods[
@@ -510,8 +510,8 @@ contract('Curve_eth', function([_, user]) {
     });
   });
 
-  describe('Liquidity', function() {
-    describe('3pool pool', function() {
+  describe('Liquidity', function () {
+    describe('3pool pool', function () {
       const token0Address = DAI_TOKEN;
       const token1Address = USDT_TOKEN;
       const poolTokenAddress = CURVE_3POOLCRV;
@@ -522,7 +522,7 @@ contract('Curve_eth', function([_, user]) {
       let provider1Address;
       let poolTokenProvider;
 
-      before(async function() {
+      before(async function () {
         provider0Address = await tokenProviderUniV2(token0Address);
         provider1Address = await tokenProviderUniV2(token1Address);
         poolTokenProvider = await tokenProviderCurveGauge(poolTokenAddress);
@@ -532,13 +532,13 @@ contract('Curve_eth', function([_, user]) {
         this.poolToken = await IToken.at(poolTokenAddress);
       });
 
-      beforeEach(async function() {
+      beforeEach(async function () {
         token0User = await this.token0.balanceOf.call(user);
         token1User = await this.token1.balanceOf.call(user);
         poolTokenUser = await this.poolToken.balanceOf.call(user);
       });
 
-      it('add DAI and USDT to pool by addLiquidity', async function() {
+      it('add DAI and USDT to pool by addLiquidity', async function () {
         const token0Amount = ether('1');
         const token1Amount = new BN('2000000');
         const tokens = [
@@ -616,7 +616,7 @@ contract('Curve_eth', function([_, user]) {
         profileGas(receipt);
       });
 
-      it('add DAI and USDT to pool by addLiquidity with max amount', async function() {
+      it('add DAI and USDT to pool by addLiquidity with max amount', async function () {
         const token0Amount = ether('1');
         const token1Amount = new BN('2000000');
         const tokens = [
@@ -694,7 +694,7 @@ contract('Curve_eth', function([_, user]) {
         profileGas(receipt);
       });
 
-      it('remove from pool to USDT by removeLiquidityOneCoin', async function() {
+      it('remove from pool to USDT by removeLiquidityOneCoin', async function () {
         const poolTokenUser = ether('0.1');
         const token1UserBefore = await this.token1.balanceOf.call(user);
         const answer = await this.threeSwap.methods[
@@ -748,7 +748,7 @@ contract('Curve_eth', function([_, user]) {
         profileGas(receipt);
       });
 
-      it('remove from pool to USDT by removeLiquidityOneCoin with max amount', async function() {
+      it('remove from pool to USDT by removeLiquidityOneCoin with max amount', async function () {
         const poolTokenUser = ether('0.1');
         const token1UserBefore = await this.token1.balanceOf.call(user);
         const answer = await this.threeSwap.methods[
@@ -803,7 +803,7 @@ contract('Curve_eth', function([_, user]) {
       });
     });
 
-    describe('seth pool', function() {
+    describe('seth pool', function () {
       const tokenAddress = SETH_TOKEN;
       const poolTokenAddress = CURVE_SETHCRV;
 
@@ -813,7 +813,7 @@ contract('Curve_eth', function([_, user]) {
       let providerAddress;
       let poolTokenProvider;
 
-      before(async function() {
+      before(async function () {
         providerAddress = await tokenProviderUniV2(tokenAddress);
         poolTokenProvider = await tokenProviderCurveGauge(poolTokenAddress);
 
@@ -821,14 +821,14 @@ contract('Curve_eth', function([_, user]) {
         this.poolToken = await IToken.at(poolTokenAddress);
       });
 
-      beforeEach(async function() {
+      beforeEach(async function () {
         balanceUser = await tracker(user);
         balanceProxy = await tracker(this.proxy.address);
         tokenUser = await this.token.balanceOf.call(user);
         poolTokenUser = await this.poolToken.balanceOf.call(user);
       });
 
-      it('add ETH and sETH to pool by addLiquidity', async function() {
+      it('add ETH and sETH to pool by addLiquidity', async function () {
         const value = ether('1');
         const tokenAmount = ether('2');
         const tokens = [NATIVE_TOKEN_ADDRESS, this.token.address];
@@ -896,7 +896,7 @@ contract('Curve_eth', function([_, user]) {
         profileGas(receipt);
       });
 
-      it('add ETH and sETH to pool by addLiquidity with max amount', async function() {
+      it('add ETH and sETH to pool by addLiquidity with max amount', async function () {
         const value = ether('1');
         const tokenAmount = ether('2');
         const tokens = [NATIVE_TOKEN_ADDRESS, this.token.address];
@@ -964,7 +964,7 @@ contract('Curve_eth', function([_, user]) {
         profileGas(receipt);
       });
 
-      it('remove from pool to ETH by removeLiquidityOneCoin', async function() {
+      it('remove from pool to ETH by removeLiquidityOneCoin', async function () {
         const poolTokenUser = ether('0.1');
         const answer = await this.sethSwap.methods[
           'calc_withdraw_one_coin(uint256,int128)'
@@ -1010,7 +1010,7 @@ contract('Curve_eth', function([_, user]) {
       });
     });
 
-    describe('hbtc pool', function() {
+    describe('hbtc pool', function () {
       const token0Address = HBTC_TOKEN;
       const token1Address = WBTC_TOKEN;
       const poolTokenAddress = CURVE_HBTCCRV;
@@ -1021,7 +1021,7 @@ contract('Curve_eth', function([_, user]) {
       let provider0Address;
       let provider1Address;
 
-      before(async function() {
+      before(async function () {
         provider0Address = await tokenProviderUniV2(token0Address);
         provider1Address = await tokenProviderUniV2(token1Address);
 
@@ -1030,14 +1030,14 @@ contract('Curve_eth', function([_, user]) {
         this.poolToken = await IToken.at(poolTokenAddress);
       });
 
-      beforeEach(async function() {
+      beforeEach(async function () {
         balanceUser = await tracker(user);
         balanceProxy = await tracker(this.proxy.address);
         tokenUser = await this.token.balanceOf.call(user);
         poolTokenUser = await this.poolToken.balanceOf.call(user);
       });
 
-      it('add HBTC and WBTC to pool by addLiquidity', async function() {
+      it('add HBTC and WBTC to pool by addLiquidity', async function () {
         const tokenAmount = new BN('100000000');
         const tokens = [this.token.address, this.wbtc.address];
         const amounts = [tokenAmount, tokenAmount];
@@ -1108,7 +1108,7 @@ contract('Curve_eth', function([_, user]) {
       });
     });
 
-    describe('aave pool', function() {
+    describe('aave pool', function () {
       const token0Address = DAI_TOKEN;
       const token1Address = USDT_TOKEN;
       const poolTokenAddress = CURVE_AAVECRV;
@@ -1119,7 +1119,7 @@ contract('Curve_eth', function([_, user]) {
       let provider1Address;
       let poolTokenProvider;
 
-      before(async function() {
+      before(async function () {
         provider0Address = await tokenProviderUniV2(token0Address);
         provider1Address = await tokenProviderUniV2(token1Address);
         poolTokenProvider = await tokenProviderCurveGauge(poolTokenAddress);
@@ -1129,13 +1129,13 @@ contract('Curve_eth', function([_, user]) {
         this.poolToken = await IToken.at(poolTokenAddress);
       });
 
-      beforeEach(async function() {
+      beforeEach(async function () {
         token0User = await this.token0.balanceOf.call(user);
         token1User = await this.token1.balanceOf.call(user);
         poolTokenUser = await this.poolToken.balanceOf.call(user);
       });
 
-      it('add DAI and USDT to pool by addLiquidityUnderlying', async function() {
+      it('add DAI and USDT to pool by addLiquidityUnderlying', async function () {
         const token0Amount = ether('1');
         const token1Amount = new BN('2000000');
         const tokens = [
@@ -1210,7 +1210,7 @@ contract('Curve_eth', function([_, user]) {
         profileGas(receipt);
       });
 
-      it('remove from pool to USDT by removeLiquidityOneCoinUnderlying', async function() {
+      it('remove from pool to USDT by removeLiquidityOneCoinUnderlying', async function () {
         const poolTokenUser = ether('0.1');
         const token1UserBefore = await this.token1.balanceOf.call(user);
         const answer = await this.aaveSwap.methods[
@@ -1260,8 +1260,8 @@ contract('Curve_eth', function([_, user]) {
     });
   });
 
-  describe('Liquidity with deposit contract', function() {
-    describe('y pool', function() {
+  describe('Liquidity with deposit contract', function () {
+    describe('y pool', function () {
       const token0Address = DAI_TOKEN;
       const token1Address = USDT_TOKEN;
       const yToken0Address = CURVE_YDAI_TOKEN;
@@ -1274,7 +1274,7 @@ contract('Curve_eth', function([_, user]) {
       let provider1Address;
       let poolTokenProvider;
 
-      before(async function() {
+      before(async function () {
         provider0Address = await tokenProviderUniV2(token0Address);
         provider1Address = await tokenProviderUniV2(token1Address);
         poolTokenProvider = await tokenProviderCurveGauge(poolTokenAddress);
@@ -1285,12 +1285,12 @@ contract('Curve_eth', function([_, user]) {
         this.yToken1 = await IYToken.at(yToken1Address);
         this.poolToken = await IToken.at(poolTokenAddress);
       });
-      beforeEach(async function() {
+      beforeEach(async function () {
         token0User = await this.token0.balanceOf.call(user);
         token1User = await this.token1.balanceOf.call(user);
         poolTokenUser = await this.poolToken.balanceOf.call(user);
       });
-      it('add DAI and USDT to pool by addLiquidity', async function() {
+      it('add DAI and USDT to pool by addLiquidity', async function () {
         const token0Amount = ether('1000');
         const token1Amount = new BN('1000000000');
         // Get yToken amounts equivalent to underlying token inputs
@@ -1384,7 +1384,7 @@ contract('Curve_eth', function([_, user]) {
         );
         profileGas(receipt);
       });
-      it('add DAI and USDT to pool by addLiquidity with max amount', async function() {
+      it('add DAI and USDT to pool by addLiquidity with max amount', async function () {
         const token0Amount = ether('1000');
         const token1Amount = new BN('1000000000');
         // Get yToken amounts equivalent to underlying token inputs
@@ -1478,7 +1478,7 @@ contract('Curve_eth', function([_, user]) {
         );
         profileGas(receipt);
       });
-      it('remove from pool to USDT by removeLiquidityOneCoinUnderlying', async function() {
+      it('remove from pool to USDT by removeLiquidityOneCoinUnderlying', async function () {
         const token1UserBefore = await this.token1.balanceOf.call(user);
         const poolTokenUser = ether('1');
         const answer = await this.yDeposit.methods[

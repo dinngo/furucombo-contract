@@ -30,11 +30,7 @@ contract HSushiSwap is HandlerBase {
     )
         external
         payable
-        returns (
-            uint256 amountToken,
-            uint256 amountETH,
-            uint256 liquidity
-        )
+        returns (uint256 amountToken, uint256 amountETH, uint256 liquidity)
     {
         // Get uniswapV2 router
         IUniswapV2Router02 router = IUniswapV2Router02(sushiSwapRouter);
@@ -66,8 +62,11 @@ contract HSushiSwap is HandlerBase {
         _tokenApproveZero(token, sushiSwapRouter);
 
         // Update involved token
-        address pair =
-            SushiSwapLibrary.pairFor(router.factory(), token, router.WETH());
+        address pair = SushiSwapLibrary.pairFor(
+            router.factory(),
+            token,
+            router.WETH()
+        );
         _updateToken(pair);
     }
 
@@ -81,11 +80,7 @@ contract HSushiSwap is HandlerBase {
     )
         external
         payable
-        returns (
-            uint256 amountA,
-            uint256 amountB,
-            uint256 liquidity
-        )
+        returns (uint256 amountA, uint256 amountB, uint256 liquidity)
     {
         // Get uniswapV2 router
         IUniswapV2Router02 router = IUniswapV2Router02(sushiSwapRouter);
@@ -120,8 +115,11 @@ contract HSushiSwap is HandlerBase {
         _tokenApproveZero(tokenA, sushiSwapRouter);
         _tokenApproveZero(tokenB, sushiSwapRouter);
         // Update involved token
-        address pair =
-            SushiSwapLibrary.pairFor(router.factory(), tokenA, tokenB);
+        address pair = SushiSwapLibrary.pairFor(
+            router.factory(),
+            tokenA,
+            tokenB
+        );
         _updateToken(pair);
     }
 
@@ -133,8 +131,11 @@ contract HSushiSwap is HandlerBase {
     ) external payable returns (uint256 amountToken, uint256 amountETH) {
         // Get uniswapV2 router
         IUniswapV2Router02 router = IUniswapV2Router02(sushiSwapRouter);
-        address pair =
-            SushiSwapLibrary.pairFor(router.factory(), token, router.WETH());
+        address pair = SushiSwapLibrary.pairFor(
+            router.factory(),
+            token,
+            router.WETH()
+        );
 
         // Approve token
         liquidity = _getBalance(pair, liquidity);
@@ -173,8 +174,11 @@ contract HSushiSwap is HandlerBase {
     ) external payable returns (uint256 amountA, uint256 amountB) {
         // Get uniswapV2 router
         IUniswapV2Router02 router = IUniswapV2Router02(sushiSwapRouter);
-        address pair =
-            SushiSwapLibrary.pairFor(router.factory(), tokenA, tokenB);
+        address pair = SushiSwapLibrary.pairFor(
+            router.factory(),
+            tokenA,
+            tokenB
+        );
 
         // Approve token
         liquidity = _getBalance(pair, liquidity);

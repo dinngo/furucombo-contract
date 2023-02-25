@@ -36,12 +36,12 @@ const HMock = artifacts.require('HMock');
 const IToken = artifacts.require('IERC20');
 const FeeRuleRegistry = artifacts.require('FeeRuleRegistry');
 
-contract('Proxy', function([_, deployer, user]) {
+contract('Proxy', function ([_, deployer, user]) {
   let id;
   let balanceUser;
   let balanceProxy;
 
-  before(async function() {
+  before(async function () {
     this.registry = await Registry.new();
     this.feeRuleRegistry = await FeeRuleRegistry.new('1', _); // intentionally set fee rate to non-zero to make FEE_RATE slot change while processing tx
     this.proxy = await Proxy.new(
@@ -50,17 +50,17 @@ contract('Proxy', function([_, deployer, user]) {
     );
   });
 
-  beforeEach(async function() {
+  beforeEach(async function () {
     id = await evmSnapshot();
   });
 
-  afterEach(async function() {
+  afterEach(async function () {
     await checkCacheClean(this.proxy.address);
     await evmRevert(id);
   });
 
-  describe('execute', function() {
-    beforeEach(async function() {
+  describe('execute', function () {
+    beforeEach(async function () {
       this.fooFactory = await FooFactory.new({ from: deployer });
       await this.fooFactory.createFoo();
       await this.fooFactory.createFoo();
@@ -74,7 +74,7 @@ contract('Proxy', function([_, deployer, user]) {
       );
     });
 
-    it('single', async function() {
+    it('single', async function () {
       const index = 0;
       const num = new BN('25');
       const data = abi.simpleEncode(
@@ -87,7 +87,7 @@ contract('Proxy', function([_, deployer, user]) {
       expect(result).to.be.bignumber.eq(num);
     });
 
-    it('should revert: caller as handler', async function() {
+    it('should revert: caller as handler', async function () {
       this.fooHandler2 = await FooHandler.new(this.fooFactory.address);
       await this.registry.registerCaller(
         this.fooHandler2.address,
@@ -107,7 +107,7 @@ contract('Proxy', function([_, deployer, user]) {
       );
     });
 
-    it('should revert: handler as caller - directly', async function() {
+    it('should revert: handler as caller - directly', async function () {
       this.foo5Handler = await Foo5Handler.new();
       await this.registry.register(
         this.foo5Handler.address,
@@ -120,7 +120,7 @@ contract('Proxy', function([_, deployer, user]) {
       );
     });
 
-    it('should revert: handler as caller - after initialize', async function() {
+    it('should revert: handler as caller - after initialize', async function () {
       this.foo5Handler = await Foo5Handler.new();
       await this.registry.register(
         this.foo5Handler.address,
@@ -137,7 +137,7 @@ contract('Proxy', function([_, deployer, user]) {
       await expectRevert(this.proxy.execMock(to, data2), 'Invalid caller');
     });
 
-    it('should revert: banned agent executing batchExec()', async function() {
+    it('should revert: banned agent executing batchExec()', async function () {
       await this.registry.ban(this.proxy.address);
       const index = 0;
       const num = new BN('25');
@@ -153,7 +153,7 @@ contract('Proxy', function([_, deployer, user]) {
       );
     });
 
-    it('should revert: banned agent executing fallback()', async function() {
+    it('should revert: banned agent executing fallback()', async function () {
       await this.registry.ban(this.proxy.address);
       await expectRevert(
         web3.eth.sendTransaction({
@@ -166,7 +166,7 @@ contract('Proxy', function([_, deployer, user]) {
       );
     });
 
-    it('should revert: banned agent executing execs()', async function() {
+    it('should revert: banned agent executing execs()', async function () {
       await this.registry.ban(this.proxy.address);
       const index = 0;
       const num = new BN('25');
@@ -181,7 +181,7 @@ contract('Proxy', function([_, deployer, user]) {
       );
     });
 
-    it('should revert: call batchExec() when registry halted', async function() {
+    it('should revert: call batchExec() when registry halted', async function () {
       await this.registry.halt();
       const index = 0;
       const num = new BN('25');
@@ -197,7 +197,7 @@ contract('Proxy', function([_, deployer, user]) {
       );
     });
 
-    it('should revert: call fallback() when registry halted', async function() {
+    it('should revert: call fallback() when registry halted', async function () {
       await this.registry.halt();
       await expectRevert(
         web3.eth.sendTransaction({
@@ -210,7 +210,7 @@ contract('Proxy', function([_, deployer, user]) {
       );
     });
 
-    it('should revert: call execs() registry halted', async function() {
+    it('should revert: call execs() registry halted', async function () {
       await this.registry.halt();
       const index = 0;
       const num = new BN('25');
@@ -225,7 +225,7 @@ contract('Proxy', function([_, deployer, user]) {
       );
     });
 
-    it('multiple', async function() {
+    it('multiple', async function () {
       const index = [0, 1, 2];
       const num = [new BN('25'), new BN('26'), new BN('27')];
       const to = [
@@ -252,8 +252,8 @@ contract('Proxy', function([_, deployer, user]) {
     });
   });
 
-  describe('execute with token', function() {
-    beforeEach(async function() {
+  describe('execute with token', function () {
+    beforeEach(async function () {
       await FooFactory.new({ from: deployer }); // dummy
       this.fooFactory = await Foo2Factory.new({ from: deployer });
       await this.fooFactory.createFoo();
@@ -268,12 +268,12 @@ contract('Proxy', function([_, deployer, user]) {
       );
     });
 
-    beforeEach(async function() {
+    beforeEach(async function () {
       balanceUser = await tracker(user);
       balanceProxy = await tracker(this.proxy.address);
     });
 
-    it('single', async function() {
+    it('single', async function () {
       const index = 0;
       const to = this.fooHandler.address;
       const data = abi.simpleEncode(
@@ -288,7 +288,7 @@ contract('Proxy', function([_, deployer, user]) {
       ).to.be.bignumber.eq(ether('0'));
     });
 
-    it('multiple', async function() {
+    it('multiple', async function () {
       const index = [0, 1, 2];
       const value = [ether('0.1'), ether('0.2'), ether('0.5')];
       const to = [
@@ -310,12 +310,7 @@ contract('Proxy', function([_, deployer, user]) {
 
       expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
       expect(await balanceUser.delta()).to.be.bignumber.eq(
-        ether('0').sub(
-          value[0]
-            .add(value[1])
-            .add(value[2])
-            .div(new BN('2'))
-        )
+        ether('0').sub(value[0].add(value[1]).add(value[2]).div(new BN('2')))
       );
       expect(
         await this.foo0.balanceOf.call(this.proxy.address)
@@ -338,8 +333,8 @@ contract('Proxy', function([_, deployer, user]) {
     });
   });
 
-  describe('Direct transfer', function() {
-    it('Should fail', async function() {
+  describe('Direct transfer', function () {
+    it('Should fail', async function () {
       await expectRevert.unspecified(
         web3.eth.sendTransaction({
           from: user,
@@ -350,8 +345,8 @@ contract('Proxy', function([_, deployer, user]) {
     });
   });
 
-  describe('execute with customized post process', function() {
-    before(async function() {
+  describe('execute with customized post process', function () {
+    before(async function () {
       this.foo = await Foo3.new();
       this.fooHandler = await Foo3Handler.new();
       await this.registry.register(
@@ -366,26 +361,26 @@ contract('Proxy', function([_, deployer, user]) {
       );
     });
 
-    beforeEach(async function() {
+    beforeEach(async function () {
       balanceUser = await tracker(user);
       balanceProxy = await tracker(this.proxy.address);
     });
 
-    it('post process 1', async function() {
+    it('post process 1', async function () {
       const to = this.fooHandler.address;
       const data = abi.simpleEncode('bar1(address)', this.foo.address);
       await this.proxy.execMock(to, data, { value: ether('1') });
       expect(await this.foo.num.call()).to.be.bignumber.eq(new BN('1'));
     });
 
-    it('post process 2', async function() {
+    it('post process 2', async function () {
       const to = this.fooHandler.address;
       const data = abi.simpleEncode('bar2(address)', this.foo.address);
       await this.proxy.execMock(to, data, { value: ether('1') });
       expect(await this.foo.num.call()).to.be.bignumber.eq(new BN('2'));
     });
 
-    it('should revert: with other handler type', async function() {
+    it('should revert: with other handler type', async function () {
       this.proxy.setHandlerType(HANDLER_TYPE.OTHERS);
       await expectRevert(
         this.proxy.batchExec([], [], [], [], { from: user }),
@@ -393,7 +388,7 @@ contract('Proxy', function([_, deployer, user]) {
       );
     });
 
-    it('should revert: Invalid post process', async function() {
+    it('should revert: Invalid post process', async function () {
       const to = this.hMock.address;
       const data = abi.simpleEncode('updatePostProcess(bytes32[])', []);
       await expectRevert(
@@ -403,8 +398,8 @@ contract('Proxy', function([_, deployer, user]) {
     });
   });
 
-  describe('dynamic parameter', function() {
-    before(async function() {
+  describe('dynamic parameter', function () {
+    before(async function () {
       this.foo = await Foo4.new();
       this.fooHandler = await Foo4Handler.new();
       await this.registry.register(
@@ -413,7 +408,7 @@ contract('Proxy', function([_, deployer, user]) {
       );
     });
 
-    it('static parameter', async function() {
+    it('static parameter', async function () {
       const tos = [this.fooHandler.address];
       const a =
         '0x00000000000000000000000000000000000000000000000000000000000000ff';
@@ -433,7 +428,7 @@ contract('Proxy', function([_, deployer, user]) {
       expect(await this.foo.bValue.call()).eq(a);
     });
 
-    it('replace parameter', async function() {
+    it('replace parameter', async function () {
       const tos = [this.fooHandler.address, this.fooHandler.address];
       const r = await this.foo.bar.call();
       const a =
@@ -457,7 +452,7 @@ contract('Proxy', function([_, deployer, user]) {
       expect(await this.foo.bValue.call()).eq(r);
     });
 
-    it('replace parameter with dynamic array return', async function() {
+    it('replace parameter with dynamic array return', async function () {
       const tos = [this.fooHandler.address, this.fooHandler.address];
       const secAmt = ether('1');
       const ratio = ether('0.7');
@@ -497,7 +492,7 @@ contract('Proxy', function([_, deployer, user]) {
       );
     });
 
-    it('replace third parameter', async function() {
+    it('replace third parameter', async function () {
       const tos = [this.fooHandler.address, this.fooHandler.address];
       const r = await this.foo.bar.call();
       const a =
@@ -527,7 +522,7 @@ contract('Proxy', function([_, deployer, user]) {
       expect(await this.foo.bValue.call()).eq(r);
     });
 
-    it('replace parameter by 50% of ref value', async function() {
+    it('replace parameter by 50% of ref value', async function () {
       const tos = [this.fooHandler.address, this.fooHandler.address];
       const r = await this.foo.barUint.call();
       const a = ether('0.5');
@@ -551,7 +546,7 @@ contract('Proxy', function([_, deployer, user]) {
       );
     });
 
-    it('should revert: location count less than ref count', async function() {
+    it('should revert: location count less than ref count', async function () {
       const tos = [this.fooHandler.address, this.fooHandler.address];
       const r = await this.foo.bar.call();
       const a =
@@ -576,7 +571,7 @@ contract('Proxy', function([_, deployer, user]) {
       );
     });
 
-    it('should revert: location count greater than ref count', async function() {
+    it('should revert: location count greater than ref count', async function () {
       const tos = [this.fooHandler.address, this.fooHandler.address];
       const r = await this.foo.bar.call();
       const a =
@@ -601,7 +596,7 @@ contract('Proxy', function([_, deployer, user]) {
       );
     });
 
-    it('should revert: ref to out of localStack', async function() {
+    it('should revert: ref to out of localStack', async function () {
       const tos = [this.fooHandler.address, this.fooHandler.address];
       const r = await this.foo.bar.call();
       const a =
@@ -626,7 +621,7 @@ contract('Proxy', function([_, deployer, user]) {
       );
     });
 
-    it('should revert: expected return amount not match', async function() {
+    it('should revert: expected return amount not match', async function () {
       const tos = [this.fooHandler.address, this.fooHandler.address];
       const r = await this.foo.bar.call();
       const a =
@@ -651,7 +646,7 @@ contract('Proxy', function([_, deployer, user]) {
       );
     });
 
-    it('should revert: overflow during trimming', async function() {
+    it('should revert: overflow during trimming', async function () {
       const tos = [this.fooHandler.address, this.fooHandler.address];
       const r = await this.foo.barUint.call();
       const a = MAX_UINT256; // multiply by any num greater than 0 will cause overflow
@@ -674,8 +669,8 @@ contract('Proxy', function([_, deployer, user]) {
     });
   });
 
-  describe('handler base', function() {
-    before(async function() {
+  describe('handler base', function () {
+    before(async function () {
       this.hMock = await HMock.new();
       await this.registry.register(
         this.hMock.address,
@@ -684,7 +679,7 @@ contract('Proxy', function([_, deployer, user]) {
     });
 
     if (network.config.chainId == 1) {
-      it('token approve', async function() {
+      it('token approve', async function () {
         const token = await IToken.at(OMG_TOKEN);
         const allowance1 = ether('1');
         const to = this.hMock.address;

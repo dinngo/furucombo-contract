@@ -48,7 +48,7 @@ const ILendingPool = artifacts.require('ILendingPoolV2');
 const IProvider = artifacts.require('ILendingPoolAddressesProviderV2');
 const SimpleToken = artifacts.require('SimpleToken');
 
-contract('Aave V2', function([_, user]) {
+contract('Aave V2', function ([_, user]) {
   const aTokenAddress = ADAI_V2;
   const tokenAddress = DAI_TOKEN;
   const aWrappedNativeTokenAddress = AWRAPPED_NATIVE_V2_TOKEN;
@@ -61,7 +61,7 @@ contract('Aave V2', function([_, user]) {
   let providerAddress;
   let wethProviderAddress;
 
-  before(async function() {
+  before(async function () {
     providerAddress = await getTokenProvider(tokenAddress);
     wethProviderAddress = await getTokenProvider(wrappedNativeTokenAddress);
 
@@ -89,19 +89,19 @@ contract('Aave V2', function([_, user]) {
     this.mockToken = await SimpleToken.new();
   });
 
-  beforeEach(async function() {
+  beforeEach(async function () {
     id = await evmSnapshot();
     balanceUser = await tracker(user);
     balanceProxy = await tracker(this.proxy.address);
   });
 
-  afterEach(async function() {
+  afterEach(async function () {
     await evmRevert(id);
   });
 
-  describe('Deposit', function() {
-    describe('Ether', function() {
-      it('normal', async function() {
+  describe('Deposit', function () {
+    describe('Ether', function () {
+      it('normal', async function () {
         const value = ether('10');
         const to = this.hAaveV2.address;
         const data = abi.simpleEncode('depositETH(uint256)', value);
@@ -125,7 +125,7 @@ contract('Aave V2', function([_, user]) {
         profileGas(receipt);
       });
 
-      it('max amount', async function() {
+      it('max amount', async function () {
         const value = ether('10');
         const to = this.hAaveV2.address;
         const data = abi.simpleEncode('depositETH(uint256)', MAX_UINT256);
@@ -150,8 +150,8 @@ contract('Aave V2', function([_, user]) {
       });
     });
 
-    describe('Token', function() {
-      it('normal', async function() {
+    describe('Token', function () {
+      it('normal', async function () {
         const value = ether('10');
         const to = this.hAaveV2.address;
         const data = abi.simpleEncode(
@@ -178,7 +178,7 @@ contract('Aave V2', function([_, user]) {
         profileGas(receipt);
       });
 
-      it('max amount', async function() {
+      it('max amount', async function () {
         const value = ether('10');
         const to = this.hAaveV2.address;
         const data = abi.simpleEncode(
@@ -206,7 +206,7 @@ contract('Aave V2', function([_, user]) {
         profileGas(receipt);
       });
 
-      it('should revert: not supported token', async function() {
+      it('should revert: not supported token', async function () {
         const value = ether('10');
         const to = this.hAaveV2.address;
         const data = abi.simpleEncode(
@@ -223,11 +223,11 @@ contract('Aave V2', function([_, user]) {
     });
   });
 
-  describe('Withdraw', function() {
+  describe('Withdraw', function () {
     var depositAmount = ether('5');
 
-    describe('Ether', function() {
-      beforeEach(async function() {
+    describe('Ether', function () {
+      beforeEach(async function () {
         await this.wrappedNativeToken.approve(
           this.lendingPool.address,
           depositAmount,
@@ -246,7 +246,7 @@ contract('Aave V2', function([_, user]) {
         depositAmount = await this.aWrappedNativeToken.balanceOf.call(user);
       });
 
-      it('partial', async function() {
+      it('partial', async function () {
         const value = depositAmount.div(new BN(2));
         const to = this.hAaveV2.address;
         const data = abi.simpleEncode('withdrawETH(uint256)', value);
@@ -288,7 +288,7 @@ contract('Aave V2', function([_, user]) {
         profileGas(receipt);
       });
 
-      it('max amount', async function() {
+      it('max amount', async function () {
         const value = depositAmount.div(new BN(2));
         const to = this.hAaveV2.address;
         const data = abi.simpleEncode('withdrawETH(uint256)', MAX_UINT256);
@@ -337,8 +337,8 @@ contract('Aave V2', function([_, user]) {
       });
     });
 
-    describe('Token', function() {
-      beforeEach(async function() {
+    describe('Token', function () {
+      beforeEach(async function () {
         await this.token.approve(this.lendingPool.address, depositAmount, {
           from: providerAddress,
         });
@@ -353,7 +353,7 @@ contract('Aave V2', function([_, user]) {
         depositAmount = await this.aToken.balanceOf.call(user);
       });
 
-      it('partial', async function() {
+      it('partial', async function () {
         const value = depositAmount.div(new BN(2));
         const to = this.hAaveV2.address;
         const data = abi.simpleEncode(
@@ -401,7 +401,7 @@ contract('Aave V2', function([_, user]) {
         profileGas(receipt);
       });
 
-      it('max amount', async function() {
+      it('max amount', async function () {
         const value = depositAmount.div(new BN(2));
         const to = this.hAaveV2.address;
         const data = abi.simpleEncode(
@@ -453,7 +453,7 @@ contract('Aave V2', function([_, user]) {
         profileGas(receipt);
       });
 
-      it('whole', async function() {
+      it('whole', async function () {
         const value = MAX_UINT256;
         const to = this.hAaveV2.address;
         const data = abi.simpleEncode(
@@ -497,7 +497,7 @@ contract('Aave V2', function([_, user]) {
         profileGas(receipt);
       });
 
-      it('should revert: not enough balance', async function() {
+      it('should revert: not enough balance', async function () {
         const value = depositAmount.add(ether('10'));
         const to = this.hAaveV2.address;
         const data = abi.simpleEncode(
@@ -519,7 +519,7 @@ contract('Aave V2', function([_, user]) {
         );
       });
 
-      it('should revert: not supported token', async function() {
+      it('should revert: not supported token', async function () {
         const value = depositAmount.add(ether('10'));
         const to = this.hAaveV2.address;
         const data = abi.simpleEncode(

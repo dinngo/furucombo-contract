@@ -23,8 +23,11 @@ contract HCurve is HandlerBase {
         uint256 amount,
         uint256 minAmount
     ) external payable returns (uint256) {
-        (uint256 _amount, uint256 balanceBefore, uint256 ethAmount) =
-            _exchangeBefore(handler, tokenI, tokenJ, amount);
+        (
+            uint256 _amount,
+            uint256 balanceBefore,
+            uint256 ethAmount
+        ) = _exchangeBefore(handler, tokenI, tokenJ, amount);
         try
             ICurveHandler(handler).exchange{value: ethAmount}(
                 i,
@@ -51,8 +54,11 @@ contract HCurve is HandlerBase {
         uint256 amount,
         uint256 minAmount
     ) external payable returns (uint256) {
-        (uint256 _amount, uint256 balanceBefore, uint256 ethAmount) =
-            _exchangeBefore(handler, tokenI, tokenJ, amount);
+        (
+            uint256 _amount,
+            uint256 balanceBefore,
+            uint256 ethAmount
+        ) = _exchangeBefore(handler, tokenI, tokenJ, amount);
         try
             ICurveHandler(handler).exchange{value: ethAmount}(
                 i,
@@ -79,8 +85,11 @@ contract HCurve is HandlerBase {
         uint256 amount,
         uint256 minAmount
     ) external payable returns (uint256) {
-        (uint256 _amount, uint256 balanceBefore, uint256 ethAmount) =
-            _exchangeBefore(handler, tokenI, tokenJ, amount);
+        (
+            uint256 _amount,
+            uint256 balanceBefore,
+            uint256 ethAmount
+        ) = _exchangeBefore(handler, tokenI, tokenJ, amount);
         try
             ICurveHandler(handler).exchange{value: ethAmount}(
                 i,
@@ -108,8 +117,11 @@ contract HCurve is HandlerBase {
         uint256 amount,
         uint256 minAmount
     ) external payable returns (uint256) {
-        (uint256 _amount, uint256 balanceBefore, uint256 ethAmount) =
-            _exchangeBefore(handler, tokenI, tokenJ, amount);
+        (
+            uint256 _amount,
+            uint256 balanceBefore,
+            uint256 ethAmount
+        ) = _exchangeBefore(handler, tokenI, tokenJ, amount);
         try
             ICurveHandler(handler).exchange_underlying{value: ethAmount}(
                 i,
@@ -137,8 +149,11 @@ contract HCurve is HandlerBase {
         uint256 amount,
         uint256 minAmount
     ) external payable returns (uint256) {
-        (uint256 _amount, uint256 balanceBefore, uint256 ethAmount) =
-            _exchangeBefore(handler, tokenI, tokenJ, amount);
+        (
+            uint256 _amount,
+            uint256 balanceBefore,
+            uint256 ethAmount
+        ) = _exchangeBefore(handler, tokenI, tokenJ, amount);
         try
             ICurveHandler(handler).exchange_underlying{value: ethAmount}(
                 pool,
@@ -166,8 +181,11 @@ contract HCurve is HandlerBase {
         uint256 amount,
         uint256 minAmount
     ) external payable returns (uint256) {
-        (uint256 _amount, uint256 balanceBefore, uint256 ethAmount) =
-            _exchangeBefore(handler, tokenI, tokenJ, amount);
+        (
+            uint256 _amount,
+            uint256 balanceBefore,
+            uint256 ethAmount
+        ) = _exchangeBefore(handler, tokenI, tokenJ, amount);
         try
             ICurveHandler(handler).exchange_underlying{value: ethAmount}(
                 i,
@@ -189,14 +207,7 @@ contract HCurve is HandlerBase {
         address tokenI,
         address tokenJ,
         uint256 amount
-    )
-        internal
-        returns (
-            uint256,
-            uint256,
-            uint256
-        )
-    {
+    ) internal returns (uint256, uint256, uint256) {
         amount = _getBalance(tokenI, amount);
         uint256 balanceBefore = _getBalance(tokenJ, type(uint256).max);
 
@@ -239,8 +250,11 @@ contract HCurve is HandlerBase {
         uint256[] calldata amounts,
         uint256 minPoolAmount
     ) external payable returns (uint256) {
-        (uint256[] memory _amounts, uint256 balanceBefore, uint256 ethAmount) =
-            _addLiquidityBefore(handler, pool, tokens, amounts);
+        (
+            uint256[] memory _amounts,
+            uint256 balanceBefore,
+            uint256 ethAmount
+        ) = _addLiquidityBefore(handler, pool, tokens, amounts);
 
         // Execute add_liquidity according to amount array size
         if (_amounts.length == 2) {
@@ -268,8 +282,12 @@ contract HCurve is HandlerBase {
                 _revertMsg("addLiquidity");
             }
         } else if (_amounts.length == 4) {
-            uint256[4] memory amts =
-                [_amounts[0], _amounts[1], _amounts[2], _amounts[3]];
+            uint256[4] memory amts = [
+                _amounts[0],
+                _amounts[1],
+                _amounts[2],
+                _amounts[3]
+            ];
             try
                 ICurveHandler(handler).add_liquidity{value: ethAmount}(
                     amts,
@@ -281,14 +299,13 @@ contract HCurve is HandlerBase {
                 _revertMsg("addLiquidity");
             }
         } else if (_amounts.length == 5) {
-            uint256[5] memory amts =
-                [
-                    _amounts[0],
-                    _amounts[1],
-                    _amounts[2],
-                    _amounts[3],
-                    _amounts[4]
-                ];
+            uint256[5] memory amts = [
+                _amounts[0],
+                _amounts[1],
+                _amounts[2],
+                _amounts[3],
+                _amounts[4]
+            ];
             try
                 ICurveHandler(handler).add_liquidity{value: ethAmount}(
                     amts,
@@ -300,15 +317,14 @@ contract HCurve is HandlerBase {
                 _revertMsg("addLiquidity");
             }
         } else if (_amounts.length == 6) {
-            uint256[6] memory amts =
-                [
-                    _amounts[0],
-                    _amounts[1],
-                    _amounts[2],
-                    _amounts[3],
-                    _amounts[4],
-                    _amounts[5]
-                ];
+            uint256[6] memory amts = [
+                _amounts[0],
+                _amounts[1],
+                _amounts[2],
+                _amounts[3],
+                _amounts[4],
+                _amounts[5]
+            ];
             try
                 ICurveHandler(handler).add_liquidity{value: ethAmount}(
                     amts,
@@ -335,8 +351,11 @@ contract HCurve is HandlerBase {
         uint256[] calldata amounts,
         uint256 minPoolAmount
     ) external payable returns (uint256) {
-        (uint256[] memory _amounts, uint256 balanceBefore, uint256 ethAmount) =
-            _addLiquidityBefore(handler, pool, tokens, amounts);
+        (
+            uint256[] memory _amounts,
+            uint256 balanceBefore,
+            uint256 ethAmount
+        ) = _addLiquidityBefore(handler, pool, tokens, amounts);
 
         // Execute add_liquidity according to amount array size
         if (_amounts.length == 2) {
@@ -366,8 +385,12 @@ contract HCurve is HandlerBase {
                 _revertMsg("addLiquidityUnderlying");
             }
         } else if (_amounts.length == 4) {
-            uint256[4] memory amts =
-                [_amounts[0], _amounts[1], _amounts[2], _amounts[3]];
+            uint256[4] memory amts = [
+                _amounts[0],
+                _amounts[1],
+                _amounts[2],
+                _amounts[3]
+            ];
             try
                 ICurveHandler(handler).add_liquidity{value: ethAmount}(
                     amts,
@@ -380,14 +403,13 @@ contract HCurve is HandlerBase {
                 _revertMsg("addLiquidityUnderlying");
             }
         } else if (_amounts.length == 5) {
-            uint256[5] memory amts =
-                [
-                    _amounts[0],
-                    _amounts[1],
-                    _amounts[2],
-                    _amounts[3],
-                    _amounts[4]
-                ];
+            uint256[5] memory amts = [
+                _amounts[0],
+                _amounts[1],
+                _amounts[2],
+                _amounts[3],
+                _amounts[4]
+            ];
             try
                 ICurveHandler(handler).add_liquidity{value: ethAmount}(
                     amts,
@@ -400,15 +422,14 @@ contract HCurve is HandlerBase {
                 _revertMsg("addLiquidityUnderlying");
             }
         } else if (_amounts.length == 6) {
-            uint256[6] memory amts =
-                [
-                    _amounts[0],
-                    _amounts[1],
-                    _amounts[2],
-                    _amounts[3],
-                    _amounts[4],
-                    _amounts[5]
-                ];
+            uint256[6] memory amts = [
+                _amounts[0],
+                _amounts[1],
+                _amounts[2],
+                _amounts[3],
+                _amounts[4],
+                _amounts[5]
+            ];
             try
                 ICurveHandler(handler).add_liquidity{value: ethAmount}(
                     amts,
@@ -436,8 +457,11 @@ contract HCurve is HandlerBase {
         uint256[] calldata amounts,
         uint256 minPoolAmount
     ) external payable returns (uint256) {
-        (uint256[] memory _amounts, uint256 balanceBefore, uint256 ethAmount) =
-            _addLiquidityBefore(handler, pool, tokens, amounts);
+        (
+            uint256[] memory _amounts,
+            uint256 balanceBefore,
+            uint256 ethAmount
+        ) = _addLiquidityBefore(handler, pool, tokens, amounts);
 
         // Execute add_liquidity according to amount array size
         if (_amounts.length == 3) {
@@ -454,8 +478,12 @@ contract HCurve is HandlerBase {
                 _revertMsg("addLiquidityFactoryZap");
             }
         } else if (_amounts.length == 4) {
-            uint256[4] memory amts =
-                [_amounts[0], _amounts[1], _amounts[2], _amounts[3]];
+            uint256[4] memory amts = [
+                _amounts[0],
+                _amounts[1],
+                _amounts[2],
+                _amounts[3]
+            ];
             try
                 ICurveHandler(handler).add_liquidity{value: ethAmount}(
                     pool,
@@ -468,14 +496,13 @@ contract HCurve is HandlerBase {
                 _revertMsg("addLiquidityFactoryZap");
             }
         } else if (_amounts.length == 5) {
-            uint256[5] memory amts =
-                [
-                    _amounts[0],
-                    _amounts[1],
-                    _amounts[2],
-                    _amounts[3],
-                    _amounts[4]
-                ];
+            uint256[5] memory amts = [
+                _amounts[0],
+                _amounts[1],
+                _amounts[2],
+                _amounts[3],
+                _amounts[4]
+            ];
             try
                 ICurveHandler(handler).add_liquidity{value: ethAmount}(
                     pool,
@@ -488,15 +515,14 @@ contract HCurve is HandlerBase {
                 _revertMsg("addLiquidityFactoryZap");
             }
         } else if (_amounts.length == 6) {
-            uint256[6] memory amts =
-                [
-                    _amounts[0],
-                    _amounts[1],
-                    _amounts[2],
-                    _amounts[3],
-                    _amounts[4],
-                    _amounts[5]
-                ];
+            uint256[6] memory amts = [
+                _amounts[0],
+                _amounts[1],
+                _amounts[2],
+                _amounts[3],
+                _amounts[4],
+                _amounts[5]
+            ];
             try
                 ICurveHandler(handler).add_liquidity{value: ethAmount}(
                     pool,
@@ -521,14 +547,7 @@ contract HCurve is HandlerBase {
         address pool,
         address[] memory tokens,
         uint256[] memory amounts
-    )
-        internal
-        returns (
-            uint256[] memory,
-            uint256,
-            uint256
-        )
-    {
+    ) internal returns (uint256[] memory, uint256, uint256) {
         uint256 balanceBefore = IERC20(pool).balanceOf(address(this));
 
         // Approve non-zero amount erc20 token and set eth amount
@@ -581,8 +600,10 @@ contract HCurve is HandlerBase {
         int128 i,
         uint256 minAmount
     ) external payable returns (uint256) {
-        (uint256 _poolAmount, uint256 balanceBefore) =
-            _removeLiquidityOneCoinBefore(handler, pool, tokenI, poolAmount);
+        (
+            uint256 _poolAmount,
+            uint256 balanceBefore
+        ) = _removeLiquidityOneCoinBefore(handler, pool, tokenI, poolAmount);
         try
             ICurveHandler(handler).remove_liquidity_one_coin(
                 _poolAmount,
@@ -608,8 +629,10 @@ contract HCurve is HandlerBase {
         uint256 i,
         uint256 minAmount
     ) external payable returns (uint256) {
-        (uint256 _poolAmount, uint256 balanceBefore) =
-            _removeLiquidityOneCoinBefore(handler, pool, tokenI, poolAmount);
+        (
+            uint256 _poolAmount,
+            uint256 balanceBefore
+        ) = _removeLiquidityOneCoinBefore(handler, pool, tokenI, poolAmount);
         try
             ICurveHandler(handler).remove_liquidity_one_coin(
                 _poolAmount,
@@ -635,8 +658,10 @@ contract HCurve is HandlerBase {
         int128 i,
         uint256 minAmount
     ) external payable returns (uint256) {
-        (uint256 _poolAmount, uint256 balanceBefore) =
-            _removeLiquidityOneCoinBefore(handler, pool, tokenI, poolAmount);
+        (
+            uint256 _poolAmount,
+            uint256 balanceBefore
+        ) = _removeLiquidityOneCoinBefore(handler, pool, tokenI, poolAmount);
         try
             ICurveHandler(handler).remove_liquidity_one_coin(
                 _poolAmount,
@@ -663,8 +688,10 @@ contract HCurve is HandlerBase {
         uint256 i,
         uint256 minAmount
     ) external payable returns (uint256) {
-        (uint256 _poolAmount, uint256 balanceBefore) =
-            _removeLiquidityOneCoinBefore(handler, pool, tokenI, poolAmount);
+        (
+            uint256 _poolAmount,
+            uint256 balanceBefore
+        ) = _removeLiquidityOneCoinBefore(handler, pool, tokenI, poolAmount);
         try
             ICurveHandler(handler).remove_liquidity_one_coin(
                 _poolAmount,
@@ -691,8 +718,10 @@ contract HCurve is HandlerBase {
         int128 i,
         uint256 minAmount
     ) external payable returns (uint256) {
-        (uint256 _poolAmount, uint256 balanceBefore) =
-            _removeLiquidityOneCoinBefore(handler, pool, tokenI, poolAmount);
+        (
+            uint256 _poolAmount,
+            uint256 balanceBefore
+        ) = _removeLiquidityOneCoinBefore(handler, pool, tokenI, poolAmount);
         try
             ICurveHandler(handler).remove_liquidity_one_coin(
                 pool,

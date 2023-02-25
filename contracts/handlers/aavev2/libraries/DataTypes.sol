@@ -46,5 +46,9 @@ library DataTypes {
         uint256 data;
     }
 
-    enum InterestRateMode {NONE, STABLE, VARIABLE}
+    enum InterestRateMode {
+        NONE,
+        STABLE,
+        VARIABLE
+    }
 }

@@ -57,10 +57,9 @@ abstract contract IRewardDistributionRecipient is Ownable {
         _;
     }
 
-    function setRewardDistribution(address _rewardDistribution)
-        external
-        onlyOwner
-    {
+    function setRewardDistribution(
+        address _rewardDistribution
+    ) external onlyOwner {
         rewardDistribution = _rewardDistribution;
     }
 }
@@ -175,12 +174,9 @@ contract CurveRewards is LPTokenWrapper, IRewardDistributionRecipient {
         }
     }
 
-    function notifyRewardAmount(uint256 reward)
-        external
-        override
-        onlyRewardDistribution
-        updateReward(address(0))
-    {
+    function notifyRewardAmount(
+        uint256 reward
+    ) external override onlyRewardDistribution updateReward(address(0)) {
         if (block.timestamp >= periodFinish) {
             rewardRate = reward / DURATION;
         } else {

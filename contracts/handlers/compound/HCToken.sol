@@ -13,11 +13,10 @@ contract HCToken is HandlerBase {
         return "HCToken";
     }
 
-    function mint(address cToken, uint256 mintAmount)
-        external
-        payable
-        returns (uint256)
-    {
+    function mint(
+        address cToken,
+        uint256 mintAmount
+    ) external payable returns (uint256) {
         // Get ctoken balance of proxy before mint
         ICToken compound = ICToken(cToken);
         uint256 beforeCTokenAmount = compound.balanceOf(address(this));
@@ -47,11 +46,10 @@ contract HCToken is HandlerBase {
         return afterCTokenAmount - beforeCTokenAmount;
     }
 
-    function redeem(address cToken, uint256 redeemTokens)
-        external
-        payable
-        returns (uint256)
-    {
+    function redeem(
+        address cToken,
+        uint256 redeemTokens
+    ) external payable returns (uint256) {
         // Get token balance of proxy before redeem
         address token = _getToken(cToken);
         uint256 beforeTokenAmount = IERC20(token).balanceOf(address(this));
@@ -79,11 +77,10 @@ contract HCToken is HandlerBase {
         return afterTokenAmount - beforeTokenAmount;
     }
 
-    function redeemUnderlying(address cToken, uint256 redeemAmount)
-        external
-        payable
-        returns (uint256)
-    {
+    function redeemUnderlying(
+        address cToken,
+        uint256 redeemAmount
+    ) external payable returns (uint256) {
         // Get ctoken balance of proxy before redeem
         ICToken compound = ICToken(cToken);
         uint256 beforeCTokenAmount = compound.balanceOf(address(this));

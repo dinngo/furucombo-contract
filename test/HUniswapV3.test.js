@@ -42,7 +42,7 @@ const IToken = artifacts.require('IERC20');
 const ISwapRouter = artifacts.require('ISwapRouter');
 const IQuoter = artifacts.require('IQuoter');
 
-contract('UniswapV3 Swap', function([_, user, someone]) {
+contract('UniswapV3 Swap', function ([_, user, someone]) {
   let id;
   const tokenAddress = DAI_TOKEN;
   const token2Address = USDT_TOKEN;
@@ -53,7 +53,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
   let wethUser;
   let tokenProvider;
 
-  before(async function() {
+  before(async function () {
     tokenProvider = await getTokenProvider(tokenAddress, WETH_TOKEN, 3000);
 
     this.registry = await Registry.new();
@@ -74,7 +74,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
     this.weth = await IToken.at(WETH_TOKEN);
   });
 
-  beforeEach(async function() {
+  beforeEach(async function () {
     id = await evmSnapshot();
     balanceUser = await tracker(user);
     balanceProxy = await tracker(this.proxy.address);
@@ -83,14 +83,14 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
     wethUser = await this.weth.balanceOf.call(user);
   });
 
-  afterEach(async function() {
+  afterEach(async function () {
     await evmRevert(id);
   });
 
-  describe('Exact input', function() {
-    describe('Single path', function() {
-      describe('Ether in', function() {
-        it('normal', async function() {
+  describe('Exact input', function () {
+    describe('Single path', function () {
+      describe('Ether in', function () {
+        it('normal', async function () {
           const value = ether('1');
           const to = this.hUniswapV3.address;
           // Set swap info
@@ -145,7 +145,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           );
         });
 
-        it('max amount', async function() {
+        it('max amount', async function () {
           const value = ether('1');
           const to = this.hUniswapV3.address;
           // Set swap info
@@ -200,7 +200,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           );
         });
 
-        it('insufficient ether', async function() {
+        it('insufficient ether', async function () {
           const value = ether('1');
           const to = this.hUniswapV3.address;
           // Set swap info
@@ -229,8 +229,8 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
         });
       });
 
-      describe('Ether out', function() {
-        it('normal', async function() {
+      describe('Ether out', function () {
+        it('normal', async function () {
           const value = ether('1');
           const to = this.hUniswapV3.address;
           // Set swap info
@@ -291,7 +291,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
         });
 
-        it('max amount', async function() {
+        it('max amount', async function () {
           const value = ether('1');
           const to = this.hUniswapV3.address;
           // Set swap info
@@ -352,7 +352,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
         });
 
-        it('insuffient token', async function() {
+        it('insuffient token', async function () {
           const value = ether('1');
           const to = this.hUniswapV3.address;
           // Set swap info
@@ -390,8 +390,8 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
         });
       });
 
-      describe('Token only', function() {
-        it('normal', async function() {
+      describe('Token only', function () {
+        it('normal', async function () {
           const value = ether('1');
           const to = this.hUniswapV3.address;
           // Set swap info
@@ -454,7 +454,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
         });
 
-        it('max amount', async function() {
+        it('max amount', async function () {
           const value = ether('1');
           const to = this.hUniswapV3.address;
           // Set swap info
@@ -517,7 +517,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
         });
 
-        it('insufficient token', async function() {
+        it('insufficient token', async function () {
           const value = ether('1');
           const to = this.hUniswapV3.address;
           // Set swap info
@@ -557,9 +557,9 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
       });
     });
 
-    describe('Multi path', function() {
-      describe('Ether in', function() {
-        it('normal', async function() {
+    describe('Multi path', function () {
+      describe('Ether in', function () {
+        it('normal', async function () {
           const value = ether('1');
           const to = this.hUniswapV3.address;
           // Set swap info
@@ -605,7 +605,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           );
         });
 
-        it('max amount', async function() {
+        it('max amount', async function () {
           const value = ether('1');
           const to = this.hUniswapV3.address;
           // Set swap info
@@ -651,7 +651,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           );
         });
 
-        it('insufficient ether', async function() {
+        it('insufficient ether', async function () {
           const value = ether('1');
           const to = this.hUniswapV3.address;
           // Set swap info
@@ -677,8 +677,8 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
         });
       });
 
-      describe('Ether out', function() {
-        it('normal', async function() {
+      describe('Ether out', function () {
+        it('normal', async function () {
           const value = ether('1');
           const to = this.hUniswapV3.address;
           // Set swap info
@@ -730,7 +730,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
         });
 
-        it('max amount', async function() {
+        it('max amount', async function () {
           const value = ether('1');
           const to = this.hUniswapV3.address;
           // Set swap info
@@ -782,7 +782,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
         });
 
-        it('insufficient token', async function() {
+        it('insufficient token', async function () {
           const value = ether('1');
           const to = this.hUniswapV3.address;
           // Set swap info
@@ -817,8 +817,8 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
         });
       });
 
-      describe('Token only', function() {
-        it('normal', async function() {
+      describe('Token only', function () {
+        it('normal', async function () {
           const value = ether('1');
           const to = this.hUniswapV3.address;
           // Set swap info
@@ -871,7 +871,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
         });
 
-        it('max amount', async function() {
+        it('max amount', async function () {
           const value = ether('1');
           const to = this.hUniswapV3.address;
           // Set swap info
@@ -924,7 +924,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
         });
 
-        it('insufficient token', async function() {
+        it('insufficient token', async function () {
           const value = ether('1');
           const to = this.hUniswapV3.address;
           // Set swap info
@@ -961,10 +961,10 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
     });
   });
 
-  describe('Exact output', function() {
-    describe('Single path', function() {
-      describe('Ether in', function() {
-        it('normal', async function() {
+  describe('Exact output', function () {
+    describe('Single path', function () {
+      describe('Ether in', function () {
+        it('normal', async function () {
           const value = ether('1');
           const to = this.hUniswapV3.address;
           // Set swap info
@@ -1018,7 +1018,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           );
         });
 
-        it('max amount', async function() {
+        it('max amount', async function () {
           const value = ether('1');
           const to = this.hUniswapV3.address;
           // Set swap info
@@ -1072,7 +1072,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           );
         });
 
-        it('desired amount too high', async function() {
+        it('desired amount too high', async function () {
           const value = ether('1');
           const to = this.hUniswapV3.address;
           // Set swap info
@@ -1102,8 +1102,8 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
         });
       });
 
-      describe('Ether out', function() {
-        it('normal', async function() {
+      describe('Ether out', function () {
+        it('normal', async function () {
           const value = ether('1');
           const to = this.hUniswapV3.address;
           // Set swap info
@@ -1160,7 +1160,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           expect(userBalanceDelta).to.be.bignumber.eq(amountOut);
         });
 
-        it('max amount', async function() {
+        it('max amount', async function () {
           const value = ether('1');
           const to = this.hUniswapV3.address;
           // Set swap info
@@ -1217,7 +1217,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           expect(userBalanceDelta).to.be.bignumber.eq(amountOut);
         });
 
-        it('desired amount too high', async function() {
+        it('desired amount too high', async function () {
           const value = ether('1');
           const to = this.hUniswapV3.address;
           // Set swap info
@@ -1251,8 +1251,8 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
         });
       });
 
-      describe('Token only', function() {
-        it('normal', async function() {
+      describe('Token only', function () {
+        it('normal', async function () {
           const value = ether('1');
           const to = this.hUniswapV3.address;
           // Set swap info
@@ -1315,7 +1315,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
         });
 
-        it('max amount', async function() {
+        it('max amount', async function () {
           const value = ether('1');
           const to = this.hUniswapV3.address;
           // Set swap info
@@ -1378,7 +1378,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
         });
 
-        it('desired amount too high', async function() {
+        it('desired amount too high', async function () {
           const value = ether('1');
           const to = this.hUniswapV3.address;
           // Set swap info
@@ -1414,9 +1414,9 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
       });
     });
 
-    describe('Multi path', function() {
-      describe('Ether in', function() {
-        it('normal', async function() {
+    describe('Multi path', function () {
+      describe('Ether in', function () {
+        it('normal', async function () {
           const value = ether('1');
           const to = this.hUniswapV3.address;
           // Set swap info
@@ -1464,7 +1464,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           );
         });
 
-        it('max amount', async function() {
+        it('max amount', async function () {
           const value = ether('1');
           const to = this.hUniswapV3.address;
           // Set swap info
@@ -1512,7 +1512,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           );
         });
 
-        it('desired amount too high', async function() {
+        it('desired amount too high', async function () {
           const value = ether('0.25');
           const to = this.hUniswapV3.address;
           // Set swap info
@@ -1539,8 +1539,8 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
         });
       });
 
-      describe('Ether out', function() {
-        it('normal', async function() {
+      describe('Ether out', function () {
+        it('normal', async function () {
           const value = ether('1');
           const to = this.hUniswapV3.address;
           // Set swap info
@@ -1591,7 +1591,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           expect(userBalanceDelta).to.be.bignumber.eq(amountOut);
         });
 
-        it('max amount', async function() {
+        it('max amount', async function () {
           const value = ether('1');
           const to = this.hUniswapV3.address;
           // Set swap info
@@ -1642,7 +1642,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           expect(userBalanceDelta).to.be.bignumber.eq(amountOut);
         });
 
-        it('desired amount too high', async function() {
+        it('desired amount too high', async function () {
           const value = ether('1');
           const to = this.hUniswapV3.address;
           // Set swap info
@@ -1673,8 +1673,8 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
         });
       });
 
-      describe('Token only', function() {
-        it('normal', async function() {
+      describe('Token only', function () {
+        it('normal', async function () {
           const value = ether('1');
           const to = this.hUniswapV3.address;
           // Set swap info
@@ -1730,7 +1730,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
         });
 
-        it('max amount', async function() {
+        it('max amount', async function () {
           const value = ether('1');
           const to = this.hUniswapV3.address;
           // Set swap info
@@ -1786,7 +1786,7 @@ contract('UniswapV3 Swap', function([_, user, someone]) {
           expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
         });
 
-        it('desired amount too high', async function() {
+        it('desired amount too high', async function () {
           const value = ether('1');
           const to = this.hUniswapV3.address;
           // Set swap info

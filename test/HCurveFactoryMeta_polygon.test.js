@@ -36,10 +36,10 @@ const HCurve = artifacts.require('HCurve');
 const ICurveHandler = artifacts.require('ICurveHandler');
 const IToken = artifacts.require('IERC20');
 
-contract('Curve Factory Meta', function([_, user]) {
+contract('Curve Factory Meta', function ([_, user]) {
   const slippage = new BN('3');
   let id;
-  before(async function() {
+  before(async function () {
     this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);
     this.registry = await Registry.new();
     this.hCurve = await HCurve.new();
@@ -55,15 +55,15 @@ contract('Curve Factory Meta', function([_, user]) {
     this.tusdSwap = await ICurveHandler.at(CURVE_FACTORY_TUSD);
   });
 
-  beforeEach(async function() {
+  beforeEach(async function () {
     id = await evmSnapshot();
   });
 
-  afterEach(async function() {
+  afterEach(async function () {
     await evmRevert(id);
   });
 
-  describe('Exchange underlying', function() {
+  describe('Exchange underlying', function () {
     const token0Address = USDT_TOKEN;
     const token1Address = TUSD_TOKEN;
 
@@ -71,19 +71,19 @@ contract('Curve Factory Meta', function([_, user]) {
     let token1User;
     let providerAddress;
 
-    before(async function() {
+    before(async function () {
       providerAddress = await getTokenProvider(token0Address);
 
       this.token0 = await IToken.at(token0Address);
       this.token1 = await IToken.at(token1Address);
     });
 
-    beforeEach(async function() {
+    beforeEach(async function () {
       token0User = await this.token0.balanceOf(user);
       token1User = await this.token1.balanceOf(user);
     });
 
-    it('Exact input swap USDT to TUSD by exchangeUnderlyingFactoryZap', async function() {
+    it('Exact input swap USDT to TUSD by exchangeUnderlyingFactoryZap', async function () {
       const value = new BN('1000000');
       const answer = await this.tusdSwap.methods[
         'get_dy_underlying(int128,int128,uint256)'
@@ -134,8 +134,8 @@ contract('Curve Factory Meta', function([_, user]) {
     });
   });
 
-  describe('Liquidity', function() {
-    describe('factory tusd pool', function() {
+  describe('Liquidity', function () {
+    describe('factory tusd pool', function () {
       const token0Address = TUSD_TOKEN;
       const token1Address = USDT_TOKEN;
       const poolTokenAddress = CURVE_FACTORY_TUSD;
@@ -146,7 +146,7 @@ contract('Curve Factory Meta', function([_, user]) {
       let provider1Address;
       let poolTokenProvider;
 
-      before(async function() {
+      before(async function () {
         provider0Address = await getTokenProvider(token0Address, USDC_TOKEN);
         provider1Address = await getTokenProvider(token1Address);
         poolTokenProvider = CURVE_FACTORY_TUSD_PROVIDER;
@@ -157,14 +157,14 @@ contract('Curve Factory Meta', function([_, user]) {
         poolToken = await IToken.at(poolTokenAddress);
       });
 
-      beforeEach(async function() {
+      beforeEach(async function () {
         balanceProxy = await tracker(this.proxy.address);
         token0User = await token0.balanceOf.call(user);
         token1User = await token1.balanceOf.call(user);
         poolTokenUser = await poolToken.balanceOf.call(user);
       });
 
-      afterEach(async function() {
+      afterEach(async function () {
         // Check handler
         expectEqWithinBps(handlerReturn, answer, 100);
 
@@ -183,7 +183,7 @@ contract('Curve Factory Meta', function([_, user]) {
         profileGas(receipt);
       });
 
-      it('add TUSD and USDT to pool by addLiquidityFactoryZap', async function() {
+      it('add TUSD and USDT to pool by addLiquidityFactoryZap', async function () {
         const token0Amount = ether('100');
         const token1Amount = new BN('100000000'); // 1e8
         const tokens = [
@@ -235,7 +235,7 @@ contract('Curve Factory Meta', function([_, user]) {
         );
       });
 
-      it('remove from pool to TUSD by removeLiquidityOneCoinFactoryZap', async function() {
+      it('remove from pool to TUSD by removeLiquidityOneCoinFactoryZap', async function () {
         const amount = ether('0.01');
         answer = await this.zap.methods[
           'calc_withdraw_one_coin(address,uint256,int128)'

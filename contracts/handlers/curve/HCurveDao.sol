@@ -42,11 +42,9 @@ contract HCurveDao is HandlerBase {
         return afterCRVBalance - beforeCRVBalance;
     }
 
-    function mintMany(address[] calldata gaugeAddrs)
-        external
-        payable
-        returns (uint256)
-    {
+    function mintMany(
+        address[] calldata gaugeAddrs
+    ) external payable returns (uint256) {
         IMinter minter = IMinter(CURVE_MINTER);
         address user = _getSender();
         uint256 beforeCRVBalance = IERC20(CRV_TOKEN).balanceOf(user);
@@ -93,11 +91,10 @@ contract HCurveDao is HandlerBase {
         _tokenApproveZero(token, gaugeAddress);
     }
 
-    function withdraw(address gaugeAddress, uint256 _value)
-        external
-        payable
-        returns (uint256)
-    {
+    function withdraw(
+        address gaugeAddress,
+        uint256 _value
+    ) external payable returns (uint256) {
         ILiquidityGauge gauge = ILiquidityGauge(gaugeAddress);
         address token = gauge.lp_token();
 

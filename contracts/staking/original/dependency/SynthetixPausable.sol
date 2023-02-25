@@ -40,7 +40,7 @@ abstract contract SynthetixPausable is Owned {
 
     event PauseChanged(bool isPaused);
 
-    modifier notPaused {
+    modifier notPaused() {
         require(
             !paused,
             "This action cannot be performed while the contract is paused"

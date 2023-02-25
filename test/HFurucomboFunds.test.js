@@ -27,10 +27,10 @@ const IToken = artifacts.require('IERC20');
 const IShareToken = artifacts.require('IShareToken');
 const IFunds = artifacts.require('IFunds');
 
-contract('HFurucomboFunds', function([_, user, dummy]) {
+contract('HFurucomboFunds', function ([_, user, dummy]) {
   let id;
 
-  before(async function() {
+  before(async function () {
     this.registry = await Registry.new();
     this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);
     this.proxy = await Proxy.new(
@@ -44,15 +44,15 @@ contract('HFurucomboFunds', function([_, user, dummy]) {
     );
   });
 
-  beforeEach(async function() {
+  beforeEach(async function () {
     id = await evmSnapshot();
   });
 
-  afterEach(async function() {
+  afterEach(async function () {
     await evmRevert(id);
   });
 
-  describe('Purchase', function() {
+  describe('Purchase', function () {
     let denomination, denominationAddress, denominationProvider;
     let funds;
     let shareToken;
@@ -60,7 +60,7 @@ contract('HFurucomboFunds', function([_, user, dummy]) {
     const fundsAddress = UNIVERSE_CAPITAL_FUND;
     const purchaseAmount = mwei('500');
 
-    before(async function() {
+    before(async function () {
       to = this.hFurucomboFunds.address;
       funds = await IFunds.at(fundsAddress);
       denominationAddress = await funds.denomination();
@@ -69,7 +69,7 @@ contract('HFurucomboFunds', function([_, user, dummy]) {
       shareToken = await IToken.at(await funds.shareToken());
     });
 
-    it('normal', async function() {
+    it('normal', async function () {
       const data = abi.simpleEncode(
         'purchase(address,uint256)',
         fundsAddress,
@@ -103,7 +103,7 @@ contract('HFurucomboFunds', function([_, user, dummy]) {
       expect(proxyDenomination).to.be.zero;
     });
 
-    it('max amount', async function() {
+    it('max amount', async function () {
       const data = abi.simpleEncode(
         'purchase(address,uint256)',
         fundsAddress,
@@ -143,7 +143,7 @@ contract('HFurucomboFunds', function([_, user, dummy]) {
       expect(proxyDenomination).to.be.zero;
     });
 
-    it('should revert: invalid funds address', async function() {
+    it('should revert: invalid funds address', async function () {
       const data = abi.simpleEncode(
         'purchase(address,uint256)',
         dummy,
@@ -157,7 +157,7 @@ contract('HFurucomboFunds', function([_, user, dummy]) {
       ).to.be.revertedWith('invalid funds');
     });
 
-    it('should revert: insufficient amount', async function() {
+    it('should revert: insufficient amount', async function () {
       const data = abi.simpleEncode(
         'purchase(address,uint256)',
         fundsAddress,
@@ -175,7 +175,7 @@ contract('HFurucomboFunds', function([_, user, dummy]) {
       ).to.be.revertedWith('transfer amount exceeds balance');
     });
 
-    it('should revert: purchase 0', async function() {
+    it('should revert: purchase 0', async function () {
       const data = abi.simpleEncode(
         'purchase(address,uint256)',
         fundsAddress,
@@ -190,7 +190,7 @@ contract('HFurucomboFunds', function([_, user, dummy]) {
     });
   });
 
-  describe('Redeem', function() {
+  describe('Redeem', function () {
     let denomination, denominationAddress;
     let funds;
     let shareToken, shareTokenAddress, shareTokenOwner;
@@ -198,7 +198,7 @@ contract('HFurucomboFunds', function([_, user, dummy]) {
     const fundsAddress = UNIVERSE_CAPITAL_FUND;
     const redeemShare = mwei('100');
 
-    before(async function() {
+    before(async function () {
       to = this.hFurucomboFunds.address;
       funds = await IFunds.at(fundsAddress);
       denominationAddress = await funds.denomination();
@@ -209,7 +209,7 @@ contract('HFurucomboFunds', function([_, user, dummy]) {
       await impersonateAndInjectEther(shareTokenOwner);
     });
 
-    it('normal', async function() {
+    it('normal', async function () {
       const data = abi.simpleEncode(
         'redeem(address,uint256)',
         fundsAddress,
@@ -249,7 +249,7 @@ contract('HFurucomboFunds', function([_, user, dummy]) {
       expect(proxyDenomination).to.be.zero;
     });
 
-    it('max amount', async function() {
+    it('max amount', async function () {
       const data = abi.simpleEncode(
         'redeem(address,uint256)',
         fundsAddress,
@@ -294,7 +294,7 @@ contract('HFurucomboFunds', function([_, user, dummy]) {
       expect(proxyDenomination).to.be.zero;
     });
 
-    it('should revert: invalid funds address', async function() {
+    it('should revert: invalid funds address', async function () {
       const data = abi.simpleEncode(
         'redeem(address,uint256)',
         dummy,
@@ -308,7 +308,7 @@ contract('HFurucomboFunds', function([_, user, dummy]) {
       ).to.be.revertedWith('invalid funds');
     });
 
-    it('should revert: insufficient share', async function() {
+    it('should revert: insufficient share', async function () {
       const data = abi.simpleEncode(
         'redeem(address,uint256)',
         fundsAddress,
@@ -331,7 +331,7 @@ contract('HFurucomboFunds', function([_, user, dummy]) {
       ).to.be.revertedWith('73'); // SHARE_MODULE_INSUFFICIENT_SHARE
     });
 
-    it('should revert: redeem 0 share', async function() {
+    it('should revert: redeem 0 share', async function () {
       const data = abi.simpleEncode('redeem(address,uint256)', fundsAddress, 0);
 
       await expect(
@@ -341,7 +341,7 @@ contract('HFurucomboFunds', function([_, user, dummy]) {
       ).to.be.revertedWith('72'); // SHARE_MODULE_REDEEM_ZERO_SHARE
     });
 
-    it('should revert: redeem pending', async function() {
+    it('should revert: redeem pending', async function () {
       // makes funds no denomination
       const vault = await funds.vault();
       await impersonateAndInjectEther(vault);

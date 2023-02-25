@@ -44,11 +44,11 @@ const SimpleToken = artifacts.require('SimpleToken');
 const Staking = artifacts.require('Staking');
 const MerkleRedeem = artifacts.require('MerkleRedeem');
 
-contract('Furucombo', function([_, user, someone]) {
+contract('Furucombo', function ([_, user, someone]) {
   const tokenAddress = DAI_TOKEN;
   let providerAddress;
 
-  before(async function() {
+  before(async function () {
     providerAddress = await getTokenProvider(tokenAddress);
 
     this.registry = await Registry.new();
@@ -70,21 +70,21 @@ contract('Furucombo', function([_, user, someone]) {
     this.token = await IToken.at(tokenAddress);
   });
 
-  beforeEach(async function() {
+  beforeEach(async function () {
     id = await evmSnapshot();
   });
 
-  afterEach(async function() {
+  afterEach(async function () {
     await evmRevert(id);
   });
 
-  describe('stake', function() {
-    beforeEach(async function() {
+  describe('stake', function () {
+    beforeEach(async function () {
       balanceUser = await tracker(user);
       balanceProxy = await tracker(this.proxy.address);
     });
 
-    it('normal', async function() {
+    it('normal', async function () {
       const stakeAmount = ether('100');
       const to = this.hFurucombo.address;
       const data = abi.simpleEncode(
@@ -126,7 +126,7 @@ contract('Furucombo', function([_, user, someone]) {
       profileGas(receipt);
     });
 
-    it('max amount', async function() {
+    it('max amount', async function () {
       const stakeAmount = ether('100');
       const to = this.hFurucombo.address;
       const data = abi.simpleEncode(
@@ -168,7 +168,7 @@ contract('Furucombo', function([_, user, someone]) {
       profileGas(receipt);
     });
 
-    it('should revert: stake insufficient amount', async function() {
+    it('should revert: stake insufficient amount', async function () {
       const stakeAmount = ether('50');
       const to = this.hFurucombo.address;
       const data = abi.simpleEncode(
@@ -202,7 +202,7 @@ contract('Furucombo', function([_, user, someone]) {
       }
     });
 
-    it('should revert: stake zero amount', async function() {
+    it('should revert: stake zero amount', async function () {
       const stakeAmount = ether('0');
       const to = this.hFurucombo.address;
       const data = abi.simpleEncode(
@@ -227,9 +227,9 @@ contract('Furucombo', function([_, user, someone]) {
     });
   });
 
-  describe('unstake', function() {
+  describe('unstake', function () {
     var stakeAmount;
-    beforeEach(async function() {
+    beforeEach(async function () {
       balanceUser = await tracker(user);
       balanceProxy = await tracker(this.proxy.address);
       await this.token.transfer(user, ether('500'), {
@@ -250,7 +250,7 @@ contract('Furucombo', function([_, user, someone]) {
       );
     });
 
-    it('unstake partial stake amount', async function() {
+    it('unstake partial stake amount', async function () {
       const unstakeAmount = ether('10');
       const to = this.hFurucombo.address;
       const data = abi.simpleEncode(
@@ -294,7 +294,7 @@ contract('Furucombo', function([_, user, someone]) {
       profileGas(receipt);
     });
 
-    it('unstake all stake amount', async function() {
+    it('unstake all stake amount', async function () {
       const unstakeAmount = stakeAmount;
       const to = this.hFurucombo.address;
       const data = abi.simpleEncode(
@@ -336,7 +336,7 @@ contract('Furucombo', function([_, user, someone]) {
       profileGas(receipt);
     });
 
-    it('should revert: unauthorized', async function() {
+    it('should revert: unauthorized', async function () {
       const unstakeAmount = stakeAmount;
       const to = this.hFurucombo.address;
       const data = abi.simpleEncode(
@@ -355,7 +355,7 @@ contract('Furucombo', function([_, user, someone]) {
       );
     });
 
-    it('should revert: unstake amount = 0', async function() {
+    it('should revert: unstake amount = 0', async function () {
       const unstakeAmount = ether('0');
       const to = this.hFurucombo.address;
       const data = abi.simpleEncode(
@@ -375,7 +375,7 @@ contract('Furucombo', function([_, user, someone]) {
     });
   });
 
-  describe('claim all', function() {
+  describe('claim all', function () {
     const funcABI = {
       constant: false,
       inputs: [
@@ -425,7 +425,7 @@ contract('Furucombo', function([_, user, someone]) {
     const claimUser_ = COMBO_CLAIM_USER;
     const claimAmount_ = ether(COMBO_CLAIM_AMOUNT);
     const proofs_ = COMBO_CLAIM_MERKLE_PROOFS;
-    beforeEach(async function() {
+    beforeEach(async function () {
       balanceUser = await tracker(claimUser_);
       balanceProxy = await tracker(this.proxy.address);
       week = utils.toBN(1);
@@ -458,7 +458,7 @@ contract('Furucombo', function([_, user, someone]) {
       });
     });
 
-    it('claim from the first week', async function() {
+    it('claim from the first week', async function () {
       const claimAmount = claimAmount_;
       const proofs = proofs_;
       const claimUser = claimUser_;
@@ -493,7 +493,7 @@ contract('Furucombo', function([_, user, someone]) {
       profileGas(receipt);
     });
 
-    it('claim from the first + second week', async function() {
+    it('claim from the first + second week', async function () {
       // seed week2 allocation to staking contract
       const week2 = utils.toBN(2);
       await this.rewardToken.approve(this.stakingRedeem.address, supply, {
@@ -544,7 +544,7 @@ contract('Furucombo', function([_, user, someone]) {
       profileGas(receipt);
     });
 
-    it('claim from other one', async function() {
+    it('claim from other one', async function () {
       const claimAmount = claimAmount_;
       const proofs = proofs_;
       const claimUser = claimUser_;
@@ -579,7 +579,7 @@ contract('Furucombo', function([_, user, someone]) {
       profileGas(receipt);
     });
 
-    it('should revert: claim over reward', async function() {
+    it('should revert: claim over reward', async function () {
       const claimAmount = ether('100');
       const proofs = proofs_;
       const claimUser = claimUser_;
@@ -600,7 +600,7 @@ contract('Furucombo', function([_, user, someone]) {
       );
     });
 
-    it('should revert: claim less reward', async function() {
+    it('should revert: claim less reward', async function () {
       const claimAmount = ether('1');
       const proofs = proofs_;
       const claimUser = claimUser_;
@@ -621,7 +621,7 @@ contract('Furucombo', function([_, user, someone]) {
       );
     });
 
-    it('should revert: claim no reward', async function() {
+    it('should revert: claim no reward', async function () {
       const claimAmount = ether('1');
       const proofs = proofs_;
       const claimUser = someone;
@@ -642,7 +642,7 @@ contract('Furucombo', function([_, user, someone]) {
       );
     });
 
-    it('should revert: claim length is zero', async function() {
+    it('should revert: claim length is zero', async function () {
       const claimAmount = ether('1');
       const proofs = proofs_;
       const claimUser = someone;
@@ -663,7 +663,7 @@ contract('Furucombo', function([_, user, someone]) {
       );
     });
 
-    it('should revert: claim length != pool length', async function() {
+    it('should revert: claim length != pool length', async function () {
       const claimAmount = ether('100');
       const proofs = proofs_;
       const claimUser = claimUser_;

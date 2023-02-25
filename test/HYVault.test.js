@@ -30,11 +30,11 @@ const HYVault = artifacts.require('HYVault');
 const IYVault = artifacts.require('IYVault');
 const IToken = artifacts.require('IERC20');
 
-contract('YVault', function([_, user]) {
+contract('YVault', function ([_, user]) {
   let id;
   let yCrvProviderAddress;
 
-  before(async function() {
+  before(async function () {
     yCrvProviderAddress = await tokenProviderCurveGauge(CURVE_YCRV);
 
     this.registry = await Registry.new();
@@ -50,16 +50,16 @@ contract('YVault', function([_, user]) {
     );
   });
 
-  beforeEach(async function() {
+  beforeEach(async function () {
     id = await evmSnapshot();
   });
 
-  afterEach(async function() {
+  afterEach(async function () {
     await evmRevert(id);
   });
 
-  describe('Deposit', function() {
-    it('yCRV vault', async function() {
+  describe('Deposit', function () {
+    it('yCRV vault', async function () {
       const vault = await IYVault.at(YEARN_YCRV_VAULT);
       const token = await IToken.at(CURVE_YCRV);
       const amount = ether('1');
@@ -99,16 +99,12 @@ contract('YVault', function([_, user]) {
         amount.mul(ether('1')).div(ratio)
       );
       expect(await vault.balanceOf.call(user)).to.be.bignumber.gte(
-        amount
-          .mul(ether('1'))
-          .div(ratio)
-          .mul(new BN('999'))
-          .div(new BN('1000'))
+        amount.mul(ether('1')).div(ratio).mul(new BN('999')).div(new BN('1000'))
       );
       profileGas(receipt);
     });
 
-    it('yCRV vault with max amount', async function() {
+    it('yCRV vault with max amount', async function () {
       const vault = await IYVault.at(YEARN_YCRV_VAULT);
       const token = await IToken.at(CURVE_YCRV);
       const amount = ether('1');
@@ -148,16 +144,12 @@ contract('YVault', function([_, user]) {
         amount.mul(ether('1')).div(ratio)
       );
       expect(await vault.balanceOf.call(user)).to.be.bignumber.gte(
-        amount
-          .mul(ether('1'))
-          .div(ratio)
-          .mul(new BN('999'))
-          .div(new BN('1000'))
+        amount.mul(ether('1')).div(ratio).mul(new BN('999')).div(new BN('1000'))
       );
       profileGas(receipt);
     });
 
-    it('yWETH vault', async function() {
+    it('yWETH vault', async function () {
       let balanceUser = await tracker(user);
       const vault = await IYVault.at(YEARN_YWETH_VAULT);
       const value = ether('1');
@@ -191,11 +183,7 @@ contract('YVault', function([_, user]) {
         value.mul(ether('1')).div(ratio)
       );
       expect(await vault.balanceOf.call(user)).to.be.bignumber.gte(
-        value
-          .mul(ether('1'))
-          .div(ratio)
-          .mul(new BN('999'))
-          .div(new BN('1000'))
+        value.mul(ether('1')).div(ratio).mul(new BN('999')).div(new BN('1000'))
       );
       // Check user eth balance
       expect(await balanceUser.delta()).to.be.bignumber.eq(
@@ -204,7 +192,7 @@ contract('YVault', function([_, user]) {
       profileGas(receipt);
     });
 
-    it('yWETH vault with max amount', async function() {
+    it('yWETH vault with max amount', async function () {
       let balanceUser = await tracker(user);
       const vault = await IYVault.at(YEARN_YWETH_VAULT);
       const value = ether('1');
@@ -238,11 +226,7 @@ contract('YVault', function([_, user]) {
         value.mul(ether('1')).div(ratio)
       );
       expect(await vault.balanceOf.call(user)).to.be.bignumber.gte(
-        value
-          .mul(ether('1'))
-          .div(ratio)
-          .mul(new BN('999'))
-          .div(new BN('1000'))
+        value.mul(ether('1')).div(ratio).mul(new BN('999')).div(new BN('1000'))
       );
       // Check user eth balance
       expect(await balanceUser.delta()).to.be.bignumber.eq(
@@ -252,8 +236,8 @@ contract('YVault', function([_, user]) {
     });
   });
 
-  describe('Withdraw', function() {
-    it('yWETH vault', async function() {
+  describe('Withdraw', function () {
+    it('yWETH vault', async function () {
       const vault = await IYVault.at(YEARN_YWETH_VAULT);
 
       // User deposits ETH to get yWETH
@@ -310,7 +294,7 @@ contract('YVault', function([_, user]) {
       profileGas(receipt);
     });
 
-    it('yWETH vault with max amount', async function() {
+    it('yWETH vault with max amount', async function () {
       const vault = await IYVault.at(YEARN_YWETH_VAULT);
 
       // User deposits ETH to get yWETH
@@ -367,7 +351,7 @@ contract('YVault', function([_, user]) {
       profileGas(receipt);
     });
 
-    it('yCRV vault', async function() {
+    it('yCRV vault', async function () {
       const vault = await IYVault.at(YEARN_YCRV_VAULT);
       const token = await IToken.at(CURVE_YCRV);
 
@@ -432,7 +416,7 @@ contract('YVault', function([_, user]) {
 
       profileGas(receipt);
     });
-    it('yCRV vault with max amount', async function() {
+    it('yCRV vault with max amount', async function () {
       const vault = await IYVault.at(YEARN_YCRV_VAULT);
       const token = await IToken.at(CURVE_YCRV);
 

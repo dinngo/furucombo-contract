@@ -1,6 +1,12 @@
 const chainId = network.config.chainId;
 
-if (chainId == 10 || chainId == 137 || chainId == 42161 || chainId == 43114) {
+if (
+  chainId == 1 ||
+  chainId == 10 ||
+  chainId == 137 ||
+  chainId == 42161 ||
+  chainId == 43114
+) {
   // This test supports to run on these chains.
 } else {
   return;
@@ -49,7 +55,7 @@ const IPool = artifacts.require('contracts/handlers/aaveV3/IPool.sol:IPool');
 const IProvider = artifacts.require('IPoolAddressesProvider');
 const SimpleToken = artifacts.require('SimpleToken');
 
-contract('Aave V3', function([_, user]) {
+contract('Aave V3', function ([_, user]) {
   const aTokenAddress = ADAI_V3_TOKEN;
   const tokenAddress = DAI_TOKEN;
 
@@ -57,7 +63,7 @@ contract('Aave V3', function([_, user]) {
   let balanceUser;
   let providerAddress;
 
-  before(async function() {
+  before(async function () {
     providerAddress = await getTokenProvider(tokenAddress, WETH_TOKEN, 3000);
 
     this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);
@@ -66,7 +72,10 @@ contract('Aave V3', function([_, user]) {
       this.registry.address,
       this.feeRuleRegistry.address
     );
-    this.hAaveV3 = await HAaveV3.new(WRAPPED_NATIVE_TOKEN);
+    this.hAaveV3 = await HAaveV3.new(
+      WRAPPED_NATIVE_TOKEN,
+      AAVEPROTOCOL_V3_PROVIDER
+    );
     await this.registry.register(
       this.hAaveV3.address,
       utils.asciiToHex('AaveProtocolV3')
@@ -81,17 +90,21 @@ contract('Aave V3', function([_, user]) {
     this.mockToken = await SimpleToken.new();
   });
 
-  beforeEach(async function() {
+  beforeEach(async function () {
     id = await evmSnapshot();
     balanceUser = await tracker(user);
     balanceProxy = await tracker(this.proxy.address);
   });
 
-  afterEach(async function() {
+  afterEach(async function () {
     await evmRevert(id);
   });
 
-  describe('Repay Stable Rate', function() {
+  describe('Repay Stable Rate', function () {
+    if (chainId == 1) {
+      // Ethereum does not support borrow in stable mode
+      return;
+    }
     var supplyAmount = ether('5000');
     const borrowAmount = mwei('2');
     const borrowTokenAddr = USDC_TOKEN;
@@ -102,14 +115,14 @@ contract('Aave V3', function([_, user]) {
     let borrowTokenUserBefore;
     let debtTokenUserBefore;
 
-    before(async function() {
+    before(async function () {
       borrowTokenProvider = await getTokenProvider(borrowTokenAddr);
 
       this.borrowToken = await IToken.at(borrowTokenAddr);
       this.debtToken = await IToken.at(debtTokenAddr);
     });
 
-    beforeEach(async function() {
+    beforeEach(async function () {
       // Deposit
       await this.token.approve(this.pool.address, supplyAmount, {
         from: providerAddress,
@@ -138,7 +151,7 @@ contract('Aave V3', function([_, user]) {
       debtTokenUserBefore = await this.debtToken.balanceOf(user);
     });
 
-    it('partial', async function() {
+    it('partial', async function () {
       const repayAmount = borrowAmount.div(new BN('2'));
       const to = this.hAaveV3.address;
       const data = abi.simpleEncode(
@@ -188,7 +201,7 @@ contract('Aave V3', function([_, user]) {
       profileGas(receipt);
     });
 
-    it('whole', async function() {
+    it('whole', async function () {
       const extraNeed = mwei('1');
       const repayAmount = borrowAmount.add(extraNeed);
       const to = this.hAaveV3.address;
@@ -235,7 +248,7 @@ contract('Aave V3', function([_, user]) {
       profileGas(receipt);
     });
 
-    it('should revert: not enough balance', async function() {
+    it('should revert: not enough balance', async function () {
       const repayAmount = mwei('0.5');
       const to = this.hAaveV3.address;
       const data = abi.simpleEncode(
@@ -258,7 +271,7 @@ contract('Aave V3', function([_, user]) {
       );
     });
 
-    it('should revert: not supported token', async function() {
+    it('should revert: not supported token', async function () {
       const repayAmount = ether('0.5');
       const to = this.hAaveV3.address;
       const data = abi.simpleEncode(
@@ -279,7 +292,7 @@ contract('Aave V3', function([_, user]) {
       );
     });
 
-    it('should revert: wrong rate mode', async function() {
+    it('should revert: wrong rate mode', async function () {
       const repayAmount = mwei('0.5');
       const to = this.hAaveV3.address;
       const unborrowedRateMode = (rateMode % 2) + 1;
@@ -302,7 +315,7 @@ contract('Aave V3', function([_, user]) {
     });
   });
 
-  describe('Repay Variable Rate', function() {
+  describe('Repay Variable Rate', function () {
     var supplyAmount = ether('5000');
     const borrowAmount = ether('1');
     const borrowTokenAddr = WRAPPED_NATIVE_TOKEN;
@@ -313,14 +326,14 @@ contract('Aave V3', function([_, user]) {
     let borrowTokenUserBefore;
     let debtTokenUserBefore;
 
-    before(async function() {
+    before(async function () {
       borrowTokenProvider = await getTokenProvider(borrowTokenAddr);
 
       this.borrowToken = await IToken.at(borrowTokenAddr);
       this.debtToken = await IToken.at(debtTokenAddr);
     });
 
-    beforeEach(async function() {
+    beforeEach(async function () {
       // Deposit
       await this.token.approve(this.pool.address, supplyAmount, {
         from: providerAddress,
@@ -349,7 +362,7 @@ contract('Aave V3', function([_, user]) {
       debtTokenUserBefore = await this.debtToken.balanceOf(user);
     });
 
-    it('partial', async function() {
+    it('partial', async function () {
       const repayAmount = borrowAmount.div(new BN('2'));
       const to = this.hAaveV3.address;
       const data = abi.simpleEncode(
@@ -398,7 +411,7 @@ contract('Aave V3', function([_, user]) {
       profileGas(receipt);
     });
 
-    it('partial by ETH', async function() {
+    it('partial by ETH', async function () {
       const repayAmount = borrowAmount.div(new BN('2'));
       const to = this.hAaveV3.address;
       const data = abi.simpleEncode(
@@ -440,7 +453,7 @@ contract('Aave V3', function([_, user]) {
       profileGas(receipt);
     });
 
-    it('whole', async function() {
+    it('whole', async function () {
       const extraNeed = ether('1');
       const repayAmount = borrowAmount.add(extraNeed);
       const to = this.hAaveV3.address;
@@ -487,7 +500,7 @@ contract('Aave V3', function([_, user]) {
       profileGas(receipt);
     });
 
-    it('whole by ETH', async function() {
+    it('whole by ETH', async function () {
       const extraNeed = ether('1');
       const repayAmount = borrowAmount.add(extraNeed);
       const to = this.hAaveV3.address;
@@ -497,9 +510,8 @@ contract('Aave V3', function([_, user]) {
         rateMode,
         user
       );
-      const borrowWrappedNativeTokenUserBefore = await this.wrappedNativeToken.balanceOf(
-        user
-      );
+      const borrowWrappedNativeTokenUserBefore =
+        await this.wrappedNativeToken.balanceOf(user);
       await balanceUser.get();
 
       const receipt = await this.proxy.execMock(to, data, {
@@ -512,9 +524,8 @@ contract('Aave V3', function([_, user]) {
         getHandlerReturn(receipt, ['uint256'])[0]
       );
       const debtTokenUserAfter = await this.debtToken.balanceOf(user);
-      const borrowWrappedNativeTokenUserAfter = await this.wrappedNativeToken.balanceOf(
-        user
-      );
+      const borrowWrappedNativeTokenUserAfter =
+        await this.wrappedNativeToken.balanceOf(user);
 
       // Verify handler return
       expect(handlerReturn).to.be.bignumber.zero;
@@ -539,7 +550,7 @@ contract('Aave V3', function([_, user]) {
       profileGas(receipt);
     });
 
-    it('should revert: not enough balance', async function() {
+    it('should revert: not enough balance', async function () {
       const repayAmount = ether('0.5');
       const to = this.hAaveV3.address;
       const data = abi.simpleEncode(
@@ -571,7 +582,7 @@ contract('Aave V3', function([_, user]) {
       }
     });
 
-    it('should revert: not supported token', async function() {
+    it('should revert: not supported token', async function () {
       const repayAmount = ether('0.5');
       const to = this.hAaveV3.address;
       const data = abi.simpleEncode(
@@ -592,7 +603,7 @@ contract('Aave V3', function([_, user]) {
       );
     });
 
-    it('should revert: wrong rate mode', async function() {
+    it('should revert: wrong rate mode', async function () {
       const repayAmount = ether('0.5');
       const to = this.hAaveV3.address;
       const unborrowedRateMode = (rateMode % 2) + 1;

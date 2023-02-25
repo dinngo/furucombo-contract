@@ -17,14 +17,14 @@ const DSGuard = artifacts.require('DSGuard');
 const IDSProxy = artifacts.require('IDSProxy');
 const IDSProxyRegistry = artifacts.require('IDSProxyRegistry');
 
-contract('DSGuardFactory', function([_, furucombo, user, someone]) {
+contract('DSGuardFactory', function ([_, furucombo, user, someone]) {
   let id;
   const sig =
     '0x' + abi.methodID('execute', ['address', 'bytes']).toString('hex');
   const sigNotPermit =
     '0x' + abi.methodID('execute', ['bytes', 'bytes']).toString('hex');
 
-  before(async function() {
+  before(async function () {
     this.factory = await DSGuardFactory.new();
     this.dsRegistry = await IDSProxyRegistry.at(MAKER_PROXY_REGISTRY);
     // User build DSProxy
@@ -37,16 +37,16 @@ contract('DSGuardFactory', function([_, furucombo, user, someone]) {
     );
   });
 
-  beforeEach(async function() {
+  beforeEach(async function () {
     id = await evmSnapshot();
   });
 
-  afterEach(async function() {
+  afterEach(async function () {
     await evmRevert(id);
   });
 
-  describe('New Guard', function() {
-    it('with permission', async function() {
+  describe('New Guard', function () {
+    it('with permission', async function () {
       await this.factory.newGuard(true, furucombo, this.userProxy.address, {
         from: user,
       });
@@ -72,7 +72,7 @@ contract('DSGuardFactory', function([_, furucombo, user, someone]) {
       ).to.be.false;
     });
 
-    it('without permission', async function() {
+    it('without permission', async function () {
       await this.factory.newGuard(false, furucombo, this.userProxy.address, {
         from: user,
       });

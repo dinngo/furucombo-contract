@@ -39,11 +39,11 @@ const Proxy = artifacts.require('ProxyMock');
 const IToken = artifacts.require('IERC20');
 const IUniswapV2Router = artifacts.require('IUniswapV2Router02');
 
-contract('SushiSwap Swap', function([_, user, someone]) {
+contract('SushiSwap Swap', function ([_, user, someone]) {
   let id;
   const slippage = new BN('3');
 
-  before(async function() {
+  before(async function () {
     this.registry = await Registry.new();
     this.hSushiSwap = await HSushiSwap.new(SUSHISWAP_ROUTER);
     await this.registry.register(
@@ -58,33 +58,33 @@ contract('SushiSwap Swap', function([_, user, someone]) {
     );
   });
 
-  beforeEach(async function() {
+  beforeEach(async function () {
     id = await evmSnapshot();
   });
 
-  afterEach(async function() {
+  afterEach(async function () {
     await evmRevert(id);
   });
 
-  describe('Ether to Token', function() {
+  describe('Ether to Token', function () {
     const tokenAddress = DAI_TOKEN;
 
     let balanceUser;
     let balanceProxy;
     let tokenUser;
 
-    before(async function() {
+    before(async function () {
       this.token = await IToken.at(tokenAddress);
     });
 
-    beforeEach(async function() {
+    beforeEach(async function () {
       balanceUser = await tracker(user);
       balanceProxy = await tracker(this.proxy.address);
       tokenUser = await this.token.balanceOf.call(user);
     });
 
-    describe('Exact input', function() {
-      it('normal', async function() {
+    describe('Exact input', function () {
+      it('normal', async function () {
         const value = ether('1');
         const to = this.hSushiSwap.address;
         const path = [WRAPPED_NATIVE_TOKEN, tokenAddress];
@@ -123,7 +123,7 @@ contract('SushiSwap Swap', function([_, user, someone]) {
         profileGas(receipt);
       });
 
-      it('max amount', async function() {
+      it('max amount', async function () {
         const value = ether('1');
         const to = this.hSushiSwap.address;
         const path = [WRAPPED_NATIVE_TOKEN, tokenAddress];
@@ -162,7 +162,7 @@ contract('SushiSwap Swap', function([_, user, someone]) {
         profileGas(receipt);
       });
 
-      it('min amount too high', async function() {
+      it('min amount too high', async function () {
         const value = ether('1');
         const to = this.hSushiSwap.address;
         const path = [WRAPPED_NATIVE_TOKEN, tokenAddress];
@@ -189,7 +189,7 @@ contract('SushiSwap Swap', function([_, user, someone]) {
         expect(await balanceProxy.delta()).to.be.bignumber.eq(ether('0'));
       });
 
-      it('invalid path', async function() {
+      it('invalid path', async function () {
         const value = ether('1');
         const to = this.hSushiSwap.address;
         const path = [tokenAddress, WRAPPED_NATIVE_TOKEN];
@@ -206,8 +206,8 @@ contract('SushiSwap Swap', function([_, user, someone]) {
       });
     });
 
-    describe('Exact output', function() {
-      it('normal', async function() {
+    describe('Exact output', function () {
+      it('normal', async function () {
         const value = ether('1');
         const buyAmt = ether('0.1');
         const to = this.hSushiSwap.address;
@@ -246,7 +246,7 @@ contract('SushiSwap Swap', function([_, user, someone]) {
         profileGas(receipt);
       });
 
-      it('max amount', async function() {
+      it('max amount', async function () {
         const value = ether('1');
         const buyAmt = ether('0.1');
         const to = this.hSushiSwap.address;
@@ -285,7 +285,7 @@ contract('SushiSwap Swap', function([_, user, someone]) {
         profileGas(receipt);
       });
 
-      it('insufficient ether', async function() {
+      it('insufficient ether', async function () {
         const buyAmt = ether('100');
         const to = this.hSushiSwap.address;
         const path = [WRAPPED_NATIVE_TOKEN, tokenAddress];
@@ -308,7 +308,7 @@ contract('SushiSwap Swap', function([_, user, someone]) {
         );
       });
 
-      it('invalid path', async function() {
+      it('invalid path', async function () {
         const value = ether('1');
         const buyAmt = ether('100');
         const to = this.hSushiSwap.address;
@@ -330,7 +330,7 @@ contract('SushiSwap Swap', function([_, user, someone]) {
     });
   });
 
-  describe('Token to Ether', function() {
+  describe('Token to Ether', function () {
     const tokenAddress = DAI_TOKEN;
 
     let balanceUser;
@@ -338,20 +338,20 @@ contract('SushiSwap Swap', function([_, user, someone]) {
     let tokenUser;
     let providerAddress;
 
-    before(async function() {
+    before(async function () {
       providerAddress = await getTokenProvider(tokenAddress);
 
       this.token = await IToken.at(tokenAddress);
     });
 
-    beforeEach(async function() {
+    beforeEach(async function () {
       balanceUser = await tracker(user);
       balanceProxy = await tracker(this.proxy.address);
       tokenUser = await this.token.balanceOf(user);
     });
 
-    describe('Exact input', function() {
-      it('normal', async function() {
+    describe('Exact input', function () {
+      it('normal', async function () {
         const value = ether('100');
         const to = this.hSushiSwap.address;
         const path = [tokenAddress, WRAPPED_NATIVE_TOKEN];
@@ -392,7 +392,7 @@ contract('SushiSwap Swap', function([_, user, someone]) {
         profileGas(receipt);
       });
 
-      it('max amount', async function() {
+      it('max amount', async function () {
         const value = ether('100');
         const to = this.hSushiSwap.address;
         const path = [tokenAddress, WRAPPED_NATIVE_TOKEN];
@@ -433,7 +433,7 @@ contract('SushiSwap Swap', function([_, user, someone]) {
         profileGas(receipt);
       });
 
-      it('min output too high', async function() {
+      it('min output too high', async function () {
         const value = ether('100');
         const to = this.hSushiSwap.address;
         const path = [tokenAddress, WRAPPED_NATIVE_TOKEN];
@@ -456,7 +456,7 @@ contract('SushiSwap Swap', function([_, user, someone]) {
         );
       });
 
-      it('invalid path', async function() {
+      it('invalid path', async function () {
         const value = ether('100');
         const to = this.hSushiSwap.address;
         const path = [tokenAddress, WRAPPED_NATIVE_TOKEN, tokenAddress];
@@ -477,8 +477,8 @@ contract('SushiSwap Swap', function([_, user, someone]) {
       });
     });
 
-    describe('Exact output', function() {
-      it('normal', async function() {
+    describe('Exact output', function () {
+      it('normal', async function () {
         const value = ether('1000');
         const buyAmt = ether('0.1');
         const to = this.hSushiSwap.address;
@@ -517,7 +517,7 @@ contract('SushiSwap Swap', function([_, user, someone]) {
         profileGas(receipt);
       });
 
-      it('max amount', async function() {
+      it('max amount', async function () {
         const value = ether('1000');
         const buyAmt = ether('0.1');
         const to = this.hSushiSwap.address;
@@ -556,7 +556,7 @@ contract('SushiSwap Swap', function([_, user, someone]) {
         profileGas(receipt);
       });
 
-      it('insufficient input token', async function() {
+      it('insufficient input token', async function () {
         const value = ether('1');
         const buyAmt = ether('100');
         const to = this.hSushiSwap.address;
@@ -578,7 +578,7 @@ contract('SushiSwap Swap', function([_, user, someone]) {
         );
       });
 
-      it('invalid path', async function() {
+      it('invalid path', async function () {
         const value = ether('1000');
         const buyAmt = ether('0.1');
         const to = this.hSushiSwap.address;
@@ -602,7 +602,7 @@ contract('SushiSwap Swap', function([_, user, someone]) {
     });
   });
 
-  describe('Token to Token', function() {
+  describe('Token to Token', function () {
     const token0Address = DAI_TOKEN;
     const token1Address = SUSHI_TOKEN;
 
@@ -610,20 +610,20 @@ contract('SushiSwap Swap', function([_, user, someone]) {
     let token1User;
     let providerAddress;
 
-    before(async function() {
+    before(async function () {
       providerAddress = await getTokenProvider(token0Address);
 
       this.token0 = await IToken.at(token0Address);
       this.token1 = await IToken.at(token1Address);
     });
 
-    beforeEach(async function() {
+    beforeEach(async function () {
       token0User = await this.token0.balanceOf.call(user);
       token1User = await this.token1.balanceOf.call(user);
     });
 
-    describe('Exact input', function() {
-      it('normal', async function() {
+    describe('Exact input', function () {
+      it('normal', async function () {
         const value = ether('100');
         const to = this.hSushiSwap.address;
         const path = [token0Address, WRAPPED_NATIVE_TOKEN, token1Address];
@@ -667,7 +667,7 @@ contract('SushiSwap Swap', function([_, user, someone]) {
         profileGas(receipt);
       });
 
-      it('max amount', async function() {
+      it('max amount', async function () {
         const value = ether('100');
         const to = this.hSushiSwap.address;
         const path = [token0Address, WRAPPED_NATIVE_TOKEN, token1Address];
@@ -711,7 +711,7 @@ contract('SushiSwap Swap', function([_, user, someone]) {
         profileGas(receipt);
       });
 
-      it('min output too high', async function() {
+      it('min output too high', async function () {
         const value = ether('100');
         const to = this.hSushiSwap.address;
         const path = [token0Address, WRAPPED_NATIVE_TOKEN, token1Address];
@@ -738,7 +738,7 @@ contract('SushiSwap Swap', function([_, user, someone]) {
         );
       });
 
-      it('identical addresses', async function() {
+      it('identical addresses', async function () {
         const value = ether('100');
         const to = this.hSushiSwap.address;
         const path = [token0Address, token0Address, token1Address];
@@ -759,8 +759,8 @@ contract('SushiSwap Swap', function([_, user, someone]) {
       });
     });
 
-    describe('Exact output', function() {
-      it('normal', async function() {
+    describe('Exact output', function () {
+      it('normal', async function () {
         const value = ether('100');
         const buyAmt = ether('1');
         const to = this.hSushiSwap.address;
@@ -805,7 +805,7 @@ contract('SushiSwap Swap', function([_, user, someone]) {
         profileGas(receipt);
       });
 
-      it('max amount', async function() {
+      it('max amount', async function () {
         const value = ether('100');
         const buyAmt = ether('1');
         const to = this.hSushiSwap.address;
@@ -850,7 +850,7 @@ contract('SushiSwap Swap', function([_, user, someone]) {
         profileGas(receipt);
       });
 
-      it('excessive input amount', async function() {
+      it('excessive input amount', async function () {
         const value = ether('1');
         const buyAmt = ether('1000');
         const to = this.hSushiSwap.address;
@@ -871,7 +871,7 @@ contract('SushiSwap Swap', function([_, user, someone]) {
         );
       });
 
-      it('identical addresses', async function() {
+      it('identical addresses', async function () {
         const value = ether('100');
         const buyAmt = ether('1');
         const to = this.hSushiSwap.address;

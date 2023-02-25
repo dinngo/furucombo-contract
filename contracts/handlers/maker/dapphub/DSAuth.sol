@@ -46,16 +46,15 @@ contract DSAuth is DSAuthEvents {
         emit LogSetAuthority(address(authority));
     }
 
-    modifier auth {
+    modifier auth() {
         require(isAuthorized(msg.sender, msg.sig), "ds-auth-unauthorized");
         _;
     }
 
-    function isAuthorized(address src, bytes4 sig)
-        internal
-        view
-        returns (bool)
-    {
+    function isAuthorized(
+        address src,
+        bytes4 sig
+    ) internal view returns (bool) {
         if (src == address(this)) {
             return true;
         } else if (src == owner) {

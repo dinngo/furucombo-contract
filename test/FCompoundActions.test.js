@@ -41,14 +41,14 @@ const ICToken = artifacts.require('ICToken');
 const IToken = artifacts.require('IERC20');
 const ActionsMock = artifacts.require('ActionsMock');
 
-contract('FCompoundActions', function([_, user]) {
+contract('FCompoundActions', function ([_, user]) {
   const tokenAddress = DAI_TOKEN;
   const cTokenAddress = CDAI;
 
   let id;
   let providerAddress;
 
-  before(async function() {
+  before(async function () {
     providerAddress = await tokenProviderUniV2(tokenAddress);
 
     this.dsRegistry = await IDSProxyRegistry.at(MAKER_PROXY_REGISTRY);
@@ -67,16 +67,16 @@ contract('FCompoundActions', function([_, user]) {
     this.actionsMock = await ActionsMock.new();
   });
 
-  beforeEach(async function() {
+  beforeEach(async function () {
     id = await evmSnapshot();
   });
 
-  afterEach(async function() {
+  afterEach(async function () {
     await evmRevert(id);
   });
 
-  describe('Deposit', function() {
-    it('normal', async function() {
+  describe('Deposit', function () {
+    it('normal', async function () {
       const amount = ether('10');
       const data = abi.simpleEncode(
         'deposit(address,uint256)',
@@ -105,8 +105,8 @@ contract('FCompoundActions', function([_, user]) {
     });
   });
 
-  describe('Withdraw', function() {
-    it('withdraw ether', async function() {
+  describe('Withdraw', function () {
+    it('withdraw ether', async function () {
       const amount = ether('1');
       const data = abi.simpleEncode(
         'withdraw(address,uint256)',
@@ -127,7 +127,7 @@ contract('FCompoundActions', function([_, user]) {
       expect(ethUserAfter).to.be.bignumber.eq(ethUserBefore.add(amount));
     });
 
-    it('withdraw token', async function() {
+    it('withdraw token', async function () {
       const amount = ether('10');
       const data = abi.simpleEncode(
         'withdraw(address,uint256)',
@@ -155,8 +155,8 @@ contract('FCompoundActions', function([_, user]) {
     });
   });
 
-  describe('Market', function() {
-    it('enter single', async function() {
+  describe('Market', function () {
+    it('enter single', async function () {
       const isEnteredBefore = await this.comptroller.checkMembership.call(
         this.userProxy.address,
         this.cToken.address
@@ -175,7 +175,7 @@ contract('FCompoundActions', function([_, user]) {
       expect(isEnteredAfter).to.be.true;
     });
 
-    it('enter multiple', async function() {
+    it('enter multiple', async function () {
       const isEnteredBefore0 = await this.comptroller.checkMembership.call(
         this.userProxy.address,
         this.cToken.address
@@ -204,7 +204,7 @@ contract('FCompoundActions', function([_, user]) {
       expect(isEnteredAfter1).to.be.true;
     });
 
-    it('should revert: non cToken enter', async function() {
+    it('should revert: non cToken enter', async function () {
       const data = abi.simpleEncode('enterMarket(address)', this.token.address);
       // User DSProxy enter market
       await expectRevert.unspecified(
@@ -214,7 +214,7 @@ contract('FCompoundActions', function([_, user]) {
       );
     });
 
-    it('exit', async function() {
+    it('exit', async function () {
       const dataEnter = abi.simpleEncode(
         'enterMarket(address)',
         this.cToken.address
@@ -238,7 +238,7 @@ contract('FCompoundActions', function([_, user]) {
       expect(isEnteredAfter).to.be.false;
     });
 
-    it('should revert: non cToken exit', async function() {
+    it('should revert: non cToken exit', async function () {
       const data = abi.simpleEncode('exitMarket(address)', this.token.address);
       // User DSProxy exit market
       await expectRevert.unspecified(
@@ -249,8 +249,8 @@ contract('FCompoundActions', function([_, user]) {
     });
   });
 
-  describe('Borrow', function() {
-    beforeEach(async function() {
+  describe('Borrow', function () {
+    beforeEach(async function () {
       // Mint
       await this.cEther.mint({
         from: _,
@@ -268,7 +268,7 @@ contract('FCompoundActions', function([_, user]) {
       await this.userProxy.execute(FCOMPOUND_ACTIONS, data, { from: user });
     });
 
-    it('borrow ether', async function() {
+    it('borrow ether', async function () {
       const borrowAddress = this.cEther.address;
       const amount = ether('1');
       const data = abi.simpleEncode(
@@ -290,7 +290,7 @@ contract('FCompoundActions', function([_, user]) {
       expect(ethUserAfter).to.be.bignumber.eq(ethUserBefore);
     });
 
-    it('borrow token', async function() {
+    it('borrow token', async function () {
       const borrowAddress = this.cToken.address;
       const amount = ether('10');
       const data = abi.simpleEncode(
@@ -317,11 +317,11 @@ contract('FCompoundActions', function([_, user]) {
     });
   });
 
-  describe('Repay', function() {
-    describe('Repay Ether', function() {
+  describe('Repay', function () {
+    describe('Repay Ether', function () {
       const mintAmount = ether('10');
       const borrowAmount = ether('1');
-      beforeEach(async function() {
+      beforeEach(async function () {
         // Mint
         await this.cEther.mint({
           from: _,
@@ -353,7 +353,7 @@ contract('FCompoundActions', function([_, user]) {
         ).to.be.bignumber.eq(borrowAmount);
       });
 
-      it('repay ether partial', async function() {
+      it('repay ether partial', async function () {
         const amount = ether('0.5');
         const data = abi.simpleEncode(
           'repayBorrow(address,uint256)',
@@ -385,7 +385,7 @@ contract('FCompoundActions', function([_, user]) {
         expect(borrowBalanceDiff).to.be.bignumber.gte(mulPercent(amount, 99));
       });
 
-      it('repay ether whole', async function() {
+      it('repay ether whole', async function () {
         const amount = ether('5');
         const data = abi.simpleEncode(
           'repayBorrow(address,uint256)',
@@ -422,10 +422,10 @@ contract('FCompoundActions', function([_, user]) {
       });
     });
 
-    describe('Repay Token', function() {
+    describe('Repay Token', function () {
       const mintAmount = ether('10');
       const borrowAmount = ether('100');
-      beforeEach(async function() {
+      beforeEach(async function () {
         // Mint
         await this.cEther.mint({
           from: _,
@@ -469,7 +469,7 @@ contract('FCompoundActions', function([_, user]) {
         ).to.be.bignumber.zero;
       });
 
-      it('repay token partial', async function() {
+      it('repay token partial', async function () {
         const amount = ether('50');
         const data = abi.simpleEncode(
           'repayBorrow(address,uint256)',
@@ -515,7 +515,7 @@ contract('FCompoundActions', function([_, user]) {
         expect(borrowBalanceDiff).to.be.bignumber.gte(mulPercent(amount, 99));
       });
 
-      it('repay token whole', async function() {
+      it('repay token whole', async function () {
         const amount = ether('500');
         const data = abi.simpleEncode(
           'repayBorrow(address,uint256)',
@@ -566,7 +566,7 @@ contract('FCompoundActions', function([_, user]) {
         expect(borrowBalanceAfter).to.be.bignumber.zero;
       });
 
-      it('repay token whole - dsproxy pre approve partial token', async function() {
+      it('repay token whole - dsproxy pre approve partial token', async function () {
         // Make DSProxy to pre-approve partial token that is going to be repaid
         const preApproveAmount = mulPercent(borrowAmount, 90);
         const dataPreApprove = abi.simpleEncode(

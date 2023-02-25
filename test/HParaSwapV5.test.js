@@ -119,11 +119,11 @@ async function getTransactionData(
   return txData;
 }
 
-contract('ParaSwapV5', function([_, user, user2]) {
+contract('ParaSwapV5', function ([_, user, user2]) {
   let id;
   let initialEvmId;
 
-  before(async function() {
+  before(async function () {
     initialEvmId = await evmSnapshot();
 
     this.registry = await Registry.new();
@@ -139,37 +139,37 @@ contract('ParaSwapV5', function([_, user, user2]) {
     );
   });
 
-  beforeEach(async function() {
+  beforeEach(async function () {
     id = await evmSnapshot();
   });
 
-  afterEach(async function() {
+  afterEach(async function () {
     await evmRevert(id);
   });
 
-  after(async function() {
+  after(async function () {
     await evmRevert(initialEvmId);
   });
 
-  describe('Ether to Token', function() {
+  describe('Ether to Token', function () {
     const tokenAddress = DAI_TOKEN;
     const tokenDecimal = 18;
     const slippageInBps = 100; // 1%
     const wrongTokenAddress = USDC_TOKEN;
     let userBalance, proxyBalance, userTokenBalance;
 
-    before(async function() {
+    before(async function () {
       this.token = await IToken.at(tokenAddress);
     });
 
-    beforeEach(async function() {
+    beforeEach(async function () {
       userBalance = await tracker(user);
       proxyBalance = await tracker(this.proxy.address);
       userTokenBalance = await this.token.balanceOf.call(user);
     });
 
-    describe('Swap', function() {
-      it('normal', async function() {
+    describe('Swap', function () {
+      it('normal', async function () {
         const amount = ether('0.1');
         const to = this.hParaSwap.address;
 
@@ -232,7 +232,7 @@ contract('ParaSwapV5', function([_, user, user2]) {
         );
       });
 
-      it('msg.value greater than input ether amount', async function() {
+      it('msg.value greater than input ether amount', async function () {
         const amount = ether('0.1');
         const to = this.hParaSwap.address;
 
@@ -290,7 +290,7 @@ contract('ParaSwapV5', function([_, user, user2]) {
         );
       });
 
-      it('should revert: wrong destination token(erc20)', async function() {
+      it('should revert: wrong destination token(erc20)', async function () {
         const amount = ether('0.1');
         const to = this.hParaSwap.address;
 
@@ -329,7 +329,7 @@ contract('ParaSwapV5', function([_, user, user2]) {
         );
       });
 
-      it('should revert: msg.value less than api amount', async function() {
+      it('should revert: msg.value less than api amount', async function () {
         const amount = ether('0.1');
         const to = this.hParaSwap.address;
 
@@ -370,24 +370,24 @@ contract('ParaSwapV5', function([_, user, user2]) {
     });
   }); // describe('ether to token') end
 
-  describe('token to ether', function() {
+  describe('token to ether', function () {
     const tokenAddress = USDC_TOKEN;
     const tokenDecimal = 6;
     const slippageInBps = 100; // 1%
     let providerAddress;
     let userBalance, proxyBalance;
 
-    before(async function() {
+    before(async function () {
       providerAddress = await getTokenProvider(tokenAddress);
       this.token = await IToken.at(tokenAddress);
     });
 
-    beforeEach(async function() {
+    beforeEach(async function () {
       userBalance = await tracker(user);
       proxyBalance = await tracker(this.proxy.address);
     });
 
-    it('normal', async function() {
+    it('normal', async function () {
       const amount = mwei('500');
       const to = this.hParaSwap.address;
 
@@ -448,7 +448,7 @@ contract('ParaSwapV5', function([_, user, user2]) {
       );
     });
 
-    it('should revert: not enough srcToken', async function() {
+    it('should revert: not enough srcToken', async function () {
       const amount = mwei('5000');
       const to = this.hParaSwap.address;
 
@@ -492,7 +492,7 @@ contract('ParaSwapV5', function([_, user, user2]) {
     });
   }); // describe('token to ether') end
 
-  describe('token to token', function() {
+  describe('token to token', function () {
     const token1Address = USDC_TOKEN;
     const token1Decimal = 6;
     const token2Address = DAI_TOKEN;
@@ -500,13 +500,13 @@ contract('ParaSwapV5', function([_, user, user2]) {
     const slippageInBps = 100; // 1%
     let providerAddress;
 
-    before(async function() {
+    before(async function () {
       providerAddress = await getTokenProvider(token1Address);
       this.token = await IToken.at(token1Address);
       this.token2 = await IToken.at(token2Address);
     });
 
-    it('normal', async function() {
+    it('normal', async function () {
       const amount = mwei('500');
       const to = this.hParaSwap.address;
 

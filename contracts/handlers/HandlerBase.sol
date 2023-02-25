@@ -44,10 +44,10 @@ abstract contract HandlerBase is Storage, Config {
 
     function getContractName() public pure virtual returns (string memory);
 
-    function _revertMsg(string memory functionName, string memory reason)
-        internal
-        pure
-    {
+    function _revertMsg(
+        string memory functionName,
+        string memory reason
+    ) internal pure {
         revert(
             string(
                 abi.encodePacked(
@@ -90,11 +90,10 @@ abstract contract HandlerBase is Storage, Config {
         }
     }
 
-    function _getBalance(address token, uint256 amount)
-        internal
-        view
-        returns (uint256)
-    {
+    function _getBalance(
+        address token,
+        uint256 amount
+    ) internal view returns (uint256) {
         if (amount != type(uint256).max) {
             return amount;
         }
