@@ -11,7 +11,6 @@ const {
   constants,
   ether,
   expectRevert,
-  time,
 } = require('@openzeppelin/test-helpers');
 const { tracker } = balance;
 const { ZERO_BYTES32 } = constants;

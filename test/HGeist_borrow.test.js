@@ -22,7 +22,7 @@ const {
   DAI_TOKEN,
   USDT_TOKEN,
   ANY_TOKEN,
-  GDAI_V2,
+  GDAI,
   GEIST_LENDING_POOL_PROVIDER,
   AAVE_RATEMODE,
   WRAPPED_NATIVE_TOKEN,
@@ -48,7 +48,7 @@ const IProvider = artifacts.require('ILendingPoolAddressesProviderV2');
 const IVariableDebtToken = artifacts.require('IVariableDebtToken');
 
 contract('Geist', function ([_, user, someone]) {
-  const aTokenAddress = GDAI_V2;
+  const gTokenAddress = GDAI;
   const tokenAddress = DAI_TOKEN;
 
   let id;
@@ -77,7 +77,7 @@ contract('Geist', function ([_, user, someone]) {
     this.lendingPoolAddress = await this.provider.getLendingPool.call();
     this.lendingPool = await ILendingPool.at(this.lendingPoolAddress);
     this.token = await IToken.at(tokenAddress);
-    this.gToken = await IAToken.at(aTokenAddress);
+    this.gToken = await IAToken.at(gTokenAddress);
     this.weth = await IToken.at(WETH_TOKEN);
     this.mockToken = await SimpleToken.new();
   });

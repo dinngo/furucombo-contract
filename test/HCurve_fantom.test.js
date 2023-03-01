@@ -26,11 +26,11 @@ const {
   CURVE_FUSDTCRV,
   CURVE_TRICRYPTOCRV,
   CURVE_GEIST_GAUGE,
-  CURVE_2POOL_GAUGE,
   CURVE_TRICRYPTO_GAUGE,
   CURVE_FUSDT_DEPOSIT,
 } = require('./utils/constants');
 const {
+  mwei,
   evmRevert,
   evmSnapshot,
   mulPercent,
@@ -437,7 +437,7 @@ contract('Curve_fantom', function ([_, user]) {
       });
 
       it('Exact input swap DAI to miMATIC by exchange', async function () {
-        const value = new BN('100000000');
+        const value = mwei('100');
         const answer = await this.mai3PoolSwap.methods[
           'get_dy(int128,int128,uint256)'
         ](1, 0, value);
@@ -490,7 +490,7 @@ contract('Curve_fantom', function ([_, user]) {
       });
 
       it('Exact input swap DAI to miMATIC by exchange with max amount', async function () {
-        const value = new BN('100000000');
+        const value = mwei('100');
         const answer = await this.mai3PoolSwap.methods[
           'get_dy(int128,int128,uint256)'
         ](1, 0, value);
@@ -561,7 +561,7 @@ contract('Curve_fantom', function ([_, user]) {
       });
 
       it('Exact input swap USDT to WETH by exchange', async function () {
-        const value = new BN('100000000');
+        const value = mwei('100');
         const answer = await this.tricryptoSwap.methods[
           'get_dy(uint256,uint256,uint256)'
         ](0, 2, value);
@@ -614,7 +614,7 @@ contract('Curve_fantom', function ([_, user]) {
       });
 
       it('Exact input swap USDT to WETH by exchange with max amount', async function () {
-        const value = new BN('100000000');
+        const value = mwei('100');
         const answer = await this.tricryptoSwap.methods[
           'get_dy(uint256,uint256,uint256)'
         ](0, 2, value);
@@ -1645,7 +1645,7 @@ contract('Curve_fantom', function ([_, user]) {
         profileGas(receipt);
       });
 
-      it('add DAI and USDT to pool by addLiquidity with max amount', async function () {
+      it('add DAI and USDC to pool by addLiquidity with max amount', async function () {
         const token0Amount = ether('1000');
         const token1Amount = new BN('1000000000');
         // Get expected answer

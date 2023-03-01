@@ -218,7 +218,7 @@ contract('Geist', function ([_, user]) {
         await this.mockToken.transfer(this.proxy.address, value, { from: _ });
         await expectRevert(
           this.proxy.execMock(to, data, { from: user }),
-          'HGeist_General: aToken should not be zero address'
+          'HGeist_General: gToken should not be zero address'
         );
       });
     });
@@ -315,7 +315,7 @@ contract('Geist', function ([_, user]) {
 
         // Verify handler return
         // value  <= handlerReturn  <= value*1.01
-        // Because AToken could be increase by timestamp in proxy
+        // Because GToken could be increase by timestamp in proxy
         expect(value).to.be.bignumber.lte(handlerReturn);
         expect(mulPercent(value, 101)).to.be.bignumber.gte(handlerReturn);
 
@@ -429,7 +429,7 @@ contract('Geist', function ([_, user]) {
 
         // Verify handler return
         // value  <= handlerReturn  <= value*1.01
-        // Because AToken could be increase by timestamp in proxy
+        // Because GToken could be increase by timestamp in proxy
         expect(value).to.be.bignumber.lte(handlerReturn);
         expect(mulPercent(value, 101)).to.be.bignumber.gte(handlerReturn);
 
@@ -531,7 +531,7 @@ contract('Geist', function ([_, user]) {
 
         await expectRevert(
           this.proxy.execMock(to, data, { from: user }),
-          'HGeist_General: aToken should not be zero address'
+          'HGeist_General: gToken should not be zero address'
         );
       });
     });
