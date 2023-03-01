@@ -40,6 +40,9 @@ module.exports = {
   /* COMP */
   COMP_TOKEN: '0x354A6dA3fcde098F8389cad84b0182725c6C91dE',
 
+  /* STG */
+  STG_TOKEN: arbitrum.STARGATE_TOKEN,
+
   /* AAVE Interest Rate Mode */
   AAVE_RATEMODE: { NODEBT: 0, STABLE: 1, VARIABLE: 2 },
 
@@ -58,6 +61,7 @@ module.exports = {
   STARGATE_DESTINATION_CHAIN_ID: 111, // Optimism
   STARGATE_UNSUPPORT_ETH_DEST_CHAIN_ID: 109, // Polygon
   STARGATE_USDC_TO_DISALLOW_TOKEN_ID: 3, // DAI
+  LAYERZERO_ENDPOINT: '0x3c2269811836af69497E5F486A85D7316753cf62',
 
   /* Event Signature */
   RecordHandlerResultSig:

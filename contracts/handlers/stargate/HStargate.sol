@@ -5,11 +5,13 @@ pragma solidity 0.8.10;
 import {HandlerBase} from "../HandlerBase.sol";
 import {IStargateRouter, IStargateWidget} from "./IStargateRouter.sol";
 import {IStargateRouterETH} from "./IStargateRouterETH.sol";
+import {IStargateToken} from "./IStargateToken.sol";
 import {IFactory, IPool} from "./IFactory.sol";
 
 contract HStargate is HandlerBase {
     address public immutable router;
     address public immutable routerETH;
+    address public immutable stgToken;
     address public immutable factory;
     address public immutable widgetSwap;
     bytes2 public immutable partnerId;
@@ -17,12 +19,14 @@ contract HStargate is HandlerBase {
     constructor(
         address router_,
         address routerETH_,
+        address stgToken_,
         address factory_,
         address widgetSwap_,
         bytes2 partnerId_
     ) {
         router = router_;
         routerETH = routerETH_;
+        stgToken = stgToken_;
         factory = factory_;
         widgetSwap = widgetSwap_;
         partnerId = partnerId_;
@@ -103,6 +107,37 @@ contract HStargate is HandlerBase {
 
         // Reset Approval
         _tokenApproveZero(tokenIn, router);
+
+        // Partnership
+        IStargateWidget(widgetSwap).partnerSwap(partnerId);
+    }
+
+    function sendTokens(
+        uint16 dstChainId,
+        address to,
+        uint256 amountIn,
+        uint256 fee,
+        uint256 dstGas
+    ) external payable {
+        _requireMsg(to != address(0), "sendTokens", "to zero address");
+        _requireMsg(amountIn != 0, "sendTokens", "zero amountIn");
+
+        amountIn = _getBalance(stgToken, amountIn);
+
+        // Swap STG token
+        try
+            IStargateToken(stgToken).sendTokens{value: fee}(
+                dstChainId,
+                abi.encodePacked(to),
+                amountIn,
+                address(0),
+                abi.encodePacked(uint16(1) /* version */, dstGas)
+            )
+        {} catch Error(string memory reason) {
+            _revertMsg("sendTokens", reason);
+        } catch {
+            _revertMsg("sendTokens");
+        }
 
         // Partnership
         IStargateWidget(widgetSwap).partnerSwap(partnerId);
