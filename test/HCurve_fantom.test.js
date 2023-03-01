@@ -101,7 +101,7 @@ contract('Curve_fantom', function ([_, user]) {
 
     describe('fUSDT pool', function () {
       it('Exact input swap USDT to DAI by exchangeUnderlying', async function () {
-        const value = new BN('1000000');
+        const value = mwei('1');
         const answer = await this.fUSDTSwap.methods[
           'get_dy_underlying(int128,int128,uint256)'
         ](0, 1, value);
@@ -148,7 +148,7 @@ contract('Curve_fantom', function ([_, user]) {
       });
 
       it('Exact input swap USDT to DAI by exchangeUnderlying with max amount', async function () {
-        const value = new BN('1000000');
+        const value = mwei('1');
         const answer = await this.fUSDTSwap.methods[
           'get_dy_underlying(int128,int128,uint256)'
         ](0, 1, value);
@@ -197,7 +197,7 @@ contract('Curve_fantom', function ([_, user]) {
 
     describe('Geist pool', function () {
       it('Exact input swap USDT to DAI by exchangeUnderlying', async function () {
-        const value = new BN('1000000');
+        const value = mwei('1');
         const answer = await this.geistSwap.methods[
           'get_dy_underlying(int128,int128,uint256)'
         ](2, 0, value);
@@ -244,7 +244,7 @@ contract('Curve_fantom', function ([_, user]) {
       });
 
       it('Exact input swap USDT to DAI by exchangeUnderlying with max amount', async function () {
-        const value = new BN('1000000');
+        const value = mwei('1');
         const answer = await this.geistSwap.methods[
           'get_dy_underlying(int128,int128,uint256)'
         ](2, 0, value);
@@ -1573,7 +1573,7 @@ contract('Curve_fantom', function ([_, user]) {
 
       it('add DAI and USDC to pool by addLiquidity', async function () {
         const token0Amount = ether('1000');
-        const token1Amount = new BN('1000000000');
+        const token1Amount = mwei('1000');
         // Get expected answer
         const answer = await this.fUSDTDeposit.methods[
           'calc_token_amount(uint256[3],bool)'
@@ -1647,7 +1647,7 @@ contract('Curve_fantom', function ([_, user]) {
 
       it('add DAI and USDC to pool by addLiquidity with max amount', async function () {
         const token0Amount = ether('1000');
-        const token1Amount = new BN('1000000000');
+        const token1Amount = mwei('1000');
         // Get expected answer
         const answer = await this.fUSDTDeposit.methods[
           'calc_token_amount(uint256[3],bool)'
