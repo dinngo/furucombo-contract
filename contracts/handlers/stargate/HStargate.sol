@@ -42,13 +42,15 @@ contract HStargate is HandlerBase {
     ) external payable {
         _requireMsg(to != address(0), "swapETH", "to zero address");
 
+        amountIn = _getBalance(NATIVE_TOKEN_ADDRESS, amountIn);
+
         // Swap ETH
         try
-            IStargateRouterETH(routerETH).swapETH{value: amountIn + fee}(
+            IStargateRouterETH(routerETH).swapETH{value: amountIn}(
                 dstChainId,
                 refundAddress,
                 abi.encodePacked(to),
-                amountIn,
+                amountIn - fee,
                 amountOutMin
             )
         {} catch Error(string memory reason) {
@@ -77,6 +79,7 @@ contract HStargate is HandlerBase {
         IPool pool = IFactory(factory).getPool(srcPoolId);
         _requireMsg(address(pool) != address(0), "swap", "pool not found");
         address tokenIn = pool.token();
+        amountIn = _getBalance(tokenIn, amountIn);
         _tokenApprove(tokenIn, router, amountIn);
 
         // Swap input token
