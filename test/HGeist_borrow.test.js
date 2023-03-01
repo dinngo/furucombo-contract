@@ -67,7 +67,8 @@ contract('Geist', function ([_, user, someone]) {
     );
     this.hGeist = await HGeist.new(
       WRAPPED_NATIVE_TOKEN,
-      GEIST_LENDING_POOL_PROVIDER
+      GEIST_LENDING_POOL_PROVIDER,
+      0
     );
     await this.registry.register(
       this.hGeist.address,

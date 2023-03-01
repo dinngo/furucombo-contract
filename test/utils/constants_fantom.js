@@ -34,6 +34,10 @@ module.exports = {
   /* miMATIC */
   MIMATIC_TOKEN: '0xfB98B335551a418cD0737375a2ea0ded62Ea213b',
 
+  /* LINK */
+  LINK_TOKEN: '0xb3654dc3D10Ea7645f8319668E8F54d2574FBdC8',
+  LINK_SYMBOL: 'LINK',
+
   /* AAVE Interest Rate Mode */
   AAVE_RATEMODE: { NODEBT: 0, STABLE: 1, VARIABLE: 2 },
 

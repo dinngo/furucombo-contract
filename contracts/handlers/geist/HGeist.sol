@@ -14,9 +14,9 @@ import "../aavev2/libraries/DataTypes.sol";
 contract HGeist is HandlerBase, IFlashLoanReceiver {
     using SafeERC20 for IERC20;
 
-    uint16 public immutable referralCode;
     address public immutable provider;
     address public immutable wrappedNativeToken;
+    uint16 public immutable referralCode;
 
     constructor(
         address wrappedNativeToken_,
