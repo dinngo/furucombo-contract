@@ -150,10 +150,10 @@ contract('Stargate', function ([_, user, user2]) {
         const fee = fees[0];
         const value = amountIn.add(fee);
         const data = abi.simpleEncode(
-          'swapETH(uint16,address,uint256,uint256,uint256,address)',
+          'swapETH(uint256,uint16,address,uint256,uint256,address)',
+          value,
           dstChainId,
           refundAddress,
-          value,
           fee,
           amountOutMin,
           receiver
@@ -195,10 +195,10 @@ contract('Stargate', function ([_, user, user2]) {
         const fee = fees[0];
         const value = amountIn.add(fee);
         const data = abi.simpleEncode(
-          'swapETH(uint16,address,uint256,uint256,uint256,address)',
+          'swapETH(uint256,uint16,address,uint256,uint256,address)',
+          MAX_UINT256,
           dstChainId,
           refundAddress,
-          MAX_UINT256,
           fee,
           amountOutMin,
           receiver
@@ -241,10 +241,10 @@ contract('Stargate', function ([_, user, user2]) {
         const fee = fees[0];
         const value = amountIn.add(fee);
         const data = abi.simpleEncode(
-          'swapETH(uint16,address,uint256,uint256,uint256,address)',
+          'swapETH(uint256,uint16,address,uint256,uint256,address)',
+          value,
           dstChainId,
           refundAddress,
-          value,
           fee,
           amountOutMin,
           receiver
@@ -288,10 +288,10 @@ contract('Stargate', function ([_, user, user2]) {
         const totalFee = fee.add(extraFee);
         const value = amountIn.add(totalFee);
         const data = abi.simpleEncode(
-          'swapETH(uint16,address,uint256,uint256,uint256,address)',
+          'swapETH(uint256,uint16,address,uint256,uint256,address)',
+          value,
           dstChainId,
           refundAddress,
-          value,
           totalFee,
           amountOutMin,
           receiver
@@ -335,10 +335,10 @@ contract('Stargate', function ([_, user, user2]) {
         const fee = fees[0];
         const value = amountIn.add(fee);
         const data = abi.simpleEncode(
-          'swapETH(uint16,address,uint256,uint256,uint256,address)',
+          'swapETH(uint256,uint16,address,uint256,uint256,address)',
+          value,
           dstChainId,
           refundAddress,
-          value,
           fee,
           amountOutMin,
           receiver
@@ -362,10 +362,10 @@ contract('Stargate', function ([_, user, user2]) {
         const fee = ether('1'); // Use fixed fee because of unknown chain id
         const value = amountIn.add(fee);
         const data = abi.simpleEncode(
-          'swapETH(uint16,address,uint256,uint256,uint256,address)',
+          'swapETH(uint256,uint16,address,uint256,uint256,address)',
+          value,
           dstChainId,
           refundAddress,
-          value,
           fee,
           amountOutMin,
           receiver
@@ -420,10 +420,10 @@ contract('Stargate', function ([_, user, user2]) {
         const fee = ether('0');
         const value = amountIn.add(fee);
         const data = abi.simpleEncode(
-          'swapETH(uint16,address,uint256,uint256,uint256,address)',
+          'swapETH(uint256,uint16,address,uint256,uint256,address)',
+          value,
           dstChainId,
           refundAddress,
-          value,
           fee,
           amountOutMin,
           receiver
@@ -453,10 +453,10 @@ contract('Stargate', function ([_, user, user2]) {
         const fee = fees[0].div(new BN('2'));
         const value = amountIn.add(fee);
         const data = abi.simpleEncode(
-          'swapETH(uint16,address,uint256,uint256,uint256,address)',
+          'swapETH(uint256,uint16,address,uint256,uint256,address)',
+          value,
           dstChainId,
           refundAddress,
-          value,
           fee,
           amountOutMin,
           receiver
@@ -488,10 +488,10 @@ contract('Stargate', function ([_, user, user2]) {
         const fee = fees[0];
         const value = amountIn.add(fee);
         const data = abi.simpleEncode(
-          'swapETH(uint16,address,uint256,uint256,uint256,address)',
+          'swapETH(uint256,uint16,address,uint256,uint256,address)',
+          value,
           dstChainId,
           refundAddress,
-          value,
           fee,
           amountOutMin,
           receiver
@@ -522,10 +522,10 @@ contract('Stargate', function ([_, user, user2]) {
         const fee = fees[0];
         const value = amountIn.add(fee);
         const data = abi.simpleEncode(
-          'swapETH(uint16,address,uint256,uint256,uint256,address)',
+          'swapETH(uint256,uint16,address,uint256,uint256,address)',
+          value,
           dstChainId,
           refundAddress,
-          value,
           fee,
           amountOutMin,
           receiver
@@ -560,10 +560,10 @@ contract('Stargate', function ([_, user, user2]) {
         const fee = fees[0];
         const value = amountIn.add(fee);
         const data = abi.simpleEncode(
-          'swapETH(uint16,address,uint256,uint256,uint256,address)',
+          'swapETH(uint256,uint16,address,uint256,uint256,address)',
+          value,
           dstChainId,
           refundAddress,
-          value,
           fee,
           amountOutMin,
           receiver
@@ -594,10 +594,10 @@ contract('Stargate', function ([_, user, user2]) {
         const fee = fees[0];
         const value = amountIn.add(fee);
         const data = abi.simpleEncode(
-          'swapETH(uint16,address,uint256,uint256,uint256,address)',
+          'swapETH(uint256,uint16,address,uint256,uint256,address)',
+          value,
           dstChainId,
           refundAddress,
-          value,
           fee,
           amountOutMin,
           receiver
@@ -628,10 +628,10 @@ contract('Stargate', function ([_, user, user2]) {
         const fee = fees[0];
         const value = amountIn.add(fee);
         const data = abi.simpleEncode(
-          'swapETH(uint16,address,uint256,uint256,uint256,address)',
+          'swapETH(uint256,uint16,address,uint256,uint256,address)',
+          value,
           dstChainId,
           refundAddress,
-          value,
           fee,
           amountOutMin,
           receiver

@@ -33,24 +33,24 @@ contract HStargate is HandlerBase {
     }
 
     function swapETH(
+        uint256 value,
         uint16 dstChainId,
         address payable refundAddress,
-        uint256 amountIn,
         uint256 fee,
         uint256 amountOutMin,
         address to
     ) external payable {
         _requireMsg(to != address(0), "swapETH", "to zero address");
 
-        amountIn = _getBalance(NATIVE_TOKEN_ADDRESS, amountIn);
+        value = _getBalance(NATIVE_TOKEN_ADDRESS, value);
 
         // Swap ETH
         try
-            IStargateRouterETH(routerETH).swapETH{value: amountIn}(
+            IStargateRouterETH(routerETH).swapETH{value: value}(
                 dstChainId,
                 refundAddress,
                 abi.encodePacked(to),
-                amountIn - fee,
+                value - fee,
                 amountOutMin
             )
         {} catch Error(string memory reason) {
