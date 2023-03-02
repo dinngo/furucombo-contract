@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+## [2.4.0] - 2023-03-02
+
 ### Added
 
 - Add send token to addresses in `HFunds`.
