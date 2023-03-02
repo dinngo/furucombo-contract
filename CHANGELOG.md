@@ -7,7 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 - Add send token to addresses in `HFunds`.
-- Support swap of Stargate token bridge.
+- Support swap ETH/ERC20/STG token on Stargate token bridge.
 - Add `setTokenBalance` in utils.js to manipulate token balance for unit testing.
 - Support Aave Protocol V3 on Ethereum.
 - Support Geist Protocol and SpookySwap Protocol and add Fantom unit test stage.

@@ -126,6 +126,9 @@ module.exports = {
   // MATIC
   MATIC_TOKEN: '0x7d1afa7b718fb893db30a3abc0cfc608aacfebb0',
   MATIC_SYMBOL: 'MATIC',
+  // Stargate
+  STG_TOKEN: eth.STARGATE_TOKEN,
+  STG_SYMBOL: 'STG',
 
   /* AAVE Interest Rate Mode */
   AAVE_RATEMODE: { NODEBT: 0, STABLE: 1, VARIABLE: 2 },
@@ -220,6 +223,8 @@ module.exports = {
   STARGATE_DESTINATION_CHAIN_ID: 111, // Optimism
   STARGATE_UNSUPPORT_ETH_DEST_CHAIN_ID: 109, // Polygon
   STARGATE_USDC_TO_DISALLOW_TOKEN_ID: 3, // DAI
+  STARGATE_MULTISIG: '0x65bb797c2B9830d891D87288F029ed8dACc19705',
+  LAYERZERO_ENDPOINT: '0x66a71dcef29a0ffbdbe3c6a460a3b5bc225cd675',
 
   // Combo Claim Merkle Proof
   COMBO_TOTAL_SUPPLY: '20', // ehter

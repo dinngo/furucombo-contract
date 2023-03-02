@@ -5,6 +5,7 @@ const {
   STARGATE_ROUTER_ETH,
   STARGATE_FACTORY,
   STARGATE_WIDGET_SWAP,
+  STARGATE_TOKEN,
 } = require('../utils/addresses.js');
 
 module.exports = async () => {
@@ -12,6 +13,7 @@ module.exports = async () => {
     'HStargate',
     STARGATE_ROUTER,
     STARGATE_ROUTER_ETH,
+    STARGATE_TOKEN,
     STARGATE_FACTORY,
     STARGATE_WIDGET_SWAP,
     STARGATE_PARTNER_ID
