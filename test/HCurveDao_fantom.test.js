@@ -26,11 +26,11 @@ const {
 const Proxy = artifacts.require('ProxyMock');
 const Registry = artifacts.require('Registry');
 const FeeRuleRegistry = artifacts.require('FeeRuleRegistry');
-const HCurveDao = artifacts.require('HCurveDao');
+const HCurveDao = artifacts.require('HCurveDaoOnNonETH');
 const ILiquidityGauge = artifacts.require('ILiquidityGauge');
 const IToken = artifacts.require('IERC20');
 
-contract('Curve DAO', function([_, user]) {
+contract('Curve DAO', function ([_, user]) {
   let id;
   // Wait for the gaude to be ready
   const token0Address = CURVE_2POOLCRV;
@@ -42,7 +42,7 @@ contract('Curve DAO', function([_, user]) {
 
   let token0Provider;
 
-  before(async function() {
+  before(async function () {
     token0Provider = await tokenProviderCurveGauge(token0Address);
 
     this.registry = await Registry.new();
@@ -60,16 +60,16 @@ contract('Curve DAO', function([_, user]) {
     );
   });
 
-  beforeEach(async function() {
+  beforeEach(async function () {
     id = await evmSnapshot();
   });
 
-  afterEach(async function() {
+  afterEach(async function () {
     await evmRevert(id);
   });
 
-  describe('Deposit lp token to gauge', function() {
-    it('normal', async function() {
+  describe('Deposit lp token to gauge', function () {
+    it('normal', async function () {
       await this.token0.transfer(this.proxy.address, gauge0Amount, {
         from: token0Provider,
       });
@@ -101,7 +101,7 @@ contract('Curve DAO', function([_, user]) {
       profileGas(receipt);
     });
 
-    it('max amount', async function() {
+    it('max amount', async function () {
       await this.token0.transfer(this.proxy.address, gauge0Amount, {
         from: token0Provider,
       });
@@ -133,7 +133,7 @@ contract('Curve DAO', function([_, user]) {
       profileGas(receipt);
     });
 
-    it('without approval', async function() {
+    it('without approval', async function () {
       if (!(await hasFuncSig(this.gauge0.address, setApproveDepositSig))) {
         // V3 gauges afterwards skip this
         this.skip();
@@ -158,11 +158,11 @@ contract('Curve DAO', function([_, user]) {
     });
   });
 
-  describe('Withdraw lp token from v2 gauge afterwards', function() {
+  describe('Withdraw lp token from v2 gauge afterwards', function () {
     let withdrawUser;
     let receipt;
 
-    beforeEach(async function() {
+    beforeEach(async function () {
       // Transfer gauge token to furucombo proxy
       await this.token0.transfer(user, gauge0Amount, {
         from: token0Provider,
@@ -178,7 +178,7 @@ contract('Curve DAO', function([_, user]) {
       });
     });
 
-    it('normal', async function() {
+    it('normal', async function () {
       const to = this.hCurveDao.address;
       const data = abi.simpleEncode(
         'withdraw(address,uint256)',
@@ -192,7 +192,7 @@ contract('Curve DAO', function([_, user]) {
       });
     });
 
-    it('max amount', async function() {
+    it('max amount', async function () {
       const to = this.hCurveDao.address;
       const data = abi.simpleEncode(
         'withdraw(address,uint256)',
@@ -206,7 +206,7 @@ contract('Curve DAO', function([_, user]) {
       });
     });
 
-    afterEach(async function() {
+    afterEach(async function () {
       const withdrawUserEnd = await this.token0.balanceOf(user);
 
       // Check handler return
