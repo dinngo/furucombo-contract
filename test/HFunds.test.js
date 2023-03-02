@@ -1175,11 +1175,7 @@ contract('Funds', function ([_, user, someone]) {
     describe('ether to miner', function () {
       before(async function () {
         // send dummy tx to get miner address
-        const receipt = await send.ether(
-          nativeTokenProviderAddress,
-          nativeTokenProviderAddress,
-          0
-        );
+        const receipt = await send.ether(user, someone, 0);
         const block = await web3.eth.getBlock(receipt.blockNumber);
         this.balanceMiner = await tracker(block.miner);
       });
