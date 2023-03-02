@@ -2,16 +2,12 @@
 
 pragma solidity 0.8.10;
 
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "../HandlerBase.sol";
-import "./IMinter.sol";
-import "./ILiquidityGauge.sol";
+import {HandlerBase} from "../HandlerBase.sol";
+import {ILiquidityGauge} from "./ILiquidityGauge.sol";
 
-contract HCurveDaoOnNonETH is HandlerBase {
-    using SafeERC20 for IERC20;
-
+contract HCurveDaoNoMint is HandlerBase {
     function getContractName() public pure override returns (string memory) {
-        return "HCurveDaoOnNonETH";
+        return "HCurveDaoNoMint";
     }
 
     function deposit(address gaugeAddress, uint256 _value) external payable {
