@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 - Add `setTokenBalance` in utils.js to manipulate token balance for unit testing.
 - Support Aave Protocol V3 on Ethereum.
 - Support Geist Protocol and SpookySwap Protocol and add Fantom unit test stage.
+- Support CurveDao handler without mint function.
 
 ### Changed
 

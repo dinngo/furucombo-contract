@@ -26,7 +26,7 @@ const {
 const Proxy = artifacts.require('ProxyMock');
 const Registry = artifacts.require('Registry');
 const FeeRuleRegistry = artifacts.require('FeeRuleRegistry');
-const HCurveDao = artifacts.require('HCurveDao');
+const HCurveDao = artifacts.require('HCurveDaoNoMint');
 const ILiquidityGauge = artifacts.require('ILiquidityGauge');
 const IToken = artifacts.require('IERC20');
 
