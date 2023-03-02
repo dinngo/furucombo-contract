@@ -42,6 +42,7 @@ const {
   STARGATE_PARTNER_ID,
   STG_TOKEN,
   LAYERZERO_ENDPOINT,
+  STARGATE_MULTISIG,
 } = require('./utils/constants');
 const {
   evmRevert,
@@ -718,7 +719,7 @@ contract('Stargate', function ([_, user, user2]) {
           await this.inputToken.balanceOf(this.proxy.address)
         ).to.be.bignumber.zero;
         expect(await balanceUser.delta()).to.be.bignumber.eq(
-          ether('0').sub(value)
+          ether('0').sub(fee)
         );
         expect(
           await this.inputToken.balanceOf(STARGATE_POOL_USDC)
@@ -770,7 +771,7 @@ contract('Stargate', function ([_, user, user2]) {
           await this.inputToken.balanceOf(this.proxy.address)
         ).to.be.bignumber.zero;
         expect(await balanceUser.delta()).to.be.bignumber.eq(
-          ether('0').sub(value)
+          ether('0').sub(fee)
         );
         expect(
           await this.inputToken.balanceOf(STARGATE_POOL_USDC)
@@ -823,7 +824,7 @@ contract('Stargate', function ([_, user, user2]) {
           await this.inputToken.balanceOf(this.proxy.address)
         ).to.be.bignumber.zero;
         expect(await balanceUser.delta()).to.be.bignumber.eq(
-          ether('0').sub(value)
+          ether('0').sub(fee)
         );
         expect(
           await this.inputToken.balanceOf(STARGATE_POOL_USDC)
@@ -877,7 +878,7 @@ contract('Stargate', function ([_, user, user2]) {
           await this.inputToken.balanceOf(this.proxy.address)
         ).to.be.bignumber.zero;
         expect(await balanceUser.delta()).to.be.bignumber.eq(
-          ether('0').sub(value).add(extraFee)
+          ether('0').sub(totalFee).add(extraFee)
         );
         expect(
           await this.inputToken.balanceOf(STARGATE_POOL_USDC)
@@ -1277,10 +1278,7 @@ contract('Stargate', function ([_, user, user2]) {
       let isMain;
 
       before(async function () {
-        inputTokenProvider =
-          chainId == 43114
-            ? '0x2b065946d41adf43bbc3baf8118ae94ed19d7a40' // Stargate multisig address
-            : inputTokenAddr;
+        inputTokenProvider = STARGATE_MULTISIG;
         await impersonateAndInjectEther(inputTokenProvider);
         this.inputToken = await IToken.at(inputTokenAddr);
         this.inputStgToken = await IStargateToken.at(inputTokenAddr);
@@ -1332,7 +1330,7 @@ contract('Stargate', function ([_, user, user2]) {
           await this.inputToken.balanceOf(this.proxy.address)
         ).to.be.bignumber.zero;
         expect(await balanceUser.delta()).to.be.bignumber.eq(
-          ether('0').sub(value)
+          ether('0').sub(fee)
         );
 
         isMain
@@ -1396,7 +1394,7 @@ contract('Stargate', function ([_, user, user2]) {
           await this.inputToken.balanceOf(this.proxy.address)
         ).to.be.bignumber.zero;
         expect(await balanceUser.delta()).to.be.bignumber.eq(
-          ether('0').sub(value)
+          ether('0').sub(fee)
         );
 
         isMain
@@ -1466,7 +1464,7 @@ contract('Stargate', function ([_, user, user2]) {
           await this.inputToken.balanceOf(this.proxy.address)
         ).to.be.bignumber.zero;
         expect(await balanceUser.delta()).to.be.bignumber.eq(
-          ether('0').sub(value)
+          ether('0').sub(fee)
         );
 
         isMain
@@ -1532,7 +1530,7 @@ contract('Stargate', function ([_, user, user2]) {
           await this.inputToken.balanceOf(this.proxy.address)
         ).to.be.bignumber.zero;
         expect(await balanceUser.delta()).to.be.bignumber.eq(
-          ether('0').sub(value).add(extraFee)
+          ether('0').sub(totalFee).add(extraFee)
         );
 
         isMain
