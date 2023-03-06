@@ -18,6 +18,8 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - Use fixed prettier version 2.8.4 and fixed prettier solidity plugin version 1.1.2.
+- Fix chained input amountIn for `swapETH()` and update `sendTokens()` in `HStargate`.
+- Support Stargate on Fantom
 
 ## [2.3.2] - 2022-12-21
 
