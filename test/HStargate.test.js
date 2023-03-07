@@ -1263,6 +1263,7 @@ contract('Stargate', function ([_, user, user2]) {
     describe('STG Token', function () {
       const ptSend = 0;
       const inputTokenAddr = STG_TOKEN;
+      const INPUT_TOKEN_BALANCE_SLOT_NUM = 8;
       const amountIn = ether('1');
       const ld2sdRate = mwei('10000'); // 10^10 (private param)
       const receiverBytes32 = abi.rawEncode(['address'], [receiver]);
@@ -1285,9 +1286,13 @@ contract('Stargate', function ([_, user, user2]) {
       });
 
       this.beforeEach(async function () {
-        await this.inputToken.transfer(this.proxy.address, amountIn, {
-          from: inputTokenProvider,
-        });
+        await setTokenBalance(
+          this.inputToken.address,
+          this.proxy.address,
+          amountIn,
+          INPUT_TOKEN_BALANCE_SLOT_NUM
+        );
+
         await this.proxy.updateTokenMock(this.inputToken.address);
 
         inputTokenPoolBefore = await this.inputToken.balanceOf(inputTokenAddr);
@@ -1306,7 +1311,7 @@ contract('Stargate', function ([_, user, user2]) {
         );
         const fee = fees[0];
         const data = abi.simpleEncode(
-          'sendTokens(uint16,address,address,uint256,uint256,bytes)',
+          'sendFrom(uint16,address,address,uint256,uint256,bytes)',
           dstChainId,
           receiver,
           refundAddress,
@@ -1369,7 +1374,7 @@ contract('Stargate', function ([_, user, user2]) {
         );
         const fee = fees[0];
         const data = abi.simpleEncode(
-          'sendTokens(uint16,address,address,uint256,uint256,bytes)',
+          'sendFrom(uint16,address,address,uint256,uint256,bytes)',
           dstChainId,
           receiver,
           refundAddress,
@@ -1438,7 +1443,7 @@ contract('Stargate', function ([_, user, user2]) {
         );
         const fee = fees[0];
         const data = abi.simpleEncode(
-          'sendTokens(uint16,address,address,uint256,uint256,bytes)',
+          'sendFrom(uint16,address,address,uint256,uint256,bytes)',
           dstChainId,
           receiver,
           refundAddress,
@@ -1503,7 +1508,7 @@ contract('Stargate', function ([_, user, user2]) {
         const extraFee = fee.mul(new BN('2'));
         const totalFee = fee.add(extraFee);
         const data = abi.simpleEncode(
-          'sendTokens(uint16,address,address,uint256,uint256,bytes)',
+          'sendFrom(uint16,address,address,uint256,uint256,bytes)',
           dstChainId,
           receiver,
           refundAddress,
@@ -1556,9 +1561,9 @@ contract('Stargate', function ([_, user, user2]) {
       // adapter param
       it('should revert: non empty adapter param', async function () {
         // This test case is only for `useCustomAdapterParams` = false
-        const useCustomAdapterParams =
-          await this.inputStgToken.useCustomAdapterParams.call();
-        if (useCustomAdapterParams) return;
+        expect(
+          await this.inputStgToken.useCustomAdapterParams.call()
+        ).to.be.false;
 
         // Prep
         const adapterParam = abi.solidityPack(['string'], ['0x']);
@@ -1566,7 +1571,7 @@ contract('Stargate', function ([_, user, user2]) {
         const to = this.hStargate.address;
         const fee = ether('1'); // Use fixed fee because of unknown chain id
         const data = abi.simpleEncode(
-          'sendTokens(uint16,address,address,uint256,uint256,bytes)',
+          'sendFrom(uint16,address,address,uint256,uint256,bytes)',
           dstChainId,
           receiver,
           refundAddress,
@@ -1582,15 +1587,15 @@ contract('Stargate', function ([_, user, user2]) {
             from: user,
             value: value,
           }),
-          '0_HStargate_sendTokens: OFTCore: _adapterParams must be empty.'
+          '0_HStargate_sendFrom: OFTCore: _adapterParams must be empty.'
         );
       });
 
-      it('should revert: zero dstGas', async function () {
+      it.skip('should revert: zero dstGas', async function () {
         // This test case is only for `useCustomAdapterParams` = true
-        const useCustomAdapterParams =
-          await this.inputStgToken.useCustomAdapterParams.call();
-        if (!useCustomAdapterParams) return;
+        expect(
+          await this.inputStgToken.useCustomAdapterParams.call()
+        ).to.be.true;
 
         // Prep
         const version = 1;
@@ -1603,7 +1608,7 @@ contract('Stargate', function ([_, user, user2]) {
         const to = this.hStargate.address;
         const fee = ether('1'); // Use fixed fee because of zero dstGas
         const data = abi.simpleEncode(
-          'sendTokens(uint16,address,address,uint256,uint256,bytes)',
+          'sendFrom(uint16,address,address,uint256,uint256,bytes)',
           dstChainId,
           receiver,
           refundAddress,
@@ -1619,7 +1624,7 @@ contract('Stargate', function ([_, user, user2]) {
             from: user,
             value: value,
           }),
-          '0_HStargate_sendTokens: Relayer: gas too low'
+          '0_HStargate_sendFrom: Relayer: gas too low'
         );
       });
 
@@ -1631,7 +1636,7 @@ contract('Stargate', function ([_, user, user2]) {
         const to = this.hStargate.address;
         const fee = ether('1'); // Use fixed fee because of unknown chain id
         const data = abi.simpleEncode(
-          'sendTokens(uint16,address,address,uint256,uint256,bytes)',
+          'sendFrom(uint16,address,address,uint256,uint256,bytes)',
           dstChainId,
           receiver,
           refundAddress,
@@ -1647,7 +1652,7 @@ contract('Stargate', function ([_, user, user2]) {
             from: user,
             value: value,
           }),
-          '0_HStargate_sendTokens: LzApp: destination chain is not a trusted source'
+          '0_HStargate_sendFrom: LzApp: destination chain is not a trusted source'
         );
       });
 
@@ -1658,7 +1663,7 @@ contract('Stargate', function ([_, user, user2]) {
         const to = this.hStargate.address;
         const fee = ether('0'); // Send zero fee
         const data = abi.simpleEncode(
-          'sendTokens(uint16,address,address,uint256,uint256,bytes)',
+          'sendFrom(uint16,address,address,uint256,uint256,bytes)',
           dstChainId,
           receiver,
           refundAddress,
@@ -1674,7 +1679,7 @@ contract('Stargate', function ([_, user, user2]) {
             from: user,
             value: value,
           }),
-          '0_HStargate_sendTokens: LayerZero: not enough native for fees'
+          '0_HStargate_sendFrom: LayerZero: not enough native for fees'
         );
       });
 
@@ -1693,7 +1698,7 @@ contract('Stargate', function ([_, user, user2]) {
         );
         const fee = fees[0];
         const data = abi.simpleEncode(
-          'sendTokens(uint16,address,address,uint256,uint256,bytes)',
+          'sendFrom(uint16,address,address,uint256,uint256,bytes)',
           dstChainId,
           receiver,
           refundAddress,
@@ -1709,7 +1714,7 @@ contract('Stargate', function ([_, user, user2]) {
             from: user,
             value: value,
           }),
-          '0_HStargate_sendTokens: OFTCore: amount too small'
+          '0_HStargate_sendFrom: OFTCore: amount too small'
         );
       });
 
@@ -1733,7 +1738,7 @@ contract('Stargate', function ([_, user, user2]) {
         );
         const fee = fees[0];
         const data = abi.simpleEncode(
-          'sendTokens(uint16,address,address,uint256,uint256,bytes)',
+          'sendFrom(uint16,address,address,uint256,uint256,bytes)',
           dstChainId,
           receiver,
           refundAddress,
@@ -1749,7 +1754,7 @@ contract('Stargate', function ([_, user, user2]) {
             from: user,
             value: value,
           }),
-          '0_HStargate_sendTokens: to zero address'
+          '0_HStargate_sendFrom: to zero address'
         );
       });
 
@@ -1765,7 +1770,7 @@ contract('Stargate', function ([_, user, user2]) {
         );
         const fee = fees[0];
         const data = abi.simpleEncode(
-          'sendTokens(uint16,address,address,uint256,uint256,bytes)',
+          'sendFrom(uint16,address,address,uint256,uint256,bytes)',
           dstChainId,
           receiver,
           refundAddress,
@@ -1781,7 +1786,7 @@ contract('Stargate', function ([_, user, user2]) {
             from: user,
             value: value,
           }),
-          '0_HStargate_sendTokens: refund zero address'
+          '0_HStargate_sendFrom: refund zero address'
         );
       });
     });

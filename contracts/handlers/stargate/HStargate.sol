@@ -46,10 +46,11 @@ contract HStargate is HandlerBase {
     ) external payable {
         _requireMsg(to != address(0), "swapETH", "to zero address");
 
-        uint256 value = _getBalance(NATIVE_TOKEN_ADDRESS, amountIn);
+        uint256 value;
         if (amountIn != type(uint256).max) {
-            value += fee;
+            value = amountIn + fee;
         } else {
+            value = address(this).balance;
             amountIn = value - fee;
         }
 
@@ -117,7 +118,7 @@ contract HStargate is HandlerBase {
         IStargateWidget(widgetSwap).partnerSwap(partnerId);
     }
 
-    function sendTokens(
+    function sendFrom(
         uint16 dstChainId,
         address to,
         address payable refundAddress,
@@ -125,10 +126,10 @@ contract HStargate is HandlerBase {
         uint256 fee,
         bytes calldata adapterParams
     ) external payable {
-        _requireMsg(to != address(0), "sendTokens", "to zero address");
+        _requireMsg(to != address(0), "sendFrom", "to zero address");
         _requireMsg(
             refundAddress != address(0),
-            "sendTokens",
+            "sendFrom",
             "refund zero address"
         );
 
@@ -148,9 +149,9 @@ contract HStargate is HandlerBase {
                 })
             )
         {} catch Error(string memory reason) {
-            _revertMsg("sendTokens", reason);
+            _revertMsg("sendFrom", reason);
         } catch {
-            _revertMsg("sendTokens");
+            _revertMsg("sendFrom");
         }
 
         // Partnership
