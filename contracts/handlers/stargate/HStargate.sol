@@ -37,16 +37,22 @@ contract HStargate is HandlerBase {
     }
 
     function swapETH(
-        uint256 value,
         uint16 dstChainId,
         address payable refundAddress,
+        uint256 amountIn,
         uint256 fee,
         uint256 amountOutMin,
         address to
     ) external payable {
         _requireMsg(to != address(0), "swapETH", "to zero address");
 
-        value = _getBalance(NATIVE_TOKEN_ADDRESS, value);
+        uint256 value;
+        if (amountIn != type(uint256).max) {
+            value = amountIn + fee;
+        } else {
+            value = address(this).balance;
+            amountIn = value - fee;
+        }
 
         // Swap ETH
         try
@@ -54,7 +60,7 @@ contract HStargate is HandlerBase {
                 dstChainId,
                 refundAddress,
                 abi.encodePacked(to),
-                value - fee,
+                amountIn,
                 amountOutMin
             )
         {} catch Error(string memory reason) {
@@ -112,31 +118,40 @@ contract HStargate is HandlerBase {
         IStargateWidget(widgetSwap).partnerSwap(partnerId);
     }
 
-    function sendTokens(
+    function sendFrom(
         uint16 dstChainId,
         address to,
+        address payable refundAddress,
         uint256 amountIn,
         uint256 fee,
-        uint256 dstGas
+        bytes calldata adapterParams
     ) external payable {
-        _requireMsg(to != address(0), "sendTokens", "to zero address");
-        _requireMsg(amountIn != 0, "sendTokens", "zero amountIn");
+        _requireMsg(to != address(0), "sendFrom", "to zero address");
+        _requireMsg(
+            refundAddress != address(0),
+            "sendFrom",
+            "refund zero address"
+        );
 
         amountIn = _getBalance(stgToken, amountIn);
 
-        // Swap STG token
+        // Send STG token
         try
-            IStargateToken(stgToken).sendTokens{value: fee}(
+            IStargateToken(stgToken).sendFrom{value: fee}(
+                address(this), // from
                 dstChainId,
-                abi.encodePacked(to),
+                bytes32(abi.encode(to)),
                 amountIn,
-                address(0),
-                abi.encodePacked(uint16(1) /* version */, dstGas)
+                IStargateToken.LzCallParams({
+                    refundAddress: refundAddress,
+                    zroPaymentAddress: address(0),
+                    adapterParams: adapterParams
+                })
             )
         {} catch Error(string memory reason) {
-            _revertMsg("sendTokens", reason);
+            _revertMsg("sendFrom", reason);
         } catch {
-            _revertMsg("sendTokens");
+            _revertMsg("sendFrom");
         }
 
         // Partnership

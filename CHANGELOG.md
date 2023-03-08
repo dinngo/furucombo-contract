@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+### Changed
+
+- Fix chained input amountIn for `swapETH()` and update `sendTokens()` to `sendFrom()` in `HStargate`.
+- Support Stargate on Fantom
+
 ## [2.4.0] - 2023-03-02
 
 ### Added
