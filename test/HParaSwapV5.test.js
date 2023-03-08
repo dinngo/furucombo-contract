@@ -389,7 +389,7 @@ contract('ParaSwapV5', function ([_, user, user2]) {
     });
 
     it('normal', async function () {
-      const amount = mwei('500');
+      const amount = mwei('50');
       const to = this.hParaSwap.address;
 
       // Call Paraswap price API
