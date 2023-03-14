@@ -118,40 +118,31 @@ contract HStargate is HandlerBase {
         IStargateWidget(widgetSwap).partnerSwap(partnerId);
     }
 
-    function sendFrom(
+    function sendTokens(
         uint16 dstChainId,
         address to,
-        address payable refundAddress,
         uint256 amountIn,
         uint256 fee,
-        bytes calldata adapterParams
+        uint256 dstGas
     ) external payable {
-        _requireMsg(to != address(0), "sendFrom", "to zero address");
-        _requireMsg(
-            refundAddress != address(0),
-            "sendFrom",
-            "refund zero address"
-        );
+        _requireMsg(to != address(0), "sendTokens", "to zero address");
+        _requireMsg(amountIn != 0, "sendTokens", "zero amountIn");
 
         amountIn = _getBalance(stgToken, amountIn);
 
         // Send STG token
         try
-            IStargateToken(stgToken).sendFrom{value: fee}(
-                address(this), // from
+            IStargateToken(stgToken).sendTokens{value: fee}(
                 dstChainId,
-                bytes32(abi.encode(to)),
+                abi.encodePacked(to),
                 amountIn,
-                IStargateToken.LzCallParams({
-                    refundAddress: refundAddress,
-                    zroPaymentAddress: address(0),
-                    adapterParams: adapterParams
-                })
+                address(0),
+                abi.encodePacked(uint16(1) /* version */, dstGas)
             )
         {} catch Error(string memory reason) {
-            _revertMsg("sendFrom", reason);
+            _revertMsg("sendTokens", reason);
         } catch {
-            _revertMsg("sendFrom");
+            _revertMsg("sendTokens");
         }
 
         // Partnership

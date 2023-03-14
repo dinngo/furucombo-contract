@@ -43,7 +43,6 @@ const {
   STARGATE_PARTNER_ID,
   STG_TOKEN,
   LAYERZERO_ENDPOINT,
-  STARGATE_MULTISIG,
 } = require('./utils/constants');
 const {
   evmRevert,
@@ -1261,23 +1260,25 @@ contract('Stargate', function ([_, user, user2]) {
     });
 
     describe('STG Token', function () {
-      const ptSend = 0;
+      const version = new BN('1');
       const inputTokenAddr = STG_TOKEN;
-      const INPUT_TOKEN_BALANCE_SLOT_NUM = 8;
+      const INPUT_TOKEN_BALANCE_SLOT_NUM = 0;
       const amountIn = ether('1');
-      const ld2sdRate = mwei('10000'); // 10^10 (private param)
-      const receiverBytes32 = abi.rawEncode(['address'], [receiver]);
-      const payload = abi.solidityPack(
-        ['uint8', 'bytes32', 'uint64'],
-        [ptSend, receiverBytes32, amountIn.div(ld2sdRate)]
+      const dstGas = new BN('85000'); // stg gas value from a real tx
+      const receiverBytes = abi.solidityPack(['address'], [receiver]);
+      const payload = abi.rawEncode(
+        ['bytes', 'uint256'],
+        [receiverBytes, amountIn]
       );
-      const adapterParam = abi.solidityPack(['string'], ['']);
+      const adapterParam = abi.solidityPack(
+        ['uint16', 'uint256'],
+        [version, dstGas]
+      );
 
       let inputTokenPoolBefore;
+      let isMain;
 
       before(async function () {
-        inputTokenProvider = STARGATE_MULTISIG;
-        await impersonateAndInjectEther(inputTokenProvider);
         this.inputToken = await IToken.at(inputTokenAddr);
         this.inputStgToken = await IStargateToken.at(inputTokenAddr);
         this.layerZeroEndpoint = await ILayerZeroEndpoint.at(
@@ -1296,11 +1297,11 @@ contract('Stargate', function ([_, user, user2]) {
         await this.proxy.updateTokenMock(this.inputToken.address);
 
         inputTokenPoolBefore = await this.inputToken.balanceOf(inputTokenAddr);
+        isMain = await this.inputStgToken.isMain.call();
       });
 
       it('normal', async function () {
         // Prep
-        const refundAddress = this.proxy.address;
         const to = this.hStargate.address;
         const fees = await this.layerZeroEndpoint.estimateFees(
           dstChainId,
@@ -1311,13 +1312,12 @@ contract('Stargate', function ([_, user, user2]) {
         );
         const fee = fees[0];
         const data = abi.simpleEncode(
-          'sendFrom(uint16,address,address,uint256,uint256,bytes)',
+          'sendTokens(uint16,address,uint256,uint256,uint256)',
           dstChainId,
           receiver,
-          refundAddress,
           amountIn,
           fee,
-          adapterParam
+          dstGas
         );
 
         // Execute
@@ -1336,19 +1336,22 @@ contract('Stargate', function ([_, user, user2]) {
           ether('0').sub(fee)
         );
 
-        expect(
-          await this.inputToken.balanceOf(inputTokenAddr)
-        ).to.be.bignumber.eq(inputTokenPoolBefore); // burn token
+        isMain
+          ? expect(
+              await this.inputToken.balanceOf(inputTokenAddr)
+            ).to.be.bignumber.eq(inputTokenPoolBefore.add(amountIn)) // lock token
+          : expect(
+              await this.inputToken.balanceOf(inputTokenAddr)
+            ).to.be.bignumber.eq(inputTokenPoolBefore); // burn token
 
         await expectEvent.inTransaction(
           receipt.tx,
           this.inputStgToken,
           'SendToChain',
           {
-            _dstChainId: dstChainId.toString(),
-            _from: this.proxy.address,
-            _toAddress: '0x' + receiverBytes32.toString('hex'),
-            _amount: amountIn.toString(),
+            dstChainId: dstChainId.toString(),
+            to: receiver.toString().toLowerCase(),
+            qty: amountIn.toString(),
           }
         );
 
@@ -1363,7 +1366,6 @@ contract('Stargate', function ([_, user, user2]) {
 
       it('max amount', async function () {
         // Prep
-        const refundAddress = this.proxy.address;
         const to = this.hStargate.address;
         const fees = await this.layerZeroEndpoint.estimateFees(
           dstChainId,
@@ -1374,13 +1376,12 @@ contract('Stargate', function ([_, user, user2]) {
         );
         const fee = fees[0];
         const data = abi.simpleEncode(
-          'sendFrom(uint16,address,address,uint256,uint256,bytes)',
+          'sendTokens(uint16,address,uint256,uint256,uint256)',
           dstChainId,
           receiver,
-          refundAddress,
           MAX_UINT256,
           fee,
-          adapterParam
+          dstGas
         );
 
         // Execute
@@ -1399,19 +1400,22 @@ contract('Stargate', function ([_, user, user2]) {
           ether('0').sub(fee)
         );
 
-        expect(
-          await this.inputToken.balanceOf(inputTokenAddr)
-        ).to.be.bignumber.eq(inputTokenPoolBefore); // burn token
+        isMain
+          ? expect(
+              await this.inputToken.balanceOf(inputTokenAddr)
+            ).to.be.bignumber.eq(inputTokenPoolBefore.add(amountIn)) // lock token
+          : expect(
+              await this.inputToken.balanceOf(inputTokenAddr)
+            ).to.be.bignumber.eq(inputTokenPoolBefore); // burn token
 
         await expectEvent.inTransaction(
           receipt.tx,
           this.inputStgToken,
           'SendToChain',
           {
-            _dstChainId: dstChainId.toString(),
-            _from: this.proxy.address,
-            _toAddress: '0x' + receiverBytes32.toString('hex'),
-            _amount: amountIn.toString(),
+            dstChainId: dstChainId.toString(),
+            to: receiver.toString().toLowerCase(),
+            qty: amountIn.toString(),
           }
         );
 
@@ -1427,11 +1431,10 @@ contract('Stargate', function ([_, user, user2]) {
       it('to a different address', async function () {
         // Prep
         const receiver = user2;
-        const refundAddress = this.proxy.address;
-        const receiverBytes32 = abi.rawEncode(['address'], [receiver]);
-        const payload = abi.solidityPack(
-          ['uint8', 'bytes32', 'uint64'],
-          [ptSend, receiverBytes32, amountIn.div(ld2sdRate)]
+        const receiverBytes = abi.solidityPack(['address'], [receiver]);
+        const payload = abi.rawEncode(
+          ['bytes', 'uint256'],
+          [receiverBytes, amountIn]
         );
         const to = this.hStargate.address;
         const fees = await this.layerZeroEndpoint.estimateFees(
@@ -1443,13 +1446,12 @@ contract('Stargate', function ([_, user, user2]) {
         );
         const fee = fees[0];
         const data = abi.simpleEncode(
-          'sendFrom(uint16,address,address,uint256,uint256,bytes)',
+          'sendTokens(uint16,address,uint256,uint256,uint256)',
           dstChainId,
           receiver,
-          refundAddress,
           amountIn,
           fee,
-          adapterParam
+          dstGas
         );
 
         // Execute
@@ -1468,19 +1470,22 @@ contract('Stargate', function ([_, user, user2]) {
           ether('0').sub(fee)
         );
 
-        expect(
-          await this.inputToken.balanceOf(inputTokenAddr)
-        ).to.be.bignumber.eq(inputTokenPoolBefore); // burn token
+        isMain
+          ? expect(
+              await this.inputToken.balanceOf(inputTokenAddr)
+            ).to.be.bignumber.eq(inputTokenPoolBefore.add(amountIn)) // lock token
+          : expect(
+              await this.inputToken.balanceOf(inputTokenAddr)
+            ).to.be.bignumber.eq(inputTokenPoolBefore); // burn token
 
         await expectEvent.inTransaction(
           receipt.tx,
           this.inputStgToken,
           'SendToChain',
           {
-            _dstChainId: dstChainId.toString(),
-            _from: this.proxy.address,
-            _toAddress: '0x' + receiverBytes32.toString('hex'),
-            _amount: amountIn.toString(),
+            dstChainId: dstChainId.toString(),
+            to: receiver.toString().toLowerCase(),
+            qty: amountIn.toString(),
           }
         );
 
@@ -1495,7 +1500,6 @@ contract('Stargate', function ([_, user, user2]) {
 
       it('refund extra fee', async function () {
         // Prep
-        const refundAddress = this.proxy.address;
         const to = this.hStargate.address;
         const fees = await this.layerZeroEndpoint.estimateFees(
           dstChainId,
@@ -1508,13 +1512,12 @@ contract('Stargate', function ([_, user, user2]) {
         const extraFee = fee.mul(new BN('2'));
         const totalFee = fee.add(extraFee);
         const data = abi.simpleEncode(
-          'sendFrom(uint16,address,address,uint256,uint256,bytes)',
+          'sendTokens(uint16,address,uint256,uint256,uint256)',
           dstChainId,
           receiver,
-          refundAddress,
           amountIn,
           totalFee,
-          adapterParam
+          dstGas
         );
 
         // Execute
@@ -1533,19 +1536,22 @@ contract('Stargate', function ([_, user, user2]) {
           ether('0').sub(totalFee).add(extraFee)
         );
 
-        expect(
-          await this.inputToken.balanceOf(inputTokenAddr)
-        ).to.be.bignumber.eq(inputTokenPoolBefore); // burn token
+        isMain
+          ? expect(
+              await this.inputToken.balanceOf(inputTokenAddr)
+            ).to.be.bignumber.eq(inputTokenPoolBefore.add(amountIn)) // lock token
+          : expect(
+              await this.inputToken.balanceOf(inputTokenAddr)
+            ).to.be.bignumber.eq(inputTokenPoolBefore); // burn token
 
         await expectEvent.inTransaction(
           receipt.tx,
           this.inputStgToken,
           'SendToChain',
           {
-            _dstChainId: dstChainId.toString(),
-            _from: this.proxy.address,
-            _toAddress: '0x' + receiverBytes32.toString('hex'),
-            _amount: amountIn.toString(),
+            dstChainId: dstChainId.toString(),
+            to: receiver.toString().toLowerCase(),
+            qty: amountIn.toString(),
           }
         );
 
@@ -1558,91 +1564,19 @@ contract('Stargate', function ([_, user, user2]) {
         profileGas(receipt);
       });
 
-      // adapter param
-      it('should revert: non empty adapter param', async function () {
-        // This test case is only for `useCustomAdapterParams` = false
-        expect(
-          await this.inputStgToken.useCustomAdapterParams.call()
-        ).to.be.false;
-
-        // Prep
-        const adapterParam = abi.solidityPack(['string'], ['0x']);
-        const refundAddress = this.proxy.address;
-        const to = this.hStargate.address;
-        const fee = ether('1'); // Use fixed fee because of unknown chain id
-        const data = abi.simpleEncode(
-          'sendFrom(uint16,address,address,uint256,uint256,bytes)',
-          dstChainId,
-          receiver,
-          refundAddress,
-          amountIn,
-          fee,
-          adapterParam
-        );
-
-        // Execute
-        const value = fee;
-        await expectRevert(
-          this.proxy.execMock(to, data, {
-            from: user,
-            value: value,
-          }),
-          '0_HStargate_sendFrom: OFTCore: _adapterParams must be empty.'
-        );
-      });
-
-      it.skip('should revert: zero dstGas', async function () {
-        // This test case is only for `useCustomAdapterParams` = true
-        expect(
-          await this.inputStgToken.useCustomAdapterParams.call()
-        ).to.be.true;
-
-        // Prep
-        const version = 1;
-        const dstGas = ether('0');
-        const adapterParam = abi.solidityPack(
-          ['uint16', 'uint256'],
-          [version, dstGas]
-        );
-        const refundAddress = this.proxy.address;
-        const to = this.hStargate.address;
-        const fee = ether('1'); // Use fixed fee because of zero dstGas
-        const data = abi.simpleEncode(
-          'sendFrom(uint16,address,address,uint256,uint256,bytes)',
-          dstChainId,
-          receiver,
-          refundAddress,
-          amountIn,
-          fee,
-          adapterParam
-        );
-
-        // Execute
-        const value = fee;
-        await expectRevert(
-          this.proxy.execMock(to, data, {
-            from: user,
-            value: value,
-          }),
-          '0_HStargate_sendFrom: Relayer: gas too low'
-        );
-      });
-
       // chain
       it('should revert: to unknown chain', async function () {
         // Prep
         const dstChainId = STARGATE_UNKNOWN_CHAIN_ID;
-        const refundAddress = this.proxy.address;
         const to = this.hStargate.address;
         const fee = ether('1'); // Use fixed fee because of unknown chain id
         const data = abi.simpleEncode(
-          'sendFrom(uint16,address,address,uint256,uint256,bytes)',
+          'sendTokens(uint16,address,uint256,uint256,uint256)',
           dstChainId,
           receiver,
-          refundAddress,
           amountIn,
           fee,
-          adapterParam
+          dstGas
         );
 
         // Execute
@@ -1652,24 +1586,22 @@ contract('Stargate', function ([_, user, user2]) {
             from: user,
             value: value,
           }),
-          '0_HStargate_sendFrom: LzApp: destination chain is not a trusted source'
+          '0_HStargate_sendTokens: LayerZero: dstChainId does not exist'
         );
       });
 
       // fee
       it('should revert: insufficient fee', async function () {
         // Prep
-        const refundAddress = this.proxy.address;
         const to = this.hStargate.address;
         const fee = ether('0'); // Send zero fee
         const data = abi.simpleEncode(
-          'sendFrom(uint16,address,address,uint256,uint256,bytes)',
+          'sendTokens(uint16,address,uint256,uint256,uint256)',
           dstChainId,
           receiver,
-          refundAddress,
           amountIn,
           fee,
-          adapterParam
+          dstGas
         );
 
         // Execute
@@ -1679,7 +1611,7 @@ contract('Stargate', function ([_, user, user2]) {
             from: user,
             value: value,
           }),
-          '0_HStargate_sendFrom: LayerZero: not enough native for fees'
+          '0_HStargate_sendTokens: LayerZero: not enough native for fees'
         );
       });
 
@@ -1687,7 +1619,6 @@ contract('Stargate', function ([_, user, user2]) {
       it('should revert: amountIn = 0', async function () {
         // Prep
         const amountIn = ether('0');
-        const refundAddress = this.proxy.address;
         const to = this.hStargate.address;
         const fees = await this.layerZeroEndpoint.estimateFees(
           dstChainId,
@@ -1698,13 +1629,12 @@ contract('Stargate', function ([_, user, user2]) {
         );
         const fee = fees[0];
         const data = abi.simpleEncode(
-          'sendFrom(uint16,address,address,uint256,uint256,bytes)',
+          'sendTokens(uint16,address,uint256,uint256,uint256)',
           dstChainId,
           receiver,
-          refundAddress,
           amountIn,
           fee,
-          adapterParam
+          dstGas
         );
 
         // Execute
@@ -1714,7 +1644,7 @@ contract('Stargate', function ([_, user, user2]) {
             from: user,
             value: value,
           }),
-          '0_HStargate_sendFrom: OFTCore: amount too small'
+          '0_HStargate_sendTokens: zero amountIn'
         );
       });
 
@@ -1722,12 +1652,11 @@ contract('Stargate', function ([_, user, user2]) {
       it('should revert: to zero address', async function () {
         // Prep
         const receiver = constants.ZERO_ADDRESS;
-        const receiverBytes32 = abi.rawEncode(['address'], [receiver]);
-        const payload = abi.solidityPack(
-          ['uint8', 'bytes32', 'uint64'],
-          [ptSend, receiverBytes32, amountIn.div(ld2sdRate)]
+        const receiverBytes = abi.solidityPack(['address'], [receiver]);
+        const payload = abi.rawEncode(
+          ['bytes', 'uint256'],
+          [receiverBytes, amountIn]
         );
-        const refundAddress = this.proxy.address;
         const to = this.hStargate.address;
         const fees = await this.layerZeroEndpoint.estimateFees(
           dstChainId,
@@ -1738,13 +1667,12 @@ contract('Stargate', function ([_, user, user2]) {
         );
         const fee = fees[0];
         const data = abi.simpleEncode(
-          'sendFrom(uint16,address,address,uint256,uint256,bytes)',
+          'sendTokens(uint16,address,uint256,uint256,uint256)',
           dstChainId,
           receiver,
-          refundAddress,
           amountIn,
           fee,
-          adapterParam
+          dstGas
         );
 
         // Execute
@@ -1754,29 +1682,21 @@ contract('Stargate', function ([_, user, user2]) {
             from: user,
             value: value,
           }),
-          '0_HStargate_sendFrom: to zero address'
+          '0_HStargate_sendTokens: to zero address'
         );
       });
 
-      it('should revert: refund zero address', async function () {
-        const refundAddress = constants.ZERO_ADDRESS;
+      it('should revert: zero dstGas', async function () {
+        const dstGas = ether('0');
         const to = this.hStargate.address;
-        const fees = await this.layerZeroEndpoint.estimateFees(
-          dstChainId,
-          this.inputToken.address,
-          payload,
-          false, // pay in zero
-          adapterParam
-        );
-        const fee = fees[0];
+        const fee = ether('1'); // Use fixed fee because of zero dstGas
         const data = abi.simpleEncode(
-          'sendFrom(uint16,address,address,uint256,uint256,bytes)',
+          'sendTokens(uint16,address,uint256,uint256,uint256)',
           dstChainId,
           receiver,
-          refundAddress,
           amountIn,
           fee,
-          adapterParam
+          dstGas
         );
 
         // Execute
@@ -1786,7 +1706,7 @@ contract('Stargate', function ([_, user, user2]) {
             from: user,
             value: value,
           }),
-          '0_HStargate_sendFrom: refund zero address'
+          '0_HStargate_sendTokens: Relayer: gas too low'
         );
       });
     });
