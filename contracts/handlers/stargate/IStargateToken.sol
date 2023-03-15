@@ -3,15 +3,15 @@
 pragma solidity ^0.8.0;
 
 interface IStargateToken {
-    struct LzCallParams {
-        address payable refundAddress;
-        address zroPaymentAddress;
-        bytes adapterParams;
-    }
+    event SendToChain(uint16 dstChainId, bytes to, uint256 qty);
 
-    event SendToChain(uint16 indexed _dstChainId, address indexed _from, bytes32 indexed _toAddress, uint _amount);
+    function isMain() external returns(bool);
 
-    function useCustomAdapterParams() external returns(bool);
-    function sendFrom(address _from, uint16 _dstChainId, bytes32 _toAddress, uint _amount, LzCallParams calldata _callParams) external payable;
-
+    function sendTokens(
+        uint16 _dstChainId, // send tokens to this chainId
+        bytes calldata _to, // where to deliver the tokens on the destination chain
+        uint256 _qty, // how many tokens to send
+        address zroPaymentAddress, // ZRO payment address
+        bytes calldata adapterParam // txParameters
+    ) external payable;
 }
