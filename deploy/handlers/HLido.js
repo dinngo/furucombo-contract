@@ -1,8 +1,8 @@
 const { deploy } = require('../utils/deploy.js');
-const { LIDO_PROXY, LIDO_REFERRAL_CODE } = require('../utils/addresses.js');
+const { LIDO_PROXY, LIDO_REFERRAL_ADDRESS } = require('../utils/addresses.js');
 
 module.exports = async () => {
-  await deploy('HLido', LIDO_PROXY, LIDO_REFERRAL_CODE);
+  await deploy('HLido', LIDO_PROXY, LIDO_REFERRAL_ADDRESS);
 };
 
 module.exports.tags = ['HLido'];

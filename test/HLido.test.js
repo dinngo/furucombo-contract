@@ -15,7 +15,7 @@ const { expect } = require('chai');
 const {
   STETH_TOKEN,
   LIDO_PROXY,
-  LIDO_REFERRAL_CODE,
+  LIDO_REFERRAL_ADDRESS,
 } = require('./utils/constants');
 
 const {
@@ -46,7 +46,7 @@ contract('Lido', function ([_, user]) {
       this.registry.address,
       this.feeRuleRegistry.address
     );
-    this.hLido = await HLido.new(LIDO_PROXY, LIDO_REFERRAL_CODE);
+    this.hLido = await HLido.new(LIDO_PROXY, LIDO_REFERRAL_ADDRESS);
     await this.registry.register(this.hLido.address, utils.asciiToHex('Lido'));
     this.stToken = await IToken.at(tokenAddress);
     this.lido = await ILido.at(LIDO_PROXY);
@@ -70,7 +70,7 @@ contract('Lido', function ([_, user]) {
 
       // Get expected value
       const expectedShareAmount = await this.lido.submit.call(
-        LIDO_REFERRAL_CODE,
+        LIDO_REFERRAL_ADDRESS,
         {
           from: user,
           value: value,
@@ -116,7 +116,7 @@ contract('Lido', function ([_, user]) {
 
       // Get expected value
       const expectedShareAmount = await this.lido.submit.call(
-        LIDO_REFERRAL_CODE,
+        LIDO_REFERRAL_ADDRESS,
         {
           from: user,
           value: value,
