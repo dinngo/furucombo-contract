@@ -100,6 +100,22 @@ async function registerHandler(registry, handler) {
         gasLimit: 6000000,
       })
     ).wait();
+  } else if (
+    network.config.hasOwnProperty('url') &&
+    network.config.url.includes('node-beta')
+  ) {
+    // Need to remove `accounts` in hardhat.config.js in beta environment
+    const registryOwner = await registry.owner();
+    await hre.network.provider.request({
+      method: 'anvil_impersonateAccount',
+      params: [registryOwner],
+    });
+    const owner = await hre.ethers.provider.getSigner(registryOwner);
+    receipt = await (
+      await registry
+        .connect(owner)
+        .register(handler.address, getGitHashBytes32())
+    ).wait();
   } else {
     // Register handler
     receipt = await (
@@ -152,6 +168,24 @@ async function registerCaller(registry, caller, handler) {
         gasLimit: 6000000,
       })
     ).wait();
+  } else if (
+    network.config.hasOwnProperty('url') &&
+    network.config.url.includes('node-beta')
+  ) {
+    // Need to remove `accounts` in hardhat.config.js in beta environment
+    const registryOwner = await registry.owner();
+    await hre.network.provider.request({
+      method: 'anvil_impersonateAccount',
+      params: [registryOwner],
+    });
+    const owner = await hre.ethers.provider.getSigner(registryOwner);
+
+    // Register caller
+    receipt = await (
+      await registry
+        .connect(owner)
+        .registerCaller(caller, handler.address.padEnd(66, '0'))
+    ).wait();
   } else {
     // Register caller
     receipt = await (
@@ -198,6 +232,22 @@ async function registerRule(feeRuleRegistry, rule) {
         gasLimit: 6000000,
       })
     ).wait();
+  } else if (
+    network.config.hasOwnProperty('url') &&
+    network.config.url.includes('node-beta')
+  ) {
+    // Need to remove `accounts` in hardhat.config.js in beta environment
+    const registryOwner = await feeRuleRegistry.owner();
+    await hre.network.provider.request({
+      method: 'anvil_impersonateAccount',
+      params: [registryOwner],
+    });
+    const owner = await hre.ethers.provider.getSigner(registryOwner);
+
+    // Register rule
+    receipt = await (
+      await feeRuleRegistry.connect(owner).registerRule(rule.address)
+    ).wait();
   } else {
     // Register rule
     receipt = await (await feeRuleRegistry.registerRule(rule.address)).wait();
@@ -218,9 +268,7 @@ async function registerRule(feeRuleRegistry, rule) {
 
 // Get the latest git hash and return bytes32 format
 function getGitHashBytes32() {
-  const rev = readFileSync('.git/HEAD')
-    .toString()
-    .trim();
+  const rev = readFileSync('.git/HEAD').toString().trim();
   var hash;
   if (rev.indexOf(':') === -1) {
     hash = rev;

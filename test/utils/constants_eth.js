@@ -130,6 +130,10 @@ module.exports = {
   STG_TOKEN: eth.STARGATE_TOKEN,
   STG_SYMBOL: 'STG',
 
+  // Lido
+  STETH_TOKEN: eth.LIDO_PROXY,
+  STETH_SYMBOL: 'stETH',
+
   /* AAVE Interest Rate Mode */
   AAVE_RATEMODE: { NODEBT: 0, STABLE: 1, VARIABLE: 2 },
 
@@ -224,6 +228,8 @@ module.exports = {
   STARGATE_UNSUPPORT_ETH_DEST_CHAIN_ID: 109, // Polygon
   STARGATE_USDC_TO_DISALLOW_TOKEN_ID: 3, // DAI
   LAYERZERO_ENDPOINT: '0x66a71dcef29a0ffbdbe3c6a460a3b5bc225cd675',
+  LIDO_PROXY: eth.LIDO_PROXY,
+  LIDO_REFERRAL_ADDRESS: eth.LIDO_REFERRAL_ADDRESS,
 
   // Combo Claim Merkle Proof
   COMBO_TOTAL_SUPPLY: '20', // ehter

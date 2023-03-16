@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+### Added
+
+- Support Lido ETH submit.
+
 ### Changed
 
 - Fix chained input amountIn for `swapETH()`.
