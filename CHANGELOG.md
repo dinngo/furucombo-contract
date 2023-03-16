@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+## [2.5.0] - 2023-03-16
+
 ### Added
 
 - Support Lido ETH submit.
