@@ -8,7 +8,7 @@ module.exports = {
   HParaSwapV5: '0xB88b798F2d68Ee2b5299750B1F0e749D2263ADfa',
   HUniswapV3: '0x3dc25F78b4Eaed2F3ac2C26b0f4Ae1DEBb08F6e5',
   HWrappedNativeToken: '0xb678B2ae7dF978Ee4Aba4f9ce0564c0c1b0E9FC8',
-  HStargate: '0xd59a46E7b04cA62E961E432Dafaf56fA37ad5c5F',
+  HStargate: '0x7F974c1E969c8201c08273b958dA646fe5d536AA',
   RFreePass: '0x6fa56D3C0ECC0A244D8E06C005816f9c9904576A',
 
   // External addresses
