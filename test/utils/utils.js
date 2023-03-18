@@ -144,11 +144,15 @@ async function setTokenBalance(tokenAddress, receiver, amount, slot) {
     [receiver, slot] // key, slot
   );
 
+  // this is necessary because hex quantities with leading zeros are not valid at the JSON-RPC layer
+  // https://github.com/NomicFoundation/hardhat/issues/1585
+  const newIndex = index.replace('0x0', '0x');
+
   const amountBn = ethers.BigNumber.from(amount.toString());
 
   await network.provider.send('hardhat_setStorageAt', [
     tokenAddress,
-    index,
+    newIndex,
     toBytes32(amountBn).toString(),
   ]);
   await ethers.provider.send('evm_mine', []);
