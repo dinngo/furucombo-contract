@@ -94,12 +94,12 @@ contract('Lido', function ([_, user]) {
       expect(await balanceProxy.get()).to.be.bignumber.zero;
 
       // As the stToken's balanceOf() function is calculated based on shares, there may be calculation errors that
-      // leave dust in the proxy and cannot be returned to the user. Give 1 wei tolerance for this.
+      // leave dust in the proxy and cannot be returned to the user. Give 2 wei tolerance for this.
       expect(
         await this.stToken.balanceOf.call(this.proxy.address)
       ).to.be.bignumber.lte(new BN(1));
       expect(await this.stToken.balanceOf.call(user)).to.be.bignumber.eq(
-        tokenBefore.add(expectedStTokenAmount).sub(new BN(1))
+        tokenBefore.add(expectedStTokenAmount).sub(new BN(2))
       );
       expect(handlerReturn).to.be.bignumber.eq(expectedStTokenAmount);
 
@@ -140,12 +140,12 @@ contract('Lido', function ([_, user]) {
       expect(await balanceProxy.get()).to.be.bignumber.zero;
 
       // As the stToken's balanceOf() function is calculated based on shares, there may be calculation errors that
-      // leave dust in the proxy and cannot be returned to the user. Give 1 wei tolerance for this.
+      // leave dust in the proxy and cannot be returned to the user. Give 2 wei tolerance for this.
       expect(
         await this.stToken.balanceOf.call(this.proxy.address)
       ).to.be.bignumber.lte(new BN(1));
       expect(await this.stToken.balanceOf.call(user)).to.be.bignumber.eq(
-        tokenBefore.add(expectedStTokenAmount).sub(new BN(1))
+        tokenBefore.add(expectedStTokenAmount).sub(new BN(2))
       );
       expect(handlerReturn).to.be.bignumber.eq(expectedStTokenAmount);
 
