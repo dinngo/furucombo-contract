@@ -4,8 +4,8 @@ if (
   chainId == 1 ||
   chainId == 10 ||
   chainId == 137 ||
-  chainId == 42161
-  // chainId == 43114 TODO: skip becase AAVEV3 of AVAX is FROZEN
+  chainId == 42161 ||
+  chainId == 43114
 ) {
   // This test supports to run on these chains.
 } else {
