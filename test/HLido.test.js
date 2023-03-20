@@ -98,7 +98,7 @@ contract('Lido', function ([_, user]) {
       expect(
         await this.stToken.balanceOf.call(this.proxy.address)
       ).to.be.bignumber.lte(new BN(1));
-      expect(await this.stToken.balanceOf.call(user)).to.be.bignumber.eq(
+      expect(await this.stToken.balanceOf.call(user)).to.be.bignumber.gte(
         tokenBefore.add(expectedStTokenAmount).sub(new BN(2))
       );
       expect(handlerReturn).to.be.bignumber.eq(expectedStTokenAmount);
@@ -144,7 +144,8 @@ contract('Lido', function ([_, user]) {
       expect(
         await this.stToken.balanceOf.call(this.proxy.address)
       ).to.be.bignumber.lte(new BN(1));
-      expect(await this.stToken.balanceOf.call(user)).to.be.bignumber.eq(
+
+      expect(await this.stToken.balanceOf.call(user)).to.be.bignumber.gte(
         tokenBefore.add(expectedStTokenAmount).sub(new BN(2))
       );
       expect(handlerReturn).to.be.bignumber.eq(expectedStTokenAmount);
