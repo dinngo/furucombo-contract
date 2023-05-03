@@ -305,15 +305,26 @@ async function tokenProviderYearn(token) {
   return vault;
 }
 
-async function impersonateAndInjectEther(address) {
-  // Impersonate pair
-  await network.provider.send('hardhat_impersonateAccount', [address]);
+async function impersonateAndInjectEther(
+  address,
+  amount = '0xde0b6b3a7640000' // 1 ether
+) {
+  await impersonate(address);
+  // Inject ether
+  await injectEther(address, amount);
+}
 
-  // Inject 1 ether
-  await network.provider.send('hardhat_setBalance', [
-    address,
-    '0xde0b6b3a7640000',
-  ]);
+async function impersonate(address) {
+  // Impersonate address
+  await network.provider.send('hardhat_impersonateAccount', [address]);
+}
+
+async function injectEther(
+  address,
+  amount = '0xde0b6b3a7640000' // 1 ether
+) {
+  // Inject ether
+  await network.provider.send('hardhat_setBalance', [address, amount]);
 }
 
 async function callExternalApi(
@@ -383,6 +394,8 @@ module.exports = {
   tokenProviderCurveGauge,
   tokenProviderYearn,
   impersonateAndInjectEther,
+  impersonate,
+  injectEther,
   callExternalApi,
   mwei,
   checkCacheClean,

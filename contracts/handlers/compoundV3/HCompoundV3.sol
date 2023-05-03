@@ -2,9 +2,9 @@
 
 pragma solidity 0.8.10;
 
-import "../HandlerBase.sol";
-import "../wrappednativetoken/IWrappedNativeToken.sol";
-import "./IComet.sol";
+import {HandlerBase, IERC20} from "../HandlerBase.sol";
+import {IWrappedNativeToken} from "../wrappednativetoken/IWrappedNativeToken.sol";
+import {IComet} from "./IComet.sol";
 
 contract HCompoundV3 is HandlerBase {
     address public immutable wrappedNativeToken;
@@ -17,58 +17,197 @@ contract HCompoundV3 is HandlerBase {
         return "HCompoundV3";
     }
 
-    // The same entry for supply and repay
-    function supply(
-        address comet,
-        address onBehalf,
-        address asset,
-        uint256 amount
-    ) external payable {
-        amount = _getBalance(asset, amount);
-        _supply(comet, onBehalf, asset, amount);
+    function supplyBase(address cTokenV3, uint256 amount) external payable {
+        _requireMsg(amount != 0, "supplyBase", "zero amount");
+
+        address baseToken = IComet(cTokenV3).baseToken();
+        amount = _getBalance(baseToken, amount);
+        _supply(cTokenV3, address(this) /* to */, baseToken, amount);
+        _updateToken(cTokenV3);
     }
 
-    function supplyETH(
-        address comet,
-        address onBehalf,
-        uint256 amount
-    ) external payable {
+    function supplyBaseETH(address cTokenV3, uint256 amount) external payable {
+        _requireMsg(
+            IComet(cTokenV3).baseToken() == wrappedNativeToken,
+            "supplyBaseETH",
+            "wrong cTokenV3"
+        );
+        _requireMsg(amount != 0, "supplyBaseETH", "zero amount");
+
         amount = _getBalance(NATIVE_TOKEN_ADDRESS, amount);
         IWrappedNativeToken(wrappedNativeToken).deposit{value: amount}();
-        _supply(comet, onBehalf, wrappedNativeToken, amount);
-        _updateToken(wrappedNativeToken);
+        _supply(cTokenV3, address(this) /* to */, wrappedNativeToken, amount);
+        _updateToken(cTokenV3);
+    }
+
+    // No cToken for supplying collateral
+    function supplyCollateral(
+        address cTokenV3,
+        address collateral,
+        uint256 amount
+    ) external payable {
+        _requireMsg(
+            IComet(cTokenV3).baseToken() != collateral,
+            "supplyCollateral",
+            "wrong collateral"
+        );
+        _requireMsg(amount != 0, "supplyCollateral", "zero amount");
+
+        amount = _getBalance(collateral, amount);
+        _supply(cTokenV3, msg.sender /* to */, collateral, amount);
+    }
+
+    function supplyCollateralETH(
+        address cTokenV3,
+        uint256 amount
+    ) external payable {
+        _requireMsg(
+            IComet(cTokenV3).baseToken() != wrappedNativeToken,
+            "supplyCollateralETH",
+            "wrong cTokenV3"
+        );
+        _requireMsg(amount != 0, "supplyCollateralETH", "zero amount");
+
+        amount = _getBalance(NATIVE_TOKEN_ADDRESS, amount);
+        IWrappedNativeToken(wrappedNativeToken).deposit{value: amount}();
+        _supply(cTokenV3, msg.sender /* to */, wrappedNativeToken, amount);
     }
 
     // The same entry for withdraw and borrow
-    function withdraw(
-        address comet,
-        address onBehalf,
-        address asset,
+    function withdrawBase(
+        address cTokenV3,
         uint256 amount
     ) external payable returns (uint256 withdrawAmount) {
-        withdrawAmount = _withdraw(comet, onBehalf, asset, amount);
-        _updateToken(asset);
+        _requireMsg(amount != 0, "withdrawBase", "zero amount");
+        // No _getBalance because the amount is for base token instead of cTokenV3
+        address baseToken = IComet(cTokenV3).baseToken();
+        withdrawAmount = _withdraw(
+            cTokenV3,
+            address(this), // from
+            baseToken,
+            amount
+        );
+        _updateToken(baseToken);
     }
 
-    function withdrawETH(
-        address comet,
-        address onBehalf,
+    function withdrawBaseETH(
+        address cTokenV3,
         uint256 amount
     ) external payable returns (uint256 withdrawAmount) {
-        withdrawAmount = _withdraw(comet, onBehalf, wrappedNativeToken, amount);
+        _requireMsg(amount != 0, "withdrawBaseETH", "zero amount");
+        // No _getBalance because the amount is for base token instead of cTokenV3
+        withdrawAmount = _withdraw(
+            cTokenV3,
+            address(this), // from
+            wrappedNativeToken,
+            amount
+        );
         IWrappedNativeToken(wrappedNativeToken).withdraw(withdrawAmount);
+    }
+
+    function withdrawCollateral(
+        address cTokenV3,
+        address collateral,
+        uint256 amount
+    ) external payable returns (uint256 withdrawAmount) {
+        _requireMsg(
+            IComet(cTokenV3).baseToken() != collateral,
+            "withdrawCollateral",
+            "wrong collateral"
+        );
+        _requireMsg(amount != 0, "withdrawCollateral", "zero amount");
+
+        withdrawAmount = _withdraw(
+            cTokenV3,
+            msg.sender, // from
+            collateral,
+            amount
+        );
+        _updateToken(collateral);
+    }
+
+    function withdrawCollateralETH(
+        address cTokenV3,
+        uint256 amount
+    ) external payable returns (uint256 withdrawAmount) {
+        _requireMsg(
+            IComet(cTokenV3).baseToken() != wrappedNativeToken,
+            "withdrawCollateralETH",
+            "wrong cTokenV3"
+        );
+        _requireMsg(amount != 0, "withdrawCollateralETH", "zero amount");
+
+        withdrawAmount = _withdraw(
+            cTokenV3,
+            msg.sender, // from
+            wrappedNativeToken,
+            amount
+        );
+        IWrappedNativeToken(wrappedNativeToken).withdraw(withdrawAmount);
+    }
+
+    function borrowBase(
+        address cTokenV3,
+        uint256 amount
+    ) external payable returns (uint256 borrowAmount) {
+        _requireMsg(amount != 0, "borrowBase", "zero amount");
+
+        address baseToken = IComet(cTokenV3).baseToken();
+        borrowAmount = _withdraw(
+            cTokenV3,
+            msg.sender, // from
+            baseToken,
+            amount
+        );
+        _updateToken(baseToken);
+    }
+
+    function borrowBaseETH(
+        address cTokenV3,
+        uint256 amount
+    ) external payable returns (uint256 borrowAmount) {
+        _requireMsg(amount != 0, "borrowBaseETH", "zero amount");
+
+        borrowAmount = _withdraw(
+            cTokenV3,
+            msg.sender, // from
+            wrappedNativeToken,
+            amount
+        );
+        IWrappedNativeToken(wrappedNativeToken).withdraw(borrowAmount);
+    }
+
+    function repayBase(address cTokenV3, uint256 amount) external payable {
+        _requireMsg(amount != 0, "repayBase", "zero amount");
+
+        address asset = IComet(cTokenV3).baseToken();
+        amount = _getBalance(asset, amount);
+        _supply(cTokenV3, msg.sender /* to */, asset, amount);
+    }
+
+    function repayBaseETH(address cTokenV3, uint256 amount) external payable {
+        _requireMsg(
+            IComet(cTokenV3).baseToken() == wrappedNativeToken,
+            "repayBaseETH",
+            "wrong cTokenV3"
+        );
+        _requireMsg(amount != 0, "repayBaseETH", "zero amount");
+
+        amount = _getBalance(NATIVE_TOKEN_ADDRESS, amount);
+        IWrappedNativeToken(wrappedNativeToken).deposit{value: amount}();
+        _supply(cTokenV3, msg.sender /* to */, wrappedNativeToken, amount);
     }
 
     /* ========== INTERNAL FUNCTIONS ========== */
 
     function _supply(
         address comet,
-        address onBehalf,
+        address dst,
         address asset,
         uint256 amount
     ) internal {
         _tokenApprove(asset, comet, amount);
-        try IComet(comet).supplyTo(onBehalf, asset, amount) {} catch Error(
+        try IComet(comet).supplyTo(dst, asset, amount) {} catch Error(
             string memory reason
         ) {
             _revertMsg("supply", reason);
@@ -80,12 +219,19 @@ contract HCompoundV3 is HandlerBase {
 
     function _withdraw(
         address comet,
-        address onBehalf,
+        address from,
         address asset,
         uint256 amount
     ) internal returns (uint256 withdrawAmount) {
         uint256 beforeBalance = IERC20(asset).balanceOf(address(this));
-        try IComet(comet).withdrawFrom(onBehalf, address(this), asset, amount) {
+        try
+            IComet(comet).withdrawFrom(
+                from,
+                address(this), // to
+                asset,
+                amount
+            )
+        {
             withdrawAmount =
                 IERC20(asset).balanceOf(address(this)) -
                 beforeBalance;
