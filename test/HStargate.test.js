@@ -548,7 +548,7 @@ contract('Stargate', function ([_, user, user2]) {
         );
       });
 
-      it.only('should revert: amountIn = pool total balance', async function () {
+      it('should revert: amountIn = pool total balance', async function () {
         // Prep
         const amountIn = await balanceVaultETH.get();
         await network.provider.send('hardhat_setBalance', [
@@ -556,7 +556,6 @@ contract('Stargate', function ([_, user, user2]) {
           '0x' + amountIn,
         ]);
 
-        console.log('amountIn', amountIn.toString());
         const refundAddress = this.proxy.address;
         const to = this.hStargate.address;
         const fees = await this.stargateRouter.quoteLayerZeroFee(
@@ -567,11 +566,7 @@ contract('Stargate', function ([_, user, user2]) {
           { dstGasForCall: 0, dstNativeAmount: 0, dstNativeAddr: '0x' } // lzTxObj
         );
 
-        console.log('fees', fees.toString());
-        console.log('dstChainId', dstChainId);
-
         const fee = fees[0];
-        console.log('fee', fee.toString());
         const data = abi.simpleEncode(
           'swapETH(uint16,address,uint256,uint256,uint256,address)',
           dstChainId,
