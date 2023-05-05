@@ -26,7 +26,12 @@ contract HCompoundV3 is HandlerBase {
         address baseToken = IComet(cTokenV3).baseToken();
         amount = _getBalance(baseToken, amount);
         uint256 initBal = IComet(cTokenV3).balanceOf(address(this));
-        _supply(cTokenV3, address(this) /* to */, baseToken, amount);
+        _supply(
+            cTokenV3,
+            address(this), // to
+            baseToken,
+            amount
+        );
         amountOut = IComet(cTokenV3).balanceOf(address(this)) - initBal;
         _updateToken(cTokenV3);
     }
@@ -45,7 +50,12 @@ contract HCompoundV3 is HandlerBase {
         amount = _getBalance(NATIVE_TOKEN_ADDRESS, amount);
         IWrappedNativeToken(wrappedNativeToken).deposit{value: amount}();
         uint256 initBal = IComet(cTokenV3).balanceOf(address(this));
-        _supply(cTokenV3, address(this) /* to */, wrappedNativeToken, amount);
+        _supply(
+            cTokenV3,
+            address(this), // to
+            wrappedNativeToken,
+            amount
+        );
         amountOut = IComet(cTokenV3).balanceOf(address(this)) - initBal;
         _updateToken(cTokenV3);
     }
@@ -64,7 +74,12 @@ contract HCompoundV3 is HandlerBase {
         _requireMsg(amount != 0, "supplyCollateral", "zero amount");
 
         amount = _getBalance(collateral, amount);
-        _supply(cTokenV3, msg.sender /* to */, collateral, amount);
+        _supply(
+            cTokenV3,
+            msg.sender, // to
+            collateral,
+            amount
+        );
     }
 
     function supplyCollateralETH(
@@ -80,7 +95,12 @@ contract HCompoundV3 is HandlerBase {
 
         amount = _getBalance(NATIVE_TOKEN_ADDRESS, amount);
         IWrappedNativeToken(wrappedNativeToken).deposit{value: amount}();
-        _supply(cTokenV3, msg.sender /* to */, wrappedNativeToken, amount);
+        _supply(
+            cTokenV3,
+            msg.sender, // to
+            wrappedNativeToken,
+            amount
+        );
     }
 
     // The same entry for withdraw and borrow
@@ -161,11 +181,11 @@ contract HCompoundV3 is HandlerBase {
         IWrappedNativeToken(wrappedNativeToken).withdraw(withdrawAmount);
     }
 
-    function borrowBase(
+    function borrow(
         address cTokenV3,
         uint256 amount
     ) external payable returns (uint256 borrowAmount) {
-        _requireMsg(amount != 0, "borrowBase", "zero amount");
+        _requireMsg(amount != 0, "borrow", "zero amount");
 
         address baseToken = IComet(cTokenV3).baseToken();
         borrowAmount = _withdraw(
@@ -177,16 +197,16 @@ contract HCompoundV3 is HandlerBase {
         _updateToken(baseToken);
     }
 
-    function borrowBaseETH(
+    function borrowETH(
         address cTokenV3,
         uint256 amount
     ) external payable returns (uint256 borrowAmount) {
         _requireMsg(
             IComet(cTokenV3).baseToken() == wrappedNativeToken,
-            "borrowBaseETH",
+            "borrowETH",
             "wrong cTokenV3"
         );
-        _requireMsg(amount != 0, "borrowBaseETH", "zero amount");
+        _requireMsg(amount != 0, "borrowETH", "zero amount");
 
         borrowAmount = _withdraw(
             cTokenV3,
@@ -202,7 +222,12 @@ contract HCompoundV3 is HandlerBase {
 
         address asset = IComet(cTokenV3).baseToken();
         amount = _getBalance(asset, amount);
-        _supply(cTokenV3, msg.sender /* to */, asset, amount);
+        _supply(
+            cTokenV3,
+            msg.sender, // to
+            asset,
+            amount
+        );
     }
 
     function repayBaseETH(address cTokenV3, uint256 amount) external payable {
@@ -215,7 +240,12 @@ contract HCompoundV3 is HandlerBase {
 
         amount = _getBalance(NATIVE_TOKEN_ADDRESS, amount);
         IWrappedNativeToken(wrappedNativeToken).deposit{value: amount}();
-        _supply(cTokenV3, msg.sender /* to */, wrappedNativeToken, amount);
+        _supply(
+            cTokenV3,
+            msg.sender, // to
+            wrappedNativeToken,
+            amount
+        );
     }
 
     /* ========== INTERNAL FUNCTIONS ========== */

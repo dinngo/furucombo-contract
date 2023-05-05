@@ -193,6 +193,7 @@ contract('Compound V3', function ([_, user, someone]) {
         profileGas(receipt);
       });
 
+      // Call repayBase to supply base token directly into user address = no cTokenV3 flow into proxy
       it('by repayBase', async function () {
         const baseToken = this.USDC;
         const value = supplyAmount;
@@ -398,6 +399,7 @@ contract('Compound V3', function ([_, user, someone]) {
         profileGas(receipt);
       });
 
+      // Call repayBaseETH to supply ETH directly into user address = no cTokenV3 flow into proxy
       it('by repayBaseETH', async function () {
         const baseToken = this.wrappedNativeToken;
         const value = supplyAmount;
@@ -1101,13 +1103,13 @@ contract('Compound V3', function ([_, user, someone]) {
         profileGas(receipt);
       });
 
-      it('by borrowBase with user allow', async function () {
+      it('by borrow with user allow', async function () {
         const baseToken = this.USDC;
         const value = supplyAmount;
         const comet = this.cometUSDC;
         const to = this.hCompoundV3.address;
         const data = abi.simpleEncode(
-          'borrowBase(address,uint256)',
+          'borrow(address,uint256)',
           comet.address,
           value
         );
@@ -1152,12 +1154,12 @@ contract('Compound V3', function ([_, user, someone]) {
         profileGas(receipt);
       });
 
-      it('should revert: by borrowBase without user allow', async function () {
+      it('should revert: by borrow without user allow', async function () {
         const value = supplyAmount;
         const comet = this.cometUSDC;
         const to = this.hCompoundV3.address;
         const data = abi.simpleEncode(
-          'borrowBase(address,uint256)',
+          'borrow(address,uint256)',
           comet.address,
           value
         );
@@ -1177,12 +1179,12 @@ contract('Compound V3', function ([_, user, someone]) {
         );
       });
 
-      it('should revert: by borrowBase with user allow with insufficient cTokenV3 balance', async function () {
+      it('should revert: by borrow with user allow with insufficient cTokenV3 balance', async function () {
         const value = supplyAmount;
         const comet = this.cometUSDC;
         const to = this.hCompoundV3.address;
         const data = abi.simpleEncode(
-          'borrowBase(address,uint256)',
+          'borrow(address,uint256)',
           comet.address,
           value
         );
@@ -1278,36 +1280,6 @@ contract('Compound V3', function ([_, user, someone]) {
         const cTokenV3Balance = await comet.balanceOf(this.proxy.address);
         await comet.transfer(user, cTokenV3Balance, {
           from: this.proxy.address,
-        });
-
-        await expectRevert.unspecified(
-          this.proxy.execMock(to, data, {
-            from: user,
-            value: ether('0.1'),
-          })
-        );
-      });
-
-      it('should revert: insufficient cTokenV3 with user allow', async function () {
-        const value = supplyAmount;
-        const comet = this.cometUSDC;
-        const to = this.hCompoundV3.address;
-        const data = abi.simpleEncode(
-          'withdrawBase(address,uint256)',
-          comet.address,
-          value
-        );
-
-        // Empty cTokenV3
-        await impersonate(this.proxy.address);
-        const cTokenV3Balance = await comet.balanceOf(this.proxy.address);
-        await comet.transfer(user, cTokenV3Balance, {
-          from: this.proxy.address,
-        });
-
-        // Allow proxy to move funds
-        await comet.allow(this.proxy.address, true, {
-          from: user,
         });
 
         await expectRevert.unspecified(
@@ -1473,13 +1445,13 @@ contract('Compound V3', function ([_, user, someone]) {
         profileGas(receipt);
       });
 
-      it('by borrowBaseETH with user allow', async function () {
+      it('by borrowETH with user allow', async function () {
         const baseToken = this.wrappedNativeToken;
         const value = supplyAmount;
         const comet = this.cometWETH;
         const to = this.hCompoundV3.address;
         const data = abi.simpleEncode(
-          'borrowBaseETH(address,uint256)',
+          'borrowETH(address,uint256)',
           comet.address,
           value
         );
@@ -1524,12 +1496,12 @@ contract('Compound V3', function ([_, user, someone]) {
         profileGas(receipt);
       });
 
-      it('should revert: by borrowBaseETH without user allow ', async function () {
+      it('should revert: by borrowETH without user allow ', async function () {
         const value = supplyAmount;
         const comet = this.cometWETH;
         const to = this.hCompoundV3.address;
         const data = abi.simpleEncode(
-          'borrowBaseETH(address,uint256)',
+          'borrowETH(address,uint256)',
           comet.address,
           value
         );
@@ -1549,12 +1521,12 @@ contract('Compound V3', function ([_, user, someone]) {
         );
       });
 
-      it('should revert: by borrowBaseETH without user allow with insufficient cTokenV3 balance', async function () {
+      it('should revert: by borrowETH without user allow with insufficient cTokenV3 balance', async function () {
         const value = supplyAmount;
         const comet = this.cometWETH;
         const to = this.hCompoundV3.address;
         const data = abi.simpleEncode(
-          'borrowBaseETH(address,uint256)',
+          'borrowETH(address,uint256)',
           comet.address,
           value
         );
@@ -1664,36 +1636,6 @@ contract('Compound V3', function ([_, user, someone]) {
         const cTokenV3Balance = await comet.balanceOf(this.proxy.address);
         await comet.transfer(user, cTokenV3Balance, {
           from: this.proxy.address,
-        });
-
-        await expectRevert.unspecified(
-          this.proxy.execMock(to, data, {
-            from: user,
-            value: ether('0.1'),
-          })
-        );
-      });
-
-      it('should revert: insufficient cTokenV3 with user allow', async function () {
-        const value = supplyAmount;
-        const comet = this.cometWETH;
-        const to = this.hCompoundV3.address;
-        const data = abi.simpleEncode(
-          'withdrawBaseETH(address,uint256)',
-          comet.address,
-          value
-        );
-
-        // Empty cTokenV3
-        await impersonate(this.proxy.address);
-        const cTokenV3Balance = await comet.balanceOf(this.proxy.address);
-        await comet.transfer(user, cTokenV3Balance, {
-          from: this.proxy.address,
-        });
-
-        // Allow proxy to move funds
-        await comet.allow(this.proxy.address, true, {
-          from: user,
         });
 
         await expectRevert.unspecified(
@@ -2410,7 +2352,7 @@ contract('Compound V3', function ([_, user, someone]) {
         const comet = this.cometUSDC;
         const to = this.hCompoundV3.address;
         const data = abi.simpleEncode(
-          'borrowBase(address,uint256)',
+          'borrow(address,uint256)',
           comet.address,
           value
         );
@@ -2453,7 +2395,7 @@ contract('Compound V3', function ([_, user, someone]) {
         const comet = this.cometUSDC;
         const to = this.hCompoundV3.address;
         const data = abi.simpleEncode(
-          'borrowBase(address,uint256)',
+          'borrow(address,uint256)',
           comet.address,
           value
         );
@@ -2512,7 +2454,7 @@ contract('Compound V3', function ([_, user, someone]) {
         const comet = this.cometUSDC;
         const to = this.hCompoundV3.address;
         const data = abi.simpleEncode(
-          'borrowBase(address,uint256)',
+          'borrow(address,uint256)',
           comet.address,
           value
         );
@@ -2522,7 +2464,7 @@ contract('Compound V3', function ([_, user, someone]) {
             from: user,
             value: ether('0.1'),
           }),
-          '0_HCompoundV3_borrowBase: zero amount'
+          '0_HCompoundV3_borrow: zero amount'
         );
       });
 
@@ -2531,7 +2473,7 @@ contract('Compound V3', function ([_, user, someone]) {
         const value = (await comet.baseBorrowMin()).sub(new BN('1'));
         const to = this.hCompoundV3.address;
         const data = abi.simpleEncode(
-          'borrowBase(address,uint256)',
+          'borrow(address,uint256)',
           comet.address,
           value
         );
@@ -2549,7 +2491,7 @@ contract('Compound V3', function ([_, user, someone]) {
         const comet = this.cometUSDC;
         const to = this.hCompoundV3.address;
         const data = abi.simpleEncode(
-          'borrowBase(address,uint256)',
+          'borrow(address,uint256)',
           comet.address,
           value
         );
@@ -2566,11 +2508,7 @@ contract('Compound V3', function ([_, user, someone]) {
         const value = supplyAmount;
         const comet = constants.ZERO_ADDRESS;
         const to = this.hCompoundV3.address;
-        const data = abi.simpleEncode(
-          'borrowBase(address,uint256)',
-          comet,
-          value
-        );
+        const data = abi.simpleEncode('borrow(address,uint256)', comet, value);
 
         await expectRevert(
           this.proxy.execMock(to, data, {
@@ -2586,7 +2524,7 @@ contract('Compound V3', function ([_, user, someone]) {
         const comet = this.cometUSDC;
         const to = this.hCompoundV3.address;
         const data = abi.simpleEncode(
-          'borrowBase(address,uint256)',
+          'borrow(address,uint256)',
           comet.address,
           value
         );
@@ -2662,7 +2600,7 @@ contract('Compound V3', function ([_, user, someone]) {
         const comet = this.cometWETH;
         const to = this.hCompoundV3.address;
         const data = abi.simpleEncode(
-          'borrowBaseETH(address,uint256)',
+          'borrowETH(address,uint256)',
           comet.address,
           value
         );
@@ -2704,7 +2642,7 @@ contract('Compound V3', function ([_, user, someone]) {
         const comet = this.cometWETH;
         const to = this.hCompoundV3.address;
         const data = abi.simpleEncode(
-          'borrowBaseETH(address,uint256)',
+          'borrowETH(address,uint256)',
           comet.address,
           value
         );
@@ -2762,7 +2700,7 @@ contract('Compound V3', function ([_, user, someone]) {
         const comet = this.cometWETH;
         const to = this.hCompoundV3.address;
         const data = abi.simpleEncode(
-          'borrowBaseETH(address,uint256)',
+          'borrowETH(address,uint256)',
           comet.address,
           value
         );
@@ -2772,7 +2710,7 @@ contract('Compound V3', function ([_, user, someone]) {
             from: user,
             value: ether('0.1'),
           }),
-          '0_HCompoundV3_borrowBaseETH: zero amount'
+          '0_HCompoundV3_borrowETH: zero amount'
         );
       });
 
@@ -2781,7 +2719,7 @@ contract('Compound V3', function ([_, user, someone]) {
         const value = (await comet.baseBorrowMin()).sub(new BN('1'));
         const to = this.hCompoundV3.address;
         const data = abi.simpleEncode(
-          'borrowBaseETH(address,uint256)',
+          'borrowETH(address,uint256)',
           comet.address,
           value
         );
@@ -2799,7 +2737,7 @@ contract('Compound V3', function ([_, user, someone]) {
         const comet = this.cometWETH;
         const to = this.hCompoundV3.address;
         const data = abi.simpleEncode(
-          'borrowBaseETH(address,uint256)',
+          'borrowETH(address,uint256)',
           comet.address,
           value
         );
@@ -2817,7 +2755,7 @@ contract('Compound V3', function ([_, user, someone]) {
         const comet = constants.ZERO_ADDRESS;
         const to = this.hCompoundV3.address;
         const data = abi.simpleEncode(
-          'borrowBaseETH(address,uint256)',
+          'borrowETH(address,uint256)',
           comet,
           value
         );
@@ -2836,7 +2774,7 @@ contract('Compound V3', function ([_, user, someone]) {
         const comet = this.cometUSDC;
         const to = this.hCompoundV3.address;
         const data = abi.simpleEncode(
-          'borrowBaseETH(address,uint256)',
+          'borrowETH(address,uint256)',
           comet.address,
           value
         );
@@ -2846,7 +2784,7 @@ contract('Compound V3', function ([_, user, someone]) {
             from: user,
             value: ether('0.1'),
           }),
-          '0_HCompoundV3_borrowBaseETH: wrong cTokenV3'
+          '0_HCompoundV3_borrowETH: wrong cTokenV3'
         );
       });
 
@@ -2855,7 +2793,7 @@ contract('Compound V3', function ([_, user, someone]) {
         const comet = this.cometWETH;
         const to = this.hCompoundV3.address;
         const data = abi.simpleEncode(
-          'borrowBaseETH(address,uint256)',
+          'borrowETH(address,uint256)',
           comet.address,
           value
         );
@@ -3071,6 +3009,7 @@ contract('Compound V3', function ([_, user, someone]) {
         profileGas(receipt);
       });
 
+      // Call supplyBase to get cTokenV3 and repay base token when proxy transfer cTokenV3 back to user
       it('by supplyBase', async function () {
         const value = borrowAmount.mul(new BN('2'));
         const comet = this.cometUSDC;
@@ -3356,6 +3295,7 @@ contract('Compound V3', function ([_, user, someone]) {
         profileGas(receipt);
       });
 
+      // Call supplyBaseETH to get cTokenV3 and repay base token when proxy transfer cTokenV3 back to user
       it('by supplyBaseETH', async function () {
         const value = borrowAmount.mul(new BN('2'));
         const comet = this.cometWETH;
