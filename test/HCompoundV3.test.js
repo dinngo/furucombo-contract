@@ -21,7 +21,6 @@ const utils = web3.utils;
 const { expect } = require('chai');
 
 const {
-  WBTC_TOKEN,
   DAI_TOKEN,
   USDC_TOKEN,
   WRAPPED_NATIVE_TOKEN,
@@ -69,7 +68,6 @@ contract('Compound V3', function ([_, user, someone]) {
     this.cometUSDC = await IComet.at(COMPOUND_V3_COMET_USDC);
     this.USDC = await IToken.at(USDC_TOKEN);
     this.DAI = await IToken.at(DAI_TOKEN);
-    this.WBTC = await IToken.at(WBTC_TOKEN);
     this.wrappedNativeToken = await IToken.at(WRAPPED_NATIVE_TOKEN);
 
     // Ethereum only
@@ -125,6 +123,14 @@ contract('Compound V3', function ([_, user, someone]) {
           value: ether('0.1'),
         });
 
+        // Get handler return result
+        const handlerReturn = utils.toBN(
+          getHandlerReturn(receipt, ['uint256'])[0]
+        );
+
+        // Verify handler return
+        expectEqWithinBps(value, handlerReturn);
+
         // Verify supply
         expectEqWithinBps(await comet.balanceOf(user), value);
         expect(await baseToken.balanceOf(comet.address)).to.be.bignumber.eq(
@@ -161,7 +167,16 @@ contract('Compound V3', function ([_, user, someone]) {
           value: ether('0.1'),
         });
 
+        // Get handler return result
+        const handlerReturn = utils.toBN(
+          getHandlerReturn(receipt, ['uint256'])[0]
+        );
+
+        // Verify handler return
+        expectEqWithinBps(value, handlerReturn);
+
         // Verify supply
+        expectEqWithinBps(await comet.balanceOf(user), value);
         expect(await baseToken.balanceOf(comet.address)).to.be.bignumber.eq(
           beforeBalance.add(value)
         );
@@ -309,6 +324,14 @@ contract('Compound V3', function ([_, user, someone]) {
           value: value,
         });
 
+        // Get handler return result
+        const handlerReturn = utils.toBN(
+          getHandlerReturn(receipt, ['uint256'])[0]
+        );
+
+        // Verify handler return
+        expectEqWithinBps(value, handlerReturn);
+
         // Verify supply
         expectEqWithinBps(await comet.balanceOf(user), value);
         expect(await baseToken.balanceOf(comet.address)).to.be.bignumber.eq(
@@ -347,7 +370,16 @@ contract('Compound V3', function ([_, user, someone]) {
           value: value,
         });
 
+        // Get handler return result
+        const handlerReturn = utils.toBN(
+          getHandlerReturn(receipt, ['uint256'])[0]
+        );
+
+        // Verify handler return
+        expectEqWithinBps(value, handlerReturn);
+
         // Verify supply
+        expectEqWithinBps(await comet.balanceOf(user), value);
         expect(await baseToken.balanceOf(comet.address)).to.be.bignumber.eq(
           beforeBalance.add(value)
         );
@@ -1162,6 +1194,11 @@ contract('Compound V3', function ([_, user, someone]) {
           from: this.proxy.address,
         });
 
+        // Allow proxy to move funds
+        await comet.allow(this.proxy.address, true, {
+          from: user,
+        });
+
         await expectRevert.unspecified(
           this.proxy.execMock(to, data, {
             from: user,
@@ -1590,6 +1627,25 @@ contract('Compound V3', function ([_, user, someone]) {
             value: ether('0.1'),
           }),
           '_exec'
+        );
+      });
+
+      it('should revert: wrong comet address', async function () {
+        const value = supplyAmount;
+        const comet = this.cometUSDC;
+        const to = this.hCompoundV3.address;
+        const data = abi.simpleEncode(
+          'withdrawBaseETH(address,uint256)',
+          comet.address,
+          value
+        );
+
+        await expectRevert(
+          this.proxy.execMock(to, data, {
+            from: user,
+            value: ether('0.1'),
+          }),
+          '0_HCompoundV3_withdrawBaseETH: wrong cTokenV3'
         );
       });
 
@@ -2775,6 +2831,25 @@ contract('Compound V3', function ([_, user, someone]) {
         );
       });
 
+      it('should revert: wrong comet address', async function () {
+        const value = supplyAmount;
+        const comet = this.cometUSDC;
+        const to = this.hCompoundV3.address;
+        const data = abi.simpleEncode(
+          'borrowBaseETH(address,uint256)',
+          comet.address,
+          value
+        );
+
+        await expectRevert(
+          this.proxy.execMock(to, data, {
+            from: user,
+            value: ether('0.1'),
+          }),
+          '0_HCompoundV3_borrowBaseETH: wrong cTokenV3'
+        );
+      });
+
       it('should revert: disallow', async function () {
         const value = supplyAmount;
         const comet = this.cometWETH;
@@ -2996,6 +3071,47 @@ contract('Compound V3', function ([_, user, someone]) {
         profileGas(receipt);
       });
 
+      it('by supplyBase', async function () {
+        const value = borrowAmount.mul(new BN('2'));
+        const comet = this.cometUSDC;
+        const baseToken = this.USDC;
+        const to = this.hCompoundV3.address;
+        const data = abi.simpleEncode(
+          'supplyBase(address,uint256)',
+          comet.address,
+          value
+        );
+
+        // Transfer repay token to proxy
+        await baseToken.transfer(this.proxy.address, value, { from: user });
+        await this.proxy.updateTokenMock(baseToken.address);
+
+        await balanceUser.get();
+
+        const receipt = await this.proxy.execMock(to, data, {
+          from: user,
+          value: ether('0.1'),
+        });
+
+        // Verify repay
+        expect(await comet.borrowBalanceOf(user)).to.be.bignumber.zero;
+
+        // Verify proxy balance
+        expect(await balanceProxy.delta()).to.be.bignumber.zero;
+        expect(
+          await baseToken.balanceOf(this.proxy.address)
+        ).to.be.bignumber.zero;
+        expect(await comet.balanceOf(this.proxy.address)).to.be.bignumber.zero;
+
+        // Verify user balance
+        expect(await balanceUser.delta()).to.be.bignumber.zero;
+        expect(await baseToken.balanceOf(user)).to.be.bignumber.eq(
+          initAmount.add(borrowAmount).sub(value)
+        );
+        expectEqWithinBps(await comet.balanceOf(user), value.sub(borrowAmount));
+        profileGas(receipt);
+      });
+
       it('should revert: insufficient amount', async function () {
         const value = borrowAmount.mul(new BN('2'));
         const comet = this.cometUSDC;
@@ -3064,32 +3180,6 @@ contract('Compound V3', function ([_, user, someone]) {
             value: ether('0.1'),
           }),
           '_exec'
-        );
-      });
-
-      xit('should revert: by supplyBase', async function () {
-        const value = borrowAmount.mul(new BN('2'));
-        const comet = this.cometUSDC;
-        const baseToken = this.USDC;
-        const to = this.hCompoundV3.address;
-        const data = abi.simpleEncode(
-          'supplyBase(address,uint256)',
-          comet.address,
-          value
-        );
-
-        // Transfer repay token to proxy
-        await baseToken.transfer(this.proxy.address, value, {
-          from: user,
-        });
-        await this.proxy.updateTokenMock(baseToken.address);
-
-        await expectRevert(
-          this.proxy.execMock(to, data, {
-            from: user,
-            value: ether('0.1'),
-          }),
-          '123'
         );
       });
     });
@@ -3266,6 +3356,48 @@ contract('Compound V3', function ([_, user, someone]) {
         profileGas(receipt);
       });
 
+      it('by supplyBaseETH', async function () {
+        const value = borrowAmount.mul(new BN('2'));
+        const comet = this.cometWETH;
+        const baseToken = this.wrappedNativeToken;
+        const to = this.hCompoundV3.address;
+        const data = abi.simpleEncode(
+          'supplyBaseETH(address,uint256)',
+          comet.address,
+          value
+        );
+
+        // Set user ETH balance
+        await injectEther(user, '0x' + value.toString(16));
+
+        await balanceUser.get();
+
+        const receipt = await this.proxy.execMock(to, data, {
+          from: user,
+          value: value,
+        });
+
+        // Verify repay
+        expect(await comet.borrowBalanceOf(user)).to.be.bignumber.zero;
+
+        // Verify proxy balance
+        expect(await balanceProxy.delta()).to.be.bignumber.zero;
+        expect(
+          await baseToken.balanceOf(this.proxy.address)
+        ).to.be.bignumber.zero;
+        expect(await comet.balanceOf(this.proxy.address)).to.be.bignumber.zero;
+
+        // Verify user balance
+        expect(await balanceUser.delta()).to.be.bignumber.eq(
+          ether('0').sub(value)
+        );
+        expect(await baseToken.balanceOf(user)).to.be.bignumber.eq(
+          borrowAmount
+        );
+        expectEqWithinBps(await comet.balanceOf(user), value.sub(borrowAmount));
+        profileGas(receipt);
+      });
+
       it('should revert: insufficient amount', async function () {
         const value = borrowAmount.mul(new BN('2'));
         const comet = this.cometWETH;
@@ -3342,28 +3474,6 @@ contract('Compound V3', function ([_, user, someone]) {
             value: value,
           }),
           '0_HCompoundV3_repayBaseETH: wrong cTokenV3'
-        );
-      });
-
-      xit('should revert: by supplyBaseETH', async function () {
-        const value = borrowAmount.mul(new BN('2'));
-        const comet = this.cometWETH;
-        const to = this.hCompoundV3.address;
-        const data = abi.simpleEncode(
-          'supplyBaseETH(address,uint256)',
-          comet.address,
-          value
-        );
-
-        // Set user ETH balance
-        await injectEther(user, '0x' + value.toString(16));
-
-        await expectRevert(
-          this.proxy.execMock(to, data, {
-            from: user,
-            value: value,
-          }),
-          '123'
         );
       });
     });

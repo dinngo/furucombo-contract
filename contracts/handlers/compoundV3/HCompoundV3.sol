@@ -17,16 +17,24 @@ contract HCompoundV3 is HandlerBase {
         return "HCompoundV3";
     }
 
-    function supplyBase(address cTokenV3, uint256 amount) external payable {
+    function supplyBase(
+        address cTokenV3,
+        uint256 amount
+    ) external payable returns (uint256 amountOut) {
         _requireMsg(amount != 0, "supplyBase", "zero amount");
 
         address baseToken = IComet(cTokenV3).baseToken();
         amount = _getBalance(baseToken, amount);
+        uint256 initBal = IComet(cTokenV3).balanceOf(address(this));
         _supply(cTokenV3, address(this) /* to */, baseToken, amount);
+        amountOut = IComet(cTokenV3).balanceOf(address(this)) - initBal;
         _updateToken(cTokenV3);
     }
 
-    function supplyBaseETH(address cTokenV3, uint256 amount) external payable {
+    function supplyBaseETH(
+        address cTokenV3,
+        uint256 amount
+    ) external payable returns (uint256 amountOut) {
         _requireMsg(
             IComet(cTokenV3).baseToken() == wrappedNativeToken,
             "supplyBaseETH",
@@ -36,7 +44,9 @@ contract HCompoundV3 is HandlerBase {
 
         amount = _getBalance(NATIVE_TOKEN_ADDRESS, amount);
         IWrappedNativeToken(wrappedNativeToken).deposit{value: amount}();
+        uint256 initBal = IComet(cTokenV3).balanceOf(address(this));
         _supply(cTokenV3, address(this) /* to */, wrappedNativeToken, amount);
+        amountOut = IComet(cTokenV3).balanceOf(address(this)) - initBal;
         _updateToken(cTokenV3);
     }
 
@@ -94,6 +104,11 @@ contract HCompoundV3 is HandlerBase {
         address cTokenV3,
         uint256 amount
     ) external payable returns (uint256 withdrawAmount) {
+        _requireMsg(
+            IComet(cTokenV3).baseToken() == wrappedNativeToken,
+            "withdrawBaseETH",
+            "wrong cTokenV3"
+        );
         _requireMsg(amount != 0, "withdrawBaseETH", "zero amount");
         // No _getBalance because the amount is for base token instead of cTokenV3
         withdrawAmount = _withdraw(
@@ -166,6 +181,11 @@ contract HCompoundV3 is HandlerBase {
         address cTokenV3,
         uint256 amount
     ) external payable returns (uint256 borrowAmount) {
+        _requireMsg(
+            IComet(cTokenV3).baseToken() == wrappedNativeToken,
+            "borrowBaseETH",
+            "wrong cTokenV3"
+        );
         _requireMsg(amount != 0, "borrowBaseETH", "zero amount");
 
         borrowAmount = _withdraw(
