@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+## [2.6.0] - 2023-05-09
+
 ### Added
 
 - Support CompoundV3.
