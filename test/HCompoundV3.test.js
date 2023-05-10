@@ -193,14 +193,14 @@ contract('Compound V3', function ([_, user, someone]) {
         profileGas(receipt);
       });
 
-      // Call repayBase to supply base token directly into user address = no cTokenV3 flow into proxy
-      it('by repayBase', async function () {
+      // Call repay to supply base token directly into user address = no cTokenV3 flow into proxy
+      it('by repay', async function () {
         const baseToken = this.USDC;
         const value = supplyAmount;
         const comet = this.cometUSDC;
         const to = this.hCompoundV3.address;
         const data = abi.simpleEncode(
-          'repayBase(address,uint256)',
+          'repay(address,uint256)',
           comet.address,
           value
         );
@@ -399,14 +399,14 @@ contract('Compound V3', function ([_, user, someone]) {
         profileGas(receipt);
       });
 
-      // Call repayBaseETH to supply ETH directly into user address = no cTokenV3 flow into proxy
-      it('by repayBaseETH', async function () {
+      // Call repayETH to supply ETH directly into user address = no cTokenV3 flow into proxy
+      it('by repayETH', async function () {
         const baseToken = this.wrappedNativeToken;
         const value = supplyAmount;
         const comet = this.cometWETH;
         const to = this.hCompoundV3.address;
         const data = abi.simpleEncode(
-          'repayBaseETH(address,uint256)',
+          'repayETH(address,uint256)',
           comet.address,
           value
         );
@@ -2890,7 +2890,7 @@ contract('Compound V3', function ([_, user, someone]) {
         const baseToken = this.USDC;
         const to = this.hCompoundV3.address;
         const data = abi.simpleEncode(
-          'repayBase(address,uint256)',
+          'repay(address,uint256)',
           comet.address,
           value
         );
@@ -2931,7 +2931,7 @@ contract('Compound V3', function ([_, user, someone]) {
         const baseToken = this.USDC;
         const to = this.hCompoundV3.address;
         const data = abi.simpleEncode(
-          'repayBase(address,uint256)',
+          'repay(address,uint256)',
           comet.address,
           value
         );
@@ -2974,7 +2974,7 @@ contract('Compound V3', function ([_, user, someone]) {
         const baseToken = this.USDC;
         const to = this.hCompoundV3.address;
         const data = abi.simpleEncode(
-          'repayBase(address,uint256)',
+          'repay(address,uint256)',
           comet.address,
           MAX_UINT256
         );
@@ -3057,7 +3057,7 @@ contract('Compound V3', function ([_, user, someone]) {
         const baseToken = this.USDC;
         const to = this.hCompoundV3.address;
         const data = abi.simpleEncode(
-          'repayBase(address,uint256)',
+          'repay(address,uint256)',
           comet.address,
           value
         );
@@ -3082,7 +3082,7 @@ contract('Compound V3', function ([_, user, someone]) {
         const comet = this.cometUSDC;
         const to = this.hCompoundV3.address;
         const data = abi.simpleEncode(
-          'repayBase(address,uint256)',
+          'repay(address,uint256)',
           comet.address,
           value
         );
@@ -3092,7 +3092,7 @@ contract('Compound V3', function ([_, user, someone]) {
             from: user,
             value: ether('0.1'),
           }),
-          '0_HCompoundV3_repayBase: zero amount'
+          '0_HCompoundV3_repay: zero amount'
         );
       });
 
@@ -3101,11 +3101,7 @@ contract('Compound V3', function ([_, user, someone]) {
         const comet = constants.ZERO_ADDRESS;
         const baseToken = this.USDC;
         const to = this.hCompoundV3.address;
-        const data = abi.simpleEncode(
-          'repayBase(address,uint256)',
-          comet,
-          value
-        );
+        const data = abi.simpleEncode('repay(address,uint256)', comet, value);
 
         // Transfer repay token to proxy
         await baseToken.transfer(this.proxy.address, value, {
@@ -3173,7 +3169,7 @@ contract('Compound V3', function ([_, user, someone]) {
         const baseToken = this.wrappedNativeToken;
         const to = this.hCompoundV3.address;
         const data = abi.simpleEncode(
-          'repayBaseETH(address,uint256)',
+          'repayETH(address,uint256)',
           comet.address,
           value
         );
@@ -3215,7 +3211,7 @@ contract('Compound V3', function ([_, user, someone]) {
         const baseToken = this.wrappedNativeToken;
         const to = this.hCompoundV3.address;
         const data = abi.simpleEncode(
-          'repayBaseETH(address,uint256)',
+          'repayETH(address,uint256)',
           comet.address,
           value
         );
@@ -3259,7 +3255,7 @@ contract('Compound V3', function ([_, user, someone]) {
         const baseToken = this.wrappedNativeToken;
         const to = this.hCompoundV3.address;
         const data = abi.simpleEncode(
-          'repayBaseETH(address,uint256)',
+          'repayETH(address,uint256)',
           comet.address,
           MAX_UINT256
         );
@@ -3343,7 +3339,7 @@ contract('Compound V3', function ([_, user, someone]) {
         const comet = this.cometWETH;
         const to = this.hCompoundV3.address;
         const data = abi.simpleEncode(
-          'repayBaseETH(address,uint256)',
+          'repayETH(address,uint256)',
           comet.address,
           value
         );
@@ -3365,7 +3361,7 @@ contract('Compound V3', function ([_, user, someone]) {
         const comet = this.cometWETH;
         const to = this.hCompoundV3.address;
         const data = abi.simpleEncode(
-          'repayBaseETH(address,uint256)',
+          'repayETH(address,uint256)',
           comet.address,
           value
         );
@@ -3375,7 +3371,7 @@ contract('Compound V3', function ([_, user, someone]) {
             from: user,
             value: value,
           }),
-          '0_HCompoundV3_repayBaseETH: zero amount'
+          '0_HCompoundV3_repayETH: zero amount'
         );
       });
 
@@ -3384,7 +3380,7 @@ contract('Compound V3', function ([_, user, someone]) {
         const comet = constants.ZERO_ADDRESS;
         const to = this.hCompoundV3.address;
         const data = abi.simpleEncode(
-          'repayBaseETH(address,uint256)',
+          'repayETH(address,uint256)',
           comet,
           value
         );
@@ -3403,7 +3399,7 @@ contract('Compound V3', function ([_, user, someone]) {
         const comet = this.cometUSDC;
         const to = this.hCompoundV3.address;
         const data = abi.simpleEncode(
-          'repayBaseETH(address,uint256)',
+          'repayETH(address,uint256)',
           comet.address,
           value
         );
@@ -3413,7 +3409,7 @@ contract('Compound V3', function ([_, user, someone]) {
             from: user,
             value: value,
           }),
-          '0_HCompoundV3_repayBaseETH: wrong cTokenV3'
+          '0_HCompoundV3_repayETH: wrong cTokenV3'
         );
       });
     });

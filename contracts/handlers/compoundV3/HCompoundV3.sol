@@ -217,8 +217,8 @@ contract HCompoundV3 is HandlerBase {
         IWrappedNativeToken(wrappedNativeToken).withdraw(borrowAmount);
     }
 
-    function repayBase(address cTokenV3, uint256 amount) external payable {
-        _requireMsg(amount != 0, "repayBase", "zero amount");
+    function repay(address cTokenV3, uint256 amount) external payable {
+        _requireMsg(amount != 0, "repay", "zero amount");
 
         address asset = IComet(cTokenV3).baseToken();
         amount = _getBalance(asset, amount);
@@ -230,13 +230,13 @@ contract HCompoundV3 is HandlerBase {
         );
     }
 
-    function repayBaseETH(address cTokenV3, uint256 amount) external payable {
+    function repayETH(address cTokenV3, uint256 amount) external payable {
         _requireMsg(
             IComet(cTokenV3).baseToken() == wrappedNativeToken,
-            "repayBaseETH",
+            "repayETH",
             "wrong cTokenV3"
         );
-        _requireMsg(amount != 0, "repayBaseETH", "zero amount");
+        _requireMsg(amount != 0, "repayETH", "zero amount");
 
         amount = _getBalance(NATIVE_TOKEN_ADDRESS, amount);
         IWrappedNativeToken(wrappedNativeToken).deposit{value: amount}();
