@@ -90,10 +90,12 @@ contract('Compound V3', function ([_, user, someone]) {
   describe('Supply', function () {
     describe('Token-base', function () {
       let baseToken;
+      let comet;
       const supplyAmount = ether('10');
 
       beforeEach(async function () {
         baseToken = this.USDC;
+        comet = this.cometUSDC;
         const baseTokenBalanceSlotNum = chainId == 1 ? 9 : 0;
 
         await setTokenBalance(
@@ -107,9 +109,7 @@ contract('Compound V3', function ([_, user, someone]) {
       });
 
       it('normal', async function () {
-        const baseToken = this.USDC;
         const value = supplyAmount;
-        const comet = this.cometUSDC;
         const to = this.hCompoundV3.address;
         const data = abi.simpleEncode(
           'supply(address,address,uint256)',
@@ -144,9 +144,7 @@ contract('Compound V3', function ([_, user, someone]) {
       });
 
       it('max amount', async function () {
-        const baseToken = this.USDC;
         const value = supplyAmount;
-        const comet = this.cometUSDC;
         const to = this.hCompoundV3.address;
         const data = abi.simpleEncode(
           'supply(address,address,uint256)',
@@ -182,9 +180,7 @@ contract('Compound V3', function ([_, user, someone]) {
 
       // Call repay to supply base token directly into user address
       it('by repay', async function () {
-        const baseToken = this.USDC;
         const value = supplyAmount;
-        const comet = this.cometUSDC;
         const to = this.hCompoundV3.address;
         const data = abi.simpleEncode(
           'repay(address,uint256)',
@@ -218,9 +214,7 @@ contract('Compound V3', function ([_, user, someone]) {
       });
 
       it('should revert: insufficient amount', async function () {
-        const baseToken = this.USDC;
         const value = supplyAmount;
-        const comet = this.cometUSDC;
         const to = this.hCompoundV3.address;
         const data = abi.simpleEncode(
           'supply(address,address,uint256)',
@@ -250,7 +244,6 @@ contract('Compound V3', function ([_, user, someone]) {
 
       it('should revert: zero amount', async function () {
         const value = ether('0');
-        const comet = this.cometUSDC;
         const to = this.hCompoundV3.address;
         const data = abi.simpleEncode(
           'supply(address,address,uint256)',
