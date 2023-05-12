@@ -55,7 +55,6 @@ contract HCompoundV3 is HandlerBase {
         _requireMsg(amount != 0, "withdraw", "zero amount");
 
         // No _getBalance: because we use comet.allow() to help users withdraw,
-        // so asset/collateral would not transfer to proxy.
         withdrawAmount = _withdraw(
             comet,
             msg.sender, // from
@@ -72,7 +71,6 @@ contract HCompoundV3 is HandlerBase {
         _requireMsg(amount != 0, "withdrawETH", "zero amount");
 
         // No _getBalance: because we use comet.allow() to help users withdraw,
-        // so asset/collateral would not transfer to proxy.
         withdrawAmount = _withdraw(
             comet,
             msg.sender, // from

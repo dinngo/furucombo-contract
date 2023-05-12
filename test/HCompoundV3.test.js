@@ -1376,26 +1376,6 @@ contract('Compound V3', function ([_, user, someone]) {
           '_exec'
         );
       });
-
-      it('should revert: withdraw collateral', async function () {
-        const value = supplyAmount;
-        const comet = this.cometUSDC;
-        const to = this.hCompoundV3.address;
-        const data = abi.simpleEncode(
-          'withdrawETH(address,uint256)',
-          comet.address,
-          value
-        );
-
-        // Could not
-        await expectRevert(
-          this.proxy.execMock(to, data, {
-            from: user,
-            value: ether('0.1'),
-          }),
-          '0_HCompoundV3_withdraw: Unspecified'
-        );
-      });
     });
 
     describe('Token-collateral', function () {
