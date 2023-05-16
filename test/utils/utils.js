@@ -6,6 +6,7 @@ const sleep = (delay) => new Promise((resolve) => setTimeout(resolve, delay));
 const {
   UNISWAPV2_FACTORY,
   UNISWAPV3_FACTORY,
+  MAIA_FACTORY,
   SUSHISWAP_FACTORY,
   QUICKSWAP_FACTORY,
   JOE_FACTORY,
@@ -16,6 +17,7 @@ const {
   USDC_TOKEN,
   WAVAX_TOKEN,
   WFTM_TOKEN,
+  NATIVE_TOKEN_ADDRESS,
   RecordHandlerResultSig,
   STORAGE_KEY_MSG_SENDER,
   STORAGE_KEY_CUBE_COUNTER,
@@ -278,6 +280,11 @@ async function getTokenProvider(
     return await tokenProviderSpookySwap(token0, WFTM_TOKEN);
   } else if (chainId == 43114) {
     return await tokenProviderTraderJoe(token0, WAVAX_TOKEN);
+  } else if (chainId == 1088) {
+    let provider = await tokenProviderMaia(token0, token1, fee);
+    return provider == ZERO_ADDRESS
+      ? await tokenProviderMaia(token0, token1, 3000)
+      : provider;
   }
 }
 
@@ -295,6 +302,25 @@ async function tokenProviderUniV3(
     UNISWAPV3_FACTORY
   );
   const pool = await uniswapV3Factory.getPool(token0, token1, fee);
+  impersonateAndInjectEther(pool);
+
+  return pool;
+}
+
+async function tokenProviderMaia(
+  token0 = USDC_TOKEN,
+  token1 = NATIVE_TOKEN_ADDRESS,
+  fee = 3000 // 0.05%
+) {
+  if (token0 === USDC_TOKEN) {
+    token1 = NATIVE_TOKEN_ADDRESS;
+  }
+
+  const maiaFactory = await ethers.getContractAt(
+    ['function getPool(address,address,uint24) view returns (address)'],
+    MAIA_FACTORY
+  );
+  const pool = await maiaFactory.getPool(token0, token1, fee);
   impersonateAndInjectEther(pool);
 
   return pool;
