@@ -2150,7 +2150,7 @@ contract('Compound V3', function ([_, user, someone]) {
       });
 
       it('should revert: zero comet address', async function () {
-        const value = supplyAmount;
+        const value = mwei('1000');
         const comet = constants.ZERO_ADDRESS;
         const to = this.hCompoundV3.address;
         const data = abi.simpleEncode('borrow(address,uint256)', comet, value);
@@ -2165,7 +2165,7 @@ contract('Compound V3', function ([_, user, someone]) {
       });
 
       it('should revert: disallow', async function () {
-        const value = supplyAmount;
+        const value = mwei('1000');
         const comet = this.cometUSDC;
         const to = this.hCompoundV3.address;
         const data = abi.simpleEncode(
@@ -2189,7 +2189,7 @@ contract('Compound V3', function ([_, user, someone]) {
 
       it('should revert: by withdraw', async function () {
         const baseToken = this.USDC;
-        const value = supplyAmount;
+        const value = mwei('1000');
         const comet = this.cometUSDC;
         const to = this.hCompoundV3.address;
         const data = abi.simpleEncode(
@@ -2460,7 +2460,7 @@ contract('Compound V3', function ([_, user, someone]) {
       });
 
       it('should revert: by withdrawETH', async function () {
-        const value = supplyAmount;
+        const value = supplyAmount.div(new BN('2')); // 50%
         const comet = this.cometWETH;
         const to = this.hCompoundV3.address;
         const data = abi.simpleEncode(
