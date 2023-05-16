@@ -956,8 +956,7 @@ contract('Compound V3', function ([_, user, someone]) {
       });
 
       // Call borrow to withdraw base token directly into user address
-      it('by borrow', async function () {
-        const baseToken = this.USDC;
+      it('should revert: by borrow', async function () {
         const value = supplyAmount;
         const comet = this.cometUSDC;
         const to = this.hCompoundV3.address;
@@ -967,31 +966,13 @@ contract('Compound V3', function ([_, user, someone]) {
           value
         );
 
-        await balanceUser.get();
-        const receipt = await this.proxy.execMock(to, data, {
-          from: user,
-          value: ether('0.1'),
-        });
-
-        // Get handler return result
-        const handlerReturn = utils.toBN(
-          getHandlerReturn(receipt, ['uint256'])[0]
+        await expectRevert(
+          this.proxy.execMock(to, data, {
+            from: user,
+            value: ether('0.1'),
+          }),
+          '0_HCompoundV3_borrow: withdraw'
         );
-
-        // Verify handler return
-        expect(value).to.be.bignumber.eq(handlerReturn);
-
-        // Verify proxy balance
-        expect(await balanceProxy.delta()).to.be.bignumber.zero;
-        expect(
-          await baseToken.balanceOf(this.proxy.address)
-        ).to.be.bignumber.zero;
-        expect(await comet.balanceOf(this.proxy.address)).to.be.bignumber.zero;
-
-        // Verify user balance
-        expect(await baseToken.balanceOf(user)).to.be.bignumber.eq(value);
-        expect(await balanceUser.delta()).to.be.bignumber.zero;
-        profileGas(receipt);
       });
 
       it('should revert: withdraw without allow', async function () {
@@ -1253,8 +1234,7 @@ contract('Compound V3', function ([_, user, someone]) {
       });
 
       // Call borrow to withdraw base token directly into user address
-      it('by borrowETH', async function () {
-        const baseToken = this.wrappedNativeToken;
+      it('should revert: by borrowETH', async function () {
         const value = supplyAmount;
         const comet = this.cometWETH;
         const to = this.hCompoundV3.address;
@@ -1264,32 +1244,13 @@ contract('Compound V3', function ([_, user, someone]) {
           value
         );
 
-        await balanceUser.get();
-
-        const receipt = await this.proxy.execMock(to, data, {
-          from: user,
-          value: ether('0.1'),
-        });
-
-        // Get handler return result
-        const handlerReturn = utils.toBN(
-          getHandlerReturn(receipt, ['uint256'])[0]
+        await expectRevert(
+          this.proxy.execMock(to, data, {
+            from: user,
+            value: ether('0.1'),
+          }),
+          '0_HCompoundV3_borrowETH: withdraw'
         );
-
-        // Verify handler return
-        expect(value).to.be.bignumber.eq(handlerReturn);
-
-        // Verify proxy balance
-        expect(await balanceProxy.delta()).to.be.bignumber.zero;
-        expect(
-          await baseToken.balanceOf(this.proxy.address)
-        ).to.be.bignumber.zero;
-        expect(await comet.balanceOf(this.proxy.address)).to.be.bignumber.zero;
-
-        // Verify user balance
-        expect(await balanceUser.delta()).to.be.bignumber.eq(value);
-        expect(await baseToken.balanceOf(user)).to.be.bignumber.zero;
-        profileGas(receipt);
       });
 
       it('should revert: without user allow ', async function () {
@@ -2225,6 +2186,27 @@ contract('Compound V3', function ([_, user, someone]) {
           })
         );
       });
+
+      it('should revert: by withdraw', async function () {
+        const baseToken = this.USDC;
+        const value = supplyAmount;
+        const comet = this.cometUSDC;
+        const to = this.hCompoundV3.address;
+        const data = abi.simpleEncode(
+          'withdraw(address,address,uint256)',
+          comet.address,
+          baseToken.address,
+          value
+        );
+
+        await expectRevert(
+          this.proxy.execMock(to, data, {
+            from: user,
+            value: ether('0.1'),
+          }),
+          '0_HCompoundV3_withdraw: borrow'
+        );
+      });
     });
 
     describe('ETH-base', function () {
@@ -2474,6 +2456,25 @@ contract('Compound V3', function ([_, user, someone]) {
             from: user,
             value: ether('0.1'),
           })
+        );
+      });
+
+      it('should revert: by withdrawETH', async function () {
+        const value = supplyAmount;
+        const comet = this.cometWETH;
+        const to = this.hCompoundV3.address;
+        const data = abi.simpleEncode(
+          'withdrawETH(address,uint256)',
+          comet.address,
+          value
+        );
+
+        await expectRevert(
+          this.proxy.execMock(to, data, {
+            from: user,
+            value: ether('0.1'),
+          }),
+          '0_HCompoundV3_withdrawETH: borrow'
         );
       });
     });
