@@ -4,9 +4,9 @@ pragma solidity 0.8.10;
 
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
+import "./IV3SwapRouter.sol";
 import "../HandlerBase.sol";
 import "../wrappednativetoken/IWrappedNativeToken.sol";
-import "../uniswapv3/ISwapRouter.sol";
 import "../uniswapv3/libraries/BytesLib.sol";
 
 contract HMaia is HandlerBase {
@@ -14,7 +14,7 @@ contract HMaia is HandlerBase {
     using BytesLib for bytes;
 
     // prettier-ignore
-    ISwapRouter public constant ROUTER = ISwapRouter(0x2db8b665CE6928F9D1a7f83F4C6aCEA64Af6a6f6);
+    IV3SwapRouter public constant ROUTER = IV3SwapRouter(0x07Da720AD5E434971dbe77C7fC85b7b44d5aC704);
 
     uint256 private constant PATH_SIZE = 43; // address + address + uint24
     uint256 private constant ADDRESS_SIZE = 20;
@@ -32,7 +32,7 @@ contract HMaia is HandlerBase {
         uint160 sqrtPriceLimitX96
     ) external payable returns (uint256 amountOut) {
         // Build params for router call
-        ISwapRouter.ExactInputSingleParams memory params;
+        IV3SwapRouter.ExactInputSingleParams memory params;
         params.tokenIn = tokenIn;
         params.tokenOut = tokenOut;
         params.fee = fee;
@@ -56,7 +56,7 @@ contract HMaia is HandlerBase {
         address tokenIn = _getFirstToken(path);
         address tokenOut = _getLastToken(path);
         // Build params for router call
-        ISwapRouter.ExactInputParams memory params;
+        IV3SwapRouter.ExactInputParams memory params;
         params.path = path;
         params.amountIn = _getBalance(tokenIn, amountIn);
         params.amountOutMinimum = amountOutMinimum;
@@ -77,7 +77,7 @@ contract HMaia is HandlerBase {
         uint160 sqrtPriceLimitX96
     ) external payable returns (uint256 amountIn) {
         // Build params for router call
-        ISwapRouter.ExactOutputSingleParams memory params;
+        IV3SwapRouter.ExactOutputSingleParams memory params;
         params.tokenIn = tokenIn;
         params.tokenOut = tokenOut;
         params.fee = fee;
@@ -103,7 +103,7 @@ contract HMaia is HandlerBase {
         address tokenIn = _getLastToken(path);
         address tokenOut = _getFirstToken(path);
         // Build params for router call
-        ISwapRouter.ExactOutputParams memory params;
+        IV3SwapRouter.ExactOutputParams memory params;
         params.path = path;
         params.amountOut = amountOut;
         // if amount == type(uint256).max return balance of Proxy
@@ -127,9 +127,8 @@ contract HMaia is HandlerBase {
 
     function _exactInputSingle(
         uint256 value,
-        ISwapRouter.ExactInputSingleParams memory params
+        IV3SwapRouter.ExactInputSingleParams memory params
     ) internal returns (uint256) {
-        params.deadline = block.timestamp;
         params.recipient = address(this);
 
         try ROUTER.exactInputSingle{value: value}(params) returns (
@@ -145,9 +144,8 @@ contract HMaia is HandlerBase {
 
     function _exactInput(
         uint256 value,
-        ISwapRouter.ExactInputParams memory params
+        IV3SwapRouter.ExactInputParams memory params
     ) internal returns (uint256) {
-        params.deadline = block.timestamp;
         params.recipient = address(this);
 
         try ROUTER.exactInput{value: value}(params) returns (
@@ -163,9 +161,8 @@ contract HMaia is HandlerBase {
 
     function _exactOutputSingle(
         uint256 value,
-        ISwapRouter.ExactOutputSingleParams memory params
+        IV3SwapRouter.ExactOutputSingleParams memory params
     ) internal returns (uint256) {
-        params.deadline = block.timestamp;
         params.recipient = address(this);
 
         try ROUTER.exactOutputSingle{value: value}(params) returns (
@@ -181,9 +178,8 @@ contract HMaia is HandlerBase {
 
     function _exactOutput(
         uint256 value,
-        ISwapRouter.ExactOutputParams memory params
+        IV3SwapRouter.ExactOutputParams memory params
     ) internal returns (uint256) {
-        params.deadline = block.timestamp;
         params.recipient = address(this);
 
         try ROUTER.exactOutput{value: value}(params) returns (
