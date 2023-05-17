@@ -34,6 +34,8 @@ const {
   profileGas,
   getHandlerReturn,
   getTokenProvider,
+  getBalanceSlotNum,
+  setTokenBalance,
 } = require('./utils/utils');
 
 const HSushiSwap = artifacts.require('HSushiSwap');
@@ -614,9 +616,12 @@ contract('SushiSwap Liquidity', function ([_, user]) {
         from: tokenAProviderAddress,
       });
 
-      await this.tokenB.transfer(user, ether('100'), {
-        from: tokenBProviderAddress,
-      });
+      const slotNum =
+        chainId == 1
+          ? getBalanceSlotNum('DAI', chainId)
+          : getBalanceSlotNum('WETH', chainId);
+
+      await setTokenBalance(this.tokenB.address, user, ether('100'), slotNum);
 
       await this.tokenA.approve(this.router.address, ether('1000'), {
         from: user,

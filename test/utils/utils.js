@@ -138,6 +138,7 @@ const toBytes32 = (bn) => {
 
 // @dev: slot = the storage slot # of balances in the token contract
 // could use the tool "slot20" to find the slot #
+// https://github.com/kendricktan/slot20
 async function setTokenBalance(tokenAddress, receiver, amount, slot) {
   const index = ethers.utils.solidityKeccak256(
     ['uint256', 'uint256'],
@@ -156,6 +157,57 @@ async function setTokenBalance(tokenAddress, receiver, amount, slot) {
     toBytes32(amountBn).toString(),
   ]);
   await ethers.provider.send('evm_mine', []);
+}
+
+function getBalanceSlotNum(token, chainId) {
+  switch (token) {
+    case 'DAI':
+      return getDAISlotNum(chainId);
+    case 'USDC':
+      return getUSDCSlotNum(chainId);
+    case 'WETH':
+      return getWETHSlotNum(chainId);
+    case 'WrappedNative':
+      return getWrappedNativeSlotNum(chainId);
+    default:
+      return 0;
+  }
+}
+
+function getDAISlotNum(chainId) {
+  switch (chainId) {
+    case 1:
+      return 2;
+    default:
+      return 0;
+  }
+}
+
+function getUSDCSlotNum(chainId) {
+  switch (chainId) {
+    case 1:
+      return 9;
+    case 42161:
+      return 51;
+    default:
+      return 0;
+  }
+}
+
+function getWETHSlotNum(chainId) {
+  switch (chainId) {
+    default:
+      return 0;
+  }
+}
+
+function getWrappedNativeSlotNum(chainId) {
+  switch (chainId) {
+    case 42161:
+      return 51;
+    default:
+      return 3;
+  }
 }
 
 async function getTokenProvider(
@@ -400,4 +452,5 @@ module.exports = {
   mwei,
   checkCacheClean,
   setTokenBalance,
+  getBalanceSlotNum,
 };

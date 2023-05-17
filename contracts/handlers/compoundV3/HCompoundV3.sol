@@ -46,7 +46,6 @@ contract HCompoundV3 is HandlerBase {
         _updateToken(wrappedNativeToken);
     }
 
-    // The same entry for withdraw and borrow
     function withdraw(
         address comet,
         address asset,
@@ -54,13 +53,17 @@ contract HCompoundV3 is HandlerBase {
     ) external payable returns (uint256 withdrawAmount) {
         _requireMsg(amount != 0, "withdraw", "zero amount");
 
-        // No _getBalance: because we use comet.allow() to help users withdraw,
-        withdrawAmount = _withdraw(
+        // No _getBalance: because we use comet.allow() to help users withdraw
+        bool isBorrowed;
+        (withdrawAmount, isBorrowed) = _withdraw(
             comet,
             msg.sender, // from
             asset,
             amount
         );
+
+        // Borrow is not allowed
+        _requireMsg(!isBorrowed, "withdraw", "borrow");
         _updateToken(asset);
     }
 
@@ -70,13 +73,17 @@ contract HCompoundV3 is HandlerBase {
     ) external payable returns (uint256 withdrawAmount) {
         _requireMsg(amount != 0, "withdrawETH", "zero amount");
 
-        // No _getBalance: because we use comet.allow() to help users withdraw,
-        withdrawAmount = _withdraw(
+        // No _getBalance: because we use comet.allow() to help users withdraw
+        bool isBorrowed;
+        (withdrawAmount, isBorrowed) = _withdraw(
             comet,
             msg.sender, // from
             wrappedNativeToken,
             amount
         );
+
+        // Borrow is not allowed
+        _requireMsg(!isBorrowed, "withdrawETH", "borrow");
         IWrappedNativeToken(wrappedNativeToken).withdraw(withdrawAmount);
     }
 
@@ -86,13 +93,17 @@ contract HCompoundV3 is HandlerBase {
     ) external payable returns (uint256 borrowAmount) {
         _requireMsg(amount != 0, "borrow", "zero amount");
 
+        bool isBorrowed;
         address baseToken = IComet(comet).baseToken();
-        borrowAmount = _withdraw(
+        (borrowAmount, isBorrowed) = _withdraw(
             comet,
             msg.sender, // from
             baseToken,
             amount
         );
+
+        // Withdrawal is not allowed
+        _requireMsg(isBorrowed, "borrow", "withdraw");
         _updateToken(baseToken);
     }
 
@@ -107,12 +118,16 @@ contract HCompoundV3 is HandlerBase {
         );
         _requireMsg(amount != 0, "borrowETH", "zero amount");
 
-        borrowAmount = _withdraw(
+        bool isBorrowed;
+        (borrowAmount, isBorrowed) = _withdraw(
             comet,
             msg.sender, // from
             wrappedNativeToken,
             amount
         );
+
+        // Withdrawal is not allowed
+        _requireMsg(isBorrowed, "borrowETH", "withdraw");
         IWrappedNativeToken(wrappedNativeToken).withdraw(borrowAmount);
     }
 
@@ -171,8 +186,9 @@ contract HCompoundV3 is HandlerBase {
         address from,
         address asset,
         uint256 amount
-    ) internal returns (uint256 withdrawAmount) {
+    ) internal returns (uint256 withdrawAmount, bool isBorrowed) {
         uint256 beforeBalance = IERC20(asset).balanceOf(address(this));
+        uint256 borrowBalanceBefore = IComet(comet).borrowBalanceOf(from);
 
         try
             IComet(comet).withdrawFrom(
@@ -185,6 +201,8 @@ contract HCompoundV3 is HandlerBase {
             withdrawAmount =
                 IERC20(asset).balanceOf(address(this)) -
                 beforeBalance;
+            isBorrowed =
+                IComet(comet).borrowBalanceOf(from) > borrowBalanceBefore;
         } catch Error(string memory reason) {
             _revertMsg("withdraw", reason);
         } catch {

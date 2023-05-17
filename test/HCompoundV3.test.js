@@ -1,6 +1,6 @@
 const chainId = network.config.chainId;
 
-if (chainId == 1 || chainId == 137) {
+if (chainId == 1 || chainId == 137 || chainId == 42161) {
   // This test supports to run on these chains.
 } else {
   return;
@@ -35,6 +35,7 @@ const {
   getHandlerReturn,
   expectEqWithinBps,
   setTokenBalance,
+  getBalanceSlotNum,
   impersonate,
   injectEther,
   mwei,
@@ -96,7 +97,7 @@ contract('Compound V3', function ([_, user, someone]) {
       beforeEach(async function () {
         baseToken = this.USDC;
         comet = this.cometUSDC;
-        const baseTokenBalanceSlotNum = chainId == 1 ? 9 : 0;
+        const baseTokenBalanceSlotNum = getBalanceSlotNum('USDC', chainId);
 
         await setTokenBalance(
           baseToken.address,
@@ -468,7 +469,10 @@ contract('Compound V3', function ([_, user, someone]) {
 
       beforeEach(async function () {
         const collateral = this.wrappedNativeToken;
-        const collateralBalanceSlotNum = 3;
+        const collateralBalanceSlotNum = getBalanceSlotNum(
+          'WrappedNative',
+          chainId
+        );
 
         await setTokenBalance(
           collateral.address,
@@ -621,13 +625,23 @@ contract('Compound V3', function ([_, user, someone]) {
           value
         );
 
-        await expectRevert(
-          this.proxy.execMock(to, data, {
-            from: user,
-            value: ether('0.1'),
-          }),
-          '_exec'
-        );
+        if (chainId == 42161) {
+          await expectRevert(
+            this.proxy.execMock(to, data, {
+              from: user,
+              value: ether('0.1'),
+            }),
+            '0_ERC20: approve to the zero address'
+          );
+        } else {
+          await expectRevert(
+            this.proxy.execMock(to, data, {
+              from: user,
+              value: ether('0.1'),
+            }),
+            '_exec'
+          );
+        }
       });
 
       it('should revert: unsupported collateral', async function () {
@@ -789,14 +803,23 @@ contract('Compound V3', function ([_, user, someone]) {
           comet,
           value
         );
-
-        await expectRevert(
-          this.proxy.execMock(to, data, {
-            from: user,
-            value: value,
-          }),
-          '_exec'
-        );
+        if (chainId == 42161) {
+          await expectRevert(
+            this.proxy.execMock(to, data, {
+              from: user,
+              value: value,
+            }),
+            '0_ERC20: approve to the zero address'
+          );
+        } else {
+          await expectRevert(
+            this.proxy.execMock(to, data, {
+              from: user,
+              value: value,
+            }),
+            '_exec'
+          );
+        }
       });
     });
   });
@@ -809,7 +832,7 @@ contract('Compound V3', function ([_, user, someone]) {
       let baseToken;
       beforeEach(async function () {
         baseToken = this.USDC;
-        const baseTokenBalanceSlotNum = chainId == 1 ? 9 : 0;
+        const baseTokenBalanceSlotNum = getBalanceSlotNum('USDC', chainId);
         const comet = this.cometUSDC;
 
         await setTokenBalance(
@@ -834,8 +857,8 @@ contract('Compound V3', function ([_, user, someone]) {
 
       it('normal', async function () {
         const baseToken = this.USDC;
-        const value = supplyAmount;
         const comet = this.cometUSDC;
+        const value = await comet.balanceOf(user);
         const to = this.hCompoundV3.address;
         const data = abi.simpleEncode(
           'withdraw(address,address,uint256)',
@@ -858,6 +881,7 @@ contract('Compound V3', function ([_, user, someone]) {
 
         // Verify handler return
         expect(value).to.be.bignumber.eq(handlerReturn);
+        expectEqWithinBps(supplyAmount, handlerReturn);
 
         // Verify proxy balance
         expect(await balanceProxy.delta()).to.be.bignumber.zero;
@@ -874,8 +898,9 @@ contract('Compound V3', function ([_, user, someone]) {
 
       it('partial', async function () {
         const baseToken = this.USDC;
-        const value = supplyAmount.div(new BN('2'));
         const comet = this.cometUSDC;
+        const baseTokenBalance = await comet.balanceOf(user);
+        const value = baseTokenBalance.div(new BN('2'));
         const to = this.hCompoundV3.address;
         const data = abi.simpleEncode(
           'withdraw(address,address,uint256)',
@@ -898,6 +923,7 @@ contract('Compound V3', function ([_, user, someone]) {
 
         // Verify handler return
         expect(value).to.be.bignumber.eq(handlerReturn);
+        expectEqWithinBps(supplyAmount.div(new BN('2')), handlerReturn);
 
         // Verify proxy balance
         expect(await balanceProxy.delta()).to.be.bignumber.zero;
@@ -909,16 +935,17 @@ contract('Compound V3', function ([_, user, someone]) {
         // Verify user balance
         expect(await baseToken.balanceOf(user)).to.be.bignumber.eq(value);
         expect(await balanceUser.delta()).to.be.bignumber.zero;
-        expect(await comet.balanceOf(user)).to.be.bignumber.gte(
-          supplyAmount.sub(value)
+        expectEqWithinBps(
+          await comet.balanceOf(user),
+          baseTokenBalance.sub(value)
         );
         profileGas(receipt);
       });
 
       it('max amount', async function () {
         const baseToken = this.USDC;
-        const value = supplyAmount;
         const comet = this.cometUSDC;
+        const value = await comet.balanceOf(user);
         const to = this.hCompoundV3.address;
         const data = abi.simpleEncode(
           'withdraw(address,address,uint256)',
@@ -940,7 +967,8 @@ contract('Compound V3', function ([_, user, someone]) {
         );
 
         // Verify handler return
-        expect(value).to.be.bignumber.lte(handlerReturn);
+        expectEqWithinBps(value, handlerReturn);
+        expectEqWithinBps(supplyAmount, handlerReturn);
 
         // Verify proxy balance
         expect(await balanceProxy.delta()).to.be.bignumber.zero;
@@ -956,10 +984,9 @@ contract('Compound V3', function ([_, user, someone]) {
       });
 
       // Call borrow to withdraw base token directly into user address
-      it('by borrow', async function () {
-        const baseToken = this.USDC;
-        const value = supplyAmount;
+      it('should revert: by borrow', async function () {
         const comet = this.cometUSDC;
+        const value = await comet.balanceOf(user);
         const to = this.hCompoundV3.address;
         const data = abi.simpleEncode(
           'borrow(address,uint256)',
@@ -967,31 +994,13 @@ contract('Compound V3', function ([_, user, someone]) {
           value
         );
 
-        await balanceUser.get();
-        const receipt = await this.proxy.execMock(to, data, {
-          from: user,
-          value: ether('0.1'),
-        });
-
-        // Get handler return result
-        const handlerReturn = utils.toBN(
-          getHandlerReturn(receipt, ['uint256'])[0]
+        await expectRevert(
+          this.proxy.execMock(to, data, {
+            from: user,
+            value: ether('0.1'),
+          }),
+          '0_HCompoundV3_borrow: withdraw'
         );
-
-        // Verify handler return
-        expect(value).to.be.bignumber.eq(handlerReturn);
-
-        // Verify proxy balance
-        expect(await balanceProxy.delta()).to.be.bignumber.zero;
-        expect(
-          await baseToken.balanceOf(this.proxy.address)
-        ).to.be.bignumber.zero;
-        expect(await comet.balanceOf(this.proxy.address)).to.be.bignumber.zero;
-
-        // Verify user balance
-        expect(await baseToken.balanceOf(user)).to.be.bignumber.eq(value);
-        expect(await balanceUser.delta()).to.be.bignumber.zero;
-        profileGas(receipt);
       });
 
       it('should revert: withdraw without allow', async function () {
@@ -1134,8 +1143,8 @@ contract('Compound V3', function ([_, user, someone]) {
 
       it('normal', async function () {
         const baseToken = this.wrappedNativeToken;
-        const value = supplyAmount;
         const comet = this.cometWETH;
+        const value = await comet.balanceOf(user);
         const to = this.hCompoundV3.address;
         const data = abi.simpleEncode(
           'withdrawETH(address,uint256)',
@@ -1157,6 +1166,7 @@ contract('Compound V3', function ([_, user, someone]) {
 
         // Verify handler return
         expect(value).to.be.bignumber.eq(handlerReturn);
+        expectEqWithinBps(supplyAmount, handlerReturn);
 
         // Verify proxy balance
         expect(await balanceProxy.delta()).to.be.bignumber.zero;
@@ -1173,8 +1183,9 @@ contract('Compound V3', function ([_, user, someone]) {
 
       it('partial', async function () {
         const baseToken = this.wrappedNativeToken;
-        const value = supplyAmount.div(new BN('2'));
         const comet = this.cometWETH;
+        const baseTokenBalance = await comet.balanceOf(user);
+        const value = baseTokenBalance.div(new BN('2'));
         const to = this.hCompoundV3.address;
         const data = abi.simpleEncode(
           'withdrawETH(address,uint256)',
@@ -1196,6 +1207,7 @@ contract('Compound V3', function ([_, user, someone]) {
 
         // Verify handler return
         expect(value).to.be.bignumber.eq(handlerReturn);
+        expectEqWithinBps(supplyAmount.div(new BN('2')), handlerReturn);
 
         // Verify proxy balance
         expect(await balanceProxy.delta()).to.be.bignumber.zero;
@@ -1207,16 +1219,17 @@ contract('Compound V3', function ([_, user, someone]) {
         // Verify user balance
         expect(await balanceUser.delta()).to.be.bignumber.eq(value);
         expect(await baseToken.balanceOf(user)).to.be.bignumber.zero;
-        expect(await comet.balanceOf(user)).to.be.bignumber.gte(
-          supplyAmount.sub(value)
+        expectEqWithinBps(
+          await comet.balanceOf(user),
+          baseTokenBalance.sub(value)
         );
         profileGas(receipt);
       });
 
       it('max amount', async function () {
         const baseToken = this.wrappedNativeToken;
-        const value = supplyAmount;
         const comet = this.cometWETH;
+        const value = await comet.balanceOf(user);
         const to = this.hCompoundV3.address;
         const data = abi.simpleEncode(
           'withdrawETH(address,uint256)',
@@ -1237,7 +1250,8 @@ contract('Compound V3', function ([_, user, someone]) {
         );
 
         // Verify handler return
-        expect(value).to.be.bignumber.lte(handlerReturn);
+        expectEqWithinBps(value, handlerReturn);
+        expectEqWithinBps(supplyAmount, handlerReturn);
 
         // Verify proxy balance
         expect(await balanceProxy.delta()).to.be.bignumber.zero;
@@ -1253,10 +1267,9 @@ contract('Compound V3', function ([_, user, someone]) {
       });
 
       // Call borrow to withdraw base token directly into user address
-      it('by borrowETH', async function () {
-        const baseToken = this.wrappedNativeToken;
-        const value = supplyAmount;
+      it('should revert: by borrowETH', async function () {
         const comet = this.cometWETH;
+        const value = await comet.balanceOf(user);
         const to = this.hCompoundV3.address;
         const data = abi.simpleEncode(
           'borrowETH(address,uint256)',
@@ -1264,37 +1277,18 @@ contract('Compound V3', function ([_, user, someone]) {
           value
         );
 
-        await balanceUser.get();
-
-        const receipt = await this.proxy.execMock(to, data, {
-          from: user,
-          value: ether('0.1'),
-        });
-
-        // Get handler return result
-        const handlerReturn = utils.toBN(
-          getHandlerReturn(receipt, ['uint256'])[0]
+        await expectRevert(
+          this.proxy.execMock(to, data, {
+            from: user,
+            value: ether('0.1'),
+          }),
+          '0_HCompoundV3_borrowETH: withdraw'
         );
-
-        // Verify handler return
-        expect(value).to.be.bignumber.eq(handlerReturn);
-
-        // Verify proxy balance
-        expect(await balanceProxy.delta()).to.be.bignumber.zero;
-        expect(
-          await baseToken.balanceOf(this.proxy.address)
-        ).to.be.bignumber.zero;
-        expect(await comet.balanceOf(this.proxy.address)).to.be.bignumber.zero;
-
-        // Verify user balance
-        expect(await balanceUser.delta()).to.be.bignumber.eq(value);
-        expect(await baseToken.balanceOf(user)).to.be.bignumber.zero;
-        profileGas(receipt);
       });
 
       it('should revert: without user allow ', async function () {
-        const value = supplyAmount;
         const comet = this.cometWETH;
+        const value = await comet.balanceOf(user);
         const to = this.hCompoundV3.address;
         const data = abi.simpleEncode(
           'withdrawETH(address,uint256)',
@@ -1374,7 +1368,10 @@ contract('Compound V3', function ([_, user, someone]) {
     describe('Token-collateral', function () {
       beforeEach(async function () {
         const collateral = this.wrappedNativeToken;
-        const collateralBalanceSlotNum = 3;
+        const collateralBalanceSlotNum = getBalanceSlotNum(
+          'WrappedNative',
+          chainId
+        );
         const comet = this.cometUSDC;
 
         await setTokenBalance(
@@ -1496,7 +1493,10 @@ contract('Compound V3', function ([_, user, someone]) {
         );
 
         // Supply Extra Token
-        const collateralBalanceSlotNum = 3;
+        const collateralBalanceSlotNum = getBalanceSlotNum(
+          'WrappedNative',
+          chainId
+        );
         const extraSupplyAmount = ether('2000');
 
         await setTokenBalance(
@@ -1661,7 +1661,10 @@ contract('Compound V3', function ([_, user, someone]) {
 
         // Polygon only due to cheap WMATIC price
         if (chainId == 137) {
-          const collateralBalanceSlotNum = 3;
+          const collateralBalanceSlotNum = getBalanceSlotNum(
+            'WrappedNative',
+            chainId
+          );
           const extraSupplyAmount = ether('2000');
 
           await setTokenBalance(
@@ -1738,7 +1741,10 @@ contract('Compound V3', function ([_, user, someone]) {
 
       beforeEach(async function () {
         const collateral = this.wrappedNativeToken;
-        const collateralBalanceSlotNum = 3;
+        const collateralBalanceSlotNum = getBalanceSlotNum(
+          'WrappedNative',
+          chainId
+        );
         const comet = this.cometUSDC;
 
         await setTokenBalance(
@@ -2006,7 +2012,10 @@ contract('Compound V3', function ([_, user, someone]) {
         // Supply token comet
         const comet = this.cometUSDC;
         const collateral = this.wrappedNativeToken;
-        const collateralBalanceSlotNum = 3;
+        const collateralBalanceSlotNum = getBalanceSlotNum(
+          'WrappedNative',
+          chainId
+        );
 
         await setTokenBalance(
           collateral.address,
@@ -2085,7 +2094,7 @@ contract('Compound V3', function ([_, user, someone]) {
         );
 
         // Supply base token
-        const baseTokenBalanceSlotNum = chainId == 1 ? 9 : 0;
+        const baseTokenBalanceSlotNum = getBalanceSlotNum('USDC', chainId);
         await setTokenBalance(
           baseToken.address,
           user,
@@ -2189,7 +2198,7 @@ contract('Compound V3', function ([_, user, someone]) {
       });
 
       it('should revert: zero comet address', async function () {
-        const value = supplyAmount;
+        const value = mwei('1000');
         const comet = constants.ZERO_ADDRESS;
         const to = this.hCompoundV3.address;
         const data = abi.simpleEncode('borrow(address,uint256)', comet, value);
@@ -2204,7 +2213,7 @@ contract('Compound V3', function ([_, user, someone]) {
       });
 
       it('should revert: disallow', async function () {
-        const value = supplyAmount;
+        const value = mwei('1000');
         const comet = this.cometUSDC;
         const to = this.hCompoundV3.address;
         const data = abi.simpleEncode(
@@ -2223,6 +2232,27 @@ contract('Compound V3', function ([_, user, someone]) {
             from: user,
             value: ether('0.1'),
           })
+        );
+      });
+
+      it('should revert: by withdraw', async function () {
+        const baseToken = this.USDC;
+        const value = mwei('1000');
+        const comet = this.cometUSDC;
+        const to = this.hCompoundV3.address;
+        const data = abi.simpleEncode(
+          'withdraw(address,address,uint256)',
+          comet.address,
+          baseToken.address,
+          value
+        );
+
+        await expectRevert(
+          this.proxy.execMock(to, data, {
+            from: user,
+            value: ether('0.1'),
+          }),
+          '0_HCompoundV3_withdraw: borrow'
         );
       });
     });
@@ -2476,6 +2506,25 @@ contract('Compound V3', function ([_, user, someone]) {
           })
         );
       });
+
+      it('should revert: by withdrawETH', async function () {
+        const value = supplyAmount.div(new BN('2')); // 50%
+        const comet = this.cometWETH;
+        const to = this.hCompoundV3.address;
+        const data = abi.simpleEncode(
+          'withdrawETH(address,uint256)',
+          comet.address,
+          value
+        );
+
+        await expectRevert(
+          this.proxy.execMock(to, data, {
+            from: user,
+            value: ether('0.1'),
+          }),
+          '0_HCompoundV3_withdrawETH: borrow'
+        );
+      });
     });
   });
 
@@ -2489,9 +2538,12 @@ contract('Compound V3', function ([_, user, someone]) {
       beforeEach(async function () {
         // Supply token comet
         const collateral = this.wrappedNativeToken;
-        const collateralBalanceSlotNum = 3;
+        const collateralBalanceSlotNum = getBalanceSlotNum(
+          'WrappedNative',
+          chainId
+        );
         const baseToken = this.USDC;
-        const baseTokenBalanceSlotNum = chainId == 1 ? 9 : 0;
+        const baseTokenBalanceSlotNum = getBalanceSlotNum('USDC', chainId);
         const comet = this.cometUSDC;
 
         // Set user collateral balance
