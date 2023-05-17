@@ -188,7 +188,7 @@ contract HCompoundV3 is HandlerBase {
         uint256 amount
     ) internal returns (uint256 withdrawAmount, bool isBorrowed) {
         uint256 beforeBalance = IERC20(asset).balanceOf(address(this));
-        uint256 borrowBalanceBefore = IComet(comet).borrowBalanceOf(msg.sender);
+        uint256 borrowBalanceBefore = IComet(comet).borrowBalanceOf(from);
 
         try
             IComet(comet).withdrawFrom(
@@ -202,7 +202,7 @@ contract HCompoundV3 is HandlerBase {
                 IERC20(asset).balanceOf(address(this)) -
                 beforeBalance;
             isBorrowed =
-                IComet(comet).borrowBalanceOf(msg.sender) > borrowBalanceBefore;
+                IComet(comet).borrowBalanceOf(from) > borrowBalanceBefore;
         } catch Error(string memory reason) {
             _revertMsg("withdraw", reason);
         } catch {
