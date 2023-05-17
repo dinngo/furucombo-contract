@@ -2,6 +2,7 @@ const eth = require('./constants_eth');
 const optimism = require('./constants_optimism');
 const polygon = require('./constants_polygon');
 const fantom = require('./constants_fantom');
+const metis = require('./constants_metis');
 const arbitrum = require('./constants_arbitrum');
 const avalanche = require('./constants_avalanche');
 
@@ -14,6 +15,8 @@ module.exports =
     ? polygon
     : network.config.chainId == 250
     ? fantom
+    : network.config.chainId == 1088
+    ? metis
     : network.config.chainId == 42161
     ? arbitrum
     : network.config.chainId == 43114
