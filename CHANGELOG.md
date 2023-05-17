@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- Support Hummus protocol.
 - Support CompoundV3.
 
 ## [2.5.0] - 2023-03-16

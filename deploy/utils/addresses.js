@@ -4,6 +4,7 @@ const eth = require('./addresses_eth');
 const optimism = require('./addresses_optimism');
 const polygon = require('./addresses_polygon');
 const fantom = require('./addresses_fantom');
+const metis = require('./addresses_metis');
 const arbitrum = require('./addresses_arbitrum');
 const avalanche = require('./addresses_avalanche');
 
@@ -21,6 +22,8 @@ module.exports =
     : network.name == 'fantom'
     ? fantom
     : network.name == 'arbitrum'
+    ? metis
+    : network.name == 'metis'
     ? arbitrum
     : network.name == 'avalanche'
     ? avalanche
