@@ -3,8 +3,10 @@ include:
   - 'templates/.gitlab-ci-optimism.yml'
   - 'templates/.gitlab-ci-polygon.yml'
   - 'templates/.gitlab-ci-fantom.yml'
+  - 'templates/.gitlab-ci-metis.yml'
   - 'templates/.gitlab-ci-arbitrum.yml'
   - 'templates/.gitlab-ci-avalanche.yml'
+
 
 image: node:18-buster
 
@@ -78,6 +80,7 @@ stages:
           MIN=${RUNNER_TEST_CNTS[$MINIDX]}
       done
     - RPC_URL=${RPC_URL} CHAIN_ID=${CHAIN_ID} npm run test ${UNITTEST_FILES[${JOB_INDEX}]}
+    - echo ${CHAIN_ID}
 
 build:
   stage: build
