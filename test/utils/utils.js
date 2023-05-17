@@ -161,10 +161,23 @@ async function setTokenBalance(tokenAddress, receiver, amount, slot) {
 
 function getBalanceSlotNum(token, chainId) {
   switch (token) {
+    case 'DAI':
+      return getDAISlotNum(chainId);
     case 'USDC':
       return getUSDCSlotNum(chainId);
+    case 'WETH':
+      return getWETHSlotNum(chainId);
     case 'WrappedNative':
       return getWrappedNativeSlotNum(chainId);
+    default:
+      return 0;
+  }
+}
+
+function getDAISlotNum(chainId) {
+  switch (chainId) {
+    case 1:
+      return 2;
     default:
       return 0;
   }
@@ -176,6 +189,13 @@ function getUSDCSlotNum(chainId) {
       return 9;
     case 42161:
       return 51;
+    default:
+      return 0;
+  }
+}
+
+function getWETHSlotNum(chainId) {
+  switch (chainId) {
     default:
       return 0;
   }
