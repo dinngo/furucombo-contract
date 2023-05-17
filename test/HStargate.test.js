@@ -5,6 +5,7 @@ if (
   chainId == 10 ||
   chainId == 137 ||
   chainId == 250 ||
+  chainId == 1088 ||
   chainId == 42161 ||
   chainId == 43114
 ) {
@@ -30,6 +31,7 @@ const { expect } = require('chai');
 
 const {
   USDC_TOKEN,
+  USDT_TOKEN,
   WRAPPED_NATIVE_TOKEN,
   STARGATE_FACTORY,
   STARGATE_ROUTER,
@@ -38,8 +40,9 @@ const {
   STARGATE_DESTINATION_CHAIN_ID,
   STARGATE_VAULT_ETH,
   STARGATE_POOL_USDC,
+  STARGATE_POOL_USDT,
   STARGATE_UNSUPPORT_ETH_DEST_CHAIN_ID,
-  STARGATE_USDC_TO_DISALLOW_TOKEN_ID,
+  STARGATE_STABLE_TO_DISALLOW_TOKEN_ID,
   STARGATE_PARTNER_ID,
   STG_TOKEN,
   LAYERZERO_ENDPOINT,
@@ -51,7 +54,6 @@ const {
   getTokenProvider,
   mwei,
   setTokenBalance,
-  impersonateAndInjectEther,
 } = require('./utils/utils');
 
 const HStargate = artifacts.require('HStargate');
@@ -68,6 +70,7 @@ const IStargateFactory = artifacts.require('IFactory');
 const TYPE_SWAP_REMOTE = 1;
 
 const STARGATE_POOL_ID_USDC = 1;
+const STARGATE_POOL_ID_USDT_METIS = 19;
 const STARGATE_POOL_ID_ETH = 13;
 
 const STARGATE_UNKNOWN_POOL_ID = 99;
@@ -106,6 +109,8 @@ contract('Stargate', function ([_, user, user2]) {
       utils.asciiToHex('Stargate')
     );
 
+    this.stargateStablePool =
+      chainId == 1088 ? STARGATE_POOL_USDT : STARGATE_POOL_USDC;
     this.wrappedNativeToken = await IToken.at(WRAPPED_NATIVE_TOKEN);
     this.stargateRouter = await IStartgateRouter.at(STARGATE_ROUTER);
     this.stargateFactory = await IStargateFactory.at(STARGATE_FACTORY);
@@ -131,8 +136,13 @@ contract('Stargate', function ([_, user, user2]) {
     const payload = '0x';
 
     describe('Native', function () {
-      if (chainId == 137 || chainId == 250 || chainId == 43114) {
-        // Stargate does not support MATIC / FTM / AVAX for now
+      if (
+        chainId == 137 ||
+        chainId == 250 ||
+        chainId == 1088 ||
+        chainId == 43114
+      ) {
+        // Stargate does not support Polygon / Fantom / Metis / AVAX for now
         return;
       }
 
@@ -658,28 +668,33 @@ contract('Stargate', function ([_, user, user2]) {
     });
 
     describe('Stable', function () {
-      const inputTokenAddr = USDC_TOKEN;
-      const INPUT_TOKEN_BALANCE_SLOT_NUM = 9;
+      const inputTokenAddr = chainId == 1088 ? USDT_TOKEN : USDC_TOKEN;
+      const INPUT_TOKEN_BALANCE_SLOT_NUM = chainId == 1088 ? 0 : 9;
 
-      const srcPoolId = STARGATE_POOL_ID_USDC;
-      const dstPoolId = STARGATE_POOL_ID_USDC;
+      const srcPoolId =
+        chainId == 1088 ? STARGATE_POOL_ID_USDT_METIS : STARGATE_POOL_ID_USDC;
+      const dstPoolId =
+        chainId == 1088 ? STARGATE_POOL_ID_USDT_METIS : STARGATE_POOL_ID_USDC;
       const amountIn = mwei('10');
 
       let inputTokenPoolBefore;
 
       before(async function () {
-        inputTokenProvider = await getTokenProvider(inputTokenAddr);
         this.inputToken = await IToken.at(inputTokenAddr);
       });
 
       this.beforeEach(async function () {
-        await this.inputToken.transfer(this.proxy.address, amountIn, {
-          from: inputTokenProvider,
-        });
+        await setTokenBalance(
+          this.inputToken.address,
+          this.proxy.address,
+          amountIn,
+          INPUT_TOKEN_BALANCE_SLOT_NUM
+        );
+
         await this.proxy.updateTokenMock(this.inputToken.address);
 
         inputTokenPoolBefore = await this.inputToken.balanceOf(
-          STARGATE_POOL_USDC
+          this.stargateStablePool
         );
       });
 
@@ -724,7 +739,7 @@ contract('Stargate', function ([_, user, user2]) {
           ether('0').sub(fee)
         );
         expect(
-          await this.inputToken.balanceOf(STARGATE_POOL_USDC)
+          await this.inputToken.balanceOf(this.stargateStablePool)
         ).to.be.bignumber.eq(inputTokenPoolBefore.add(amountIn));
 
         await expectEvent.inTransaction(
@@ -776,7 +791,7 @@ contract('Stargate', function ([_, user, user2]) {
           ether('0').sub(fee)
         );
         expect(
-          await this.inputToken.balanceOf(STARGATE_POOL_USDC)
+          await this.inputToken.balanceOf(this.stargateStablePool)
         ).to.be.bignumber.eq(inputTokenPoolBefore.add(amountIn));
 
         await expectEvent.inTransaction(
@@ -829,7 +844,7 @@ contract('Stargate', function ([_, user, user2]) {
           ether('0').sub(fee)
         );
         expect(
-          await this.inputToken.balanceOf(STARGATE_POOL_USDC)
+          await this.inputToken.balanceOf(this.stargateStablePool)
         ).to.be.bignumber.eq(inputTokenPoolBefore.add(amountIn));
 
         await expectEvent.inTransaction(
@@ -883,7 +898,7 @@ contract('Stargate', function ([_, user, user2]) {
           ether('0').sub(totalFee).add(extraFee)
         );
         expect(
-          await this.inputToken.balanceOf(STARGATE_POOL_USDC)
+          await this.inputToken.balanceOf(this.stargateStablePool)
         ).to.be.bignumber.eq(inputTokenPoolBefore.add(amountIn));
 
         await expectEvent.inTransaction(
@@ -986,7 +1001,7 @@ contract('Stargate', function ([_, user, user2]) {
 
       it('should revert: to disallowed stable token', async function () {
         // Prep
-        const dstPoolId = STARGATE_USDC_TO_DISALLOW_TOKEN_ID;
+        const dstPoolId = STARGATE_STABLE_TO_DISALLOW_TOKEN_ID;
         const refundAddress = this.proxy.address;
         const to = this.hStargate.address;
         const fee = ether('1'); // Use fixed fee because of unsupported path
@@ -1262,6 +1277,11 @@ contract('Stargate', function ([_, user, user2]) {
     });
 
     describe('STG Token', function () {
+      if (chainId == 1088) {
+        // Stargate does not support Metis
+        return;
+      }
+
       const version = new BN('1');
       const inputTokenAddr = STG_TOKEN;
       const INPUT_TOKEN_BALANCE_SLOT_NUM = 0;
