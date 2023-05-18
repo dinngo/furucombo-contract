@@ -20,7 +20,7 @@ const { ZERO_ADDRESS } = constants;
 const { expect } = require('chai');
 
 const {
-  LINK_TOKEN,
+  WBTC_TOKEN,
   DAI_TOKEN,
   B_CDP_MANAGER,
   B_PROXY_ACTIONS,
@@ -28,7 +28,7 @@ const {
   MAKER_MCD_JUG,
   MAKER_MCD_VAT,
   MAKER_MCD_JOIN_ETH_A,
-  MAKER_MCD_JOIN_LINK_A,
+  MAKER_MCD_JOIN_WBTC_C,
   MAKER_MCD_JOIN_DAI,
 } = require('./utils/constants');
 const {
@@ -51,25 +51,26 @@ const IMakerVat = artifacts.require('IMakerVat');
 
 const RAY = new BN('1000000000000000000000000000');
 
-async function getGenerateLimitAndMinCollateral(ilk) {
+async function getGenerateLimitAndMinCollateral(ilk, collateralDecimal) {
   const vat = await IMakerVat.at(MAKER_MCD_VAT);
   const conf = await vat.ilks.call(ilk);
   const generateLimit = conf[4].div(ether('1000000000'));
   const minCollateral = conf[4]
     .div(conf[2])
     .mul(new BN('12'))
-    .div(new BN('10'));
+    .div(new BN('10'))
+    .div(new BN(10 ** (18 - collateralDecimal)));
   return [generateLimit, minCollateral];
 }
 
-async function getCdpInfo(cdp) {
+async function getCdpInfo(cdp, collateralDecimal) {
   const cdpManager = await IMakerManager.at(B_CDP_MANAGER);
   const vat = await IMakerVat.at(MAKER_MCD_VAT);
   const urn = await cdpManager.urns.call(cdp);
   const ilk = await cdpManager.ilks.call(cdp);
   const conf = await vat.ilks.call(ilk);
   const urnStats = await vat.urns.call(ilk, urn);
-  const ink = urnStats[0];
+  const ink = urnStats[0].div(new BN(10 ** (18 - collateralDecimal)));
   const art = urnStats[1];
   const debt = art.mul(conf[1]);
 
@@ -91,11 +92,13 @@ async function approveCdp(cdp, owner, user) {
 }
 
 contract('BProtocol', function ([_, user1, user2, someone]) {
-  const tokenAddress = LINK_TOKEN;
+  const tokenAddress = WBTC_TOKEN;
   const makerMcdJoinETH = MAKER_MCD_JOIN_ETH_A;
   const makerMcdJoinETHName = 'ETH-A';
-  const makerMcdJoinToken = MAKER_MCD_JOIN_LINK_A;
-  const makerMcdJoinTokenName = 'LINK-A';
+  const makerMcdJoinToken = MAKER_MCD_JOIN_WBTC_C;
+  const makerMcdJoinTokenName = 'WBTC-C';
+  const gemDecimal = 8;
+  const ethDecimal = 18;
 
   let id;
   let providerAddress;
@@ -173,7 +176,7 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
             64
           );
           const [generateLimit, minCollateral] =
-            await getGenerateLimitAndMinCollateral(ilkEth);
+            await getGenerateLimitAndMinCollateral(ilkEth, ethDecimal);
           const wadD = generateLimit;
           const value = minCollateral;
           const data = abi.simpleEncode(
@@ -198,7 +201,7 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
           const userProxy = await this.dsRegistry.proxies.call(someone);
           const cdp = await this.cdpManager.last.call(userProxy);
 
-          const [ilk, debt, lock] = await getCdpInfo(cdp);
+          const [ilk, debt, lock] = await getCdpInfo(cdp, ethDecimal);
 
           expect(cdp).to.be.bignumber.eq(handlerReturn);
           expect(ilk).eq(ilkEth);
@@ -224,7 +227,7 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
             64
           );
           const [generateLimit, minCollateral] =
-            await getGenerateLimitAndMinCollateral(ilkEth);
+            await getGenerateLimitAndMinCollateral(ilkEth, ethDecimal);
           const wadD = generateLimit;
           const value = minCollateral;
           const data = abi.simpleEncode(
@@ -249,7 +252,7 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
           const userProxy = await this.dsRegistry.proxies.call(someone);
           const cdp = await this.cdpManager.last.call(userProxy);
 
-          const [ilk, debt, lock] = await getCdpInfo(cdp);
+          const [ilk, debt, lock] = await getCdpInfo(cdp, ethDecimal);
 
           expect(cdp).to.be.bignumber.eq(handlerReturn);
           expect(ilk).eq(ilkEth);
@@ -268,7 +271,7 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
             64
           );
           const [generateLimit, minCollateral] =
-            await getGenerateLimitAndMinCollateral(ilkEth);
+            await getGenerateLimitAndMinCollateral(ilkEth, ethDecimal);
           const wadD = generateLimit;
           const value = minCollateral;
           const data = abi.simpleEncode(
@@ -292,7 +295,7 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
           const userProxy = await this.dsRegistry.proxies.call(user1);
           const cdp = await this.cdpManager.last.call(userProxy);
 
-          const [ilk, debt, lock] = await getCdpInfo(cdp);
+          const [ilk, debt, lock] = await getCdpInfo(cdp, ethDecimal);
 
           expect(cdp).to.be.bignumber.eq(handlerReturn);
           expect(ilk).eq(ilkEth);
@@ -311,7 +314,7 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
             64
           );
           const [generateLimit, minCollateral] =
-            await getGenerateLimitAndMinCollateral(ilkEth);
+            await getGenerateLimitAndMinCollateral(ilkEth, ethDecimal);
           const wadD = generateLimit;
           const value = minCollateral;
           const data = abi.simpleEncode(
@@ -335,7 +338,7 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
           const userProxy = await this.dsRegistry.proxies.call(user1);
           const cdp = await this.cdpManager.last.call(userProxy);
 
-          const [ilk, debt, lock] = await getCdpInfo(cdp);
+          const [ilk, debt, lock] = await getCdpInfo(cdp, ethDecimal);
 
           expect(cdp).to.be.bignumber.eq(handlerReturn);
           expect(ilk).eq(ilkEth);
@@ -365,7 +368,7 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
             64
           );
           const [generateLimit, minCollateral] =
-            await getGenerateLimitAndMinCollateral(ilkToken);
+            await getGenerateLimitAndMinCollateral(ilkToken, gemDecimal);
           const wadD = generateLimit;
           const wadC = minCollateral;
           const data = abi.simpleEncode(
@@ -394,7 +397,7 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
           const userProxy = await this.dsRegistry.proxies.call(someone);
           const cdp = await this.cdpManager.last.call(userProxy);
 
-          const [ilk, debt, lock] = await getCdpInfo(cdp);
+          const [ilk, debt, lock] = await getCdpInfo(cdp, gemDecimal);
 
           expect(cdp).to.be.bignumber.eq(handlerReturn);
           expect(ilk).eq(ilkToken);
@@ -413,7 +416,7 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
             64
           );
           const [generateLimit, minCollateral] =
-            await getGenerateLimitAndMinCollateral(ilkToken);
+            await getGenerateLimitAndMinCollateral(ilkToken, gemDecimal);
           const wadC = minCollateral;
           const wadD = generateLimit;
           const data = abi.simpleEncode(
@@ -441,7 +444,7 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
           const userProxy = await this.dsRegistry.proxies.call(user1);
           const cdp = await this.cdpManager.last.call(userProxy);
 
-          const [ilk, debt, lock] = await getCdpInfo(cdp);
+          const [ilk, debt, lock] = await getCdpInfo(cdp, gemDecimal);
 
           expect(cdp).to.be.bignumber.eq(handlerReturn);
           expect(ilk).eq(ilkToken);
@@ -488,7 +491,7 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
 
       beforeEach(async function () {
         balanceUser = await tracker(user1);
-        [ilk, debt, lock] = await getCdpInfo(cdp);
+        [ilk, debt, lock] = await getCdpInfo(cdp, ethDecimal);
       });
 
       it('normal', async function () {
@@ -505,7 +508,7 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
           value: value,
         });
 
-        const [ilkEnd, debtEnd, lockEnd] = await getCdpInfo(cdp);
+        const [ilkEnd, debtEnd, lockEnd] = await getCdpInfo(cdp, ethDecimal);
         expect(await balanceUser.delta()).to.be.bignumber.eq(
           ether('0').sub(value)
         );
@@ -526,7 +529,7 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
           value: value,
         });
 
-        const [ilkEnd, debtEnd, lockEnd] = await getCdpInfo(cdp);
+        const [ilkEnd, debtEnd, lockEnd] = await getCdpInfo(cdp, ethDecimal);
         expect(await balanceUser.delta()).to.be.bignumber.eq(
           ether('0').sub(value)
         );
@@ -545,7 +548,7 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
 
       beforeEach(async function () {
         balanceUser = await tracker(user2);
-        [ilk, debt, lock] = await getCdpInfo(cdp);
+        [ilk, debt, lock] = await getCdpInfo(cdp, gemDecimal);
         tokenUser = await this.token.balanceOf.call(user2);
       });
 
@@ -553,9 +556,10 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
         const to = this.hMaker.address;
         const [generateLimit, minCollateral] =
           await getGenerateLimitAndMinCollateral(
-            utils.padRight(utils.asciiToHex(makerMcdJoinTokenName), 64)
+            utils.padRight(utils.asciiToHex(makerMcdJoinTokenName), 64),
+            gemDecimal
           );
-        const wad = generateLimit;
+        const wad = minCollateral;
         const data = abi.simpleEncode(
           'safeLockGem(address,uint256,uint256)',
           makerMcdJoinToken,
@@ -571,7 +575,7 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
           value: ether('1'),
         });
 
-        const [ilkEnd, debtEnd, lockEnd] = await getCdpInfo(cdp);
+        const [ilkEnd, debtEnd, lockEnd] = await getCdpInfo(cdp, gemDecimal);
         expect(lockEnd.sub(lock)).to.be.bignumber.eq(wad);
         profileGas(receipt);
       });
@@ -580,9 +584,10 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
         const to = this.hMaker.address;
         const [generateLimit, minCollateral] =
           await getGenerateLimitAndMinCollateral(
-            utils.padRight(utils.asciiToHex(makerMcdJoinTokenName), 64)
+            utils.padRight(utils.asciiToHex(makerMcdJoinTokenName), 64),
+            gemDecimal
           );
-        const wad = generateLimit;
+        const wad = minCollateral;
         const data = abi.simpleEncode(
           'safeLockGem(address,uint256,uint256)',
           makerMcdJoinToken,
@@ -598,7 +603,7 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
           value: ether('1'),
         });
 
-        const [ilkEnd, debtEnd, lockEnd] = await getCdpInfo(cdp);
+        const [ilkEnd, debtEnd, lockEnd] = await getCdpInfo(cdp, gemDecimal);
         expect(lockEnd.sub(lock)).to.be.bignumber.eq(wad);
         profileGas(receipt);
       });
@@ -630,7 +635,7 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
         });
         cdp = await this.cdpManager.last.call(this.user1Proxy.address);
         balanceUser = await tracker(user1);
-        [ilk, debt, lock] = await getCdpInfo(cdp);
+        [ilk, debt, lock] = await getCdpInfo(cdp, ethDecimal);
       });
 
       it('normal', async function () {
@@ -647,7 +652,7 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
         const receipt = await this.proxy.execMock(to, data, {
           from: user1,
         });
-        const [ilkEnd, debtEnd, lockEnd] = await getCdpInfo(cdp);
+        const [ilkEnd, debtEnd, lockEnd] = await getCdpInfo(cdp, ethDecimal);
         expect(await balanceUser.delta()).to.be.bignumber.eq(wad);
         expect(lockEnd.sub(lock)).to.be.bignumber.eq(ether('0').sub(wad));
         profileGas(receipt);
@@ -695,9 +700,10 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
       let debt;
       let lock;
       let tokenUser;
+      let lockTokenAmount;
 
       beforeEach(async function () {
-        const tokenAmount = ether('100');
+        lockTokenAmount = new BN('500000000');
         const new2 = abi.simpleEncode(
           'openLockGemAndDraw(address,address,address,address,bytes32,uint256,uint256,bool)',
           B_CDP_MANAGER,
@@ -705,14 +711,14 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
           makerMcdJoinToken,
           MAKER_MCD_JOIN_DAI,
           utils.padRight(utils.asciiToHex(makerMcdJoinTokenName), 64),
-          tokenAmount,
+          lockTokenAmount,
           ether('0'),
           true
         );
-        await this.token.transfer(user1, tokenAmount, {
+        await this.token.transfer(user1, lockTokenAmount, {
           from: providerAddress,
         });
-        await this.token.approve(this.user1Proxy.address, tokenAmount, {
+        await this.token.approve(this.user1Proxy.address, lockTokenAmount, {
           from: user1,
         });
         await this.user1Proxy.execute(B_PROXY_ACTIONS, new2, {
@@ -720,13 +726,13 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
         });
         cdp = await this.cdpManager.last.call(this.user1Proxy.address);
         tokenUser = await this.token.balanceOf.call(user1);
-        [ilk, debt, lock] = await getCdpInfo(cdp);
+        [ilk, debt, lock] = await getCdpInfo(cdp, gemDecimal);
       });
 
       it('normal', async function () {
         await approveCdp(cdp, user1, this.dsProxy.address);
         const to = this.hMaker.address;
-        const wad = ether('100');
+        const wad = lockTokenAmount;
         const data = abi.simpleEncode(
           'freeGem(address,uint256,uint256)',
           makerMcdJoinToken,
@@ -736,7 +742,7 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
         const receipt = await this.proxy.execMock(to, data, {
           from: user1,
         });
-        const [ilkEnd, debtEnd, lockEnd] = await getCdpInfo(cdp);
+        const [ilkEnd, debtEnd, lockEnd] = await getCdpInfo(cdp, gemDecimal);
         const tokenUserEnd = await this.token.balanceOf.call(user1);
         expect(tokenUserEnd.sub(tokenUser)).to.be.bignumber.eq(wad);
         expect(lockEnd.sub(lock)).to.be.bignumber.eq(ether('0').sub(wad));
@@ -745,7 +751,7 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
 
       it('without cdp approval', async function () {
         const to = this.hMaker.address;
-        const wad = ether('100');
+        const wad = lockTokenAmount;
         const data = abi.simpleEncode(
           'freeGem(address,uint256,uint256)',
           makerMcdJoinToken,
@@ -763,7 +769,7 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
       it('approved but triggered by unauthorized user', async function () {
         await approveCdp(cdp, user1, this.dsProxy.address);
         const to = this.hMaker.address;
-        const wad = ether('100');
+        const wad = lockTokenAmount;
         const data = abi.simpleEncode(
           'freeGem(address,uint256,uint256)',
           makerMcdJoinToken,
@@ -788,7 +794,8 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
 
       beforeEach(async function () {
         const [, minCollateral] = await getGenerateLimitAndMinCollateral(
-          utils.padRight(utils.asciiToHex(makerMcdJoinETHName), 64)
+          utils.padRight(utils.asciiToHex(makerMcdJoinETHName), 64),
+          ethDecimal
         );
         const etherAmount = minCollateral;
         const new1 = abi.simpleEncode(
@@ -806,7 +813,7 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
         });
         cdp = await this.cdpManager.last.call(this.user1Proxy.address);
         daiUser = await this.dai.balanceOf.call(user1);
-        [ilk, debt, lock] = await getCdpInfo(cdp);
+        [ilk, debt, lock] = await getCdpInfo(cdp, ethDecimal);
       });
 
       it('normal', async function () {
@@ -814,7 +821,8 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
         const to = this.hMaker.address;
         const [generateLimit, minCollateral] =
           await getGenerateLimitAndMinCollateral(
-            utils.padRight(utils.asciiToHex(makerMcdJoinETHName), 64)
+            utils.padRight(utils.asciiToHex(makerMcdJoinETHName), 64),
+            ethDecimal
           );
         const wad = generateLimit;
         const data = abi.simpleEncode(
@@ -826,7 +834,7 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
         const receipt = await this.proxy.execMock(to, data, {
           from: user1,
         });
-        const [ilkEnd, debtEnd, lockEnd] = await getCdpInfo(cdp);
+        const [ilkEnd, debtEnd, lockEnd] = await getCdpInfo(cdp, ethDecimal);
         const daiUserEnd = await this.dai.balanceOf.call(user1);
         expect(daiUserEnd.sub(daiUser)).to.be.bignumber.eq(wad);
         expect(debtEnd.div(RAY)).to.be.bignumber.gte(wad);
@@ -837,7 +845,8 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
         const to = this.hMaker.address;
         const [generateLimit, minCollateral] =
           await getGenerateLimitAndMinCollateral(
-            utils.padRight(utils.asciiToHex(makerMcdJoinTokenName), 64)
+            utils.padRight(utils.asciiToHex(makerMcdJoinTokenName), 64),
+            gemDecimal
           );
         const wad = generateLimit;
         const data = abi.simpleEncode(
@@ -859,7 +868,8 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
         const to = this.hMaker.address;
         const [generateLimit, minCollateral] =
           await getGenerateLimitAndMinCollateral(
-            utils.padRight(utils.asciiToHex(makerMcdJoinTokenName), 64)
+            utils.padRight(utils.asciiToHex(makerMcdJoinTokenName), 64),
+            gemDecimal
           );
         const wad = generateLimit;
         const data = abi.simpleEncode(
@@ -885,7 +895,8 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
       beforeEach(async function () {
         const [generateLimit, minCollateral] =
           await getGenerateLimitAndMinCollateral(
-            utils.padRight(utils.asciiToHex(makerMcdJoinTokenName), 64)
+            utils.padRight(utils.asciiToHex(makerMcdJoinTokenName), 64),
+            gemDecimal
           );
         const tokenAmount = minCollateral;
         const new2 = abi.simpleEncode(
@@ -910,7 +921,7 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
         });
         cdp = await this.cdpManager.last.call(this.user1Proxy.address);
         daiUser = await this.dai.balanceOf.call(user1);
-        [ilk, debt, lock] = await getCdpInfo(cdp);
+        [ilk, debt, lock] = await getCdpInfo(cdp, gemDecimal);
       });
 
       it('normal', async function () {
@@ -918,7 +929,8 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
         const to = this.hMaker.address;
         const [generateLimit, minCollateral] =
           await getGenerateLimitAndMinCollateral(
-            utils.padRight(utils.asciiToHex(makerMcdJoinTokenName), 64)
+            utils.padRight(utils.asciiToHex(makerMcdJoinTokenName), 64),
+            gemDecimal
           );
         const wad = generateLimit;
         const data = abi.simpleEncode(
@@ -930,7 +942,7 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
         const receipt = await this.proxy.execMock(to, data, {
           from: user1,
         });
-        const [ilkEnd, debtEnd, lockEnd] = await getCdpInfo(cdp);
+        const [ilkEnd, debtEnd, lockEnd] = await getCdpInfo(cdp, gemDecimal);
         const daiUserEnd = await this.dai.balanceOf.call(user1);
         expect(daiUserEnd.sub(daiUser)).to.be.bignumber.eq(wad);
         expect(debtEnd.div(RAY)).to.be.bignumber.gte(wad);
@@ -941,7 +953,8 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
         const to = this.hMaker.address;
         const [generateLimit, minCollateral] =
           await getGenerateLimitAndMinCollateral(
-            utils.padRight(utils.asciiToHex(makerMcdJoinTokenName), 64)
+            utils.padRight(utils.asciiToHex(makerMcdJoinTokenName), 64),
+            gemDecimal
           );
         const wad = generateLimit;
         const data = abi.simpleEncode(
@@ -963,7 +976,8 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
         const to = this.hMaker.address;
         const [generateLimit, minCollateral] =
           await getGenerateLimitAndMinCollateral(
-            utils.padRight(utils.asciiToHex(makerMcdJoinTokenName), 64)
+            utils.padRight(utils.asciiToHex(makerMcdJoinTokenName), 64),
+            gemDecimal
           );
         const wad = generateLimit;
         const data = abi.simpleEncode(
@@ -992,7 +1006,8 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
 
       beforeEach(async function () {
         [generateLimit, minCollateral] = await getGenerateLimitAndMinCollateral(
-          utils.padRight(utils.asciiToHex(makerMcdJoinETHName), 64)
+          utils.padRight(utils.asciiToHex(makerMcdJoinETHName), 64),
+          ethDecimal
         );
         const daiAmount = generateLimit.add(ether('10'));
         const etherAmount = minCollateral;
@@ -1011,7 +1026,7 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
         });
         cdp = await this.cdpManager.last.call(this.user1Proxy.address);
         daiUser = await this.dai.balanceOf.call(user1);
-        [ilk, debt, lock] = await getCdpInfo(cdp);
+        [ilk, debt, lock] = await getCdpInfo(cdp, ethDecimal);
       });
 
       it('wipe', async function () {
@@ -1027,11 +1042,11 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
           from: user1,
         });
         await this.proxy.updateTokenMock(this.dai.address);
-        [ilk, debt, lock] = await getCdpInfo(cdp);
+        [ilk, debt, lock] = await getCdpInfo(cdp, ethDecimal);
         const receipt = await this.proxy.execMock(to, data, {
           from: user1,
         });
-        const [ilkEnd, debtEnd, lockEnd] = await getCdpInfo(cdp);
+        const [ilkEnd, debtEnd, lockEnd] = await getCdpInfo(cdp, ethDecimal);
         const daiUserEnd = await this.dai.balanceOf.call(user1);
         expect(daiUserEnd.sub(daiUser)).to.be.bignumber.eq(ether('0').sub(wad));
         expect(debtEnd.sub(debt).div(RAY)).to.be.bignumber.gte(
@@ -1059,11 +1074,11 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
           }
         );
         await this.proxy.updateTokenMock(this.dai.address);
-        [ilk, debt, lock] = await getCdpInfo(cdp);
+        [ilk, debt, lock] = await getCdpInfo(cdp, ethDecimal);
         const receipt = await this.proxy.execMock(to, data, {
           from: user1,
         });
-        const [ilkEnd, debtEnd, lockEnd] = await getCdpInfo(cdp);
+        const [ilkEnd, debtEnd, lockEnd] = await getCdpInfo(cdp, ethDecimal);
         const daiUserEnd = await this.dai.balanceOf.call(user1);
         expect(debtEnd).to.be.bignumber.eq(ether('0'));
         expect(daiUser.sub(daiUserEnd).sub(new BN('1'))).to.be.bignumber.gte(
@@ -1083,7 +1098,8 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
       beforeEach(async function () {
         const [generateLimit, minCollateral] =
           await getGenerateLimitAndMinCollateral(
-            utils.padRight(utils.asciiToHex(makerMcdJoinTokenName), 64)
+            utils.padRight(utils.asciiToHex(makerMcdJoinTokenName), 64),
+            gemDecimal
           );
         const tokenAmount = minCollateral;
         const daiAmount = generateLimit.add(ether('10'));
@@ -1110,7 +1126,7 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
         });
         cdp = await this.cdpManager.last.call(this.user1Proxy.address);
         daiUser = await this.dai.balanceOf.call(user1);
-        [ilk, debt, lock] = await getCdpInfo(cdp);
+        [ilk, debt, lock] = await getCdpInfo(cdp, gemDecimal);
       });
 
       it('wipe', async function () {
@@ -1126,11 +1142,11 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
           from: user1,
         });
         await this.proxy.updateTokenMock(this.dai.address);
-        [ilk, debt, lock] = await getCdpInfo(cdp);
+        [ilk, debt, lock] = await getCdpInfo(cdp, gemDecimal);
         const receipt = await this.proxy.execMock(to, data, {
           from: user1,
         });
-        const [ilkEnd, debtEnd, lockEnd] = await getCdpInfo(cdp);
+        const [ilkEnd, debtEnd, lockEnd] = await getCdpInfo(cdp, gemDecimal);
         const daiUserEnd = await this.dai.balanceOf.call(user1);
         expect(daiUserEnd.sub(daiUser)).to.be.bignumber.eq(ether('0').sub(wad));
         expect(debtEnd.sub(debt).div(RAY)).to.be.bignumber.gte(
@@ -1152,7 +1168,8 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
         daiUser = await this.dai.balanceOf.call(user1);
         const [generateLimit, minCollateral] =
           await getGenerateLimitAndMinCollateral(
-            utils.padRight(utils.asciiToHex(makerMcdJoinTokenName), 64)
+            utils.padRight(utils.asciiToHex(makerMcdJoinTokenName), 64),
+            gemDecimal
           );
         const wad = generateLimit;
         await this.dai.transfer(
@@ -1163,11 +1180,11 @@ contract('BProtocol', function ([_, user1, user2, someone]) {
           }
         );
         await this.proxy.updateTokenMock(this.dai.address);
-        [ilk, debt, lock] = await getCdpInfo(cdp);
+        [ilk, debt, lock] = await getCdpInfo(cdp, gemDecimal);
         const receipt = await this.proxy.execMock(to, data, {
           from: user1,
         });
-        const [ilkEnd, debtEnd, lockEnd] = await getCdpInfo(cdp);
+        const [ilkEnd, debtEnd, lockEnd] = await getCdpInfo(cdp, gemDecimal);
         const daiUserEnd = await this.dai.balanceOf.call(user1);
         expect(debtEnd).to.be.bignumber.eq(ether('0'));
         expect(daiUser.sub(daiUserEnd)).to.be.bignumber.gte(
