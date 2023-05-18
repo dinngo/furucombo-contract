@@ -9,6 +9,7 @@ module.exports = {
   HUniswapV3: '0x3dc25F78b4Eaed2F3ac2C26b0f4Ae1DEBb08F6e5',
   HWrappedNativeToken: '0xb678B2ae7dF978Ee4Aba4f9ce0564c0c1b0E9FC8',
   HStargate: '0x7F974c1E969c8201c08273b958dA646fe5d536AA',
+  HCompoundV3: '0x6b6646Ba25e91A6ACB14B37BF564a6C2B15Db4AC',
   RFreePass: '0x6fa56D3C0ECC0A244D8E06C005816f9c9904576A',
 
   // External addresses
