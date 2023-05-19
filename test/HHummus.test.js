@@ -5,13 +5,12 @@ if (network.config.chainId == 1088) {
 }
 
 const {
-  balance,
   BN,
   constants,
   ether,
   expectRevert,
 } = require('@openzeppelin/test-helpers');
-const { tracker } = balance;
+
 const { MAX_UINT256 } = constants;
 const abi = require('ethereumjs-abi');
 const utils = web3.utils;
@@ -19,10 +18,9 @@ const { expect } = require('chai');
 const {
   DAI_TOKEN,
   USDC_TOKEN,
-  USDT_TOKEN,
   MAI_TOKEN,
   HUMMUS_ROUTER01,
-  HUMMUS_POOL_USDC_USDC_DAI,
+  HUMMUS_POOL_USDT_USDC_DAI,
   HUMMUS_POOL_USDC_MAI,
 } = require('./utils/constants');
 const {
@@ -31,10 +29,9 @@ const {
   mulPercent,
   profileGas,
   getHandlerReturn,
-  tokenProviderSushi,
-  impersonateAndInjectEther,
   mwei,
   setTokenBalance,
+  getBalanceSlotNum,
 } = require('./utils/utils');
 
 const HHummus = artifacts.require('HHummus');
@@ -76,13 +73,14 @@ contract('Hummus Swap', function ([_, user, someone]) {
     const token0Address = USDC_TOKEN;
     const token1Address = DAI_TOKEN;
     const altTokenAddress = MAI_TOKEN;
+    const token0Symbol = 'USDC';
+    const token1Symbol = 'DAI';
 
     let token0;
     let token1;
     let altToken;
     let token0User;
     let token1User;
-    let providerAddress;
     let pool;
     let altPool;
 
@@ -90,7 +88,7 @@ contract('Hummus Swap', function ([_, user, someone]) {
       token0 = await IToken.at(token0Address);
       token1 = await IToken.at(token1Address);
       altToken = await IToken.at(altTokenAddress);
-      pool = HUMMUS_POOL_USDC_USDC_DAI;
+      pool = HUMMUS_POOL_USDT_USDC_DAI;
       altPool = HUMMUS_POOL_USDC_MAI;
     });
 
@@ -111,13 +109,9 @@ contract('Hummus Swap', function ([_, user, someone]) {
           const result = await this.router.quotePotentialSwaps.call(
             tokenPath,
             poolPath,
-            value,
-            {
-              from: someone,
-            }
+            value
           );
           const potentialOutcome = result[0];
-          const haircut = result[1];
 
           // Prepare call data
           const data = abi.simpleEncode(
@@ -129,7 +123,7 @@ contract('Hummus Swap', function ([_, user, someone]) {
           );
 
           // Execute
-          await sendToken(token0.address, this.proxy.address, value);
+          await sendToken(token0Symbol, token0, this.proxy.address, value);
           await this.proxy.updateTokenMock(token0.address);
           const receipt = await this.proxy.execMock(to, data, { from: user });
 
@@ -143,10 +137,10 @@ contract('Hummus Swap', function ([_, user, someone]) {
           // Verify proxy balance
           expect(
             await token0.balanceOf.call(this.proxy.address)
-          ).to.be.bignumber.eq(ether('0'));
+          ).to.be.bignumber.zero;
           expect(
             await token1.balanceOf.call(this.proxy.address)
-          ).to.be.bignumber.eq(ether('0'));
+          ).to.be.bignumber.zero;
 
           // Verify user balance
           expect(await token0.balanceOf.call(user)).to.be.bignumber.eq(
@@ -168,13 +162,9 @@ contract('Hummus Swap', function ([_, user, someone]) {
           const result = await this.router.quotePotentialSwaps.call(
             tokenPath,
             poolPath,
-            value,
-            {
-              from: someone,
-            }
+            value
           );
           const potentialOutcome = result[0];
-          const haircut = result[1];
 
           // Prepare call data
           const data = abi.simpleEncode(
@@ -186,7 +176,7 @@ contract('Hummus Swap', function ([_, user, someone]) {
           );
 
           // Execute
-          await sendToken(token0.address, this.proxy.address, value);
+          await sendToken(token0Symbol, token0, this.proxy.address, value);
           await this.proxy.updateTokenMock(token0.address);
           const receipt = await this.proxy.execMock(to, data, { from: user });
 
@@ -200,10 +190,10 @@ contract('Hummus Swap', function ([_, user, someone]) {
           // Verify proxy balance
           expect(
             await token0.balanceOf.call(this.proxy.address)
-          ).to.be.bignumber.eq(ether('0'));
+          ).to.be.bignumber.zero;
           expect(
             await altToken.balanceOf.call(this.proxy.address)
-          ).to.be.bignumber.eq(ether('0'));
+          ).to.be.bignumber.zero;
 
           // Verify user balance
           expect(await token0.balanceOf.call(user)).to.be.bignumber.eq(
@@ -225,13 +215,9 @@ contract('Hummus Swap', function ([_, user, someone]) {
           const result = await this.router.quotePotentialSwaps.call(
             tokenPath,
             poolPath,
-            value,
-            {
-              from: someone,
-            }
+            value
           );
           const potentialOutcome = result[0];
-          const haircut = result[1];
 
           // Prepare call data
           const data = abi.simpleEncode(
@@ -243,7 +229,7 @@ contract('Hummus Swap', function ([_, user, someone]) {
           );
 
           // Execute
-          await sendToken(token1.address, this.proxy.address, value);
+          await sendToken(token1Symbol, token1, this.proxy.address, value);
           await this.proxy.updateTokenMock(token0.address);
           const receipt = await this.proxy.execMock(to, data, { from: user });
 
@@ -257,13 +243,13 @@ contract('Hummus Swap', function ([_, user, someone]) {
           // Verify proxy balance
           expect(
             await token0.balanceOf.call(this.proxy.address)
-          ).to.be.bignumber.eq(ether('0'));
+          ).to.be.bignumber.zero;
           expect(
             await token1.balanceOf.call(this.proxy.address)
-          ).to.be.bignumber.eq(ether('0'));
+          ).to.be.bignumber.zero;
           expect(
             await altToken.balanceOf.call(this.proxy.address)
-          ).to.be.bignumber.eq(ether('0'));
+          ).to.be.bignumber.zero;
 
           // Verify user balance
           expect(await token0.balanceOf.call(user)).to.be.bignumber.eq(
@@ -289,13 +275,9 @@ contract('Hummus Swap', function ([_, user, someone]) {
           const result = await this.router.quotePotentialSwaps.call(
             tokenPath,
             poolPath,
-            value,
-            {
-              from: someone,
-            }
+            value
           );
           const potentialOutcome = result[0];
-          const haircut = result[1];
 
           // Prepare call data
           const data = abi.simpleEncode(
@@ -307,7 +289,7 @@ contract('Hummus Swap', function ([_, user, someone]) {
           );
 
           // Execute
-          await sendToken(token0.address, this.proxy.address, value);
+          await sendToken(token0Symbol, token0, this.proxy.address, value);
           await this.proxy.updateTokenMock(token0.address);
           const receipt = await this.proxy.execMock(to, data, { from: user });
 
@@ -321,10 +303,10 @@ contract('Hummus Swap', function ([_, user, someone]) {
           // Verify proxy balance
           expect(
             await token0.balanceOf.call(this.proxy.address)
-          ).to.be.bignumber.eq(ether('0'));
+          ).to.be.bignumber.zero;
           expect(
             await token1.balanceOf.call(this.proxy.address)
-          ).to.be.bignumber.eq(ether('0'));
+          ).to.be.bignumber.zero;
 
           // Verify user balance
           expect(await token0.balanceOf.call(user)).to.be.bignumber.eq(
@@ -337,7 +319,7 @@ contract('Hummus Swap', function ([_, user, someone]) {
           profileGas(receipt);
         });
 
-        it('should revert: invalid path', async function () {
+        it('should revert: invalid token path', async function () {
           const value = mwei('1000');
           const to = this.hHummus.address;
           const tokenPath = [token0.address];
@@ -353,11 +335,11 @@ contract('Hummus Swap', function ([_, user, someone]) {
           );
 
           // Execute
-          await sendToken(token0.address, this.proxy.address, value);
+          await sendToken(token0Symbol, token0, this.proxy.address, value);
           await this.proxy.updateTokenMock(token0.address);
           await expectRevert(
             this.proxy.execMock(to, data, { from: user }),
-            'HHummus_swapTokensForTokens: invalid path'
+            '0_HHummus_swapTokensForTokens: invalid token path'
           );
         });
 
@@ -377,11 +359,11 @@ contract('Hummus Swap', function ([_, user, someone]) {
           );
 
           // Execute
-          await sendToken(token0.address, this.proxy.address, value);
+          await sendToken(token0Symbol, token0, this.proxy.address, value);
           await this.proxy.updateTokenMock(token0.address);
           await expectRevert(
             this.proxy.execMock(to, data, { from: user }),
-            'HHummus_swapTokensForTokens: invalid pool path'
+            '0_HHummus_swapTokensForTokens: invalid pool path'
           );
         });
 
@@ -401,7 +383,7 @@ contract('Hummus Swap', function ([_, user, someone]) {
           );
 
           // Execute
-          await sendToken(token0.address, this.proxy.address, value);
+          await sendToken(token0Symbol, token0, this.proxy.address, value);
           await this.proxy.updateTokenMock(token0.address);
           await expectRevert(
             this.proxy.execMock(to, data, { from: user }),
@@ -426,7 +408,8 @@ contract('Hummus Swap', function ([_, user, someone]) {
 
           // Execute
           await sendToken(
-            token0.address,
+            token0Symbol,
+            token0,
             this.proxy.address,
             value.sub(new BN(1))
           );
@@ -439,9 +422,12 @@ contract('Hummus Swap', function ([_, user, someone]) {
       });
     });
 
-    async function sendToken(token, to, amount) {
-      const baseTokenBalanceSlotNum = network.config.chainId == 1 ? 9 : 0;
-      await setTokenBalance(token, to, amount, baseTokenBalanceSlotNum);
+    async function sendToken(symbol, token, to, amount) {
+      const baseTokenBalanceSlotNum = await getBalanceSlotNum(
+        symbol,
+        network.config.chainId
+      );
+      await setTokenBalance(token.address, to, amount, baseTokenBalanceSlotNum);
     }
   });
 });

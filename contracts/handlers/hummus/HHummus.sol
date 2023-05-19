@@ -2,8 +2,8 @@
 
 pragma solidity 0.8.10;
 
-import "../HandlerBase.sol";
-import "./IHummusRouter01.sol";
+import {HandlerBase} from "../HandlerBase.sol";
+import {IHummusRouter01} from "./IHummusRouter01.sol";
 
 contract HHummus is HandlerBase {
     // prettier-ignore
@@ -23,16 +23,6 @@ contract HHummus is HandlerBase {
         address[] calldata tokenPath,
         address[] calldata poolPath
     ) external returns (uint256 amount) {
-        _requireMsg(
-            tokenPath.length >= 2,
-            "swapTokensForTokens",
-            "invalid path"
-        );
-        _requireMsg(
-            poolPath.length == tokenPath.length - 1,
-            "swapTokensForTokens",
-            "invalid pool path"
-        );
         address tokenIn = tokenPath[0];
         address tokenOut = tokenPath[tokenPath.length - 1];
 

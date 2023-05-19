@@ -1,7 +1,7 @@
 metis_test_0:
   variables:
     JOB_INDEX: 0
-    RUNNER_COUNT: 16
+    RUNNER_COUNT: 4
     RPC_URL: ${METIS_RPC_URL}
     CHAIN_ID: 1088
   extends: .test_template
@@ -9,7 +9,7 @@ metis_test_0:
 metis_test_1:
   variables:
     JOB_INDEX: 1
-    RUNNER_COUNT: 16
+    RUNNER_COUNT: 4
     RPC_URL: ${METIS_RPC_URL}
     CHAIN_ID: 1088
   extends: .test_template
@@ -17,7 +17,7 @@ metis_test_1:
 metis_test_2:
   variables:
     JOB_INDEX: 2
-    RUNNER_COUNT: 16
+    RUNNER_COUNT: 4
     RPC_URL: ${METIS_RPC_URL}
     CHAIN_ID: 1088
   extends: .test_template
@@ -25,103 +25,7 @@ metis_test_2:
 metis_test_3:
   variables:
     JOB_INDEX: 3
-    RUNNER_COUNT: 16
-    RPC_URL: ${METIS_RPC_URL}
-    CHAIN_ID: 1088
-  extends: .test_template
-
-metis_test_4:
-  variables:
-    JOB_INDEX: 4
-    RUNNER_COUNT: 16
-    RPC_URL: ${METIS_RPC_URL}
-    CHAIN_ID: 1088
-  extends: .test_template
-
-eth_test_5:
-  variables:
-    JOB_INDEX: 5
-    RUNNER_COUNT: 16
-    RPC_URL: ${METIS_RPC_URL}
-    CHAIN_ID: 1088
-  extends: .test_template
-
-eth_test_6:
-  variables:
-    JOB_INDEX: 6
-    RUNNER_COUNT: 16
-    RPC_URL: ${METIS_RPC_URL}
-    CHAIN_ID: 1088
-  extends: .test_template
-
-metis_test_7:
-  variables:
-    JOB_INDEX: 7
-    RUNNER_COUNT: 16
-    RPC_URL: ${METIS_RPC_URL}
-    CHAIN_ID: 1088
-  extends: .test_template
-
-metis_test_8:
-  variables:
-    JOB_INDEX: 8
-    RUNNER_COUNT: 16
-    RPC_URL: ${METIS_RPC_URL}
-    CHAIN_ID: 1088
-  extends: .test_template
-
-metis_test_9:
-  variables:
-    JOB_INDEX: 9
-    RUNNER_COUNT: 16
-    RPC_URL: ${METIS_RPC_URL}
-    CHAIN_ID: 1088
-  extends: .test_template
-
-metis_test_10:
-  variables:
-    JOB_INDEX: 10
-    RUNNER_COUNT: 16
-    RPC_URL: ${METIS_RPC_URL}
-    CHAIN_ID: 1088
-  extends: .test_template
-
-metis_test_11:
-  variables:
-    JOB_INDEX: 11
-    RUNNER_COUNT: 16
-    RPC_URL: ${METIS_RPC_URL}
-    CHAIN_ID: 1088
-  extends: .test_template
-
-metis_test_12:
-  variables:
-    JOB_INDEX: 12
-    RUNNER_COUNT: 16
-    RPC_URL: ${METIS_RPC_URL}
-    CHAIN_ID: 1088
-  extends: .test_template
-
-metis_test_13:
-  variables:
-    JOB_INDEX: 13
-    RUNNER_COUNT: 16
-    RPC_URL: ${METIS_RPC_URL}
-    CHAIN_ID: 1088
-  extends: .test_template
-
-metis_test_14:
-  variables:
-    JOB_INDEX: 14
-    RUNNER_COUNT: 16
-    RPC_URL: ${METIS_RPC_URL}
-    CHAIN_ID: 1088
-  extends: .test_template
-
-metis_test_15:
-  variables:
-    JOB_INDEX: 15
-    RUNNER_COUNT: 16
+    RUNNER_COUNT: 4
     RPC_URL: ${METIS_RPC_URL}
     CHAIN_ID: 1088
   extends: .test_template
