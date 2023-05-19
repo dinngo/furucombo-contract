@@ -4,6 +4,7 @@ if (
   chainId == 1 ||
   chainId == 10 ||
   chainId == 137 ||
+  chainId == 1088 ||
   chainId == 42161 ||
   chainId == 43114
 ) {
@@ -28,6 +29,7 @@ const { expect } = require('chai');
 
 const {
   DAI_TOKEN,
+  DAI_TOKEN_PROVIDER,
   ADAI_V3_TOKEN,
   WRAPPED_NATIVE_TOKEN,
   AAVEPROTOCOL_V3_PROVIDER,
@@ -40,6 +42,7 @@ const {
   getHandlerReturn,
   expectEqWithinBps,
   getTokenProvider,
+  impersonateAndInjectEther,
 } = require('./utils/utils');
 
 const HAaveV3 = artifacts.require('HAaveProtocolV3');
@@ -65,10 +68,15 @@ contract('Aave V3', function ([_, user]) {
   let wrappedNativeTokenProviderAddress;
 
   before(async function () {
-    providerAddress = await getTokenProvider(tokenAddress);
-    wrappedNativeTokenProviderAddress = await getTokenProvider(
-      WRAPPED_NATIVE_TOKEN
-    );
+    if (chainId == 1088) {
+      providerAddress = DAI_TOKEN_PROVIDER; // Metis chain no tokenProvider dex util
+      await impersonateAndInjectEther(providerAddress);
+    } else {
+      providerAddress = await getTokenProvider(tokenAddress);
+      wrappedNativeTokenProviderAddress = await getTokenProvider(
+        WRAPPED_NATIVE_TOKEN
+      );
+    }
 
     this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);
     this.registry = await Registry.new();
@@ -107,6 +115,23 @@ contract('Aave V3', function ([_, user]) {
 
   describe('Supply', function () {
     describe('Eth', function () {
+      // metis chain only use supply(uint256) function
+      if (chainId == 1088) {
+        it('should revert: not supported supplyETH', async function () {
+          const value = ether('1');
+          const to = this.hAaveV3.address;
+          const data = abi.simpleEncode('supplyETH(uint256)', value);
+          await expectRevert(
+            this.proxy.execMock(to, data, {
+              from: user,
+              value: value,
+            }),
+            '0_HAaveProtocolV3_General: aToken should not be zero address'
+          );
+        });
+        return;
+      }
+
       it('normal', async function () {
         const value = ether('1');
         const to = this.hAaveV3.address;
@@ -232,6 +257,23 @@ contract('Aave V3', function ([_, user]) {
     var supplyAmount = ether('1');
 
     describe('Eth', function () {
+      // metis chain only use supply(uint256) function
+      if (chainId == 1088) {
+        it('should revert: not supported withdrawETH', async function () {
+          const value = supplyAmount.div(new BN(2));
+          const to = this.hAaveV3.address;
+          const data = abi.simpleEncode('withdrawETH(uint256)', value);
+          await expectRevert(
+            this.proxy.execMock(to, data, {
+              from: user,
+              value: value,
+            }),
+            '0_HAaveProtocolV3_General: aToken should not be zero address'
+          );
+        });
+        return;
+      }
+
       beforeEach(async function () {
         await this.wrappedNativeToken.approve(this.pool.address, supplyAmount, {
           from: wrappedNativeTokenProviderAddress,
