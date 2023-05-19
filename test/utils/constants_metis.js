@@ -3,19 +3,15 @@ const metis = require('../../deploy/utils/addresses_metis');
 module.exports = {
   /* MDAI */
   DAI_TOKEN: '0x4c078361FC9BbB78DF910800A991C7c3DD2F6ce0',
-  DAI_SYMBOL: 'm.DAI',
 
   /* MUSDT */
   USDT_TOKEN: '0xbB06DCA3AE6887fAbF931640f67cab3e3a16F4dC',
-  USDT_SYMBOL: 'm.USDT',
 
   /* MUSDC */
   USDC_TOKEN: '0xEA32A96608495e54156Ae48931A7c20f0dcc1a21',
-  USDC_SYMBOL: 'm.USDC',
 
   /* MAI */
   MAI_TOKEN: '0xdFA46478F9e5EA86d57387849598dbFB2e964b02',
-  MAI_SYMBOL: 'MAI',
 
   /* Services */
   HUMMUS_ROUTER01: metis.HUMMUS_ROUTER01,

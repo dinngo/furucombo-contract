@@ -40,9 +40,8 @@ const Registry = artifacts.require('Registry');
 const Proxy = artifacts.require('ProxyMock');
 const IToken = artifacts.require('IERC20');
 const IHummusRouter = artifacts.require('IHummusRouter01');
-const IUsdt = artifacts.require('IERC20Usdt');
 
-contract('Hummus Swap', function ([_, user, someone]) {
+contract('Hummus Swap', function ([_, user]) {
   let id;
   const slippage = new BN('3');
 
