@@ -257,7 +257,7 @@ contract('Aave V3', function ([_, user]) {
     var supplyAmount = ether('1');
 
     describe('Eth', function () {
-      // metis chain only use supply(uint256) function
+      // metis chain only use withdraw(uint256) function
       if (chainId == 1088) {
         it('should revert: not supported withdrawETH', async function () {
           const value = supplyAmount.div(new BN(2));
