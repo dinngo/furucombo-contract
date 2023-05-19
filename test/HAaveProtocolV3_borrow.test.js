@@ -27,7 +27,6 @@ const {
   COMP_TOKEN,
   ADAI_V3_TOKEN,
   WRAPPED_NATIVE_TOKEN,
-  DAI_TOKEN_PROVIDER,
   AAVEPROTOCOL_V3_PROVIDER,
   AWRAPPED_NATIVE_V3_DEBT_VARIABLE,
   ADAI_V3_DEBT_VARIABLE,
@@ -42,7 +41,6 @@ const {
   getTokenProvider,
   expectEqWithinBps,
   mwei,
-  impersonateAndInjectEther,
 } = require('./utils/utils');
 
 const HAaveV3 = artifacts.require('HAaveProtocolV3');
@@ -67,12 +65,7 @@ contract('Aave V3', function ([_, user, someone]) {
   let providerAddress;
 
   before(async function () {
-    if (chainId == 1088) {
-      providerAddress = DAI_TOKEN_PROVIDER; // Metis chain no tokenProvider dex util
-      await impersonateAndInjectEther(providerAddress);
-    } else {
-      providerAddress = await getTokenProvider(tokenAddress, WETH_TOKEN, 3000);
-    }
+    providerAddress = await getTokenProvider(tokenAddress, WETH_TOKEN, 3000);
 
     this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);
     this.registry = await Registry.new();
@@ -380,23 +373,6 @@ contract('Aave V3', function ([_, user, someone]) {
     it('borrow eth', async function () {
       // metis chain only use borrow(address,uint256,uint256) function
       if (chainId == 1088) {
-        it('should revert: not supported borrowETH', async function () {
-          const borrowAmount = mwei('1');
-          const to = this.hAaveV3.address;
-          const data = abi.simpleEncode(
-            'borrow(address,uint256,uint256)',
-            this.borrowToken.address,
-            borrowAmount,
-            rateMode
-          );
-          await expectRevert(
-            this.proxy.execMock(to, data, {
-              from: user,
-              value: value,
-            }),
-            '0_HAaveProtocolV3_General: aToken should not be zero address'
-          );
-        });
         return;
       }
 
@@ -449,9 +425,29 @@ contract('Aave V3', function ([_, user, someone]) {
       profileGas(receipt);
     });
 
+    it('should revert: not supported borrowETH', async function () {
+      if (chainId != 1088) {
+        return;
+      }
+      const borrowAmount = mwei('1');
+      const to = this.hAaveV3.address;
+      const data = abi.simpleEncode(
+        'borrow(address,uint256,uint256)',
+        this.borrowToken.address,
+        borrowAmount,
+        rateMode
+      );
+      await expectRevert(
+        this.proxy.execMock(to, data, {
+          from: user,
+          value: ether('0.1'),
+        }),
+        'HAaveProtocolV3_borrow: Unspecified'
+      );
+    });
+
     it('should revert: borrow token over the collateral value', async function () {
       const borrowAmount = mwei('10000');
-      // chainId == 137 || chainId == 43114 ? ether('20000') : ether('50');
       const to = this.hAaveV3.address;
       const data = abi.simpleEncode(
         'borrow(address,uint256,uint256)',

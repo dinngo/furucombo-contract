@@ -12,10 +12,13 @@ const {
   SPOOKY_FACTORY,
   CURVE_ADDRESS_PROVIDER,
   YEARN_CONTROLLER,
+  DAI_TOKEN,
   WETH_TOKEN,
   USDC_TOKEN,
   WAVAX_TOKEN,
   WFTM_TOKEN,
+  DAI_TOKEN_PROVIDER,
+  USDC_TOKEN_PROVIDER,
   RecordHandlerResultSig,
   STORAGE_KEY_MSG_SENDER,
   STORAGE_KEY_CUBE_COUNTER,
@@ -225,6 +228,17 @@ async function getTokenProvider(
     return await tokenProviderQuick(token0, token1);
   } else if (chainId == 250) {
     return await tokenProviderSpookySwap(token0, WFTM_TOKEN);
+  } else if (chainId == 1088) {
+    switch (token0) {
+      case DAI_TOKEN:
+        impersonateAndInjectEther(DAI_TOKEN_PROVIDER);
+        return DAI_TOKEN_PROVIDER;
+      case USDC_TOKEN:
+        impersonateAndInjectEther(USDC_TOKEN_PROVIDER);
+        return USDC_TOKEN_PROVIDER;
+      default:
+        return ZERO_ADDRESS;
+    }
   } else if (chainId == 43114) {
     return await tokenProviderTraderJoe(token0, WAVAX_TOKEN);
   }

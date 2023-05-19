@@ -29,7 +29,6 @@ const { expect } = require('chai');
 
 const {
   DAI_TOKEN,
-  DAI_TOKEN_PROVIDER,
   ADAI_V3_TOKEN,
   WRAPPED_NATIVE_TOKEN,
   AAVEPROTOCOL_V3_PROVIDER,
@@ -42,7 +41,6 @@ const {
   getHandlerReturn,
   expectEqWithinBps,
   getTokenProvider,
-  impersonateAndInjectEther,
 } = require('./utils/utils');
 
 const HAaveV3 = artifacts.require('HAaveProtocolV3');
@@ -68,15 +66,10 @@ contract('Aave V3', function ([_, user]) {
   let wrappedNativeTokenProviderAddress;
 
   before(async function () {
-    if (chainId == 1088) {
-      providerAddress = DAI_TOKEN_PROVIDER; // Metis chain no tokenProvider dex util
-      await impersonateAndInjectEther(providerAddress);
-    } else {
-      providerAddress = await getTokenProvider(tokenAddress);
-      wrappedNativeTokenProviderAddress = await getTokenProvider(
-        WRAPPED_NATIVE_TOKEN
-      );
-    }
+    providerAddress = await getTokenProvider(tokenAddress);
+    wrappedNativeTokenProviderAddress = await getTokenProvider(
+      WRAPPED_NATIVE_TOKEN
+    );
 
     this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);
     this.registry = await Registry.new();
