@@ -3,6 +3,7 @@ include:
   - 'templates/.gitlab-ci-optimism.yml'
   - 'templates/.gitlab-ci-polygon.yml'
   - 'templates/.gitlab-ci-fantom.yml'
+  - 'templates/.gitlab-ci-metis.yml'
   - 'templates/.gitlab-ci-arbitrum.yml'
   - 'templates/.gitlab-ci-avalanche.yml'
 

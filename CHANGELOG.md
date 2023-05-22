@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- Support Hummus protocol.
 - Support Aave Protocol V3 on Metis.
 
 ## [2.6.0] - 2023-05-09
