@@ -4,6 +4,7 @@ if (
   chainId == 1 ||
   chainId == 10 ||
   chainId == 137 ||
+  chainId == 1088 ||
   chainId == 42161 ||
   chainId == 43114
 ) {
@@ -211,7 +212,7 @@ contract('AaveV3 flashloan', function ([_, user, someone]) {
     });
 
     it('single asset with stable rate by borrowing from itself', async function () {
-      if (chainId == 1) {
+      if (chainId == 1 || chainId == 1088) {
         // Ethereum does not support borrow in stable mode
         return;
       }
