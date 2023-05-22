@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+### Added
+
+- Support Aave Protocol V3 on Metis.
+
 ## [2.6.0] - 2023-05-09
 
 ### Added
