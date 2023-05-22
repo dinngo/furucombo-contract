@@ -1,8 +1,6 @@
 const metis = require('../../deploy/utils/addresses_metis');
 
 module.exports = {
-  WRAPPED_NATIVE_TOKEN: metis.WRAPPED_NATIVE_TOKEN,
-
   /* MDAI */
   DAI_TOKEN: '0x4c078361FC9BbB78DF910800A991C7c3DD2F6ce0',
 

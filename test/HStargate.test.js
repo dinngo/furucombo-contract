@@ -32,7 +32,6 @@ const { expect } = require('chai');
 const {
   USDC_TOKEN,
   USDT_TOKEN,
-  WRAPPED_NATIVE_TOKEN,
   STARGATE_FACTORY,
   STARGATE_ROUTER,
   STARGATE_ROUTER_ETH,
@@ -84,10 +83,6 @@ function stargateFormat(num) {
 
 contract('Stargate', function ([_, user, user2]) {
   before(async function () {
-    wrappedNativeTokenProviderAddress = await getTokenProvider(
-      WRAPPED_NATIVE_TOKEN
-    );
-
     this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);
     this.registry = await Registry.new();
     this.proxy = await Proxy.new(
@@ -111,7 +106,6 @@ contract('Stargate', function ([_, user, user2]) {
 
     this.stargateStablePool =
       chainId == 1088 ? STARGATE_POOL_USDT : STARGATE_POOL_USDC;
-    this.wrappedNativeToken = await IToken.at(WRAPPED_NATIVE_TOKEN);
     this.stargateRouter = await IStartgateRouter.at(STARGATE_ROUTER);
     this.stargateFactory = await IStargateFactory.at(STARGATE_FACTORY);
     this.stargateWidget = await IStargateWidget.at(STARGATE_WIDGET_SWAP);
