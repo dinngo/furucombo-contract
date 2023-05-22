@@ -87,6 +87,11 @@ module.exports = {
       url: process.env.FANTOM_RPC_URL || 'https://rpc.ankr.com/fantom',
       accounts: accounts(process.env.FANTOM_SECRET),
     },
+    metis: {
+      url:
+        process.env.METIS_RPC_URL || 'https://andromeda.metis.io/?owner=1088',
+      accounts: accounts(process.env.METIS_SECRET),
+    },
     arbitrum: {
       url: process.env.ARBITRUM_RPC_URL || 'https://arb1.arbitrum.io/rpc',
       accounts: accounts(process.env.ARBITRUM_SECRET),
