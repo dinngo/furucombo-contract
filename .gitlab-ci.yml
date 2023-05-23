@@ -6,7 +6,6 @@ include:
   - 'templates/.gitlab-ci-metis.yml'
   - 'templates/.gitlab-ci-arbitrum.yml'
   - 'templates/.gitlab-ci-avalanche.yml'
-  - 'templates/.gitlab-ci-andromeda.yml'
 
 image: node:16.18.0-buster
 

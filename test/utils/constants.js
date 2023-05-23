@@ -5,7 +5,6 @@ const fantom = require('./constants_fantom');
 const metis = require('./constants_metis');
 const arbitrum = require('./constants_arbitrum');
 const avalanche = require('./constants_avalanche');
-const andromeda = require('./constants_andromeda');
 
 module.exports =
   network.config.chainId == 1
@@ -22,6 +21,4 @@ module.exports =
     ? arbitrum
     : network.config.chainId == 43114
     ? avalanche
-    : network.config.chainId == 1088
-    ? andromeda
     : console.log('Unsupported CHAIN_ID') & process.exit(0);

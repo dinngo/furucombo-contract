@@ -102,12 +102,6 @@ module.exports = {
         'https://api.avax.network/ext/bc/C/rpc',
       accounts: accounts(process.env.AVALANCHE_SECRET),
     },
-    andromeda: {
-      url:
-        process.env.ANDROMEDA_RPC_URL ||
-        'https://andromeda.metis.io/?owner=1088',
-      accounts: accounts(process.env.ANDROMEDA_SECRET),
-    },
   },
   mocha: {
     timeout: 900000,
