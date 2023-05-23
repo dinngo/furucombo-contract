@@ -12,6 +12,8 @@ image: node:16.18.0-buster
 default:
   tags:
     - docker
+  before_script:
+    - npm install
 
 stages:
   - build
@@ -20,18 +22,8 @@ stages:
   - analysis
   - deploy
 
-.pull_cache: &pull-cache
-  cache:
-    key: ${CI_PROJECT_PATH_SLUG}
-    paths:
-      - node_modules/
-      - artifacts/
-      - cache/
-    policy: pull
-
 .test_template:
   stage: test
-  <<: *pull-cache
   script:
     - apt-get update && apt-get install -y netcat
     - FILES=( $(find -H -L ./test/* -regex "^.*.test.js") )
@@ -83,21 +75,12 @@ stages:
 
 build:
   stage: build
-  cache:
-    key: ${CI_PROJECT_PATH_SLUG}
-    paths:
-      - node_modules/
-      - artifacts/
-      - cache/
-    policy: push
   script:
-    - npm install
     - npm run build
 
 test_fuzzing:
   image: ghcr.io/foundry-rs/foundry:nightly-63ed1099a74fded7c3a7182b5a508bd7d16743d3
   stage: fuzzing
-  <<: *pull-cache
   before_script:
     - apk add --update nodejs npm
     - npm install
@@ -107,7 +90,6 @@ test_fuzzing:
 # Analysis
 analysis_slither:
   stage: analysis
-  <<: *pull-cache
   script:
     - apt-get update && apt-get install -y python3-pip
     - pip3 install slither-analyzer && pip3 install solc-select
@@ -115,6 +97,5 @@ analysis_slither:
 
 deploy:
   stage: deploy
-  <<: *pull-cache
   script:
     - npm run deploy
