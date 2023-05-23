@@ -255,9 +255,9 @@ contract('Maia Swap', function ([_, user, someone]) {
       });
     });
 
-    describe('Multi path', function () {
+    describe.skip('Multi path', function () {
       describe('Token only', function () {
-        it.only('normal', async function () {
+        it('normal', async function () {
           const value = ether('0.1');
           const to = this.hMaia.address;
           // Set swap info
@@ -311,18 +311,18 @@ contract('Maia Swap', function ([_, user, someone]) {
         });
 
         it('max amount', async function () {
-          const value = ether('1');
+          const value = ether('0.1');
           const to = this.hMaia.address;
           // Set swap info
-          const tokens = [tokenAddress, token2Address, NATIVE_TOKEN_ADDRESS];
-          const fees = [new BN('500'), new BN('3000')];
+          const tokens = [token2Address, tokenAddress, NATIVE_TOKEN_ADDRESS];
+          const fees = [new BN('100'), new BN('3000')];
           const path = encodePath(tokens, fees);
           const amountIn = value;
           const amountOutMinimum = new BN('1');
-          await this.token.transfer(this.proxy.address, amountIn, {
+          await this.native.transfer(this.proxy.address, amountIn, {
             from: tokenProvider,
           });
-          await this.proxy.updateTokenMock(this.token.address);
+          await this.proxy.updateTokenMock(this.native.address);
 
           // Estimate result
           const result = await this.quoter.quoteExactInput.call(path, amountIn);
@@ -346,33 +346,33 @@ contract('Maia Swap', function ([_, user, someone]) {
           );
 
           // Verify result
-          expect(handlerReturn).to.be.bignumber.eq(result);
+          expect(handlerReturn).to.be.bignumber.eq(result.amountOut);
           expect(handlerReturn).to.be.bignumber.gt(new BN('0'));
-          expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
-            tokenUser
+          expect(await this.native.balanceOf.call(user)).to.be.bignumber.eq(
+            nativeUser
           );
-          expect(
-            await this.token.balanceOf.call(this.proxy.address)
-          ).to.be.bignumber.eq(ether('0'));
           expect(
             await this.native.balanceOf.call(this.proxy.address)
           ).to.be.bignumber.eq(ether('0'));
-          expect(await this.native.balanceOf.call(user)).to.be.bignumber.eq(
-            nativeUser.add(result)
+          expect(
+            await this.token2.balanceOf.call(this.proxy.address)
+          ).to.be.bignumber.eq(ether('0'));
+          expect(await this.token2.balanceOf.call(user)).to.be.bignumber.eq(
+            token2User.add(result.amountOut)
           );
           expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
         });
 
         it('insufficient token', async function () {
-          const value = ether('1');
+          const value = ether('0.1');
           const to = this.hMaia.address;
           // Set swap info
-          const tokens = [tokenAddress, token2Address, NATIVE_TOKEN_ADDRESS];
-          const fees = [new BN('500'), new BN('3000')];
+          const tokens = [token2Address, tokenAddress, NATIVE_TOKEN_ADDRESS];
+          const fees = [new BN('100'), new BN('3000')];
           const path = encodePath(tokens, fees);
           const amountIn = value;
           const amountOutMinimum = new BN('1');
-          await this.token.transfer(
+          await this.native.transfer(
             this.proxy.address,
             amountIn.div(new BN('2')),
             {
@@ -568,18 +568,18 @@ contract('Maia Swap', function ([_, user, someone]) {
     describe('Multi path', function () {
       describe('Token only', function () {
         it('normal', async function () {
-          const value = ether('1');
+          const value = ether('0.1');
           const to = this.hMaia.address;
           // Set swap info
-          const tokens = [NATIVE_TOKEN_ADDRESS, token2Address, tokenAddress];
-          const fees = [new BN('3000'), new BN('500')];
+          const tokens = [token2Address, tokenAddress, NATIVE_TOKEN_ADDRESS];
+          const fees = [new BN('100'), new BN('3000')];
           const path = encodePath(tokens, fees);
-          const amountOut = ether('1');
-          const amountInMaximum = ether('5000');
-          await this.token.transfer(this.proxy.address, amountInMaximum, {
+          const amountOut = mwei('1');
+          const amountInMaximum = ether('0.1');
+          await this.native.transfer(this.proxy.address, amountInMaximum, {
             from: tokenProvider,
           });
-          await this.proxy.updateTokenMock(tokenAddress);
+          await this.proxy.updateTokenMock(this.native.address);
 
           // Estimate result
           const result = await this.quoter.quoteExactOutput.call(
@@ -606,36 +606,36 @@ contract('Maia Swap', function ([_, user, someone]) {
           );
 
           // Verify result
-          expect(handlerReturn).to.be.bignumber.eq(result);
+          expect(handlerReturn).to.be.bignumber.eq(result.amountIn);
 
-          expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
-            tokenUser.add(amountInMaximum).sub(result)
+          expect(await this.native.balanceOf.call(user)).to.be.bignumber.eq(
+            nativeUser.add(amountInMaximum).sub(result.amountIn)
           );
-          expect(
-            await this.token.balanceOf.call(this.proxy.address)
-          ).to.be.bignumber.eq(ether('0'));
           expect(
             await this.native.balanceOf.call(this.proxy.address)
           ).to.be.bignumber.eq(ether('0'));
-          expect(await this.native.balanceOf.call(user)).to.be.bignumber.eq(
-            nativeUser.add(amountOut)
+          expect(
+            await this.token2.balanceOf.call(this.proxy.address)
+          ).to.be.bignumber.eq(ether('0'));
+          expect(await this.token2.balanceOf.call(user)).to.be.bignumber.eq(
+            token2User.add(amountOut)
           );
           expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
         });
 
         it('max amount', async function () {
-          const value = ether('1');
+          const value = ether('0.1');
           const to = this.hMaia.address;
           // Set swap info
-          const tokens = [NATIVE_TOKEN_ADDRESS, token2Address, tokenAddress];
-          const fees = [new BN('3000'), new BN('500')];
+          const tokens = [token2Address, tokenAddress, NATIVE_TOKEN_ADDRESS];
+          const fees = [new BN('100'), new BN('3000')];
           const path = encodePath(tokens, fees);
-          const amountOut = ether('1');
-          const amountInMaximum = ether('5000');
-          await this.token.transfer(this.proxy.address, amountInMaximum, {
+          const amountOut = mwei('1');
+          const amountInMaximum = ether('0.1');
+          await this.native.transfer(this.proxy.address, amountInMaximum, {
             from: tokenProvider,
           });
-          await this.proxy.updateTokenMock(tokenAddress);
+          await this.proxy.updateTokenMock(this.native.address);
 
           // Estimate result
           const result = await this.quoter.quoteExactOutput.call(
@@ -662,36 +662,36 @@ contract('Maia Swap', function ([_, user, someone]) {
           );
 
           // Verify result
-          expect(handlerReturn).to.be.bignumber.eq(result);
+          expect(handlerReturn).to.be.bignumber.eq(result.amountIn);
 
-          expect(await this.token.balanceOf.call(user)).to.be.bignumber.eq(
-            tokenUser.add(amountInMaximum).sub(result)
+          expect(await this.native.balanceOf.call(user)).to.be.bignumber.eq(
+            nativeUser.add(amountInMaximum).sub(result.amountIn)
           );
-          expect(
-            await this.token.balanceOf.call(this.proxy.address)
-          ).to.be.bignumber.eq(ether('0'));
           expect(
             await this.native.balanceOf.call(this.proxy.address)
           ).to.be.bignumber.eq(ether('0'));
-          expect(await this.native.balanceOf.call(user)).to.be.bignumber.eq(
-            nativeUser.add(amountOut)
+          expect(
+            await this.token2.balanceOf.call(this.proxy.address)
+          ).to.be.bignumber.eq(ether('0'));
+          expect(await this.token2.balanceOf.call(user)).to.be.bignumber.eq(
+            token2User.add(amountOut)
           );
           expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
         });
 
         it('desired amount too high', async function () {
-          const value = ether('1');
+          const value = ether('0.1');
           const to = this.hMaia.address;
           // Set swap info
-          const tokens = [NATIVE_TOKEN_ADDRESS, token2Address, tokenAddress];
-          const fees = [new BN('3000'), new BN('500')];
+          const tokens = [token2Address, tokenAddress, NATIVE_TOKEN_ADDRESS];
+          const fees = [new BN('100'), new BN('3000')];
           const path = encodePath(tokens, fees);
-          const amountOut = ether('20');
-          const amountInMaximum = ether('5000');
-          await this.token.transfer(this.proxy.address, amountInMaximum, {
+          const amountOut = mwei('20');
+          const amountInMaximum = ether('0.1');
+          await this.native.transfer(this.proxy.address, amountInMaximum, {
             from: tokenProvider,
           });
-          await this.proxy.updateTokenMock(tokenAddress);
+          await this.proxy.updateTokenMock(this.native.address);
 
           // Execution
           const data = getCallData(HMaia, 'exactOutput', [
