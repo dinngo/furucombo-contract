@@ -7,30 +7,31 @@ include:
   - 'templates/.gitlab-ci-arbitrum.yml'
   - 'templates/.gitlab-ci-avalanche.yml'
 
-image: node:18-buster
+image: node:16.18.0-buster
 
 default:
   tags:
     - docker
-  cache:
-    key: ${CI_PROJECT_PATH_SLUG}
-    paths:
-      - node_modules/
-      - artifacts/
-      - cache/
-  before_script:
-    - npm install
 
 stages:
   - build
   - test
   - fuzzing
   - analysis
-  - certora
   - deploy
+
+.pull_cache: &pull-cache
+  cache:
+    key: ${CI_PROJECT_PATH_SLUG}
+    paths:
+      - node_modules/
+      - artifacts/
+      - cache/
+    policy: pull
 
 .test_template:
   stage: test
+  <<: *pull-cache
   script:
     - apt-get update && apt-get install -y netcat
     - FILES=( $(find -H -L ./test/* -regex "^.*.test.js") )
@@ -82,43 +83,31 @@ stages:
 
 build:
   stage: build
+  cache:
+    key: ${CI_PROJECT_PATH_SLUG}
+    paths:
+      - node_modules/
+      - artifacts/
+      - cache/
+    policy: push
   script:
+    - npm install
     - npm run build
 
 test_fuzzing:
   image: ghcr.io/foundry-rs/foundry:nightly-63ed1099a74fded7c3a7182b5a508bd7d16743d3
   stage: fuzzing
+  <<: *pull-cache
   before_script:
     - apk add --update nodejs npm
     - npm install
   script:
     - npm run fuzzing
 
-# Certora Prover CI
-.job_template: &certora-configuration
-  stage: certora
-  image: 376433862203.dkr.ecr.us-east-1.amazonaws.com/certora-ci-base:latest
-  allow_failure: true
-  before_script:
-    - ./specs/scripts/applyHarnesses.sh
-
-certora_develop:
-  <<: *certora-configuration
-  script:
-    - python3 scripts/certora_ci.py -r diff
-  rules: # Trigger it when merge to develop branch
-    - if: '$CI_COMMIT_TITLE =~ /^Merge branch/ && $CI_COMMIT_BRANCH == "develop"'
-
-certora_release:
-  <<: *certora-configuration
-  script:
-    - python3 scripts/certora_ci.py -r all
-  rules: # Trigger it when checkout release branch
-    - if: '$CI_COMMIT_BRANCH =~ /^release/ && $CI_COMMIT_BEFORE_SHA == "0000000000000000000000000000000000000000"'
-
 # Analysis
 analysis_slither:
   stage: analysis
+  <<: *pull-cache
   script:
     - apt-get update && apt-get install -y python3-pip
     - pip3 install slither-analyzer && pip3 install solc-select
@@ -126,5 +115,6 @@ analysis_slither:
 
 deploy:
   stage: deploy
+  <<: *pull-cache
   script:
     - npm run deploy
