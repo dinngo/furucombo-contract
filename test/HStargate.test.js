@@ -50,7 +50,7 @@ const {
   evmRevert,
   evmSnapshot,
   profileGas,
-  getTokenProvider,
+  getBalanceSlotNum,
   mwei,
   setTokenBalance,
 } = require('./utils/utils');
@@ -663,7 +663,10 @@ contract('Stargate', function ([_, user, user2]) {
 
     describe('Stable', function () {
       const inputTokenAddr = chainId == 1088 ? USDT_TOKEN : USDC_TOKEN;
-      const INPUT_TOKEN_BALANCE_SLOT_NUM = chainId == 1088 ? 0 : 9;
+      const INPUT_TOKEN_BALANCE_SLOT_NUM =
+        chainId == 1088
+          ? getBalanceSlotNum('USDT', chainId)
+          : getBalanceSlotNum('USDC', chainId);
 
       const srcPoolId =
         chainId == 1088 ? STARGATE_POOL_ID_USDT_METIS : STARGATE_POOL_ID_USDC;

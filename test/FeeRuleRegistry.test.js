@@ -1,3 +1,5 @@
+const chainId = network.config.chainId;
+
 const {
   balance,
   BN,
@@ -12,8 +14,13 @@ const { ZERO_ADDRESS } = constants;
 
 const { expect } = require('chai');
 
-const { LINK_TOKEN, WETH_TOKEN } = require('./utils/constants');
-const { evmRevert, evmSnapshot, getTokenProvider } = require('./utils/utils');
+const { LINK_TOKEN } = require('./utils/constants');
+const {
+  evmRevert,
+  evmSnapshot,
+  getBalanceSlotNum,
+  setTokenBalance,
+} = require('./utils/utils');
 
 const FeeRuleRegistry = artifacts.require('FeeRuleRegistry');
 const RuleMock1 = artifacts.require('RuleMock1');
@@ -36,11 +43,6 @@ contract('FeeRuleRegistry', function ([_, feeCollector, user, someone]) {
     this.rule1 = await RuleMock1.new(tokenAddress);
     this.rule2 = await RuleMock2.new();
     this.token = await IToken.at(tokenAddress);
-    this.providerAddress = await getTokenProvider(
-      tokenAddress,
-      WETH_TOKEN,
-      3000
-    );
   });
 
   beforeEach(async function () {
@@ -210,9 +212,13 @@ contract('FeeRuleRegistry', function ([_, feeCollector, user, someone]) {
       expect(await this.registry.rules.call('0')).to.be.eq(this.rule1.address);
       // transfer some token to user to make him qualified for rule1
       const tokenUserBalanceBefore = await this.token.balanceOf(user);
-      await this.token.transfer(user, RULE1_REQUIREMENT, {
-        from: this.providerAddress,
-      });
+      const LINK_BALANCE_SLOT_NUM = getBalanceSlotNum('LINK', chainId);
+      await setTokenBalance(
+        this.token.address,
+        user,
+        RULE1_REQUIREMENT,
+        LINK_BALANCE_SLOT_NUM
+      );
       expect(await this.token.balanceOf(user)).to.be.bignumber.eq(
         tokenUserBalanceBefore.add(RULE1_REQUIREMENT)
       );
@@ -283,10 +289,13 @@ contract('FeeRuleRegistry', function ([_, feeCollector, user, someone]) {
       expect(await this.registry.rules.call('1')).to.be.eq(this.rule2.address);
       // transfer some token to user to make him qualified for rule1
       const tokenUserBalanceBefore = await this.token.balanceOf(user);
-
-      await this.token.transfer(user, RULE1_REQUIREMENT, {
-        from: this.providerAddress,
-      });
+      const LINK_BALANCE_SLOT_NUM = getBalanceSlotNum('LINK', chainId);
+      await setTokenBalance(
+        this.token.address,
+        user,
+        RULE1_REQUIREMENT,
+        LINK_BALANCE_SLOT_NUM
+      );
       expect(await this.token.balanceOf(user)).to.be.bignumber.eq(
         tokenUserBalanceBefore.add(RULE1_REQUIREMENT)
       );

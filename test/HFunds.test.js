@@ -1,3 +1,5 @@
+const chainId = network.config.chainId;
+
 const {
   balance,
   BN,
@@ -18,6 +20,7 @@ const {
   DAI_TOKEN,
   USDT_TOKEN,
   NATIVE_TOKEN_ADDRESS,
+  NATIVE_TOKEN_ADDRESS_PROXY,
   WRAPPED_NATIVE_TOKEN,
 } = require('./utils/constants');
 const {
@@ -26,8 +29,9 @@ const {
   profileGas,
   getHandlerReturn,
   getCallData,
-  getTokenProvider,
-  nativeTokenProvider,
+  injectEther,
+  getBalanceSlotNum,
+  setTokenBalance,
   mwei,
 } = require('./utils/utils');
 
@@ -45,18 +49,7 @@ contract('Funds', function ([_, user, someone]) {
   const token0Address = DAI_TOKEN;
   const token1Address = WRAPPED_NATIVE_TOKEN;
 
-  let provider0Address;
-  let provider1Address;
-  let usdtProviderAddress;
-  let nativeTokenProviderAddress;
-
   before(async function () {
-    provider0Address = await getTokenProvider(token0Address);
-    provider1Address = await getTokenProvider(token1Address);
-    usdtProviderAddress = await getTokenProvider(USDT_TOKEN);
-
-    nativeTokenProviderAddress = await nativeTokenProvider();
-
     this.registry = await Registry.new();
     this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);
     this.proxy = await Proxy.new(
@@ -91,12 +84,25 @@ contract('Funds', function ([_, user, someone]) {
       const value = [ether('100'), ether('200')];
       const to = this.hFunds.address;
       const data = abi.simpleEncode('updateTokens(address[])', token);
-      await this.token0.transfer(this.proxy.address, value[0], {
-        from: provider0Address,
-      });
-      await this.token1.transfer(this.proxy.address, value[1], {
-        from: provider1Address,
-      });
+
+      const DAI_BALANCE_SLOT_NUM = getBalanceSlotNum('DAI', chainId);
+      await setTokenBalance(
+        this.token0.address,
+        this.proxy.address,
+        value[0],
+        DAI_BALANCE_SLOT_NUM
+      );
+
+      const WRAPPED_NATIVE_BALANCE_SLOT_NUM = getBalanceSlotNum(
+        'WrappedNative',
+        chainId
+      );
+      await setTokenBalance(
+        this.token1.address,
+        this.proxy.address,
+        value[1],
+        WRAPPED_NATIVE_BALANCE_SLOT_NUM
+      );
 
       const receipt = await this.proxy.execMock(to, data, {
         from: user,
@@ -132,15 +138,14 @@ contract('Funds', function ([_, user, someone]) {
       const to = this.hFunds.address;
       const data = abi.simpleEncode('updateTokens(address[])', token);
       // Transfer tokens to proxy first
-      await this.token0.transfer(this.proxy.address, value[0], {
-        from: provider0Address,
-      });
-      // Proxy does not allow transfer ether from EOA so we use provider contract
-      await send.ether(
-        nativeTokenProviderAddress,
+      const DAI_BALANCE_SLOT_NUM = getBalanceSlotNum('DAI', chainId);
+      await setTokenBalance(
+        this.token0.address,
         this.proxy.address,
-        value[1]
+        value[0],
+        DAI_BALANCE_SLOT_NUM
       );
+      await injectEther(this.proxy.address, '0x' + value[1].toString(16));
       await balanceUser.get();
 
       const receipt = await this.proxy.execMock(to, data, {
@@ -168,21 +173,23 @@ contract('Funds', function ([_, user, someone]) {
     });
 
     it('native token - 0xEEEE', async function () {
-      const token = [this.token0.address, NATIVE_TOKEN_ADDRESS];
+      const token =
+        chainId == 1088
+          ? [this.token0.address, NATIVE_TOKEN_ADDRESS_PROXY]
+          : [this.token0.address, NATIVE_TOKEN_ADDRESS];
       const msgValue = ether('0.1');
       const value = [ether('200'), ether('1')];
       const to = this.hFunds.address;
       const data = abi.simpleEncode('updateTokens(address[])', token);
       // Transfer tokens to proxy first
-      await this.token0.transfer(this.proxy.address, value[0], {
-        from: provider0Address,
-      });
-      // Proxy does not allow transfer ether from EOA so we use provider contract
-      await send.ether(
-        nativeTokenProviderAddress,
+      const DAI_BALANCE_SLOT_NUM = getBalanceSlotNum('DAI', chainId);
+      await setTokenBalance(
+        this.token0.address,
         this.proxy.address,
-        value[1]
+        value[0],
+        DAI_BALANCE_SLOT_NUM
       );
+      await injectEther(this.proxy.address, '0x' + value[1].toString(16));
       await balanceUser.get();
 
       const receipt = await this.proxy.execMock(to, data, {
@@ -225,13 +232,26 @@ contract('Funds', function ([_, user, someone]) {
         token,
         value
       );
-      await this.token0.transfer(user, value[0], {
-        from: provider0Address,
-      });
+
+      const DAI_BALANCE_SLOT_NUM = getBalanceSlotNum('DAI', chainId);
+      await setTokenBalance(
+        this.token0.address,
+        user,
+        value[0],
+        DAI_BALANCE_SLOT_NUM
+      );
       await this.token0.approve(this.proxy.address, value[0], { from: user });
-      await this.token1.transfer(user, value[1], {
-        from: provider1Address,
-      });
+
+      const WRAPPED_NATIVE_BALANCE_SLOT_NUM = getBalanceSlotNum(
+        'WrappedNative',
+        chainId
+      );
+      await setTokenBalance(
+        this.token1.address,
+        user,
+        value[1],
+        WRAPPED_NATIVE_BALANCE_SLOT_NUM
+      );
       await this.token1.approve(this.proxy.address, value[1], { from: user });
 
       const receipt = await this.proxy.execMock(to, data, {
@@ -272,13 +292,24 @@ contract('Funds', function ([_, user, someone]) {
         token,
         value
       );
-      await this.token0.transfer(user, value[0], {
-        from: provider0Address,
-      });
+      const DAI_BALANCE_SLOT_NUM = getBalanceSlotNum('DAI', chainId);
+      await setTokenBalance(
+        this.token0.address,
+        user,
+        value[0],
+        DAI_BALANCE_SLOT_NUM
+      );
       await this.token0.approve(this.proxy.address, value[0], { from: user });
-      await this.token1.transfer(user, value[1], {
-        from: provider1Address,
-      });
+      const WRAPPED_NATIVE_BALANCE_SLOT_NUM = getBalanceSlotNum(
+        'WrappedNative',
+        chainId
+      );
+      await setTokenBalance(
+        this.token1.address,
+        user,
+        value[1],
+        WRAPPED_NATIVE_BALANCE_SLOT_NUM
+      );
       await this.token1.approve(this.proxy.address, value[1], { from: user });
 
       const receipt = await this.proxy.execMock(to, data, {
@@ -327,9 +358,13 @@ contract('Funds', function ([_, user, someone]) {
           token,
           value
         );
-        await this.token0.transfer(user, value[0], {
-          from: provider0Address,
-        });
+        const DAI_BALANCE_SLOT_NUM = getBalanceSlotNum('DAI', chainId);
+        await setTokenBalance(
+          this.token0.address,
+          user,
+          value[0],
+          DAI_BALANCE_SLOT_NUM
+        );
         await this.token0.approve(this.proxy.address, value[0], { from: user });
 
         const receipt = await this.proxy.execMock(to, data, {
@@ -362,9 +397,13 @@ contract('Funds', function ([_, user, someone]) {
           token,
           value
         );
-        await this.token0.transfer(user, value[0], {
-          from: provider0Address,
-        });
+        const DAI_BALANCE_SLOT_NUM = getBalanceSlotNum('DAI', chainId);
+        await setTokenBalance(
+          this.token0.address,
+          user,
+          value[0],
+          DAI_BALANCE_SLOT_NUM
+        );
         await this.token0.approve(this.proxy.address, value[0], { from: user });
 
         const receipt = await this.proxy.execMock(to, data, {
@@ -394,9 +433,13 @@ contract('Funds', function ([_, user, someone]) {
           token,
           value
         );
-        await this.usdt.transfer(user, value[0], {
-          from: usdtProviderAddress,
-        });
+        const USDT_BALANCE_SLOT_NUM = getBalanceSlotNum('USDT', chainId);
+        await setTokenBalance(
+          this.usdt.address,
+          user,
+          value[0],
+          USDT_BALANCE_SLOT_NUM
+        );
         await this.usdt.approve(this.proxy.address, value[0], { from: user });
 
         const receipt = await this.proxy.execMock(to, data, {
@@ -435,13 +478,26 @@ contract('Funds', function ([_, user, someone]) {
           token,
           value
         );
-        await this.token0.transfer(user, value[0], {
-          from: provider0Address,
-        });
+
+        const DAI_BALANCE_SLOT_NUM = getBalanceSlotNum('DAI', chainId);
+        await setTokenBalance(
+          this.token0.address,
+          user,
+          value[0],
+          DAI_BALANCE_SLOT_NUM
+        );
         await this.token0.approve(this.proxy.address, value[0], { from: user });
-        await this.token1.transfer(user, value[1], {
-          from: provider1Address,
-        });
+
+        const WRAPPED_NATIVE_BALANCE_SLOT_NUM = getBalanceSlotNum(
+          'WrappedNative',
+          chainId
+        );
+        await setTokenBalance(
+          this.token1.address,
+          user,
+          value[1],
+          WRAPPED_NATIVE_BALANCE_SLOT_NUM
+        );
         await this.token1.approve(this.proxy.address, value[1], { from: user });
 
         const receipt = await this.proxy.execMock(to, data, {
@@ -485,13 +541,26 @@ contract('Funds', function ([_, user, someone]) {
           token,
           value
         );
-        await this.token0.transfer(user, value[0], {
-          from: provider0Address,
-        });
+
+        const DAI_BALANCE_SLOT_NUM = getBalanceSlotNum('DAI', chainId);
+        await setTokenBalance(
+          this.token0.address,
+          user,
+          value[0],
+          DAI_BALANCE_SLOT_NUM
+        );
         await this.token0.approve(this.proxy.address, value[0], { from: user });
-        await this.token1.transfer(user, value[1], {
-          from: provider1Address,
-        });
+
+        const WRAPPED_NATIVE_BALANCE_SLOT_NUM = getBalanceSlotNum(
+          'WrappedNative',
+          chainId
+        );
+        await setTokenBalance(
+          this.token1.address,
+          user,
+          value[1],
+          WRAPPED_NATIVE_BALANCE_SLOT_NUM
+        );
         await this.token1.approve(this.proxy.address, value[1], { from: user });
 
         const receipt = await this.proxy.execMock(to, data, {
@@ -534,7 +603,6 @@ contract('Funds', function ([_, user, someone]) {
     describe('token', function () {
       it('normal', async function () {
         const token = this.token.address;
-        const providerAddress = provider0Address;
         const value = ether('100');
         const receiver = someone;
         const to = this.hFunds.address;
@@ -544,9 +612,14 @@ contract('Funds', function ([_, user, someone]) {
           value,
           receiver
         );
-        await this.token.transfer(this.proxy.address, value, {
-          from: providerAddress,
-        });
+
+        const DAI_BALANCE_SLOT_NUM = getBalanceSlotNum('DAI', chainId);
+        await setTokenBalance(
+          token,
+          this.proxy.address,
+          value,
+          DAI_BALANCE_SLOT_NUM
+        );
         await this.proxy.updateTokenMock(this.token.address);
         const tokenSomeone = await this.token.balanceOf.call(someone);
         const receipt = await this.proxy.execMock(to, data, {
@@ -566,7 +639,6 @@ contract('Funds', function ([_, user, someone]) {
 
       it('USDT', async function () {
         const token = this.usdt.address;
-        const providerAddress = usdtProviderAddress;
         const value = new BN('1000000');
         const receiver = someone;
         const to = this.hFunds.address;
@@ -576,10 +648,15 @@ contract('Funds', function ([_, user, someone]) {
           value,
           receiver
         );
-        await this.usdt.transfer(this.proxy.address, value, {
-          from: providerAddress,
-        });
-        await this.proxy.updateTokenMock(this.token.address);
+
+        const USDT_BALANCE_SLOT_NUM = getBalanceSlotNum('USDT', chainId);
+        await setTokenBalance(
+          token,
+          this.proxy.address,
+          value,
+          USDT_BALANCE_SLOT_NUM
+        );
+        await this.proxy.updateTokenMock(token);
 
         const tokenSomeone = await this.usdt.balanceOf.call(someone);
         const receipt = await this.proxy.execMock(to, data, {
@@ -599,7 +676,6 @@ contract('Funds', function ([_, user, someone]) {
 
       it('maximum', async function () {
         const token = this.token.address;
-        const providerAddress = provider0Address;
         const value = ether('10');
         const receiver = someone;
         const to = this.hFunds.address;
@@ -609,9 +685,14 @@ contract('Funds', function ([_, user, someone]) {
           MAX_UINT256,
           receiver
         );
-        await this.token.transfer(this.proxy.address, value, {
-          from: providerAddress,
-        });
+
+        const DAI_BALANCE_SLOT_NUM = getBalanceSlotNum('DAI', chainId);
+        await setTokenBalance(
+          token,
+          this.proxy.address,
+          value,
+          DAI_BALANCE_SLOT_NUM
+        );
         await this.proxy.updateTokenMock(this.token.address);
         const tokenSomeone = await this.token.balanceOf.call(someone);
         const receipt = await this.proxy.execMock(to, data, {
@@ -631,7 +712,6 @@ contract('Funds', function ([_, user, someone]) {
 
       it('send 0 token', async function () {
         const token = this.token.address;
-        const providerAddress = provider0Address;
         const value = ether('0');
         const receiver = someone;
         const to = this.hFunds.address;
@@ -641,9 +721,14 @@ contract('Funds', function ([_, user, someone]) {
           value,
           receiver
         );
-        await this.token.transfer(this.proxy.address, value, {
-          from: providerAddress,
-        });
+
+        const DAI_BALANCE_SLOT_NUM = getBalanceSlotNum('DAI', chainId);
+        await setTokenBalance(
+          token,
+          this.proxy.address,
+          value,
+          DAI_BALANCE_SLOT_NUM
+        );
         await this.proxy.updateTokenMock(this.token.address);
         const tokenSomeone = await this.token.balanceOf.call(someone);
         const receipt = await this.proxy.execMock(to, data, {
@@ -668,7 +753,6 @@ contract('Funds', function ([_, user, someone]) {
 
       it('insufficient token', async function () {
         const token = this.token.address;
-        const providerAddress = provider0Address;
         const value = ether('100');
         const receiver = someone;
         const to = this.hFunds.address;
@@ -678,11 +762,15 @@ contract('Funds', function ([_, user, someone]) {
           value,
           receiver
         );
-        await this.token.transfer(this.proxy.address, value.sub(ether('1')), {
-          from: providerAddress,
-        });
+
+        const DAI_BALANCE_SLOT_NUM = getBalanceSlotNum('DAI', chainId);
+        await setTokenBalance(
+          token,
+          this.proxy.address,
+          value.sub(ether('1')),
+          DAI_BALANCE_SLOT_NUM
+        );
         await this.proxy.updateTokenMock(this.token.address);
-        const tokenSomeone = await this.token.balanceOf.call(someone);
         await expectRevert.unspecified(
           this.proxy.execMock(to, data, {
             from: user,
@@ -772,12 +860,24 @@ contract('Funds', function ([_, user, someone]) {
           receiver
         );
 
-        await this.token0.transfer(this.proxy.address, value[0], {
-          from: usdtProviderAddress,
-        });
-        await this.token1.transfer(this.proxy.address, value[1], {
-          from: provider1Address,
-        });
+        const USDT_BALANCE_SLOT_NUM = getBalanceSlotNum('USDT', chainId);
+        await setTokenBalance(
+          this.token0.address,
+          this.proxy.address,
+          value[0],
+          USDT_BALANCE_SLOT_NUM
+        );
+
+        const WRAPPED_NATIVE_BALANCE_SLOT_NUM = getBalanceSlotNum(
+          'WrappedNative',
+          chainId
+        );
+        await setTokenBalance(
+          this.token1.address,
+          this.proxy.address,
+          value[1],
+          WRAPPED_NATIVE_BALANCE_SLOT_NUM
+        );
 
         await this.proxy.updateTokenMock(this.token0.address);
         await this.proxy.updateTokenMock(this.token1.address);
@@ -825,9 +925,16 @@ contract('Funds', function ([_, user, someone]) {
           receiver
         );
 
-        await this.token1.transfer(this.proxy.address, value[1], {
-          from: provider1Address,
-        });
+        const WRAPPED_NATIVE_BALANCE_SLOT_NUM = getBalanceSlotNum(
+          'WrappedNative',
+          chainId
+        );
+        await setTokenBalance(
+          this.token1.address,
+          this.proxy.address,
+          value[1],
+          WRAPPED_NATIVE_BALANCE_SLOT_NUM
+        );
 
         await this.proxy.updateTokenMock(this.token1.address);
 
@@ -865,9 +972,16 @@ contract('Funds', function ([_, user, someone]) {
           receiver
         );
 
-        await this.token1.transfer(this.proxy.address, value[1], {
-          from: provider1Address,
-        });
+        const WRAPPED_NATIVE_BALANCE_SLOT_NUM = getBalanceSlotNum(
+          'WrappedNative',
+          chainId
+        );
+        await setTokenBalance(
+          this.token1.address,
+          this.proxy.address,
+          value[1],
+          WRAPPED_NATIVE_BALANCE_SLOT_NUM
+        );
 
         await this.proxy.updateTokenMock(this.token1.address);
 
@@ -905,9 +1019,16 @@ contract('Funds', function ([_, user, someone]) {
           receiver
         );
 
-        await this.token1.transfer(this.proxy.address, value[1], {
-          from: provider1Address,
-        });
+        const WRAPPED_NATIVE_BALANCE_SLOT_NUM = getBalanceSlotNum(
+          'WrappedNative',
+          chainId
+        );
+        await setTokenBalance(
+          this.token1.address,
+          this.proxy.address,
+          value[1],
+          WRAPPED_NATIVE_BALANCE_SLOT_NUM
+        );
 
         await this.proxy.updateTokenMock(this.token1.address);
 
@@ -949,14 +1070,18 @@ contract('Funds', function ([_, user, someone]) {
           receiver
         );
 
-        await this.token1.transfer(this.proxy.address, value[1], {
-          from: provider1Address,
-        });
+        const WRAPPED_NATIVE_BALANCE_SLOT_NUM = getBalanceSlotNum(
+          'WrappedNative',
+          chainId
+        );
+        await setTokenBalance(
+          this.token1.address,
+          this.proxy.address,
+          value[1],
+          WRAPPED_NATIVE_BALANCE_SLOT_NUM
+        );
 
         await this.proxy.updateTokenMock(this.token1.address);
-
-        const token1Someone = await this.token1.balanceOf.call(someone);
-        let balanceSomeone = await tracker(someone);
 
         await expectRevert.unspecified(
           this.proxy.execMock(to, data, {
@@ -990,9 +1115,13 @@ contract('Funds', function ([_, user, someone]) {
             receivers
           );
 
-          await this.token0.transfer(this.proxy.address, amount * count, {
-            from: usdtProviderAddress,
-          });
+          const USDT_BALANCE_SLOT_NUM = getBalanceSlotNum('USDT', chainId);
+          await setTokenBalance(
+            this.token0.address,
+            this.proxy.address,
+            amount * count,
+            USDT_BALANCE_SLOT_NUM
+          );
           await this.proxy.updateTokenMock(this.token0.address);
 
           const tokenSomeoneStart = Array(count);
@@ -1042,9 +1171,13 @@ contract('Funds', function ([_, user, someone]) {
             receivers
           );
 
-          await this.token0.transfer(this.proxy.address, values[0], {
-            from: usdtProviderAddress,
-          });
+          const DAI_BALANCE_SLOT_NUM = getBalanceSlotNum('DAI', chainId);
+          await setTokenBalance(
+            this.token0.address,
+            this.proxy.address,
+            values[0],
+            DAI_BALANCE_SLOT_NUM
+          );
           await this.proxy.updateTokenMock(this.token0.address);
 
           const tokenSomeoneStart = await this.token0.balanceOf.call(someone);
@@ -1092,6 +1225,7 @@ contract('Funds', function ([_, user, someone]) {
           );
         });
       });
+
       describe('from eth', function () {
         it('normal', async function () {
           const token = ZERO_ADDRESS;
@@ -1204,9 +1338,7 @@ contract('Funds', function ([_, user, someone]) {
     });
     describe('Ether', async function () {
       it('normal', async function () {
-        const token = constants.ZERO_ADDRESS;
         const value = ether('1');
-        const providerAddress = provider0Address;
         const to = this.hFunds.address;
         const data = abi.simpleEncode(
           'getBalance(address):(uint256)',
@@ -1231,12 +1363,16 @@ contract('Funds', function ([_, user, someone]) {
         it('normal', async function () {
           const token = this.token.address;
           const value = ether('1');
-          const providerAddress = provider0Address;
           const to = this.hFunds.address;
           const data = abi.simpleEncode('getBalance(address):(uint256)', token);
-          await this.token.transfer(this.proxy.address, value, {
-            from: providerAddress,
-          });
+
+          const DAI_BALANCE_SLOT_NUM = getBalanceSlotNum('DAI', chainId);
+          await setTokenBalance(
+            this.token.address,
+            this.proxy.address,
+            value,
+            DAI_BALANCE_SLOT_NUM
+          );
           await this.proxy.updateTokenMock(this.token.address);
           const receipt = await this.proxy.execMock(to, data, {
             from: user,
@@ -1270,13 +1406,24 @@ contract('Funds', function ([_, user, someone]) {
         value
       );
 
-      await this.token0.transfer(this.proxy.address, value[0], {
-        from: provider0Address,
-      });
+      const DAI_BALANCE_SLOT_NUM = getBalanceSlotNum('DAI', chainId);
+      await setTokenBalance(
+        this.token0.address,
+        this.proxy.address,
+        value[0],
+        DAI_BALANCE_SLOT_NUM
+      );
 
-      await this.token1.transfer(this.proxy.address, value[1], {
-        from: provider1Address,
-      });
+      const WRAPPED_NATIVE_BALANCE_SLOT_NUM = getBalanceSlotNum(
+        'WrappedNative',
+        chainId
+      );
+      await setTokenBalance(
+        this.token1.address,
+        this.proxy.address,
+        value[1],
+        WRAPPED_NATIVE_BALANCE_SLOT_NUM
+      );
 
       const receipt = await this.proxy.execMock(to, data, {
         from: user,
@@ -1296,13 +1443,24 @@ contract('Funds', function ([_, user, someone]) {
         value
       );
 
-      await this.token0.transfer(this.proxy.address, value[0], {
-        from: provider0Address,
-      });
+      const DAI_BALANCE_SLOT_NUM = getBalanceSlotNum('DAI', chainId);
+      await setTokenBalance(
+        this.token0.address,
+        this.proxy.address,
+        value[0],
+        DAI_BALANCE_SLOT_NUM
+      );
 
-      await this.token1.transfer(this.proxy.address, value[1], {
-        from: provider1Address,
-      });
+      const WRAPPED_NATIVE_BALANCE_SLOT_NUM = getBalanceSlotNum(
+        'WrappedNative',
+        chainId
+      );
+      await setTokenBalance(
+        this.token1.address,
+        this.proxy.address,
+        value[1],
+        WRAPPED_NATIVE_BALANCE_SLOT_NUM
+      );
       revertValue = ether('1');
 
       await expectRevert(
@@ -1325,13 +1483,25 @@ contract('Funds', function ([_, user, someone]) {
       );
 
       revertValue = ether('1');
-      await this.token0.transfer(this.proxy.address, revertValue, {
-        from: provider0Address,
-      });
 
-      await this.token1.transfer(this.proxy.address, value[1], {
-        from: provider1Address,
-      });
+      const DAI_BALANCE_SLOT_NUM = getBalanceSlotNum('DAI', chainId);
+      await setTokenBalance(
+        this.token0.address,
+        this.proxy.address,
+        revertValue,
+        DAI_BALANCE_SLOT_NUM
+      );
+
+      const WRAPPED_NATIVE_BALANCE_SLOT_NUM = getBalanceSlotNum(
+        'WrappedNative',
+        chainId
+      );
+      await setTokenBalance(
+        this.token1.address,
+        this.proxy.address,
+        value[1],
+        WRAPPED_NATIVE_BALANCE_SLOT_NUM
+      );
 
       await expectRevert(
         this.proxy.execMock(to, data, {
