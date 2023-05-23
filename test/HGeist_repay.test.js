@@ -360,7 +360,7 @@ contract('Geist', function ([_, user]) {
       );
     });
 
-    it('should revert: not supported token', async function () {
+    it('should revert: unsupported token', async function () {
       const value = ether('0.5');
       const to = this.hGeist.address;
       const data = abi.simpleEncode(

@@ -142,6 +142,7 @@ contract('Aave V3', function ([_, user, someone]) {
         borrowAmount,
         rateMode
       );
+
       await this.debtToken.approveDelegation(this.proxy.address, borrowAmount, {
         from: user,
       });
@@ -150,6 +151,7 @@ contract('Aave V3', function ([_, user, someone]) {
         from: user,
         value: ether('0.1'),
       });
+
       const borrowTokenUserAfter = await this.borrowToken.balanceOf(user);
       const debtTokenUserAfter = await this.debtToken.balanceOf(user);
       // Verify proxy balance
@@ -425,15 +427,14 @@ contract('Aave V3', function ([_, user, someone]) {
       profileGas(receipt);
     });
 
-    it('should revert: not supported borrowETH', async function () {
+    it('should revert: unsupported borrowETH', async function () {
       if (chainId != 1088) {
         return;
       }
       const borrowAmount = mwei('1');
       const to = this.hAaveV3.address;
       const data = abi.simpleEncode(
-        'borrow(address,uint256,uint256)',
-        this.borrowToken.address,
+        'borrowETH(uint256,uint256)',
         borrowAmount,
         rateMode
       );

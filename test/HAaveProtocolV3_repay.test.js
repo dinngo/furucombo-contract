@@ -273,7 +273,7 @@ contract('Aave V3', function ([_, user]) {
       );
     });
 
-    it('should revert: not supported token', async function () {
+    it('should revert: unsupported token', async function () {
       const repayAmount = ether('0.5');
       const to = this.hAaveV3.address;
       const data = abi.simpleEncode(
@@ -562,7 +562,7 @@ contract('Aave V3', function ([_, user]) {
       profileGas(receipt);
     });
 
-    it('should revert: not supported repayETH', async function () {
+    it('should revert: unsupported repayETH', async function () {
       if (chainId != 1088) {
         return;
       }
@@ -601,8 +601,8 @@ contract('Aave V3', function ([_, user]) {
       );
       await this.proxy.updateTokenMock(this.borrowToken.address);
 
-      // FIXME: revert message is different on arbitrum and metis
-      if (chainId == 42161 || chainId == 1088) {
+      // FIXME: revert message is different on metis and arbitrum
+      if (chainId == 1088 || chainId == 42161) {
         await expectRevert(
           this.proxy.execMock(to, data, { from: user }),
           '0_HAaveProtocolV3_repay: ERC20: transfer amount exceeds balance'
@@ -615,7 +615,7 @@ contract('Aave V3', function ([_, user]) {
       }
     });
 
-    it('should revert: not supported token', async function () {
+    it('should revert: unsupported token', async function () {
       const repayAmount = borrowAmount;
       const to = this.hAaveV3.address;
       const data = abi.simpleEncode(

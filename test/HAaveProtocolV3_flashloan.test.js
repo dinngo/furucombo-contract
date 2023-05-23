@@ -468,7 +468,7 @@ contract('AaveV3 flashloan', function ([_, user, someone]) {
       );
     });
 
-    it('should revert: not supported token', async function () {
+    it('should revert: unsupported token', async function () {
       const value = ether('1');
       const params = _getFlashloanParams(
         [this.hMock.address],

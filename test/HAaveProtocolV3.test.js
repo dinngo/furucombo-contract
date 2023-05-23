@@ -110,7 +110,7 @@ contract('Aave V3', function ([_, user]) {
     describe('Eth', function () {
       // metis chain only use supply(uint256) function
       if (chainId == 1088) {
-        it('should revert: not supported supplyETH', async function () {
+        it('should revert: unsupported supplyETH', async function () {
           const value = ether('1');
           const to = this.hAaveV3.address;
           const data = abi.simpleEncode('supplyETH(uint256)', value);
@@ -229,7 +229,7 @@ contract('Aave V3', function ([_, user]) {
         profileGas(receipt);
       });
 
-      it('should revert: not supported token', async function () {
+      it('should revert: unsupported token', async function () {
         const value = ether('10');
         const to = this.hAaveV3.address;
         const data = abi.simpleEncode(
@@ -252,7 +252,7 @@ contract('Aave V3', function ([_, user]) {
     describe('Eth', function () {
       // metis chain only use withdraw(uint256) function
       if (chainId == 1088) {
-        it('should revert: not supported withdrawETH', async function () {
+        it('should revert: unsupported withdrawETH', async function () {
           const value = supplyAmount.div(new BN(2));
           const to = this.hAaveV3.address;
           const data = abi.simpleEncode('withdrawETH(uint256)', value);
