@@ -4,6 +4,7 @@ if (
   chainId == 1 ||
   chainId == 10 ||
   chainId == 137 ||
+  chainId == 1088 ||
   chainId == 42161 ||
   chainId == 43114
 ) {
@@ -26,13 +27,13 @@ const { expect } = require('chai');
 
 const {
   DAI_TOKEN,
-  WETH_TOKEN,
   USDC_TOKEN,
   ADAI_V3_TOKEN,
   WRAPPED_NATIVE_TOKEN,
   AAVEPROTOCOL_V3_PROVIDER,
   AWRAPPED_NATIVE_V3_DEBT_VARIABLE,
   AUSDC_V3_DEBT_STABLE,
+  AUSDC_V3_DEBT_VARIABLE,
   AAVE_RATEMODE,
 } = require('./utils/constants');
 const {
@@ -41,7 +42,8 @@ const {
   profileGas,
   getHandlerReturn,
   expectEqWithinBps,
-  getTokenProvider,
+  getBalanceSlotNum,
+  setTokenBalance,
   mwei,
 } = require('./utils/utils');
 
@@ -58,14 +60,12 @@ const SimpleToken = artifacts.require('SimpleToken');
 contract('Aave V3', function ([_, user]) {
   const aTokenAddress = ADAI_V3_TOKEN;
   const tokenAddress = DAI_TOKEN;
+  const tokenSymbol = 'DAI';
 
   let id;
   let balanceUser;
-  let providerAddress;
 
   before(async function () {
-    providerAddress = await getTokenProvider(tokenAddress, WETH_TOKEN, 3000);
-
     this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);
     this.registry = await Registry.new();
     this.proxy = await Proxy.new(
@@ -101,35 +101,34 @@ contract('Aave V3', function ([_, user]) {
   });
 
   describe('Repay Stable Rate', function () {
-    if (chainId == 1) {
-      // Ethereum does not support borrow in stable mode
+    if (chainId == 1 || chainId == 1088) {
+      // Ethereum and Metis does not support borrow in stable mode
       return;
     }
     var supplyAmount = ether('5000');
     const borrowAmount = mwei('2');
     const borrowTokenAddr = USDC_TOKEN;
+    const borrowTokenSymbol = 'USDC';
     const rateMode = AAVE_RATEMODE.STABLE;
     const debtTokenAddr = AUSDC_V3_DEBT_STABLE;
 
-    let borrowTokenProvider;
     let borrowTokenUserBefore;
     let debtTokenUserBefore;
 
     before(async function () {
-      borrowTokenProvider = await getTokenProvider(borrowTokenAddr);
-
       this.borrowToken = await IToken.at(borrowTokenAddr);
       this.debtToken = await IToken.at(debtTokenAddr);
     });
 
     beforeEach(async function () {
-      // Deposit
+      // Supply
+      await sendToken(tokenSymbol, this.token, user, supplyAmount);
       await this.token.approve(this.pool.address, supplyAmount, {
-        from: providerAddress,
+        from: user,
       });
       expect(await this.aToken.balanceOf(user)).to.be.bignumber.zero;
       await this.pool.supply(this.token.address, supplyAmount, user, 0, {
-        from: providerAddress,
+        from: user,
       });
       expectEqWithinBps(await this.aToken.balanceOf(user), supplyAmount, 1);
 
@@ -212,9 +211,8 @@ contract('Aave V3', function ([_, user]) {
         rateMode,
         user
       );
-      await this.borrowToken.transfer(user, extraNeed, {
-        from: borrowTokenProvider,
-      });
+
+      await sendToken(borrowTokenSymbol, this.borrowToken, user, repayAmount);
       await this.borrowToken.transfer(this.proxy.address, repayAmount, {
         from: user,
       });
@@ -271,7 +269,7 @@ contract('Aave V3', function ([_, user]) {
       );
     });
 
-    it('should revert: not supported token', async function () {
+    it('should revert: unsupported token', async function () {
       const repayAmount = ether('0.5');
       const to = this.hAaveV3.address;
       const data = abi.simpleEncode(
@@ -317,29 +315,31 @@ contract('Aave V3', function ([_, user]) {
 
   describe('Repay Variable Rate', function () {
     var supplyAmount = ether('5000');
-    const borrowAmount = ether('1');
-    const borrowTokenAddr = WRAPPED_NATIVE_TOKEN;
+    const borrowAmount = chainId == 1088 ? mwei('1') : ether('1');
+    const borrowTokenAddr = chainId == 1088 ? USDC_TOKEN : WRAPPED_NATIVE_TOKEN;
+    const borrowTokenSymbol = chainId == 1088 ? 'USDC' : 'WrappedNative';
     const rateMode = AAVE_RATEMODE.VARIABLE;
-    const debtTokenAddr = AWRAPPED_NATIVE_V3_DEBT_VARIABLE;
+    const debtTokenAddr =
+      chainId == 1088
+        ? AUSDC_V3_DEBT_VARIABLE
+        : AWRAPPED_NATIVE_V3_DEBT_VARIABLE;
 
-    let borrowTokenProvider;
     let borrowTokenUserBefore;
     let debtTokenUserBefore;
 
     before(async function () {
-      borrowTokenProvider = await getTokenProvider(borrowTokenAddr);
-
       this.borrowToken = await IToken.at(borrowTokenAddr);
       this.debtToken = await IToken.at(debtTokenAddr);
     });
 
     beforeEach(async function () {
-      // Deposit
+      // Supply
+      await sendToken(tokenSymbol, this.token, user, supplyAmount);
       await this.token.approve(this.pool.address, supplyAmount, {
-        from: providerAddress,
+        from: user,
       });
       await this.pool.supply(this.token.address, supplyAmount, user, 0, {
-        from: providerAddress,
+        from: user,
       });
       supplyAmount = await this.aToken.balanceOf(user);
 
@@ -412,6 +412,10 @@ contract('Aave V3', function ([_, user]) {
     });
 
     it('partial by ETH', async function () {
+      // metis chain only use repay(address,uint256,uint256,address) function
+      if (chainId == 1088) {
+        return;
+      }
       const repayAmount = borrowAmount.div(new BN('2'));
       const to = this.hAaveV3.address;
       const data = abi.simpleEncode(
@@ -454,7 +458,7 @@ contract('Aave V3', function ([_, user]) {
     });
 
     it('whole', async function () {
-      const extraNeed = ether('1');
+      const extraNeed = borrowAmount;
       const repayAmount = borrowAmount.add(extraNeed);
       const to = this.hAaveV3.address;
       const data = abi.simpleEncode(
@@ -464,9 +468,7 @@ contract('Aave V3', function ([_, user]) {
         rateMode,
         user
       );
-      await this.borrowToken.transfer(user, extraNeed, {
-        from: borrowTokenProvider,
-      });
+      await sendToken(borrowTokenSymbol, this.borrowToken, user, repayAmount);
       await this.borrowToken.transfer(this.proxy.address, repayAmount, {
         from: user,
       });
@@ -501,6 +503,9 @@ contract('Aave V3', function ([_, user]) {
     });
 
     it('whole by ETH', async function () {
+      if (chainId == 1088) {
+        return;
+      }
       const extraNeed = ether('1');
       const repayAmount = borrowAmount.add(extraNeed);
       const to = this.hAaveV3.address;
@@ -550,8 +555,29 @@ contract('Aave V3', function ([_, user]) {
       profileGas(receipt);
     });
 
+    it('should revert: unsupported repayETH', async function () {
+      if (chainId != 1088) {
+        return;
+      }
+      const repayAmount = borrowAmount.div(new BN('2'));
+      const to = this.hAaveV3.address;
+      const data = abi.simpleEncode(
+        'repayETH(uint256,uint256,address)',
+        repayAmount,
+        rateMode,
+        user
+      );
+      await expectRevert(
+        this.proxy.execMock(to, data, {
+          from: user,
+          value: repayAmount,
+        }),
+        '0_HAaveProtocolV3_repay: Unspecified'
+      );
+    });
+
     it('should revert: not enough balance', async function () {
-      const repayAmount = ether('0.5');
+      const repayAmount = borrowAmount.div(new BN('2'));
       const to = this.hAaveV3.address;
       const data = abi.simpleEncode(
         'repay(address,uint256,uint256,address)',
@@ -563,13 +589,13 @@ contract('Aave V3', function ([_, user]) {
 
       await this.borrowToken.transfer(
         this.proxy.address,
-        repayAmount.sub(ether('0.1')),
+        repayAmount.div(new BN('2')),
         { from: user }
       );
       await this.proxy.updateTokenMock(this.borrowToken.address);
 
-      // FIXME: revert message is different on arbitrum
-      if (network.config.chainId == 42161) {
+      // FIXME: revert message is different on metis and arbitrum
+      if (chainId == 1088 || chainId == 42161) {
         await expectRevert(
           this.proxy.execMock(to, data, { from: user }),
           '0_HAaveProtocolV3_repay: ERC20: transfer amount exceeds balance'
@@ -582,8 +608,8 @@ contract('Aave V3', function ([_, user]) {
       }
     });
 
-    it('should revert: not supported token', async function () {
-      const repayAmount = ether('0.5');
+    it('should revert: unsupported token', async function () {
+      const repayAmount = borrowAmount;
       const to = this.hAaveV3.address;
       const data = abi.simpleEncode(
         'repay(address,uint256,uint256,address)',
@@ -604,7 +630,7 @@ contract('Aave V3', function ([_, user]) {
     });
 
     it('should revert: wrong rate mode', async function () {
-      const repayAmount = ether('0.5');
+      const repayAmount = borrowAmount;
       const to = this.hAaveV3.address;
       const unborrowedRateMode = (rateMode % 2) + 1;
       const data = abi.simpleEncode(
@@ -625,4 +651,9 @@ contract('Aave V3', function ([_, user]) {
       );
     });
   });
+
+  async function sendToken(symbol, token, to, amount) {
+    const baseTokenBalanceSlotNum = await getBalanceSlotNum(symbol, chainId);
+    await setTokenBalance(token.address, to, amount, baseTokenBalanceSlotNum);
+  }
 });

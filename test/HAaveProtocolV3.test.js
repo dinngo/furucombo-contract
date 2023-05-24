@@ -4,6 +4,7 @@ if (
   chainId == 1 ||
   chainId == 10 ||
   chainId == 137 ||
+  chainId == 1088 ||
   chainId == 42161 ||
   chainId == 43114
 ) {
@@ -39,7 +40,8 @@ const {
   profileGas,
   getHandlerReturn,
   expectEqWithinBps,
-  getTokenProvider,
+  getBalanceSlotNum,
+  setTokenBalance,
 } = require('./utils/utils');
 
 const HAaveV3 = artifacts.require('HAaveProtocolV3');
@@ -57,19 +59,14 @@ contract('Aave V3', function ([_, user]) {
   const aTokenAddress = ADAI_V3_TOKEN;
   const tokenAddress = DAI_TOKEN;
   const aWrappedNativeTokenAddress = AWRAPPED_NATIVE_V3_TOKEN;
+  const tokenSymbol = 'DAI';
+  const wrappedNativeSymbol = 'WrappedNative';
 
   let id;
   let balanceUser;
   let balanceProxy;
-  let providerAddress;
-  let wrappedNativeTokenProviderAddress;
 
   before(async function () {
-    providerAddress = await getTokenProvider(tokenAddress);
-    wrappedNativeTokenProviderAddress = await getTokenProvider(
-      WRAPPED_NATIVE_TOKEN
-    );
-
     this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);
     this.registry = await Registry.new();
     this.proxy = await Proxy.new(
@@ -90,8 +87,10 @@ contract('Aave V3', function ([_, user]) {
     this.pool = await IPool.at(this.poolAddress);
     this.token = await IToken.at(tokenAddress);
     this.aToken = await IAToken.at(aTokenAddress);
-    this.wrappedNativeToken = await IToken.at(WRAPPED_NATIVE_TOKEN);
-    this.aWrappedNativeToken = await IAToken.at(aWrappedNativeTokenAddress);
+    if (chainId != 1088) {
+      this.wrappedNativeToken = await IToken.at(WRAPPED_NATIVE_TOKEN);
+      this.aWrappedNativeToken = await IAToken.at(aWrappedNativeTokenAddress);
+    }
     this.mockToken = await SimpleToken.new();
   });
 
@@ -107,6 +106,23 @@ contract('Aave V3', function ([_, user]) {
 
   describe('Supply', function () {
     describe('Eth', function () {
+      // metis chain only use supply(uint256) function
+      if (chainId == 1088) {
+        it('should revert: unsupported supplyETH', async function () {
+          const value = ether('1');
+          const to = this.hAaveV3.address;
+          const data = abi.simpleEncode('supplyETH(uint256)', value);
+          await expectRevert(
+            this.proxy.execMock(to, data, {
+              from: user,
+              value: value,
+            }),
+            '0_HAaveProtocolV3_General: aToken should not be zero address'
+          );
+        });
+        return;
+      }
+
       it('normal', async function () {
         const value = ether('1');
         const to = this.hAaveV3.address;
@@ -166,9 +182,7 @@ contract('Aave V3', function ([_, user]) {
           value
         );
 
-        await this.token.transfer(this.proxy.address, value, {
-          from: providerAddress,
-        });
+        await sendToken(tokenSymbol, this.token, this.proxy.address, value);
         await this.proxy.updateTokenMock(this.token.address);
 
         const receipt = await this.proxy.execMock(to, data, {
@@ -193,9 +207,7 @@ contract('Aave V3', function ([_, user]) {
           MAX_UINT256
         );
 
-        await this.token.transfer(this.proxy.address, value, {
-          from: providerAddress,
-        });
+        await sendToken(tokenSymbol, this.token, this.proxy.address, value);
         await this.proxy.updateTokenMock(this.token.address);
 
         const receipt = await this.proxy.execMock(to, data, {
@@ -211,7 +223,7 @@ contract('Aave V3', function ([_, user]) {
         profileGas(receipt);
       });
 
-      it('should revert: not supported token', async function () {
+      it('should revert: unsupported token', async function () {
         const value = ether('10');
         const to = this.hAaveV3.address;
         const data = abi.simpleEncode(
@@ -232,9 +244,32 @@ contract('Aave V3', function ([_, user]) {
     var supplyAmount = ether('1');
 
     describe('Eth', function () {
+      // metis chain only use withdraw(uint256) function
+      if (chainId == 1088) {
+        it('should revert: unsupported withdrawETH', async function () {
+          const value = supplyAmount.div(new BN(2));
+          const to = this.hAaveV3.address;
+          const data = abi.simpleEncode('withdrawETH(uint256)', value);
+          await expectRevert(
+            this.proxy.execMock(to, data, {
+              from: user,
+              value: value,
+            }),
+            '0_HAaveProtocolV3_General: aToken should not be zero address'
+          );
+        });
+        return;
+      }
+
       beforeEach(async function () {
+        await sendToken(
+          wrappedNativeSymbol,
+          this.wrappedNativeToken,
+          user,
+          supplyAmount
+        );
         await this.wrappedNativeToken.approve(this.pool.address, supplyAmount, {
-          from: wrappedNativeTokenProviderAddress,
+          from: user,
         });
         await this.pool.supply(
           this.wrappedNativeToken.address,
@@ -242,7 +277,7 @@ contract('Aave V3', function ([_, user]) {
           user,
           0,
           {
-            from: wrappedNativeTokenProviderAddress,
+            from: user,
           }
         );
 
@@ -328,11 +363,12 @@ contract('Aave V3', function ([_, user]) {
 
     describe('Token', function () {
       beforeEach(async function () {
+        await sendToken(tokenSymbol, this.token, user, supplyAmount);
         await this.token.approve(this.pool.address, supplyAmount, {
-          from: providerAddress,
+          from: user,
         });
         await this.pool.supply(this.token.address, supplyAmount, user, 0, {
-          from: providerAddress,
+          from: user,
         });
 
         supplyAmount = await this.aToken.balanceOf(user);
@@ -512,4 +548,9 @@ contract('Aave V3', function ([_, user]) {
       });
     });
   });
+
+  async function sendToken(symbol, token, to, amount) {
+    const baseTokenBalanceSlotNum = await getBalanceSlotNum(symbol, chainId);
+    await setTokenBalance(token.address, to, amount, baseTokenBalanceSlotNum);
+  }
 });

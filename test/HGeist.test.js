@@ -208,7 +208,7 @@ contract('Geist', function ([_, user]) {
         profileGas(receipt);
       });
 
-      it('should revert: not supported token', async function () {
+      it('should revert: unsupported token', async function () {
         const value = ether('10');
         const to = this.hGeist.address;
         const data = abi.simpleEncode(
@@ -521,7 +521,7 @@ contract('Geist', function ([_, user]) {
         );
       });
 
-      it('should revert: not supported token', async function () {
+      it('should revert: unsupported token', async function () {
         const value = depositAmount.add(ether('10'));
         const to = this.hGeist.address;
         const data = abi.simpleEncode(

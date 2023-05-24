@@ -359,7 +359,7 @@ contract('Aave V2', function ([_, user]) {
       );
     });
 
-    it('should revert: not supported token', async function () {
+    it('should revert: unsupported token', async function () {
       const value = ether('0.5');
       const to = this.hAaveV2.address;
       const data = abi.simpleEncode(
@@ -673,7 +673,7 @@ contract('Aave V2', function ([_, user]) {
       );
     });
 
-    it('should revert: not supported token', async function () {
+    it('should revert: unsupported token', async function () {
       const value = ether('0.5');
       const to = this.hAaveV2.address;
       const data = abi.simpleEncode(
