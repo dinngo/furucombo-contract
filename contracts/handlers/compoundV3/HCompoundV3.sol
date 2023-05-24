@@ -26,7 +26,7 @@ contract HCompoundV3 is HandlerBase {
         amount = _getBalance(asset, amount);
         _supply(
             comet,
-            msg.sender, // Return to msg.sender
+            _getSender(), // Return to msg.sender
             asset,
             amount
         );
@@ -39,7 +39,7 @@ contract HCompoundV3 is HandlerBase {
 
         _supply(
             comet,
-            msg.sender, // Return to msg.sender
+            _getSender(), // Return to msg.sender
             wrappedNativeToken,
             amount
         );
@@ -57,7 +57,7 @@ contract HCompoundV3 is HandlerBase {
         bool isBorrowed;
         (withdrawAmount, isBorrowed) = _withdraw(
             comet,
-            msg.sender, // from
+            _getSender(), // from
             asset,
             amount
         );
@@ -77,7 +77,7 @@ contract HCompoundV3 is HandlerBase {
         bool isBorrowed;
         (withdrawAmount, isBorrowed) = _withdraw(
             comet,
-            msg.sender, // from
+            _getSender(), // from
             wrappedNativeToken,
             amount
         );
@@ -97,7 +97,7 @@ contract HCompoundV3 is HandlerBase {
         address baseToken = IComet(comet).baseToken();
         (borrowAmount, isBorrowed) = _withdraw(
             comet,
-            msg.sender, // from
+            _getSender(), // from
             baseToken,
             amount
         );
@@ -121,7 +121,7 @@ contract HCompoundV3 is HandlerBase {
         bool isBorrowed;
         (borrowAmount, isBorrowed) = _withdraw(
             comet,
-            msg.sender, // from
+            _getSender(), // from
             wrappedNativeToken,
             amount
         );
@@ -138,7 +138,7 @@ contract HCompoundV3 is HandlerBase {
         amount = _getBalance(asset, amount);
         _supply(
             comet,
-            msg.sender, // to
+            _getSender(), // to
             asset,
             amount
         );
@@ -156,7 +156,7 @@ contract HCompoundV3 is HandlerBase {
         IWrappedNativeToken(wrappedNativeToken).deposit{value: amount}();
         _supply(
             comet,
-            msg.sender, // to
+            _getSender(), // to
             wrappedNativeToken,
             amount
         );
