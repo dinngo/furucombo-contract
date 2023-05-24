@@ -192,7 +192,7 @@ contract('SushiSwap Liquidity', function ([_, user]) {
       // Prepare handler data
       const tokenAmount = ether('0.002');
       const minTokenAmount = ether('0.000001');
-      const minEthAmount = ether('0.000001');
+      const minEthAmount = ether('0.0000001');
       const value = ether('1');
       const to = this.hSushiSwap.address;
       const data = abi.simpleEncode(

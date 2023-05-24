@@ -165,6 +165,10 @@ function getBalanceSlotNum(token, chainId) {
       return getDAISlotNum(chainId);
     case 'USDC':
       return getUSDCSlotNum(chainId);
+    case 'USDT':
+      return getUSDTSlotNum(chainId);
+    case 'LINK':
+      return getLINKSlotNum(chainId);
     case 'WETH':
       return getWETHSlotNum(chainId);
     case 'WrappedNative':
@@ -177,6 +181,9 @@ function getBalanceSlotNum(token, chainId) {
 function getDAISlotNum(chainId) {
   switch (chainId) {
     case 1:
+    case 10:
+    case 250:
+    case 42161:
       return 2;
     default:
       return 0;
@@ -186,7 +193,36 @@ function getDAISlotNum(chainId) {
 function getUSDCSlotNum(chainId) {
   switch (chainId) {
     case 1:
+    case 43114:
       return 9;
+    case 42161:
+      return 51;
+    default:
+      return 0;
+  }
+}
+
+function getUSDTSlotNum(chainId) {
+  switch (chainId) {
+    case 1:
+    case 250:
+      return 2;
+    case 42161:
+    case 43114:
+      return 51;
+    default:
+      return 0;
+  }
+}
+
+function getLINKSlotNum(chainId) {
+  switch (chainId) {
+    case 1:
+      return 1;
+    case 250:
+      return 2;
+    case 1088:
+      return 0;
     case 42161:
       return 51;
     default:
@@ -196,6 +232,13 @@ function getUSDCSlotNum(chainId) {
 
 function getWETHSlotNum(chainId) {
   switch (chainId) {
+    case 1:
+    case 10:
+      return 3;
+    case 250:
+      return 2;
+    case 42161:
+      return 51;
     default:
       return 0;
   }
@@ -203,10 +246,16 @@ function getWETHSlotNum(chainId) {
 
 function getWrappedNativeSlotNum(chainId) {
   switch (chainId) {
+    case 1:
+    case 10:
+    case 137:
+    case 1088:
+    case 43114:
+      return 3;
     case 42161:
       return 51;
     default:
-      return 3;
+      return 0;
   }
 }
 
