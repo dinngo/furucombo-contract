@@ -1,3 +1,5 @@
+const chainId = network.config.chainId;
+
 const {
   balance,
   BN,
@@ -21,16 +23,17 @@ const {
   OMG_TOKEN,
   OMG_PROVIDER,
   NATIVE_TOKEN_ADDRESS,
+  NATIVE_TOKEN_ADDRESS_PROXY,
   LINK_TOKEN,
 } = require('./utils/constants');
 const {
   evmRevert,
   evmSnapshot,
   checkCacheClean,
-  getTokenProvider,
+  getBalanceSlotNum,
+  setTokenBalance,
   impersonateAndInjectEther,
 } = require('./utils/utils');
-const { network } = require('hardhat');
 
 const Proxy = artifacts.require('Proxy');
 const Registry = artifacts.require('Registry');
@@ -97,32 +100,46 @@ contract('Fee', function ([_, feeCollector, user]) {
 
     // Prepare
     this.token = await IToken.at(tokenAddress);
-    const providerAddress = await getTokenProvider(this.token.address);
-    await this.token.transfer(user, tokenAmount, { from: providerAddress });
-    await this.token.approve(this.proxy.address, tokenAmount, { from: user });
-    this.rule1Token = await IToken.at(rule1TokenAddress);
-    const rule1TokenProviderAddress = await getTokenProvider(
-      rule1TokenAddress,
-      WETH_TOKEN,
-      3000
+    const DAI_BALANCE_SLOT_NUM = getBalanceSlotNum('DAI', chainId);
+    await setTokenBalance(
+      this.token.address,
+      user,
+      tokenAmount,
+      DAI_BALANCE_SLOT_NUM
     );
 
-    await this.rule1Token.transfer(user, RULE1_REQUIREMENT, {
-      from: rule1TokenProviderAddress,
-    });
+    await this.token.approve(this.proxy.address, tokenAmount, { from: user });
+    this.rule1Token = await IToken.at(rule1TokenAddress);
+    const LINK_BALANCE_SLOT_NUM = getBalanceSlotNum('LINK', chainId);
+    await setTokenBalance(
+      this.rule1Token.address,
+      user,
+      RULE1_REQUIREMENT,
+      LINK_BALANCE_SLOT_NUM
+    );
 
     // Prepare token
     this.token2 = await IToken.at(token2Address);
-    const provider2Address = await getTokenProvider(this.token2.address);
-    await this.token2.transfer(user, token2Amount, { from: provider2Address });
+    const TOKEN2_BALANCE_SLOT_NUM = getBalanceSlotNum('WETH', chainId);
+    await setTokenBalance(
+      this.token2.address,
+      user,
+      token2Amount,
+      TOKEN2_BALANCE_SLOT_NUM
+    );
     await this.token2.approve(this.proxy.address, token2Amount, { from: user });
 
     this.usdt = await IUsdt.at(USDT_TOKEN);
-    const USDT_PROVIDER = await getTokenProvider(this.usdt.address);
-    await this.usdt.transfer(user, usdtAmount, { from: USDT_PROVIDER });
+    const USDT_BALANCE_SLOT_NUM = getBalanceSlotNum('USDT', chainId);
+    await setTokenBalance(
+      this.usdt.address,
+      user,
+      usdtAmount,
+      USDT_BALANCE_SLOT_NUM
+    );
     await this.usdt.approve(this.proxy.address, usdtAmount, { from: user });
 
-    if (network.config.chainId == 1) {
+    if (chainId == 1) {
       impersonateAndInjectEther(HBTC_PROVIDER);
       this.hbtc = await IToken.at(HBTC_TOKEN);
       await this.hbtc.transfer(user, hbtcAmount, { from: HBTC_PROVIDER });
@@ -159,6 +176,7 @@ contract('Fee', function ([_, feeCollector, user]) {
       const datas = [
         abi.simpleEncode('send(uint256,address)', ether('0'), user),
       ];
+
       const receipt = await this.proxy.batchExec(
         tos,
         configs,
@@ -169,6 +187,7 @@ contract('Fee', function ([_, feeCollector, user]) {
           value: ethAmount,
         }
       );
+
       const feeRateUser = BASIS_FEE_RATE.mul(RULE1_DISCOUNT)
         .div(BASE)
         .mul(RULE2_DISCOUNT)
@@ -176,7 +195,8 @@ contract('Fee', function ([_, feeCollector, user]) {
       const feeETH = ethAmount.mul(feeRateUser).div(BASE);
 
       expectEvent(receipt, 'ChargeFee', {
-        tokenIn: NATIVE_TOKEN_ADDRESS,
+        tokenIn:
+          chainId == 1088 ? NATIVE_TOKEN_ADDRESS_PROXY : NATIVE_TOKEN_ADDRESS,
         feeAmount: feeETH,
       });
 
@@ -217,7 +237,8 @@ contract('Fee', function ([_, feeCollector, user]) {
       const feeETH = ethAmount.mul(feeRateUser).div(BASE);
 
       expectEvent(receipt, 'ChargeFee', {
-        tokenIn: NATIVE_TOKEN_ADDRESS,
+        tokenIn:
+          chainId == 1088 ? NATIVE_TOKEN_ADDRESS_PROXY : NATIVE_TOKEN_ADDRESS,
         feeAmount: feeETH,
       });
 
@@ -325,7 +346,7 @@ contract('Fee', function ([_, feeCollector, user]) {
       );
     });
 
-    if (network.config.chainId == 1) {
+    if (chainId == 1) {
       it('HBTC', async function () {
         const tos = [this.hFunds.address];
         const configs = [ZERO_BYTES32];
@@ -450,7 +471,8 @@ contract('Fee', function ([_, feeCollector, user]) {
 
       // Verify event
       await expectEvent.inTransaction(receipt.tx, this.proxy, 'ChargeFee', {
-        tokenIn: NATIVE_TOKEN_ADDRESS,
+        tokenIn:
+          chainId == 1088 ? NATIVE_TOKEN_ADDRESS_PROXY : NATIVE_TOKEN_ADDRESS,
         feeAmount: feeETH,
       });
 
@@ -507,7 +529,8 @@ contract('Fee', function ([_, feeCollector, user]) {
 
       // Verify event
       await expectEvent.inTransaction(receipt.tx, this.proxy, 'ChargeFee', {
-        tokenIn: NATIVE_TOKEN_ADDRESS,
+        tokenIn:
+          chainId == 1088 ? NATIVE_TOKEN_ADDRESS_PROXY : NATIVE_TOKEN_ADDRESS,
         feeAmount: feeETH,
       });
 
