@@ -48,7 +48,6 @@ contract('Maia Swap', function ([_, user, someone]) {
   const token2Address = USDT_TOKEN;
 
   let balanceUser;
-  let balanceProxy;
   let tokenUser;
   let nativeUser;
   let tokenProvider;
@@ -74,7 +73,6 @@ contract('Maia Swap', function ([_, user, someone]) {
   beforeEach(async function () {
     id = await evmSnapshot();
     balanceUser = await tracker(user);
-    balanceProxy = await tracker(this.proxy.address);
     tokenUser = await this.token.balanceOf.call(user);
     token2User = await this.token2.balanceOf.call(user);
     nativeUser = await this.native.balanceOf.call(user);
@@ -110,8 +108,6 @@ contract('Maia Swap', function ([_, user, someone]) {
             fee,
             sqrtPriceLimitX96,
           ]);
-
-          console.log(result.amountOut.toString());
 
           // Execution
           const data = getCallData(HMaia, 'exactInputSingle', [

@@ -278,13 +278,13 @@ async function getTokenProvider(
     return await tokenProviderQuick(token0, token1);
   } else if (chainId == 250) {
     return await tokenProviderSpookySwap(token0, WFTM_TOKEN);
-  } else if (chainId == 43114) {
-    return await tokenProviderTraderJoe(token0, WAVAX_TOKEN);
   } else if (chainId == 1088) {
     let provider = await tokenProviderMaia(token0, token1, fee);
     return provider == ZERO_ADDRESS
       ? await tokenProviderMaia(token0, token1, 3000)
       : provider;
+  } else if (chainId == 43114) {
+    return await tokenProviderTraderJoe(token0, WAVAX_TOKEN);
   }
 }
 
@@ -308,8 +308,8 @@ async function tokenProviderUniV3(
 }
 
 async function tokenProviderMaia(
-  token0 = USDC_TOKEN,
-  token1 = NATIVE_TOKEN_ADDRESS,
+  token0 = NATIVE_TOKEN_ADDRESS,
+  token1 = USDC_TOKEN,
   fee = 3000 // 0.05%
 ) {
   if (token0 === USDC_TOKEN) {
