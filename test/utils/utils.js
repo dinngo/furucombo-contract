@@ -193,6 +193,7 @@ function getDAISlotNum(chainId) {
 function getUSDCSlotNum(chainId) {
   switch (chainId) {
     case 1:
+    case 43114:
       return 9;
     case 42161:
       return 51;
@@ -246,7 +247,10 @@ function getWETHSlotNum(chainId) {
 function getWrappedNativeSlotNum(chainId) {
   switch (chainId) {
     case 1:
+    case 10:
+    case 137:
     case 1088:
+    case 43114:
       return 3;
     case 42161:
       return 51;
