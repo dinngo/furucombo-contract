@@ -195,6 +195,8 @@ function getUSDCSlotNum(chainId) {
     case 1:
     case 43114:
       return 9;
+    case 250:
+      return 2;
     case 42161:
       return 51;
     default:
