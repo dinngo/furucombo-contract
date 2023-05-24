@@ -27,7 +27,6 @@ const { expect } = require('chai');
 
 const {
   DAI_TOKEN,
-  WETH_TOKEN,
   USDC_TOKEN,
   ADAI_V3_TOKEN,
   WRAPPED_NATIVE_TOKEN,
@@ -43,7 +42,8 @@ const {
   profileGas,
   getHandlerReturn,
   expectEqWithinBps,
-  getTokenProvider,
+  getBalanceSlotNum,
+  setTokenBalance,
   mwei,
 } = require('./utils/utils');
 
@@ -60,14 +60,12 @@ const SimpleToken = artifacts.require('SimpleToken');
 contract('Aave V3', function ([_, user]) {
   const aTokenAddress = ADAI_V3_TOKEN;
   const tokenAddress = DAI_TOKEN;
+  const tokenSymbol = 'DAI';
 
   let id;
   let balanceUser;
-  let providerAddress;
 
   before(async function () {
-    providerAddress = await getTokenProvider(tokenAddress, WETH_TOKEN, 3000);
-
     this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);
     this.registry = await Registry.new();
     this.proxy = await Proxy.new(
@@ -110,28 +108,27 @@ contract('Aave V3', function ([_, user]) {
     var supplyAmount = ether('5000');
     const borrowAmount = mwei('2');
     const borrowTokenAddr = USDC_TOKEN;
+    const borrowTokenSymbol = 'USDC';
     const rateMode = AAVE_RATEMODE.STABLE;
     const debtTokenAddr = AUSDC_V3_DEBT_STABLE;
 
-    let borrowTokenProvider;
     let borrowTokenUserBefore;
     let debtTokenUserBefore;
 
     before(async function () {
-      borrowTokenProvider = await getTokenProvider(borrowTokenAddr);
-
       this.borrowToken = await IToken.at(borrowTokenAddr);
       this.debtToken = await IToken.at(debtTokenAddr);
     });
 
     beforeEach(async function () {
-      // Deposit
+      // Supply
+      await sendToken(tokenSymbol, this.token, user, supplyAmount);
       await this.token.approve(this.pool.address, supplyAmount, {
-        from: providerAddress,
+        from: user,
       });
       expect(await this.aToken.balanceOf(user)).to.be.bignumber.zero;
       await this.pool.supply(this.token.address, supplyAmount, user, 0, {
-        from: providerAddress,
+        from: user,
       });
       expectEqWithinBps(await this.aToken.balanceOf(user), supplyAmount, 1);
 
@@ -214,9 +211,8 @@ contract('Aave V3', function ([_, user]) {
         rateMode,
         user
       );
-      await this.borrowToken.transfer(user, extraNeed, {
-        from: borrowTokenProvider,
-      });
+
+      await sendToken(borrowTokenSymbol, this.borrowToken, user, repayAmount);
       await this.borrowToken.transfer(this.proxy.address, repayAmount, {
         from: user,
       });
@@ -321,30 +317,29 @@ contract('Aave V3', function ([_, user]) {
     var supplyAmount = ether('5000');
     const borrowAmount = chainId == 1088 ? mwei('1') : ether('1');
     const borrowTokenAddr = chainId == 1088 ? USDC_TOKEN : WRAPPED_NATIVE_TOKEN;
+    const borrowTokenSymbol = chainId == 1088 ? 'USDC' : 'WrappedNative';
     const rateMode = AAVE_RATEMODE.VARIABLE;
     const debtTokenAddr =
       chainId == 1088
         ? AUSDC_V3_DEBT_VARIABLE
         : AWRAPPED_NATIVE_V3_DEBT_VARIABLE;
 
-    let borrowTokenProvider;
     let borrowTokenUserBefore;
     let debtTokenUserBefore;
 
     before(async function () {
-      borrowTokenProvider = await getTokenProvider(borrowTokenAddr);
-
       this.borrowToken = await IToken.at(borrowTokenAddr);
       this.debtToken = await IToken.at(debtTokenAddr);
     });
 
     beforeEach(async function () {
-      // Deposit
+      // Supply
+      await sendToken(tokenSymbol, this.token, user, supplyAmount);
       await this.token.approve(this.pool.address, supplyAmount, {
-        from: providerAddress,
+        from: user,
       });
       await this.pool.supply(this.token.address, supplyAmount, user, 0, {
-        from: providerAddress,
+        from: user,
       });
       supplyAmount = await this.aToken.balanceOf(user);
 
@@ -473,9 +468,7 @@ contract('Aave V3', function ([_, user]) {
         rateMode,
         user
       );
-      await this.borrowToken.transfer(user, extraNeed, {
-        from: borrowTokenProvider,
-      });
+      await sendToken(borrowTokenSymbol, this.borrowToken, user, repayAmount);
       await this.borrowToken.transfer(this.proxy.address, repayAmount, {
         from: user,
       });
@@ -658,4 +651,9 @@ contract('Aave V3', function ([_, user]) {
       );
     });
   });
+
+  async function sendToken(symbol, token, to, amount) {
+    const baseTokenBalanceSlotNum = await getBalanceSlotNum(symbol, chainId);
+    await setTokenBalance(token.address, to, amount, baseTokenBalanceSlotNum);
+  }
 });

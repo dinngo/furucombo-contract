@@ -38,7 +38,8 @@ const {
   evmRevert,
   evmSnapshot,
   profileGas,
-  getTokenProvider,
+  getBalanceSlotNum,
+  setTokenBalance,
   expectEqWithinBps,
   mwei,
 } = require('./utils/utils');
@@ -58,15 +59,13 @@ const IVariableDebtToken = artifacts.require('IVariableDebtTokenV3');
 contract('Aave V3', function ([_, user, someone]) {
   const aTokenAddress = ADAI_V3_TOKEN;
   const tokenAddress = DAI_TOKEN;
+  const tokenSymbol = 'DAI';
 
   let id;
   let balanceUser;
   let balanceProxy;
-  let providerAddress;
 
   before(async function () {
-    providerAddress = await getTokenProvider(tokenAddress, WETH_TOKEN, 3000);
-
     this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);
     this.registry = await Registry.new();
     this.proxy = await Proxy.new(
@@ -120,12 +119,13 @@ contract('Aave V3', function ([_, user, someone]) {
 
     beforeEach(async function () {
       // Supply
+      await sendToken(tokenSymbol, this.token, user, supplyAmount);
       await this.token.approve(this.pool.address, supplyAmount, {
-        from: providerAddress,
+        from: user,
       });
       expect(await this.aToken.balanceOf(user)).to.be.bignumber.zero;
       await this.pool.supply(this.token.address, supplyAmount, user, 0, {
-        from: providerAddress,
+        from: user,
       });
       expectEqWithinBps(await this.aToken.balanceOf(user), supplyAmount, 1);
 
@@ -316,13 +316,14 @@ contract('Aave V3', function ([_, user, someone]) {
 
     beforeEach(async function () {
       // Supply
+      await sendToken(tokenSymbol, this.token, user, supplyAmount);
       await this.token.approve(this.pool.address, supplyAmount, {
-        from: providerAddress,
+        from: user,
       });
 
       expect(await this.aToken.balanceOf(user)).to.be.bignumber.zero;
       await this.pool.supply(this.token.address, supplyAmount, user, 0, {
-        from: providerAddress,
+        from: user,
       });
       expectEqWithinBps(await this.aToken.balanceOf(user), supplyAmount, 1);
 
@@ -540,4 +541,9 @@ contract('Aave V3', function ([_, user, someone]) {
       );
     });
   });
+
+  async function sendToken(symbol, token, to, amount) {
+    const baseTokenBalanceSlotNum = await getBalanceSlotNum(symbol, chainId);
+    await setTokenBalance(token.address, to, amount, baseTokenBalanceSlotNum);
+  }
 });
