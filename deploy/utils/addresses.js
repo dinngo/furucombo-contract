@@ -22,9 +22,9 @@ module.exports =
     : network.name == 'fantom'
     ? fantom
     : network.name == 'arbitrum'
-    ? metis
-    : network.name == 'metis'
     ? arbitrum
+    : network.name == 'metis'
+    ? metis
     : network.name == 'avalanche'
     ? avalanche
     : console.log('Unsupported network name') & process.exit(0);
