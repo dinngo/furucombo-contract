@@ -8,8 +8,11 @@ All notable changes to this project will be documented in this file.
 
 - Support Hummus protocol.
 - Support Aave Protocol V3 on Metis.
+- Support Maia(Uni) protocol.
+
 ## [2.6.1] - 2023-05-24
-### Changed
+
+### Fixed
 
 - Hotfix CompoundV3 handler.
 
