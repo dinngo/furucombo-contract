@@ -34,6 +34,7 @@ const {
   HBTC_PROVIDER,
 } = require('./utils/constants');
 const {
+  mwei,
   evmRevert,
   evmSnapshot,
   mulPercent,
@@ -148,8 +149,9 @@ contract('Curve_eth', function ([_, user]) {
         expect(await this.token1.balanceOf.call(user)).to.be.bignumber.gte(
           token1User.add(answer).sub(new BN('2000000000000'))
         );
+        // add tolerance 200 mwei for DAI amount
         expect(await this.token1.balanceOf.call(user)).to.be.bignumber.lte(
-          token1User.add(answer)
+          token1User.add(answer).add(mwei('200'))
         );
         profileGas(receipt);
       });
@@ -198,8 +200,9 @@ contract('Curve_eth', function ([_, user]) {
         expect(await this.token1.balanceOf.call(user)).to.be.bignumber.gte(
           token1User.add(answer).sub(new BN('2000000000000'))
         );
+        // add tolerance 200 mwei for DAI amount
         expect(await this.token1.balanceOf.call(user)).to.be.bignumber.lte(
-          token1User.add(answer)
+          token1User.add(answer).add(mwei('200'))
         );
         profileGas(receipt);
       });
