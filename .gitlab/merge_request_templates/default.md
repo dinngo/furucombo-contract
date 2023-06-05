@@ -25,6 +25,17 @@ These checklists encourage us to confirm any changes have been analyzed to reduc
 - [ ] Code coverage report is provided.
 - [ ] Static analysis report is reviewed.
 
+### Furucombo design convention
+
+Using below design convention if needed.
+
+- [ ] Use `_getBalance(address,uint256)` to handle chain-input scenario
+- [ ] Use `_getSender()` instead of `msg.sender`
+- [ ] Use `_updateToken(address)` if the token has to return to user
+- [ ] Use `_tokenApproveZero(address,address)` to reset token approval
+- [ ] Use `_revertMsg(string,string)` instead of `revert("...")`
+- [ ] Use `_requireMsg(bool,string,string)` instead of `require(bool, "...")`
+
 ### Documentation
 
 - [ ] Changes are noted in the change log.
