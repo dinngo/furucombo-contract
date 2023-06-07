@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+## [2.7.0] - 2023-06-07
+
 ### Added
 
 - Support Hummus protocol.
