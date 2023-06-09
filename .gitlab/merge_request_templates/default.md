@@ -25,16 +25,19 @@ These checklists encourage us to confirm any changes have been analyzed to reduc
 - [ ] Code coverage report is provided.
 - [ ] Static analysis report is reviewed.
 
-### Furucombo design convention
+### Design convention
 
 Using below design convention if needed.
 
-- [ ] Use `_getBalance(address,uint256)` to handle chain-input scenario.
+- [ ] Use `_getBalance(address,uint256)` to handle chained input scenario.
 - [ ] Use `_getSender()` instead of `msg.sender`.
-- [ ] Use `_updateToken(address)` if the token has to return to user.
+- [ ] Use `_updateToken(address)` if the token is new to Proxy and has to be returned to the user.
 - [ ] Use `_tokenApproveZero(address,address)` to reset token approval.
 - [ ] Use `_revertMsg(string,string)` instead of `revert("...")`.
 - [ ] Use `_requireMsg(bool,string,string)` instead of `require(bool, "...")`.
+- [ ] Use `amount` from function parameters instead of using msg.value.
+- [ ] Use `payable` for external functions.
+- [ ] Use xxxETH as function name to represent native token interactions.
 
 ### Documentation
 
