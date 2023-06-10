@@ -1515,7 +1515,7 @@ contract('Compound V3', function ([_, user, someone]) {
         });
 
         // Borrow token
-        const borrowAmount = mwei('1000');
+        const borrowAmount = mwei('700');
         await comet.withdraw(baseToken.address, borrowAmount, {
           from: user,
         });
@@ -1694,7 +1694,7 @@ contract('Compound V3', function ([_, user, someone]) {
         );
 
         // Borrow token
-        const borrowAmount = mwei('1000');
+        const borrowAmount = mwei('700');
         await comet.withdraw(baseToken.address, borrowAmount, {
           from: user,
         });
@@ -2041,7 +2041,7 @@ contract('Compound V3', function ([_, user, someone]) {
       it('normal', async function () {
         const collateral = this.wrappedNativeToken;
         const baseToken = this.USDC;
-        const value = mwei('1000'); // 50%
+        const value = mwei('700');
         const comet = this.cometUSDC;
         const to = this.hCompoundV3.address;
         const data = abi.simpleEncode(
@@ -2084,7 +2084,7 @@ contract('Compound V3', function ([_, user, someone]) {
       it('withdraw and borrow', async function () {
         const collateral = this.wrappedNativeToken;
         const baseToken = this.USDC;
-        const value = supplyAmount.add(mwei('1000')); // 50%
+        const value = supplyAmount.add(mwei('700'));
         const comet = this.cometUSDC;
         const to = this.hCompoundV3.address;
         const data = abi.simpleEncode(
@@ -2237,7 +2237,7 @@ contract('Compound V3', function ([_, user, someone]) {
 
       it('should revert: by withdraw', async function () {
         const baseToken = this.USDC;
-        const value = mwei('1000');
+        const value = mwei('700');
         const comet = this.cometUSDC;
         const to = this.hCompoundV3.address;
         const data = abi.simpleEncode(
@@ -2533,7 +2533,7 @@ contract('Compound V3', function ([_, user, someone]) {
 
     describe('Token-base', function () {
       const initAmount = mwei('2000');
-      const borrowAmount = mwei('1000');
+      const borrowAmount = mwei('700');
 
       beforeEach(async function () {
         // Supply token comet
