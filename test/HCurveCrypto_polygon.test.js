@@ -1,8 +1,5 @@
 if (network.config.chainId == 137) {
   // This test supports to run on these chains.
-
-  // Due to Aave governance 224 issue, skip temporary
-  return;
 } else {
   return;
 }

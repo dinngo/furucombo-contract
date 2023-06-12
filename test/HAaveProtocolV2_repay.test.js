@@ -400,11 +400,6 @@ contract('Aave V2', function ([_, user]) {
   });
 
   describe('Repay Variable Rate', function () {
-    if (chainId == 137) {
-      // Due to Aave governance 224 issue, skip temporary
-      return;
-    }
-
     var depositAmount = ether('10000');
     const borrowAmount = ether('1');
     const borrowTokenAddr = WRAPPED_NATIVE_TOKEN;

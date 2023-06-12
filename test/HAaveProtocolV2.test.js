@@ -101,11 +101,6 @@ contract('Aave V2', function ([_, user]) {
 
   describe('Deposit', function () {
     describe('Ether', function () {
-      if (chainId == 137) {
-        // Due to Aave governance 224 issue, skip temporary
-        return;
-      }
-
       it('normal', async function () {
         const value = ether('10');
         const to = this.hAaveV2.address;
@@ -232,11 +227,6 @@ contract('Aave V2', function ([_, user]) {
     var depositAmount = ether('5');
 
     describe('Ether', function () {
-      if (chainId == 137) {
-        // Due to Aave governance 224 issue, skip temporary
-        return;
-      }
-
       beforeEach(async function () {
         await this.wrappedNativeToken.approve(
           this.lendingPool.address,

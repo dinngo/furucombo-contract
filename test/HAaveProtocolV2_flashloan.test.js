@@ -172,11 +172,6 @@ contract('AaveV2 flashloan', function ([_, user, someone]) {
     });
 
     it('single asset with no debt', async function () {
-      if (chainId == 137) {
-        // Due to Aave governance 224 issue, skip temporary
-        return;
-      }
-
       const value = ether('1');
       const params = _getFlashloanParams(
         [this.hMock.address],
@@ -260,11 +255,6 @@ contract('AaveV2 flashloan', function ([_, user, someone]) {
     });
 
     it('single asset with variable rate by borrowing from itself', async function () {
-      if (chainId == 137) {
-        // Due to Aave governance 224 issue, skip temporary
-        return;
-      }
-
       // Get flashloan params
       const value = ether('1');
       const params = _getFlashloanParams(
@@ -315,11 +305,6 @@ contract('AaveV2 flashloan', function ([_, user, someone]) {
     });
 
     it('multiple assets with no debt', async function () {
-      if (chainId == 137) {
-        // Due to Aave governance 224 issue, skip temporary
-        return;
-      }
-
       const value = ether('1');
       const params = _getFlashloanParams(
         [this.hMock.address],
@@ -513,11 +498,6 @@ contract('AaveV2 flashloan', function ([_, user, someone]) {
     });
 
     it('sequential', async function () {
-      if (chainId == 137) {
-        // Due to Aave governance 224 issue, skip temporary
-        return;
-      }
-
       const value = ether('1');
       // Setup 1st flashloan cube
       const params1 = _getFlashloanParams(
@@ -583,11 +563,6 @@ contract('AaveV2 flashloan', function ([_, user, someone]) {
     });
 
     it('nested', async function () {
-      if (chainId == 137) {
-        // Due to Aave governance 224 issue, skip temporary
-        return;
-      }
-
       // Get flashloan params
       const value = ether('1');
       const params1 = _getFlashloanParams(
@@ -729,11 +704,6 @@ contract('AaveV2 flashloan', function ([_, user, someone]) {
     });
 
     it('deposit aaveV2 after flashloan', async function () {
-      if (chainId == 137) {
-        // Due to Aave governance 224 issue, skip temporary
-        return;
-      }
-
       // Get flashloan params
       const value = ether('1');
       const depositValue = ether('0.5');
