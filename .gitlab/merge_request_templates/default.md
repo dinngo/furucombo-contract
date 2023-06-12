@@ -37,7 +37,6 @@ Using below design convention if needed.
 - [ ] Use `_requireMsg(bool,string,string)` instead of `require(bool, "...")`.
 - [ ] Use `amount` from function parameters instead of using msg.value.
 - [ ] Use `payable` for external functions.
-- [ ] Use xxxETH as function name to represent native token interactions.
 
 ### Documentation
 
