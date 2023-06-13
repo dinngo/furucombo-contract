@@ -32,7 +32,7 @@ Using below design convention if needed.
 Handler:
 
 - [ ] Handler should inherit HandlerBase.
-- [ ] Use `_getBalance(address,uint256)` to handle chained input scenario or uint256.max as input amount.
+- [ ] Use `_getBalance(address,uint256)` to get proxy balance when uint256.max is input amount.
 - [ ] Use `_getSender()` instead of `msg.sender`.
 - [ ] Use `_updateToken(address)` if the token is new to Proxy and has to be returned to the user.
 - [ ] Use `_tokenApprove(address,address,uint256)` instead of token approve function.
