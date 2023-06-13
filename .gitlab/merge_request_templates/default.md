@@ -29,14 +29,24 @@ These checklists encourage us to confirm any changes have been analyzed to reduc
 
 Using below design convention if needed.
 
-- [ ] Use `_getBalance(address,uint256)` to handle chained input scenario.
+Handler:
+
+- [ ] Handler should inherit HandlerBase.
+- [ ] Use `_getBalance(address,uint256)` to handle chained input scenario or uint256.max as input amount.
 - [ ] Use `_getSender()` instead of `msg.sender`.
 - [ ] Use `_updateToken(address)` if the token is new to Proxy and has to be returned to the user.
+- [ ] Use `_tokenApprove(address,address,uint256)` instead of token approve function.
 - [ ] Use `_tokenApproveZero(address,address)` to reset token approval.
+- [ ] Use `_isNotNativeToken(address)` to check if a token is native token or not.
 - [ ] Use `_revertMsg(string,string)` instead of `revert("...")`.
 - [ ] Use `_requireMsg(bool,string,string)` instead of `require(bool, "...")`.
 - [ ] Use `amount` from function parameters instead of using msg.value.
 - [ ] Use `payable` for external functions.
+- [ ] Use `NATIVE_TOKEN_ADDRESS` instead of 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE.
+
+Rule:
+
+- [ ] Rule should inherit RuleBase.
 
 ### Documentation
 
@@ -46,3 +56,4 @@ Using below design convention if needed.
 ### Deployment
 
 - [ ] Deployment file is provided.
+- [ ] Post-setup file is provided.
