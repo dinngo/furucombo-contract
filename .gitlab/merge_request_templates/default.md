@@ -27,12 +27,10 @@ These checklists encourage us to confirm any changes have been analyzed to reduc
 
 ### Design convention
 
-Using below design convention if needed.
-
-Handler:
+##### Handler
 
 - [ ] Handler should inherit HandlerBase.
-- [ ] Use `_getBalance(address,uint256)` to get the total asset balance when uint256_max as input amount.
+- [ ] Use `_getBalance(address,uint256)` to get the total asset balance when uint256.max as input amount.
 - [ ] Use `_getSender()` instead of `msg.sender`.
 - [ ] Use `_updateToken(address)` if the token is new to Proxy and has to be returned to the user.
 - [ ] Use `_tokenApprove(address,address,uint256)` instead of token approve function.
@@ -44,7 +42,7 @@ Handler:
 - [ ] Use `payable` for external functions.
 - [ ] Use `NATIVE_TOKEN_ADDRESS` instead of 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE.
 
-Rule:
+##### Rule
 
 - [ ] Rule should inherit RuleBase.
 
