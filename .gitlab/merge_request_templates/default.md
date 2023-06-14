@@ -25,6 +25,27 @@ These checklists encourage us to confirm any changes have been analyzed to reduc
 - [ ] Code coverage report is provided.
 - [ ] Static analysis report is reviewed.
 
+### Design convention
+
+##### Handler
+
+- [ ] Handler should inherit HandlerBase.
+- [ ] Use `_getBalance(address,uint256)` to get the total asset balance when uint256.max as input amount.
+- [ ] Use `_getSender()` instead of `msg.sender`.
+- [ ] Use `_updateToken(address)` if the token is new to Proxy and has to be returned to the user.
+- [ ] Use `_tokenApprove(address,address,uint256)` instead of token approve function.
+- [ ] Use `_tokenApproveZero(address,address)` to reset token approval.
+- [ ] Use `_isNotNativeToken(address)` to check if a token is native token or not.
+- [ ] Use `_revertMsg(string,string)` instead of `revert("...")`.
+- [ ] Use `_requireMsg(bool,string,string)` instead of `require(bool, "...")`.
+- [ ] Use `amount` from function parameters instead of using msg.value.
+- [ ] Use `payable` for external functions.
+- [ ] Use `NATIVE_TOKEN_ADDRESS` instead of 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE.
+
+##### Rule
+
+- [ ] Rule should inherit RuleBase.
+
 ### Documentation
 
 - [ ] Changes are noted in the change log.
@@ -33,3 +54,4 @@ These checklists encourage us to confirm any changes have been analyzed to reduc
 ### Deployment
 
 - [ ] Deployment file is provided.
+- [ ] Post-setup file is provided.
