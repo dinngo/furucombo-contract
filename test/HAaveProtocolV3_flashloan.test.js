@@ -182,7 +182,7 @@ contract('AaveV3 flashloan', function ([_, user, someone]) {
 
     it('Single asset with no debt', async function () {
       // Get flashloan params
-      const value = ether('1');
+      const value = ether('0.1');
       const params = _getFlashloanParams(
         [this.hMock.address],
         [ZERO_BYTES32],
@@ -270,7 +270,7 @@ contract('AaveV3 flashloan', function ([_, user, someone]) {
 
     it('single asset with variable rate by borrowing from itself', async function () {
       // Get flashloan params
-      const value = ether('1');
+      const value = ether('0.1');
       const params = _getFlashloanParams(
         [this.hMock.address],
         [ZERO_BYTES32],
@@ -322,7 +322,7 @@ contract('AaveV3 flashloan', function ([_, user, someone]) {
 
     it('multiple assets with no debt', async function () {
       // Get flashloan params
-      const tokenAValue = ether('1');
+      const tokenAValue = ether('0.1');
       const tokenBValue = mwei('1');
       const params = _getFlashloanParams(
         [this.hMock.address],
@@ -423,7 +423,7 @@ contract('AaveV3 flashloan', function ([_, user, someone]) {
     });
 
     it('should revert: not approveDelegation to proxy', async function () {
-      const value = ether('1');
+      const value = ether('0.1');
       const params = _getFlashloanParams(
         [this.hMock.address],
         [ZERO_BYTES32],
@@ -522,7 +522,7 @@ contract('AaveV3 flashloan', function ([_, user, someone]) {
     });
 
     it('sequential', async function () {
-      const tokenAValue = ether('1');
+      const tokenAValue = ether('0.1');
       const tokenBValue = mwei('1');
       // Setup 1st flashloan cube
       const params1 = _getFlashloanParams(
@@ -590,7 +590,7 @@ contract('AaveV3 flashloan', function ([_, user, someone]) {
 
     it('nested', async function () {
       // Get flashloan params
-      const tokenAValue = ether('1');
+      const tokenAValue = ether('0.1');
       const tokenBValue = mwei('1');
 
       const params1 = _getFlashloanParams(
@@ -674,7 +674,7 @@ contract('AaveV3 flashloan', function ([_, user, someone]) {
 
     it('supply aaveV3 after flashloan', async function () {
       // Get flashloan params
-      const tokenAValue = ether('1');
+      const tokenAValue = ether('0.1');
       const tokenBValue = mwei('1');
       const supplyValue = mwei('0.5');
       const testTo1 = [this.hMock.address, this.hAaveV3.address];
@@ -751,7 +751,7 @@ contract('AaveV3 flashloan', function ([_, user, someone]) {
     });
 
     it('should revert: not initiated by the proxy', async function () {
-      const value = ether('1');
+      const value = ether('0.1');
       // Setup 1st flashloan cube
       const params = _getFlashloanParams(
         [this.hMock.address],
