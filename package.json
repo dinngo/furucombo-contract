@@ -18,6 +18,7 @@
     "fuzzing": "scripts/fuzzing.sh",
     "coverage": "npx hardhat coverage",
     "analysis": "scripts/analysis.sh",
+    "slither_diff": "scripts/slither_diff.sh",
     "lint:solhint": "solhint \"contracts/**/*.sol\"",
     "lint:prettier": "scripts/prettier.sh",
     "deploy": "npx hardhat deploy"

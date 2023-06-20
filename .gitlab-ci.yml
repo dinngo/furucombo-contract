@@ -95,6 +95,14 @@ analysis_slither:
     - pip3 install slither-analyzer && pip3 install solc-select
     - npm run analysis
 
+analysis_slither_diff:
+  stage: analysis
+  script:
+    - apt-get update && apt-get install -y python3-pip
+    - pip3 install slither-analyzer && pip3 install solc-select
+    - apt-get install git
+    - npm run slither_diff
+
 deploy:
   stage: deploy
   script:
