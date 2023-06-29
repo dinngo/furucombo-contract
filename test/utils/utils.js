@@ -239,6 +239,10 @@ function getWETHSlotNum(chainId) {
     case 1:
     case 10:
       return 3;
+    case 137:
+    case 1088:
+    case 43114:
+      return 0;
     case 250:
       return 2;
     case 42161:

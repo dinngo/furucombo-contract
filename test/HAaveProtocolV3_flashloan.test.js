@@ -31,6 +31,7 @@ const { expect } = require('chai');
 const {
   WRAPPED_NATIVE_TOKEN,
   DAI_TOKEN,
+  WETH_TOKEN,
   AAVEPROTOCOL_V3_PROVIDER,
   ADAI_V3_DEBT_STABLE,
   ADAI_V3_DEBT_VARIABLE,
@@ -505,20 +506,33 @@ contract('AaveV3 flashloan', function ([_, user, someone]) {
 
   describe('Multiple Cubes', function () {
     beforeEach(async function () {
-      tokenAUser = await this.tokenA.balanceOf(user);
-      tokenBUser = await this.tokenB.balanceOf(user);
-      await sendToken(
-        tokenASymbol,
-        this.tokenA,
-        this.faucet.address,
-        ether('100')
-      );
+      if (chainId == 1088) {
+        const tokenASymbol_ = 'WETH';
+        this.tokenA = await IToken.at(WETH_TOKEN);
+        await sendToken(
+          tokenASymbol_,
+          this.tokenA,
+          this.faucet.address,
+          ether('100')
+        );
+      } else {
+        await sendToken(
+          tokenASymbol,
+          this.tokenA,
+          this.faucet.address,
+          ether('100')
+        );
+      }
+
       await sendToken(
         tokenBSymbol,
         this.tokenB,
         this.faucet.address,
         mwei('100')
       );
+
+      tokenAUser = await this.tokenA.balanceOf(user);
+      tokenBUser = await this.tokenB.balanceOf(user);
     });
 
     it('sequential', async function () {
