@@ -22,12 +22,11 @@ const {
   DAI_TOKEN,
   USDT_TOKEN,
   AUSDT_V2_DEBT_VARIABLE,
-  TUSD_TOKEN,
   COMP_TOKEN,
   ADAI_V2,
   AAVEPROTOCOL_V2_PROVIDER,
   AWETH_V2_DEBT_STABLE,
-  ATUSD_V2_DEBT_STABLE,
+  AUSDT_V2_DEBT_STABLE,
   AAVE_RATEMODE,
   WRAPPED_NATIVE_TOKEN,
   AWRAPPED_NATIVE_V2_DEBT_VARIABLE,
@@ -105,9 +104,9 @@ contract('Aave V2', function ([_, user, someone]) {
       return;
     }
     const depositAmount = ether('10000');
-    const borrowTokenAddr = TUSD_TOKEN;
+    const borrowTokenAddr = USDT_TOKEN;
     const rateMode = AAVE_RATEMODE.STABLE;
-    const debtTokenAddr = ATUSD_V2_DEBT_STABLE;
+    const debtTokenAddr = AUSDT_V2_DEBT_STABLE;
     const debtWETHAddr = AWETH_V2_DEBT_STABLE;
 
     let borrowTokenUserBefore;
@@ -143,7 +142,7 @@ contract('Aave V2', function ([_, user, someone]) {
     });
 
     it('borrow token', async function () {
-      const borrowAmount = ether('100');
+      const borrowAmount = mwei('100');
       const to = this.hAaveV2.address;
       const data = abi.simpleEncode(
         'borrow(address,uint256,uint256)',
@@ -291,7 +290,7 @@ contract('Aave V2', function ([_, user, someone]) {
     });
 
     it('should revert: borrow token without approveDelegation', async function () {
-      const borrowAmount = ether('2');
+      const borrowAmount = mwei('2');
       const to = this.hAaveV2.address;
       const data = abi.simpleEncode(
         'borrow(address,uint256,uint256)',
@@ -307,7 +306,7 @@ contract('Aave V2', function ([_, user, someone]) {
     });
 
     it('should revert: borrow token approveDelegation < borrow amount', async function () {
-      const borrowAmount = ether('2');
+      const borrowAmount = mwei('2');
       const to = this.hAaveV2.address;
       const data = abi.simpleEncode(
         'borrow(address,uint256,uint256)',
@@ -318,7 +317,7 @@ contract('Aave V2', function ([_, user, someone]) {
 
       await this.debtToken.approveDelegation(
         this.proxy.address,
-        borrowAmount.sub(ether('1')),
+        borrowAmount.sub(mwei('1')),
         {
           from: user,
         }
@@ -347,7 +346,7 @@ contract('Aave V2', function ([_, user, someone]) {
     });
 
     it('should revert: borrow token with no collateral ', async function () {
-      const borrowAmount = ether('2');
+      const borrowAmount = mwei('2');
       const to = this.hAaveV2.address;
       const data = abi.simpleEncode(
         'borrow(address,uint256,uint256)',
