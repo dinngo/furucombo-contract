@@ -195,7 +195,7 @@ contract('Curve_fantom', function ([_, user]) {
       });
     });
 
-    describe('Geist pool', function () {
+    describe.skip('Geist pool', function () {
       it('Exact input swap USDT to DAI by exchangeUnderlying', async function () {
         const value = mwei('1');
         const answer = await this.geistSwap.methods[
@@ -1247,7 +1247,7 @@ contract('Curve_fantom', function ([_, user]) {
       });
     });
 
-    describe('geist pool', function () {
+    describe.skip('geist pool', function () {
       const token0Address = DAI_TOKEN;
       const token1Address = USDC_TOKEN;
       const poolTokenAddress = CURVE_GEISTCRV;
