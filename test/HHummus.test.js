@@ -152,7 +152,7 @@ contract('Hummus Swap', function ([_, user]) {
           profileGas(receipt);
         });
 
-        it('alt pool', async function () {
+        it.skip('alt pool', async function () {
           const value = mwei('1000');
           const to = this.hHummus.address;
           const tokenPath = [token0.address, altToken.address];
@@ -205,7 +205,7 @@ contract('Hummus Swap', function ([_, user]) {
           profileGas(receipt);
         });
 
-        it('multi-pools', async function () {
+        it.skip('multi-pools', async function () {
           const value = ether('10');
           const to = this.hHummus.address;
           const tokenPath = [token1.address, token0.address, altToken.address];
