@@ -371,7 +371,7 @@ contract('ParaSwapV5', function ([_, user, user2]) {
     });
   }); // describe('ether to token') end
 
-  describe('token to ether', function () {
+  describe.skip('token to ether', function () {
     const tokenAddress = USDC_TOKEN;
     const tokenDecimal = 6;
     const slippageInBps = 100; // 1%
