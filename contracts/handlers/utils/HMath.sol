@@ -10,23 +10,21 @@ contract HMath is HandlerBase {
     }
 
     function add(uint256 a, uint256 b) external payable returns (uint256 ret) {
-        return a + b;
+        ret = a + b;
     }
 
     function addMany(
         uint256[] calldata a
     ) external payable returns (uint256 ret) {
-        uint256 i;
-        for (; i < a.length; ) {
+        for (uint256 i; i < a.length; ) {
             ret += a[i];
             unchecked {
-                i++;
+                ++i;
             }
         }
-        return ret;
     }
 
     function sub(uint256 a, uint256 b) external payable returns (uint256 ret) {
-        return a - b;
+        ret = a - b;
     }
 }

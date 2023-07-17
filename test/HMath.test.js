@@ -1,39 +1,9 @@
-const chainId = network.config.chainId;
-
-const {
-  balance,
-  BN,
-  constants,
-  ether,
-  expectEvent,
-  expectRevert,
-  send,
-} = require('@openzeppelin/test-helpers');
-const { ZERO_ADDRESS, MAX_UINT256 } = constants;
-const { tracker } = balance;
+const { ether } = require('@openzeppelin/test-helpers');
 const abi = require('ethereumjs-abi');
 const utils = web3.utils;
 
 const { expect } = require('chai');
-
-const {
-  DAI_TOKEN,
-  USDT_TOKEN,
-  NATIVE_TOKEN_ADDRESS,
-  NATIVE_TOKEN_ADDRESS_PROXY,
-  WRAPPED_NATIVE_TOKEN,
-} = require('./utils/constants');
-const {
-  evmRevert,
-  evmSnapshot,
-  profileGas,
-  getHandlerReturn,
-  getCallData,
-  injectEther,
-  getBalanceSlotNum,
-  setTokenBalance,
-  mwei,
-} = require('./utils/utils');
+const { evmRevert, evmSnapshot, getHandlerReturn } = require('./utils/utils');
 
 const HMath = artifacts.require('HMath');
 const FeeRuleRegistry = artifacts.require('FeeRuleRegistry');
