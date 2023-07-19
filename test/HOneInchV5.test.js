@@ -47,7 +47,7 @@ const IToken = artifacts.require('IERC20');
 /// Change url for different chain
 /// - Ethereum: https://api.1inch.exchange/v5.0/1/
 /// - Polygon: https://api.1inch.exchange/v5.0/137/
-const URL_1INCH = 'https://api.1inch.exchange/v5.0/' + chainId + '/';
+const URL_1INCH = 'https://api.1inch.io/v5.0/' + chainId + '/';
 const URL_1INCH_SWAP = URL_1INCH + 'swap';
 
 contract('OneInchV5 Swap', function ([_, user]) {
