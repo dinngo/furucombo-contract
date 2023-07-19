@@ -662,6 +662,10 @@ contract('Stargate', function ([_, user, user2]) {
     });
 
     describe('Stable', function () {
+      if (chainId == 250) {
+        // skip for multichain hack issue
+        return;
+      }
       const inputTokenAddr = chainId == 1088 ? USDT_TOKEN : USDC_TOKEN;
       const INPUT_TOKEN_BALANCE_SLOT_NUM =
         chainId == 1088
