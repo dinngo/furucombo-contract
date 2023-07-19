@@ -483,7 +483,7 @@ async function callExternalApi(
     if (resp.ok === true) {
       return resp;
     }
-    await sleep(500); // sleep 500ms.
+    await sleep(60000); // sleep 1min.
   }
   return resp; // return error resp from external api to caller.
 }
