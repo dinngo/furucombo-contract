@@ -25,6 +25,7 @@ const {
   USDC_TOKEN,
   WETH_TOKEN,
   NATIVE_TOKEN_ADDRESS,
+  ONEINCH_APPROVE_SPENDER,
 } = require('./utils/constants');
 const {
   evmRevert,
@@ -45,9 +46,7 @@ const Proxy = artifacts.require('ProxyMock');
 const IToken = artifacts.require('IERC20');
 
 /// Change url for different chain
-/// - Ethereum: https://api.1inch.exchange/v5.0/1/
-/// - Polygon: https://api.1inch.exchange/v5.0/137/
-const URL_1INCH = 'https://api.1inch.io/v5.0/' + chainId + '/';
+const URL_1INCH = process.env.URL_1INCH + '/' + chainId + '/';
 const URL_1INCH_SWAP = URL_1INCH + 'swap';
 
 contract('OneInchV5 Swap', function ([_, user]) {
@@ -61,18 +60,14 @@ contract('OneInchV5 Swap', function ([_, user]) {
       this.skip();
     }
     // ==================================================
-
-    // Get 1inch router address
-    const routerResponse = await callExternalApi(URL_1INCH + 'approve/spender');
-    const routerAddress = (await routerResponse.json()).address;
-
     this.registry = await Registry.new();
-    this.hOneInch = await HOneInch.new(routerAddress);
+    this.hOneInch = await HOneInch.new(ONEINCH_APPROVE_SPENDER);
     await this.registry.register(
       this.hOneInch.address,
       utils.asciiToHex('OneInchV5')
     );
     this.feeRuleRegistry = await FeeRuleRegistry.new('0', _);
+
     this.proxy = await Proxy.new(
       this.registry.address,
       this.feeRuleRegistry.address
