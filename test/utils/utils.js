@@ -167,6 +167,8 @@ function getBalanceSlotNum(token, chainId) {
       return getDAISlotNum(chainId);
     case 'USDC':
       return getUSDCSlotNum(chainId);
+    case 'USDC-LZ':
+      return getUSDCSlotNum(chainId);
     case 'USDT':
       return getUSDTSlotNum(chainId);
     case 'LINK':
@@ -194,13 +196,8 @@ function getDAISlotNum(chainId) {
 
 function getUSDCSlotNum(chainId) {
   switch (chainId) {
-    case 1:
-    case 43114:
-      return 9;
     case 250:
-      return 2;
-    case 42161:
-      return 51;
+      return 7;
     default:
       return 0;
   }

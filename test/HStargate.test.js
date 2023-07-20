@@ -31,6 +31,7 @@ const { expect } = require('chai');
 
 const {
   USDC_TOKEN,
+  USDC_LZ_TOKEN,
   USDT_TOKEN,
   STARGATE_FACTORY,
   STARGATE_ROUTER,
@@ -70,6 +71,7 @@ const TYPE_SWAP_REMOTE = 1;
 
 const STARGATE_POOL_ID_USDC = 1;
 const STARGATE_POOL_ID_USDT_METIS = 19;
+const STARGATE_POOL_ID_USDC_FANTOM = 21;
 const STARGATE_POOL_ID_ETH = 13;
 
 const STARGATE_UNKNOWN_POOL_ID = 99;
@@ -662,22 +664,31 @@ contract('Stargate', function ([_, user, user2]) {
     });
 
     describe('Stable', function () {
-      if (chainId == 250) {
-        // skip for multichain hack issue
-        return;
+      var srcPoolId;
+      var dstPoolId;
+      var inputTokenAddr;
+      var INPUT_TOKEN_BALANCE_SLOT_NUM;
+      switch (chainId) {
+        case 1088:
+          srcPoolId = STARGATE_POOL_ID_USDT_METIS;
+          dstPoolId = STARGATE_POOL_ID_USDT_METIS;
+          inputTokenAddr = USDT_TOKEN;
+          INPUT_TOKEN_BALANCE_SLOT_NUM = getBalanceSlotNum('USDT', chainId);
+          break;
+        case 250:
+          srcPoolId = STARGATE_POOL_ID_USDC_FANTOM;
+          dstPoolId = STARGATE_POOL_ID_USDC;
+          inputTokenAddr = USDC_LZ_TOKEN;
+          INPUT_TOKEN_BALANCE_SLOT_NUM = getBalanceSlotNum('USDC-LZ', chainId);
+          break;
+        default:
+          srcPoolId = STARGATE_POOL_ID_USDC;
+          dstPoolId = STARGATE_POOL_ID_USDC;
+          inputTokenAddr = USDC_TOKEN;
+          INPUT_TOKEN_BALANCE_SLOT_NUM = getBalanceSlotNum('USDC', chainId);
       }
-      const inputTokenAddr = chainId == 1088 ? USDT_TOKEN : USDC_TOKEN;
-      const INPUT_TOKEN_BALANCE_SLOT_NUM =
-        chainId == 1088
-          ? getBalanceSlotNum('USDT', chainId)
-          : getBalanceSlotNum('USDC', chainId);
 
-      const srcPoolId =
-        chainId == 1088 ? STARGATE_POOL_ID_USDT_METIS : STARGATE_POOL_ID_USDC;
-      const dstPoolId =
-        chainId == 1088 ? STARGATE_POOL_ID_USDT_METIS : STARGATE_POOL_ID_USDC;
       const amountIn = mwei('10');
-
       let inputTokenPoolBefore;
 
       before(async function () {
@@ -711,6 +722,7 @@ contract('Stargate', function ([_, user, user2]) {
           payload,
           { dstGasForCall: 0, dstNativeAmount: 0, dstNativeAddr: '0x' } // lzTxObj
         );
+
         const fee = fees[0];
         const data = abi.simpleEncode(
           'swap(uint16,uint256,uint256,address,uint256,uint256,uint256,address)',
