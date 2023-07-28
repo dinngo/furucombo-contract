@@ -15,7 +15,6 @@ const {
 } = require('@openzeppelin/test-helpers');
 const { MAX_UINT256 } = constants;
 const { tracker } = balance;
-const { latest } = time;
 const abi = require('ethereumjs-abi');
 const utils = web3.utils;
 
@@ -24,7 +23,7 @@ const { expect } = require('chai');
 const {
   DAI_TOKEN,
   RDAI_TOKEN,
-  RADIAN_PROVIDER,
+  RADIANT_PROVIDER,
   WRAPPED_NATIVE_TOKEN,
   RWRAPPED_NATIVE_TOKEN,
 } = require('./utils/constants');
@@ -71,12 +70,12 @@ contract('Radiant', function ([_, user]) {
       this.registry.address,
       this.feeRuleRegistry.address
     );
-    this.hRadiant = await HRadiant.new(WRAPPED_NATIVE_TOKEN, RADIAN_PROVIDER);
+    this.hRadiant = await HRadiant.new(WRAPPED_NATIVE_TOKEN, RADIANT_PROVIDER);
     await this.registry.register(
       this.hRadiant.address,
       utils.asciiToHex('HRadiant')
     );
-    this.provider = await IProvider.at(RADIAN_PROVIDER);
+    this.provider = await IProvider.at(RADIANT_PROVIDER);
     this.lendingPoolAddress = await this.provider.getLendingPool.call();
     this.lendingPool = await ILendingPool.at(this.lendingPoolAddress);
     this.token = await IToken.at(tokenAddress);

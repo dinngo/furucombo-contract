@@ -15,7 +15,6 @@ const {
 } = require('@openzeppelin/test-helpers');
 const { tracker } = balance;
 const { ZERO_BYTES32 } = constants;
-const { latest } = time;
 const abi = require('ethereumjs-abi');
 const util = require('ethereumjs-util');
 const utils = web3.utils;
@@ -24,7 +23,7 @@ const { expect } = require('chai');
 
 const {
   DAI_TOKEN,
-  RADIAN_PROVIDER,
+  RADIANT_PROVIDER,
   RDAI_TOKEN,
   AAVE_RATEMODE,
   WRAPPED_NATIVE_TOKEN,
@@ -49,7 +48,6 @@ const IToken = artifacts.require('IERC20');
 const ILendingPoolV2 = artifacts.require('ILendingPoolV2');
 const IProviderV2 = artifacts.require('ILendingPoolAddressesProviderV2');
 const IVariableDebtToken = artifacts.require('IVariableDebtToken');
-const IStableDebtToken = artifacts.require('IStableDebtToken');
 
 contract('Radiant flashloan', function ([_, user, someone]) {
   let id;
@@ -64,7 +62,7 @@ contract('Radiant flashloan', function ([_, user, someone]) {
       this.feeRuleRegistry.address
     );
     // Register radiant handler
-    this.hRadiant = await HRadiant.new(WRAPPED_NATIVE_TOKEN, RADIAN_PROVIDER);
+    this.hRadiant = await HRadiant.new(WRAPPED_NATIVE_TOKEN, RADIANT_PROVIDER);
     await this.registry.register(
       this.hRadiant.address,
       utils.asciiToHex('Radiant')
@@ -74,7 +72,7 @@ contract('Radiant flashloan', function ([_, user, someone]) {
     await this.registry.register(this.hMock.address, utils.asciiToHex('Mock'));
 
     // Register radiant lending pool for flashloan
-    this.provider = await IProviderV2.at(RADIAN_PROVIDER);
+    this.provider = await IProviderV2.at(RADIANT_PROVIDER);
     const lendingPoolAddress = await this.provider.getLendingPool.call();
     this.lendingPool = await ILendingPoolV2.at(lendingPoolAddress);
     await this.registry.registerCaller(
@@ -184,7 +182,7 @@ contract('Radiant flashloan', function ([_, user, someone]) {
         params
       );
 
-      const receipt = await this.proxy.execMock(to, data, {
+      await this.proxy.execMock(to, data, {
         from: user,
         value: ether('0.1'),
       });
@@ -232,7 +230,7 @@ contract('Radiant flashloan', function ([_, user, someone]) {
 
       // Exec proxy
       await balanceUser.get();
-      const receipt = await this.proxy.execMock(to, data, {
+      await this.proxy.execMock(to, data, {
         from: user,
         value: ether('0.1'),
       });
@@ -269,7 +267,7 @@ contract('Radiant flashloan', function ([_, user, someone]) {
         params
       );
 
-      const receipt = await this.proxy.execMock(to, data, {
+      await this.proxy.execMock(to, data, {
         from: user,
         value: ether('0.1'),
       });
@@ -479,7 +477,7 @@ contract('Radiant flashloan', function ([_, user, someone]) {
       const config = [ZERO_BYTES32, ZERO_BYTES32];
       const data = [data1, data2];
       const ruleIndex = [];
-      const receipt = await this.proxy.batchExec(to, config, data, ruleIndex, {
+      await this.proxy.batchExec(to, config, data, ruleIndex, {
         from: user,
         value: ether('0.1'),
       });
@@ -526,7 +524,7 @@ contract('Radiant flashloan', function ([_, user, someone]) {
       // Encode 1st flashloan cube data as flashloan param
       const params2 = web3.eth.abi.encodeParameters(
         ['address[]', 'bytes32[]', 'bytes[]'],
-        [[this.hRadiant.address], [ZERO_BYTES32], [data1]]
+        [[to1], [ZERO_BYTES32], [data1]]
       );
 
       // Get 2nd flashloan cube data
@@ -542,7 +540,7 @@ contract('Radiant flashloan', function ([_, user, someone]) {
       const ruleIndex = [];
       const data = [data2];
 
-      const receipt = await this.proxy.batchExec(to, config, data, ruleIndex, {
+      await this.proxy.batchExec(to, config, data, ruleIndex, {
         from: user,
         value: ether('0.1'),
       });
@@ -620,7 +618,7 @@ contract('Radiant flashloan', function ([_, user, someone]) {
       const config = [ZERO_BYTES32];
       const ruleIndex = [];
       const data = [data1];
-      const receipt = await this.proxy.batchExec(to, config, data, ruleIndex, {
+      await this.proxy.batchExec(to, config, data, ruleIndex, {
         from: user,
         value: ether('0.1'),
       });

@@ -183,7 +183,7 @@ contract HRadiant is HandlerBase, IFlashLoanReceiver {
     function _deposit(
         address asset,
         uint256 amount
-    ) internal returns (uint256) {
+    ) internal returns (uint256 depositAmount) {
         (address pool, address aToken) = _getLendingPoolAndAToken(asset);
         _tokenApprove(asset, pool, amount);
         uint256 beforeATokenAmount = IERC20(aToken).balanceOf(address(this));
@@ -202,7 +202,9 @@ contract HRadiant is HandlerBase, IFlashLoanReceiver {
         }
         _tokenApproveZero(asset, pool);
         _updateToken(aToken);
-        return IERC20(aToken).balanceOf(address(this)) - beforeATokenAmount;
+        depositAmount =
+            IERC20(aToken).balanceOf(address(this)) -
+            beforeATokenAmount;
     }
 
     function _withdraw(

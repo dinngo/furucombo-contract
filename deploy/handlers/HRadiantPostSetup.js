@@ -1,11 +1,11 @@
 const { get, registerHandler } = require('../utils/deploy.js');
-const { RADIAN_POOL } = require('../utils/addresses.js');
+const { RADIANT_POOL } = require('../utils/addresses.js');
 
 module.exports = async () => {
   const registry = await get('Registry');
   const handler = await get('HRadiant');
   await registerHandler(registry, handler);
-  await registerCaller(registry, RADIAN_POOL, handler);
+  await registerCaller(registry, RADIANT_POOL, handler);
 };
 
 module.exports.tags = ['HRadiantPostSetup'];

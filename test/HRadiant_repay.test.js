@@ -18,10 +18,9 @@ const utils = web3.utils;
 const { expect } = require('chai');
 
 const {
-  WETH_TOKEN,
   DAI_TOKEN,
   RDAI_TOKEN,
-  RADIAN_PROVIDER,
+  RADIANT_PROVIDER,
   AAVE_RATEMODE,
   WRAPPED_NATIVE_TOKEN,
   RWRAPPED_NATIVE_DEBT_VARIABLE,
@@ -62,12 +61,12 @@ contract('Radiant Repay', function ([_, user]) {
       this.registry.address,
       this.feeRuleRegistry.address
     );
-    this.hRadiant = await HRadiant.new(WRAPPED_NATIVE_TOKEN, RADIAN_PROVIDER);
+    this.hRadiant = await HRadiant.new(WRAPPED_NATIVE_TOKEN, RADIANT_PROVIDER);
     await this.registry.register(
       this.hRadiant.address,
       utils.asciiToHex('Radiant')
     );
-    this.provider = await IProvider.at(RADIAN_PROVIDER);
+    this.provider = await IProvider.at(RADIANT_PROVIDER);
     this.lendingPoolAddress = await this.provider.getLendingPool.call();
     this.lendingPool = await ILendingPool.at(this.lendingPoolAddress);
     this.token = await IToken.at(tokenAddress);
@@ -150,7 +149,6 @@ contract('Radiant Repay', function ([_, user]) {
       await this.proxy.updateTokenMock(this.borrowToken.address);
       await balanceUser.get();
 
-      const debtTokenUserBefore = await this.debtToken.balanceOf.call(user);
       const receipt = await this.proxy.execMock(to, data, {
         from: user,
         value: ether('0.1'),
@@ -200,7 +198,6 @@ contract('Radiant Repay', function ([_, user]) {
         user
       );
       await balanceUser.get();
-      const debtTokenUserBefore = await this.debtToken.balanceOf.call(user);
       const receipt = await this.proxy.execMock(to, data, {
         from: user,
         value: value,

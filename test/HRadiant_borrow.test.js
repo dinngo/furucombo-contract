@@ -23,7 +23,7 @@ const {
   COMP_TOKEN,
   RDAI_TOKEN,
   AAVE_RATEMODE,
-  RADIAN_PROVIDER,
+  RADIANT_PROVIDER,
   WRAPPED_NATIVE_TOKEN,
   RUSDT_DEBT_VARIABLE,
   RWRAPPED_NATIVE_DEBT_VARIABLE,
@@ -47,7 +47,7 @@ const ILendingPool = artifacts.require('ILendingPoolV2');
 const IProvider = artifacts.require('ILendingPoolAddressesProviderV2');
 const IVariableDebtToken = artifacts.require('IVariableDebtToken');
 
-contract('Radiant', function ([_, user, someone]) {
+contract('Radiant Borrow', function ([_, user, someone]) {
   const aTokenAddress = RDAI_TOKEN;
   const tokenAddress = DAI_TOKEN;
 
@@ -64,12 +64,12 @@ contract('Radiant', function ([_, user, someone]) {
       this.registry.address,
       this.feeRuleRegistry.address
     );
-    this.hRadiant = await HRadiant.new(WRAPPED_NATIVE_TOKEN, RADIAN_PROVIDER);
+    this.hRadiant = await HRadiant.new(WRAPPED_NATIVE_TOKEN, RADIANT_PROVIDER);
     await this.registry.register(
       this.hRadiant.address,
       utils.asciiToHex('Radiant')
     );
-    this.provider = await IProvider.at(RADIAN_PROVIDER);
+    this.provider = await IProvider.at(RADIANT_PROVIDER);
     this.lendingPoolAddress = await this.provider.getLendingPool.call();
     this.lendingPool = await ILendingPool.at(this.lendingPoolAddress);
     this.token = await IToken.at(tokenAddress);
