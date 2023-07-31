@@ -3,7 +3,7 @@ if (
   chainId == 1 ||
   chainId == 10 ||
   chainId == 137 ||
-  chainId == 250 ||
+  // chainId == 250 || // Skip due to frequent error reports from the ParaSwap API on Fantom
   chainId == 42161 ||
   chainId == 43114
 ) {
@@ -371,7 +371,7 @@ contract('ParaSwapV5', function ([_, user, user2]) {
     });
   }); // describe('ether to token') end
 
-  describe.skip('token to ether', function () {
+  describe('token to ether', function () {
     const tokenAddress = USDC_TOKEN;
     const tokenDecimal = 6;
     const slippageInBps = 100; // 1%
