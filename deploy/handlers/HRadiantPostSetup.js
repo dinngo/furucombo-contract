@@ -1,4 +1,4 @@
-const { get, registerHandler } = require('../utils/deploy.js');
+const { get, registerHandler, registerCaller } = require('../utils/deploy.js');
 const { RADIANT_POOL } = require('../utils/addresses.js');
 
 module.exports = async () => {
