@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 - Support add, addMany, and sub.
+- Support Radiant handler on Arbitrum
 
 ## [2.7.0] - 2023-06-07
 
