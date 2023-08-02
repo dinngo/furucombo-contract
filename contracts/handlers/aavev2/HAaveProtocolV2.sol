@@ -27,15 +27,20 @@ contract HAaveProtocolV2 is HandlerBase, IFlashLoanReceiver {
         return "HAaveProtocolV2";
     }
 
-    function deposit(address asset, uint256 amount) external payable {
+    function deposit(
+        address asset,
+        uint256 amount
+    ) external payable returns (uint256 depositAmount) {
         amount = _getBalance(asset, amount);
-        _deposit(asset, amount);
+        depositAmount = _deposit(asset, amount);
     }
 
-    function depositETH(uint256 amount) external payable {
+    function depositETH(
+        uint256 amount
+    ) external payable returns (uint256 depositAmount) {
         amount = _getBalance(NATIVE_TOKEN_ADDRESS, amount);
         IWrappedNativeToken(wrappedNativeToken).deposit{value: amount}();
-        _deposit(wrappedNativeToken, amount);
+        depositAmount = _deposit(wrappedNativeToken, amount);
 
         _updateToken(wrappedNativeToken);
     }
@@ -175,9 +180,13 @@ contract HAaveProtocolV2 is HandlerBase, IFlashLoanReceiver {
 
     /* ========== INTERNAL FUNCTIONS ========== */
 
-    function _deposit(address asset, uint256 amount) internal {
+    function _deposit(
+        address asset,
+        uint256 amount
+    ) internal returns (uint256 depositAmount) {
         (address pool, address aToken) = _getLendingPoolAndAToken(asset);
         _tokenApprove(asset, pool, amount);
+        uint256 beforeATokenAmount = IERC20(aToken).balanceOf(address(this));
 
         try
             ILendingPoolV2(pool).deposit(
@@ -191,6 +200,10 @@ contract HAaveProtocolV2 is HandlerBase, IFlashLoanReceiver {
         } catch {
             _revertMsg("deposit");
         }
+        depositAmount =
+            IERC20(aToken).balanceOf(address(this)) -
+            beforeATokenAmount;
+
         _tokenApproveZero(asset, pool);
         _updateToken(aToken);
     }

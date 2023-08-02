@@ -200,11 +200,12 @@ contract HRadiant is HandlerBase, IFlashLoanReceiver {
         } catch {
             _revertMsg("deposit");
         }
-        _tokenApproveZero(asset, pool);
-        _updateToken(aToken);
         depositAmount =
             IERC20(aToken).balanceOf(address(this)) -
             beforeATokenAmount;
+
+        _tokenApproveZero(asset, pool);
+        _updateToken(aToken);
     }
 
     function _withdraw(

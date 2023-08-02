@@ -24,16 +24,21 @@ contract HAaveProtocolV3 is HandlerBase, IFlashLoanReceiver {
         return "HAaveProtocolV3";
     }
 
-    function supply(address asset, uint256 amount) external payable {
+    function supply(
+        address asset,
+        uint256 amount
+    ) external payable returns (uint256 supplyAmount) {
         amount = _getBalance(asset, amount);
-        _supply(asset, amount);
+        supplyAmount = _supply(asset, amount);
     }
 
-    function supplyETH(uint256 amount) external payable {
+    function supplyETH(
+        uint256 amount
+    ) external payable returns (uint256 supplyAmount) {
         amount = _getBalance(NATIVE_TOKEN_ADDRESS, amount);
         IWrappedNativeToken(wrappedNativeToken).deposit{value: amount}();
 
-        _supply(wrappedNativeToken, amount);
+        supplyAmount = _supply(wrappedNativeToken, amount);
 
         _updateToken(wrappedNativeToken);
     }
@@ -173,9 +178,14 @@ contract HAaveProtocolV3 is HandlerBase, IFlashLoanReceiver {
 
     /* ========== INTERNAL FUNCTIONS ========== */
 
-    function _supply(address asset, uint256 amount) internal {
+    function _supply(
+        address asset,
+        uint256 amount
+    ) internal returns (uint256 supplyAmount) {
         (address pool, address aToken) = _getPoolAndAToken(asset);
         _tokenApprove(asset, pool, amount);
+        uint256 beforeATokenAmount = IERC20(aToken).balanceOf(address(this));
+
         try
             IPool(pool).supply(asset, amount, address(this), REFERRAL_CODE)
         {} catch Error(string memory reason) {
@@ -183,6 +193,10 @@ contract HAaveProtocolV3 is HandlerBase, IFlashLoanReceiver {
         } catch {
             _revertMsg("supply");
         }
+        supplyAmount =
+            IERC20(aToken).balanceOf(address(this)) -
+            beforeATokenAmount;
+
         _tokenApproveZero(asset, pool);
         _updateToken(aToken);
     }
