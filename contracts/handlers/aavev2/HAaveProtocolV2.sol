@@ -200,9 +200,12 @@ contract HAaveProtocolV2 is HandlerBase, IFlashLoanReceiver {
         } catch {
             _revertMsg("deposit");
         }
-        depositAmount =
-            IERC20(aToken).balanceOf(address(this)) -
-            beforeATokenAmount;
+
+        unchecked {
+            depositAmount =
+                IERC20(aToken).balanceOf(address(this)) -
+                beforeATokenAmount;
+        }
 
         _tokenApproveZero(asset, pool);
         _updateToken(aToken);

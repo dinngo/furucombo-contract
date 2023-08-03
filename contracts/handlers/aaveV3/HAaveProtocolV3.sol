@@ -193,9 +193,12 @@ contract HAaveProtocolV3 is HandlerBase, IFlashLoanReceiver {
         } catch {
             _revertMsg("supply");
         }
-        supplyAmount =
-            IERC20(aToken).balanceOf(address(this)) -
-            beforeATokenAmount;
+
+        unchecked {
+            supplyAmount =
+                IERC20(aToken).balanceOf(address(this)) -
+                beforeATokenAmount;
+        }
 
         _tokenApproveZero(asset, pool);
         _updateToken(aToken);
