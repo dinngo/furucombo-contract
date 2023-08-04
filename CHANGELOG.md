@@ -9,6 +9,9 @@ All notable changes to this project will be documented in this file.
 - Support add, addMany, and sub.
 - Support Radiant handler on Arbitrum
 
+### Changed
+- Add diff returns to deposit/supply function of AAVE handlers
+
 ## [2.7.0] - 2023-06-07
 
 ### Added
