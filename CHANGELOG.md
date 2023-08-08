@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+## [2.8.0] - 2023-08-08
+
 ### Added
 
 - Support add, addMany, and sub.
