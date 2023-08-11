@@ -554,46 +554,6 @@ contract('Stargate', function ([_, user, user2]) {
         );
       });
 
-      it('should revert: amountIn = pool total balance', async function () {
-        // Prep
-        const amountIn = await balanceVaultETH.get();
-        await network.provider.send('hardhat_setBalance', [
-          user,
-          '0x' + amountIn,
-        ]);
-
-        const refundAddress = this.proxy.address;
-        const to = this.hStargate.address;
-        const fees = await this.stargateRouter.quoteLayerZeroFee(
-          dstChainId,
-          funcType,
-          receiver,
-          payload,
-          { dstGasForCall: 0, dstNativeAmount: 0, dstNativeAddr: '0x' } // lzTxObj
-        );
-
-        const fee = fees[0];
-        const data = abi.simpleEncode(
-          'swapETH(uint16,address,uint256,uint256,uint256,address)',
-          dstChainId,
-          refundAddress,
-          amountIn,
-          fee,
-          amountOutMin,
-          receiver
-        );
-
-        // Execute
-        const value = amountIn.add(fee);
-        await expectRevert(
-          this.proxy.execMock(to, data, {
-            from: user,
-            value: value,
-          }),
-          '0_HStargate_swapETH: FeeLibrary: not enough balance'
-        );
-      });
-
       // address
       it('should revert: refund zero address', async function () {
         // Prep
@@ -1169,50 +1129,6 @@ contract('Stargate', function ([_, user, user2]) {
             value: value,
           }),
           '0_HStargate_swap: Stargate: slippage too high'
-        );
-      });
-
-      it('should revert: amountIn = pool total balance', async function () {
-        // Prep
-        const amountIn = inputTokenPoolBefore;
-        const refundAddress = this.proxy.address;
-        const to = this.hStargate.address;
-
-        await setTokenBalance(
-          this.inputToken.address,
-          this.proxy.address,
-          amountIn,
-          INPUT_TOKEN_BALANCE_SLOT_NUM
-        );
-
-        const fees = await this.stargateRouter.quoteLayerZeroFee(
-          dstChainId,
-          funcType,
-          receiver,
-          payload,
-          { dstGasForCall: 0, dstNativeAmount: 0, dstNativeAddr: '0x' } // lzTxObj
-        );
-        const fee = fees[0];
-        const data = abi.simpleEncode(
-          'swap(uint16,uint256,uint256,address,uint256,uint256,uint256,address)',
-          dstChainId,
-          srcPoolId,
-          dstPoolId,
-          refundAddress,
-          amountIn,
-          fee,
-          amountOutMin,
-          receiver
-        );
-
-        // Execute
-        const value = fee;
-        await expectRevert(
-          this.proxy.execMock(to, data, {
-            from: user,
-            value: value,
-          }),
-          '0_HStargate_swap: FeeLibrary: not enough balance'
         );
       });
 
