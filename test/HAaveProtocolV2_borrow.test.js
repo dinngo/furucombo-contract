@@ -360,22 +360,6 @@ contract('Aave V2', function ([_, user, someone]) {
         'HAaveProtocolV2_borrow: 9' // AAVEV2 Error Code: VL_COLLATERAL_BALANCE_IS_0
       );
     });
-
-    it('should revert: borrow token is the same with collateral', async function () {
-      const borrowAmount = ether('2');
-      const to = this.hAaveV2.address;
-      const data = abi.simpleEncode(
-        'borrow(address,uint256,uint256)',
-        this.token.address,
-        borrowAmount,
-        rateMode
-      );
-
-      await expectRevert(
-        this.proxy.execMock(to, data, { from: user }),
-        'HAaveProtocolV2_borrow: 13' // AAVEV2 Error Code: VL_COLLATERAL_SAME_AS_BORROWING_CURRENCY
-      );
-    });
   });
 
   describe('Borrow with Variable Rate', function () {

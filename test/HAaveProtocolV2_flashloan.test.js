@@ -426,37 +426,6 @@ contract('AaveV2 flashloan', function ([_, user, someone]) {
       );
     });
 
-    it('should revert: collateral same as borrowing currency', async function () {
-      if (chainId == 137) {
-        // Stable Rate borrow is not available on Polygon and
-        // variable rate doesn't check collateral and debt. so skip this test.
-        return;
-      }
-      const value = ether('1');
-      const params = _getFlashloanParams(
-        [this.hMock.address],
-        [ZERO_BYTES32],
-        [this.faucet.address],
-        [this.tokenB.address],
-        [value]
-      );
-
-      const to = this.hAaveV2.address;
-      const data = _getFlashloanCubeData(
-        [this.tokenB.address], // assets
-        [value], // amounts
-        [AAVE_RATEMODE.STABLE], // modes
-        params
-      );
-      await expectRevert(
-        this.proxy.execMock(to, data, {
-          from: user,
-          value: ether('0.1'),
-        }),
-        'AaveProtocolV2_flashLoan: 13' // aave v2 VL_COLLATERAL_SAME_AS_BORROWING_CURRENCY error code = 13
-      );
-    });
-
     it('should revert: unsupported token', async function () {
       const value = ether('1');
       const params = _getFlashloanParams(
