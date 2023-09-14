@@ -150,7 +150,7 @@ contract('Radiant flashloan', function ([_, user, someone]) {
       tokenAUser = await this.tokenA.balanceOf.call(user);
       tokenBUser = await this.tokenB.balanceOf.call(user);
 
-      const depositAmount = ether('10000');
+      const depositAmount = ether('1000');
       await this.tokenB.approve(this.lendingPool.address, depositAmount, {
         from: this.tokenBProvider,
       });
@@ -201,7 +201,7 @@ contract('Radiant flashloan', function ([_, user, someone]) {
 
     it('single asset with variable rate by borrowing from itself', async function () {
       // Get flashloan params
-      const value = ether('1');
+      const value = ether('0.1');
       const params = _getFlashloanParams(
         [this.hMock.address],
         [ZERO_BYTES32],
@@ -345,7 +345,7 @@ contract('Radiant flashloan', function ([_, user, someone]) {
     });
 
     it('should revert: not approveDelegation to proxy', async function () {
-      const value = ether('1');
+      const value = ether('0.1');
       const params = _getFlashloanParams(
         [this.hMock.address],
         [ZERO_BYTES32],

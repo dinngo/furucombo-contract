@@ -88,7 +88,7 @@ contract('Radiant Borrow', function ([_, user, someone]) {
 
   // Radiant not support stable brorrow
   describe('Borrow with Variable Rate', function () {
-    const depositAmount = ether('10000');
+    const depositAmount = ether('1000');
     const borrowTokenAddr = USDT_TOKEN;
     const rateMode = AAVE_RATEMODE.VARIABLE;
     const debtTokenAddr = RUSDT_DEBT_VARIABLE;
@@ -178,7 +178,7 @@ contract('Radiant Borrow', function ([_, user, someone]) {
     });
 
     it('borrow weth', async function () {
-      const borrowAmount = ether('1');
+      const borrowAmount = ether('0.1');
       const to = this.hRadiant.address;
       const data = abi.simpleEncode(
         'borrow(address,uint256,uint256)',
@@ -229,7 +229,7 @@ contract('Radiant Borrow', function ([_, user, someone]) {
     });
 
     it('borrow eth', async function () {
-      const borrowAmount = ether('1');
+      const borrowAmount = ether('0.1');
       const to = this.hRadiant.address;
       const data = abi.simpleEncode(
         'borrowETH(uint256,uint256)',

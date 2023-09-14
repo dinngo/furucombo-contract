@@ -85,8 +85,8 @@ contract('Radiant Repay', function ([_, user]) {
   });
 
   describe('Repay Variable Rate', function () {
-    var depositAmount = ether('10000');
-    const borrowAmount = ether('1');
+    var depositAmount = ether('1000');
+    const borrowAmount = ether('0.1');
     const borrowTokenAddr = WRAPPED_NATIVE_TOKEN;
     const rateMode = AAVE_RATEMODE.VARIABLE;
     const debtTokenAddr = RWRAPPED_NATIVE_DEBT_VARIABLE;
@@ -105,6 +105,7 @@ contract('Radiant Repay', function ([_, user]) {
       await this.token.approve(this.lendingPool.address, depositAmount, {
         from: providerAddress,
       });
+
       await this.lendingPool.deposit(
         this.token.address,
         depositAmount,
@@ -330,7 +331,7 @@ contract('Radiant Repay', function ([_, user]) {
     });
 
     it('should revert: not enough balance', async function () {
-      const value = ether('0.5');
+      const value = ether('0.05');
       const to = this.hRadiant.address;
       const data = abi.simpleEncode(
         'repay(address,uint256,uint256,address)',
@@ -341,7 +342,7 @@ contract('Radiant Repay', function ([_, user]) {
       );
       await this.borrowToken.transfer(
         this.proxy.address,
-        value.sub(ether('0.1')),
+        value.sub(ether('0.01')),
         { from: user }
       );
       await this.proxy.updateTokenMock(this.borrowToken.address);
@@ -370,7 +371,7 @@ contract('Radiant Repay', function ([_, user]) {
     });
 
     it('should revert: wrong rate mode', async function () {
-      const value = ether('0.5');
+      const value = ether('0.05');
       const to = this.hRadiant.address;
       const unborrowedRateMode = (rateMode % 2) + 1;
       const data = abi.simpleEncode(
