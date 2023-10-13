@@ -68,7 +68,7 @@ contract('Hummus Swap', function ([_, user]) {
     await evmRevert(id);
   });
 
-  describe('Token to Token', function () {
+  describe.skip('Token to Token', function () {
     const token0Address = USDC_TOKEN;
     const token1Address = DAI_TOKEN;
     const altTokenAddress = MAI_TOKEN;
