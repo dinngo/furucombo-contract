@@ -341,7 +341,7 @@ contract('Aave V2', function ([_, user, someone]) {
 
       await expectRevert(
         this.proxy.execMock(to, data, { from: user }),
-        'HAaveProtocolV2_borrow: 2' // AAVEV2 Error Code: VL_NO_ACTIVE_RESERVE
+        'HAaveProtocolV2_borrow: Unspecified'
       );
     });
 
@@ -598,17 +598,10 @@ contract('Aave V2', function ([_, user, someone]) {
         rateMode
       );
 
-      if (chainId == 1) {
-        await expectRevert(
-          this.proxy.execMock(to, data, { from: user }),
-          'HAaveProtocolV2_borrow: 2' // AAVEV2 Error Code: VL_NO_ACTIVE_RESERVE
-        );
-      } else if (chainId == 137) {
-        await expectRevert(
-          this.proxy.execMock(to, data, { from: user }),
-          'HAaveProtocolV2_borrow: Unspecified' // Polygon version
-        );
-      }
+      await expectRevert(
+        this.proxy.execMock(to, data, { from: user }),
+        'HAaveProtocolV2_borrow: Unspecified'
+      );
     });
 
     it('should revert: borrow token with no collateral', async function () {

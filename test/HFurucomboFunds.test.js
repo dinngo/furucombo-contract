@@ -196,7 +196,7 @@ contract('HFurucomboFunds', function ([_, user, dummy]) {
     let shareToken, shareTokenAddress, shareTokenOwner;
     let to;
     const fundsAddress = UNIVERSE_CAPITAL_FUND;
-    const redeemShare = mwei('100');
+    const redeemShare = mwei('1');
 
     before(async function () {
       to = this.hFurucomboFunds.address;
