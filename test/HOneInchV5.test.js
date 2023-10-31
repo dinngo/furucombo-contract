@@ -46,15 +46,24 @@ const Proxy = artifacts.require('ProxyMock');
 const IToken = artifacts.require('IERC20');
 
 /// Change url for different chain
-const URL_1INCH = process.env.URL_1INCH + '/' + chainId + '/';
+const URL_1INCH = 'https://api.1inch.dev/swap/v5.2/' + chainId + '/';
 const URL_1INCH_SWAP = URL_1INCH + 'swap';
+
+// Get api key from 1inch dev portal
+const API_KEY_1INCH = 'Bearer ' + process.env.API_KEY_1INCH;
 
 contract('OneInchV5 Swap', function ([_, user]) {
   let id;
 
   before(async function () {
     // ============= 1inch API Health Check =============
-    const healthCkeck = await callExternalApi(URL_1INCH + 'healthcheck');
+    // Get spender address since no health check api
+    const healthCkeck = await callExternalApi(
+      URL_1INCH + 'approve/spender',
+      'get',
+      '',
+      API_KEY_1INCH
+    );
     if (!healthCkeck.ok) {
       console.error(`=====> 1inch API not healthy now, skip the tests`);
       this.skip();
@@ -108,20 +117,25 @@ contract('OneInchV5 Swap', function ([_, user]) {
         const swapReq = queryString.stringifyUrl({
           url: URL_1INCH_SWAP,
           query: {
-            fromTokenAddress: NATIVE_TOKEN_ADDRESS,
-            toTokenAddress: tokenAddress,
+            src: NATIVE_TOKEN_ADDRESS,
+            dst: tokenAddress,
             amount: value,
             slippage: slippage,
             disableEstimate: true,
-            fromAddress: this.proxy.address,
+            from: this.proxy.address,
           },
         });
 
         // Call 1inch API
-        const swapResponse = await callExternalApi(swapReq);
+        const swapResponse = await callExternalApi(
+          swapReq,
+          'get',
+          '',
+          API_KEY_1INCH
+        );
         expect(swapResponse.ok, '1inch api response not ok').to.be.true;
         const swapData = await swapResponse.json();
-        const quote = swapData.toTokenAmount;
+        const quote = swapData.toAmount;
 
         // Prepare handler data
         const data = getCallData(HOneInch, 'swap', [
@@ -169,20 +183,25 @@ contract('OneInchV5 Swap', function ([_, user]) {
         const swapReq = queryString.stringifyUrl({
           url: URL_1INCH_SWAP,
           query: {
-            fromTokenAddress: NATIVE_TOKEN_ADDRESS,
-            toTokenAddress: tokenAddress,
+            src: NATIVE_TOKEN_ADDRESS,
+            dst: tokenAddress,
             amount: value,
             slippage: slippage,
             disableEstimate: true,
-            fromAddress: this.proxy.address,
+            from: this.proxy.address,
           },
         });
 
         // Call 1inch API
-        const swapResponse = await callExternalApi(swapReq);
+        const swapResponse = await callExternalApi(
+          swapReq,
+          'get',
+          '',
+          API_KEY_1INCH
+        );
         expect(swapResponse.ok, '1inch api response not ok').to.be.true;
         const swapData = await swapResponse.json();
-        const quote = swapData.toTokenAmount;
+        const quote = swapData.toAmount;
 
         // Prepare handler data
         const data = getCallData(HOneInch, 'swap', [
@@ -229,17 +248,22 @@ contract('OneInchV5 Swap', function ([_, user]) {
         const swapReq = queryString.stringifyUrl({
           url: URL_1INCH_SWAP,
           query: {
-            fromTokenAddress: NATIVE_TOKEN_ADDRESS,
-            toTokenAddress: tokenAddress,
+            src: NATIVE_TOKEN_ADDRESS,
+            dst: tokenAddress,
             amount: value,
             slippage: slippage,
             disableEstimate: true,
-            fromAddress: this.proxy.address,
+            from: this.proxy.address,
           },
         });
 
         // Call 1inch API
-        const swapResponse = await callExternalApi(swapReq);
+        const swapResponse = await callExternalApi(
+          swapReq,
+          'get',
+          '',
+          API_KEY_1INCH
+        );
         expect(swapResponse.ok, '1inch api response not ok').to.be.true;
         const swapData = await swapResponse.json();
 
@@ -288,12 +312,12 @@ contract('OneInchV5 Swap', function ([_, user]) {
         const swapReq = queryString.stringifyUrl({
           url: URL_1INCH_SWAP,
           query: {
-            fromTokenAddress: tokenAddress,
-            toTokenAddress: NATIVE_TOKEN_ADDRESS,
+            src: tokenAddress,
+            dst: NATIVE_TOKEN_ADDRESS,
             amount: value,
             slippage: slippage,
             disableEstimate: true,
-            fromAddress: this.proxy.address,
+            from: this.proxy.address,
           },
         });
 
@@ -304,10 +328,15 @@ contract('OneInchV5 Swap', function ([_, user]) {
         await this.proxy.updateTokenMock(this.token.address);
 
         // Call 1inch API
-        const swapResponse = await callExternalApi(swapReq);
+        const swapResponse = await callExternalApi(
+          swapReq,
+          'get',
+          '',
+          API_KEY_1INCH
+        );
         expect(swapResponse.ok, '1inch api response not ok').to.be.true;
         const swapData = await swapResponse.json();
-        const quote = swapData.toTokenAmount;
+        const quote = swapData.toAmount;
 
         // Prepare handler data
         const data = getCallData(HOneInch, 'swap', [
@@ -387,12 +416,12 @@ contract('OneInchV5 Swap', function ([_, user]) {
         const swapReq = queryString.stringifyUrl({
           url: URL_1INCH_SWAP,
           query: {
-            fromTokenAddress: token0Address,
-            toTokenAddress: token1Address,
+            src: token0Address,
+            dst: token1Address,
             amount: value,
             slippage: slippage,
             disableEstimate: true,
-            fromAddress: this.proxy.address,
+            from: this.proxy.address,
           },
         });
 
@@ -403,10 +432,15 @@ contract('OneInchV5 Swap', function ([_, user]) {
         await this.proxy.updateTokenMock(this.token0.address);
 
         // Call 1inch API
-        const swapResponse = await callExternalApi(swapReq);
+        const swapResponse = await callExternalApi(
+          swapReq,
+          'get',
+          '',
+          API_KEY_1INCH
+        );
         expect(swapResponse.ok, '1inch api response not ok').to.be.true;
         const swapData = await swapResponse.json();
-        const quote = swapData.toTokenAmount;
+        const quote = swapData.toAmount;
 
         // Prepare handler data
         const data = getCallData(HOneInch, 'swap', [
@@ -460,12 +494,12 @@ contract('OneInchV5 Swap', function ([_, user]) {
         const swapReq = queryString.stringifyUrl({
           url: URL_1INCH_SWAP,
           query: {
-            fromTokenAddress: token0Address,
-            toTokenAddress: WETH_TOKEN,
+            src: token0Address,
+            dst: WETH_TOKEN,
             amount: value,
             slippage: slippage,
             disableEstimate: true,
-            fromAddress: this.proxy.address,
+            from: this.proxy.address,
           },
         });
 
@@ -476,10 +510,15 @@ contract('OneInchV5 Swap', function ([_, user]) {
         await this.proxy.updateTokenMock(this.token0.address);
 
         // Call 1inch API
-        const swapResponse = await callExternalApi(swapReq);
+        const swapResponse = await callExternalApi(
+          swapReq,
+          'get',
+          '',
+          API_KEY_1INCH
+        );
         expect(swapResponse.ok, '1inch api response not ok').to.be.true;
         const swapData = await swapResponse.json();
-        const quote = swapData.toTokenAmount;
+        const quote = swapData.toAmount;
 
         // Prepare handler data
         const data = getCallData(HOneInch, 'swap', [
@@ -534,12 +573,12 @@ contract('OneInchV5 Swap', function ([_, user]) {
         const swapReq = queryString.stringifyUrl({
           url: URL_1INCH_SWAP,
           query: {
-            fromTokenAddress: token0Address,
-            toTokenAddress: WETH_TOKEN,
+            src: token0Address,
+            dst: WETH_TOKEN,
             amount: value,
             slippage: slippage,
             disableEstimate: true,
-            fromAddress: this.proxy.address,
+            from: this.proxy.address,
           },
         });
 
@@ -550,10 +589,15 @@ contract('OneInchV5 Swap', function ([_, user]) {
         await this.proxy.updateTokenMock(this.token0.address);
 
         // Call 1inch API
-        const swapResponse = await callExternalApi(swapReq);
+        const swapResponse = await callExternalApi(
+          swapReq,
+          'get',
+          '',
+          API_KEY_1INCH
+        );
         expect(swapResponse.ok, '1inch api response not ok').to.be.true;
         const swapData = await swapResponse.json();
-        const quote = swapData.toTokenAmount;
+        const quote = swapData.toAmount;
 
         // Prepare handler data
         var data = getCallData(HOneInch, 'swap', [
@@ -608,12 +652,12 @@ contract('OneInchV5 Swap', function ([_, user]) {
         const swapReq = queryString.stringifyUrl({
           url: URL_1INCH_SWAP,
           query: {
-            fromTokenAddress: token0Address,
-            toTokenAddress: token1Address,
+            src: token0Address,
+            dst: token1Address,
             amount: value,
             slippage: slippage,
             disableEstimate: true,
-            fromAddress: this.proxy.address,
+            from: this.proxy.address,
           },
         });
 
@@ -624,7 +668,12 @@ contract('OneInchV5 Swap', function ([_, user]) {
         await this.proxy.updateTokenMock(this.token0.address);
 
         // Call 1inch API
-        const swapResponse = await callExternalApi(swapReq);
+        const swapResponse = await callExternalApi(
+          swapReq,
+          'get',
+          '',
+          API_KEY_1INCH
+        );
         expect(swapResponse.ok, '1inch api response not ok').to.be.true;
         const swapData = await swapResponse.json();
 
@@ -650,12 +699,12 @@ contract('OneInchV5 Swap', function ([_, user]) {
         const swapReq = queryString.stringifyUrl({
           url: URL_1INCH_SWAP,
           query: {
-            fromTokenAddress: token0Address,
-            toTokenAddress: token1Address,
+            src: token0Address,
+            dst: token1Address,
             amount: value,
             slippage: slippage,
             disableEstimate: true,
-            fromAddress: this.proxy.address,
+            from: this.proxy.address,
           },
         });
 
@@ -666,7 +715,12 @@ contract('OneInchV5 Swap', function ([_, user]) {
         await this.proxy.updateTokenMock(this.token0.address);
 
         // Call 1inch API
-        const swapResponse = await callExternalApi(swapReq);
+        const swapResponse = await callExternalApi(
+          swapReq,
+          'get',
+          '',
+          API_KEY_1INCH
+        );
         expect(swapResponse.ok, '1inch api response not ok').to.be.true;
         const swapData = await swapResponse.json();
 
@@ -692,12 +746,12 @@ contract('OneInchV5 Swap', function ([_, user]) {
         const swapReq = queryString.stringifyUrl({
           url: URL_1INCH_SWAP,
           query: {
-            fromTokenAddress: token0Address,
-            toTokenAddress: token1Address,
+            src: token0Address,
+            dst: token1Address,
             amount: value,
             slippage: slippage,
             disableEstimate: true,
-            fromAddress: this.proxy.address,
+            from: this.proxy.address,
           },
         });
 
@@ -708,7 +762,12 @@ contract('OneInchV5 Swap', function ([_, user]) {
         await this.proxy.updateTokenMock(this.token0.address);
 
         // Call 1inch API
-        const swapResponse = await callExternalApi(swapReq);
+        const swapResponse = await callExternalApi(
+          swapReq,
+          'get',
+          '',
+          API_KEY_1INCH
+        );
         expect(swapResponse.ok, '1inch api response not ok').to.be.true;
         const swapData = await swapResponse.json();
 
@@ -733,12 +792,12 @@ contract('OneInchV5 Swap', function ([_, user]) {
         const swapReq = queryString.stringifyUrl({
           url: URL_1INCH_SWAP,
           query: {
-            fromTokenAddress: token0Address,
-            toTokenAddress: token1Address,
+            src: token0Address,
+            dst: token1Address,
             amount: value,
             slippage: slippage,
             disableEstimate: true,
-            fromAddress: this.proxy.address,
+            from: this.proxy.address,
           },
         });
 
@@ -749,7 +808,12 @@ contract('OneInchV5 Swap', function ([_, user]) {
         await this.proxy.updateTokenMock(this.token0.address);
 
         // Call 1inch API
-        const swapResponse = await callExternalApi(swapReq);
+        const swapResponse = await callExternalApi(
+          swapReq,
+          'get',
+          '',
+          API_KEY_1INCH
+        );
         expect(swapResponse.ok, '1inch api response not ok').to.be.true;
         const swapData = await swapResponse.json();
 
@@ -774,12 +838,12 @@ contract('OneInchV5 Swap', function ([_, user]) {
         const swapReq = queryString.stringifyUrl({
           url: URL_1INCH_SWAP,
           query: {
-            fromTokenAddress: token0Address,
-            toTokenAddress: token1Address,
+            src: token0Address,
+            dst: token1Address,
             amount: value,
             slippage: slippage,
             disableEstimate: true,
-            fromAddress: this.proxy.address,
+            from: this.proxy.address,
           },
         });
 
@@ -790,7 +854,12 @@ contract('OneInchV5 Swap', function ([_, user]) {
         await this.proxy.updateTokenMock(this.token0.address);
 
         // Call 1inch API
-        const swapResponse = await callExternalApi(swapReq);
+        const swapResponse = await callExternalApi(
+          swapReq,
+          'get',
+          '',
+          API_KEY_1INCH
+        );
         expect(swapResponse.ok, '1inch api response not ok').to.be.true;
         const swapData = await swapResponse.json();
 

@@ -475,6 +475,7 @@ async function callExternalApi(
   request,
   method = 'get',
   body = '',
+  apiKey = '',
   retryTimes = 5
 ) {
   let resp;
@@ -482,7 +483,12 @@ async function callExternalApi(
   while (tryTimes > 0) {
     tryTimes--;
     if (method === 'get') {
-      resp = await fetch(request);
+      resp = await fetch(request, {
+        method: method,
+        headers: {
+          Authorization: apiKey,
+        },
+      });
     } else {
       resp = await fetch(request, {
         method: method,
