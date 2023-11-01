@@ -1,5 +1,5 @@
 const chainId = network.config.chainId;
-if (chainId == 42161) {
+if (chainId == 1 || chainId == 42161) {
   // This test supports to run on these chains.
 } else {
   return;
@@ -18,10 +18,10 @@ const utils = web3.utils;
 const { expect } = require('chai');
 
 const {
-  DAI_TOKEN,
+  USDC_TOKEN,
   USDT_TOKEN,
   COMP_TOKEN,
-  RDAI_TOKEN,
+  RUSDC_TOKEN,
   AAVE_RATEMODE,
   RADIANT_PROVIDER,
   WRAPPED_NATIVE_TOKEN,
@@ -48,8 +48,8 @@ const IProvider = artifacts.require('ILendingPoolAddressesProviderV2');
 const IVariableDebtToken = artifacts.require('IVariableDebtToken');
 
 contract('Radiant Borrow', function ([_, user, someone]) {
-  const aTokenAddress = RDAI_TOKEN;
-  const tokenAddress = DAI_TOKEN;
+  const aTokenAddress = RUSDC_TOKEN;
+  const tokenAddress = USDC_TOKEN;
 
   let id;
   let balanceUser;
@@ -88,7 +88,7 @@ contract('Radiant Borrow', function ([_, user, someone]) {
 
   // Radiant not support stable brorrow
   describe('Borrow with Variable Rate', function () {
-    const depositAmount = ether('1000');
+    const depositAmount = mwei('1000');
     const borrowTokenAddr = USDT_TOKEN;
     const rateMode = AAVE_RATEMODE.VARIABLE;
     const debtTokenAddr = RUSDT_DEBT_VARIABLE;
@@ -345,7 +345,7 @@ contract('Radiant Borrow', function ([_, user, someone]) {
     });
 
     it('should revert: borrow token is the same with collateral', async function () {
-      const borrowAmount = ether('2');
+      const borrowAmount = mwei('2');
       const to = this.hRadiant.address;
       const data = abi.simpleEncode(
         'borrow(address,uint256,uint256)',

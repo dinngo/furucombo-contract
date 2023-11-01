@@ -18,8 +18,8 @@ const utils = web3.utils;
 const { expect } = require('chai');
 
 const {
-  DAI_TOKEN,
-  RDAI_TOKEN,
+  USDC_TOKEN,
+  RUSDC_TOKEN,
   RADIANT_PROVIDER,
   AAVE_RATEMODE,
   WRAPPED_NATIVE_TOKEN,
@@ -32,6 +32,7 @@ const {
   getHandlerReturn,
   getTokenProvider,
   expectEqWithinBps,
+  mwei,
 } = require('./utils/utils');
 
 const HRadiant = artifacts.require('HRadiant');
@@ -45,8 +46,8 @@ const IProvider = artifacts.require('ILendingPoolAddressesProviderV2');
 const SimpleToken = artifacts.require('SimpleToken');
 
 contract('Radiant Repay', function ([_, user]) {
-  const aTokenAddress = RDAI_TOKEN;
-  const tokenAddress = DAI_TOKEN;
+  const aTokenAddress = RUSDC_TOKEN;
+  const tokenAddress = USDC_TOKEN;
 
   let id;
   let balanceUser;
@@ -85,8 +86,8 @@ contract('Radiant Repay', function ([_, user]) {
   });
 
   describe('Repay Variable Rate', function () {
-    var depositAmount = ether('1000');
-    const borrowAmount = ether('0.1');
+    var depositAmount = mwei('1000');
+    const borrowAmount = mwei('0.1');
     const borrowTokenAddr = WRAPPED_NATIVE_TOKEN;
     const rateMode = AAVE_RATEMODE.VARIABLE;
     const debtTokenAddr = RWRAPPED_NATIVE_DEBT_VARIABLE;
@@ -239,7 +240,7 @@ contract('Radiant Repay', function ([_, user]) {
     });
 
     it('whole', async function () {
-      const extraNeed = ether('1');
+      const extraNeed = mwei('1');
       const value = borrowAmount.add(extraNeed);
       const to = this.hRadiant.address;
       const data = abi.simpleEncode(
@@ -289,7 +290,7 @@ contract('Radiant Repay', function ([_, user]) {
     });
 
     it('whole by ETH', async function () {
-      const extraNeed = ether('1');
+      const extraNeed = mwei('1');
       const value = borrowAmount.add(extraNeed);
       const to = this.hRadiant.address;
       const data = abi.simpleEncode(
@@ -331,7 +332,7 @@ contract('Radiant Repay', function ([_, user]) {
     });
 
     it('should revert: not enough balance', async function () {
-      const value = ether('0.05');
+      const value = mwei('0.05');
       const to = this.hRadiant.address;
       const data = abi.simpleEncode(
         'repay(address,uint256,uint256,address)',
@@ -353,7 +354,7 @@ contract('Radiant Repay', function ([_, user]) {
     });
 
     it('should revert: unsupported token', async function () {
-      const value = ether('0.5');
+      const value = mwei('0.5');
       const to = this.hRadiant.address;
       const data = abi.simpleEncode(
         'repay(address,uint256,uint256,address)',
@@ -371,7 +372,7 @@ contract('Radiant Repay', function ([_, user]) {
     });
 
     it('should revert: wrong rate mode', async function () {
-      const value = ether('0.05');
+      const value = mwei('0.05');
       const to = this.hRadiant.address;
       const unborrowedRateMode = (rateMode % 2) + 1;
       const data = abi.simpleEncode(

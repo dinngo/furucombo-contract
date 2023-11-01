@@ -1,5 +1,5 @@
 const chainId = network.config.chainId;
-if (chainId == 42161) {
+if (chainId == 1 || chainId == 42161) {
   // This test supports to run on these chains.
 } else {
   return;
@@ -21,8 +21,8 @@ const utils = web3.utils;
 const { expect } = require('chai');
 
 const {
-  DAI_TOKEN,
-  RDAI_TOKEN,
+  USDC_TOKEN,
+  RUSDC_TOKEN,
   RADIANT_PROVIDER,
   WRAPPED_NATIVE_TOKEN,
   RWRAPPED_NATIVE_TOKEN,
@@ -35,6 +35,7 @@ const {
   mulPercent,
   expectEqWithinBps,
   getTokenProvider,
+  mwei,
 } = require('./utils/utils');
 
 const HRadiant = artifacts.require('HRadiant');
@@ -48,8 +49,8 @@ const IProvider = artifacts.require('ILendingPoolAddressesProviderV2');
 const SimpleToken = artifacts.require('SimpleToken');
 
 contract('Radiant', function ([_, user]) {
-  const aTokenAddress = RDAI_TOKEN;
-  const tokenAddress = DAI_TOKEN;
+  const aTokenAddress = RUSDC_TOKEN;
+  const tokenAddress = USDC_TOKEN;
   const aWrappedNativeTokenAddress = RWRAPPED_NATIVE_TOKEN;
   const wrappedNativeTokenAddress = WRAPPED_NATIVE_TOKEN;
   const ATOKEN_DUST = ether('0.00001');
@@ -162,7 +163,7 @@ contract('Radiant', function ([_, user]) {
 
     describe('Token', function () {
       it('normal', async function () {
-        const value = ether('10');
+        const value = mwei('10');
         const to = this.hRadiant.address;
         const data = abi.simpleEncode(
           'deposit(address,uint256)',
@@ -199,7 +200,7 @@ contract('Radiant', function ([_, user]) {
       });
 
       it('max amount', async function () {
-        const value = ether('10');
+        const value = mwei('10');
         const to = this.hRadiant.address;
         const data = abi.simpleEncode(
           'deposit(address,uint256)',
@@ -252,7 +253,7 @@ contract('Radiant', function ([_, user]) {
   });
 
   describe('Withdraw', function () {
-    var depositAmount = ether('5');
+    var depositAmount = mwei('5');
 
     describe('Ether', function () {
       beforeEach(async function () {

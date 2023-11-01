@@ -1,5 +1,5 @@
 const chainId = network.config.chainId;
-if (chainId == 42161) {
+if (chainId == 1 || chainId == 42161) {
   // This test supports to run on these chains.
 } else {
   return;
@@ -22,19 +22,20 @@ const utils = web3.utils;
 const { expect } = require('chai');
 
 const {
-  DAI_TOKEN,
+  USDC_TOKEN,
   RADIANT_PROVIDER,
-  RDAI_TOKEN,
+  RUSDC_TOKEN,
   AAVE_RATEMODE,
   WRAPPED_NATIVE_TOKEN,
   RWRAPPED_NATIVE_DEBT_VARIABLE,
-  RDAI_DEBT_VARIABLE,
+  RUSDC_DEBT_VARIABLE,
 } = require('./utils/constants');
 const {
   evmRevert,
   evmSnapshot,
   expectEqWithinBps,
   getTokenProvider,
+  mwei,
 } = require('./utils/utils');
 
 const FeeRuleRegistry = artifacts.require('FeeRuleRegistry');
@@ -82,14 +83,14 @@ contract('Radiant flashloan', function ([_, user, someone]) {
 
     this.faucet = await Faucet.new();
     this.tokenA = await IToken.at(WRAPPED_NATIVE_TOKEN);
-    this.tokenB = await IToken.at(DAI_TOKEN);
+    this.tokenB = await IToken.at(USDC_TOKEN);
     this.tokenAProvider = await getTokenProvider(this.tokenA.address);
     this.tokenBProvider = await getTokenProvider(this.tokenB.address);
-    this.aTokenB = await IToken.at(RDAI_TOKEN);
+    this.aTokenB = await IToken.at(RUSDC_TOKEN);
     this.variableDebtTokenA = await IVariableDebtToken.at(
       RWRAPPED_NATIVE_DEBT_VARIABLE
     );
-    this.variableDebtTokenB = await IVariableDebtToken.at(RDAI_DEBT_VARIABLE);
+    this.variableDebtTokenB = await IVariableDebtToken.at(RUSDC_DEBT_VARIABLE);
     this.mockToken = await SimpleToken.new();
   });
 
@@ -143,14 +144,14 @@ contract('Radiant flashloan', function ([_, user, someone]) {
       await this.tokenA.transfer(this.faucet.address, ether('100'), {
         from: this.tokenAProvider,
       });
-      await this.tokenB.transfer(this.faucet.address, ether('100'), {
+      await this.tokenB.transfer(this.faucet.address, mwei('100'), {
         from: this.tokenBProvider,
       });
 
       tokenAUser = await this.tokenA.balanceOf.call(user);
       tokenBUser = await this.tokenB.balanceOf.call(user);
 
-      const depositAmount = ether('1000');
+      const depositAmount = mwei('1000');
       await this.tokenB.approve(this.lendingPool.address, depositAmount, {
         from: this.tokenBProvider,
       });
@@ -250,19 +251,20 @@ contract('Radiant flashloan', function ([_, user, someone]) {
     });
 
     it('multiple assets with no debt', async function () {
-      const value = ether('1');
+      const valueA = ether('1');
+      const valueB = mwei('1');
       const params = _getFlashloanParams(
         [this.hMock.address],
         [ZERO_BYTES32],
         [this.faucet.address, this.faucet.address],
         [this.tokenA.address, this.tokenB.address],
-        [value, value]
+        [valueA, valueB]
       );
 
       const to = this.hRadiant.address;
       const data = _getFlashloanCubeData(
         [this.tokenA.address, this.tokenB.address], // assets
-        [value, value], // amounts
+        [valueA, valueB], // amounts
         [AAVE_RATEMODE.NODEBT, AAVE_RATEMODE.NODEBT], // modes
         params
       );
@@ -280,12 +282,13 @@ contract('Radiant flashloan', function ([_, user, someone]) {
         await this.tokenB.balanceOf.call(this.proxy.address)
       ).to.be.bignumber.zero;
 
-      const fee = _getFlashloanFee(value);
+      const feeA = _getFlashloanFee(valueA);
+      const feeB = _getFlashloanFee(valueB);
       expect(await this.tokenA.balanceOf.call(user)).to.be.bignumber.eq(
-        tokenAUser.add(value).sub(fee)
+        tokenAUser.add(valueA).sub(feeA)
       );
       expect(await this.tokenB.balanceOf.call(user)).to.be.bignumber.eq(
-        tokenBUser.add(value).sub(fee)
+        tokenBUser.add(valueB).sub(feeB)
       );
       expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
     });
@@ -372,7 +375,7 @@ contract('Radiant flashloan', function ([_, user, someone]) {
     });
 
     it('should revert: collateral same as borrowing currency', async function () {
-      const value = ether('1');
+      const value = mwei('1');
       const params = _getFlashloanParams(
         [this.hMock.address],
         [ZERO_BYTES32],
@@ -431,26 +434,27 @@ contract('Radiant flashloan', function ([_, user, someone]) {
       await this.tokenA.transfer(this.faucet.address, ether('100'), {
         from: this.tokenAProvider,
       });
-      await this.tokenB.transfer(this.faucet.address, ether('100'), {
+      await this.tokenB.transfer(this.faucet.address, mwei('100'), {
         from: this.tokenBProvider,
       });
     });
 
     it('sequential', async function () {
-      const value = ether('1');
+      const valueA = ether('1');
+      const valueB = mwei('1');
       // Setup 1st flashloan cube
       const params1 = _getFlashloanParams(
         [this.hMock.address],
         [ZERO_BYTES32],
         [this.faucet.address, this.faucet.address],
         [this.tokenA.address, this.tokenB.address],
-        [value, value]
+        [valueA, valueB]
       );
 
       const to1 = this.hRadiant.address;
       const data1 = _getFlashloanCubeData(
         [this.tokenA.address, this.tokenB.address], // assets
-        [value, value], // amounts
+        [valueA, valueB], // amounts
         [AAVE_RATEMODE.NODEBT, AAVE_RATEMODE.NODEBT], // modes
         params1
       );
@@ -461,13 +465,13 @@ contract('Radiant flashloan', function ([_, user, someone]) {
         [ZERO_BYTES32],
         [this.faucet.address, this.faucet.address],
         [this.tokenA.address, this.tokenB.address],
-        [value, value]
+        [valueA, valueB]
       );
 
       const to2 = this.hRadiant.address;
       const data2 = _getFlashloanCubeData(
         [this.tokenA.address, this.tokenB.address], // assets
-        [value, value], // amounts
+        [valueA, valueB], // amounts
         [AAVE_RATEMODE.NODEBT, AAVE_RATEMODE.NODEBT], // modes
         params2
       );
@@ -490,33 +494,41 @@ contract('Radiant flashloan', function ([_, user, someone]) {
         await this.tokenB.balanceOf.call(this.proxy.address)
       ).to.be.bignumber.zero;
 
-      const fee = value.mul(new BN('9')).div(new BN('10000')).mul(new BN('2'));
+      const feeA = valueA
+        .mul(new BN('9'))
+        .div(new BN('10000'))
+        .mul(new BN('2'));
+      const feeB = valueB
+        .mul(new BN('9'))
+        .div(new BN('10000'))
+        .mul(new BN('2'));
 
       expect(await this.tokenA.balanceOf.call(user)).to.be.bignumber.eq(
-        tokenAUser.add(value.add(value)).sub(fee)
+        tokenAUser.add(valueA.add(valueA)).sub(feeA)
       );
       expect(await this.tokenB.balanceOf.call(user)).to.be.bignumber.eq(
-        tokenBUser.add(value.add(value)).sub(fee)
+        tokenBUser.add(valueB.add(valueB)).sub(feeB)
       );
       expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
     });
 
     it('nested', async function () {
       // Get flashloan params
-      const value = ether('1');
+      const valueA = ether('1');
+      const valueB = mwei('1');
       const params1 = _getFlashloanParams(
         [this.hMock.address],
         [ZERO_BYTES32],
         [this.faucet.address, this.faucet.address],
         [this.tokenA.address, this.tokenB.address],
-        [value, value]
+        [valueA, valueB]
       );
 
       // Get 1st flashloan cube data
       const to1 = this.hRadiant.address;
       const data1 = _getFlashloanCubeData(
         [this.tokenA.address, this.tokenB.address], // assets
-        [value, value], // amounts
+        [valueA, valueB], // amounts
         [AAVE_RATEMODE.NODEBT, AAVE_RATEMODE.NODEBT], // modes
         params1
       );
@@ -530,7 +542,7 @@ contract('Radiant flashloan', function ([_, user, someone]) {
       // Get 2nd flashloan cube data
       const data2 = _getFlashloanCubeData(
         [this.tokenA.address, this.tokenB.address], // assets
-        [value, value], // amounts
+        [valueA, valueB], // amounts
         [AAVE_RATEMODE.NODEBT, AAVE_RATEMODE.NODEBT], // modes
         params2
       );
@@ -553,13 +565,20 @@ contract('Radiant flashloan', function ([_, user, someone]) {
         await this.tokenB.balanceOf.call(this.proxy.address)
       ).to.be.bignumber.zero;
 
-      const fee = value.mul(new BN('9')).div(new BN('10000')).mul(new BN('2'));
+      const feeA = valueA
+        .mul(new BN('9'))
+        .div(new BN('10000'))
+        .mul(new BN('2'));
+      const feeB = valueB
+        .mul(new BN('9'))
+        .div(new BN('10000'))
+        .mul(new BN('2'));
 
       expect(await this.tokenA.balanceOf.call(user)).to.be.bignumber.eq(
-        tokenAUser.add(value).sub(fee)
+        tokenAUser.add(valueA).sub(feeA)
       );
       expect(await this.tokenB.balanceOf.call(user)).to.be.bignumber.eq(
-        tokenBUser.add(value).sub(fee)
+        tokenBUser.add(valueB).sub(feeB)
       );
       expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
     });
@@ -572,15 +591,16 @@ contract('Radiant flashloan', function ([_, user, someone]) {
       await this.tokenA.transfer(this.faucet.address, ether('100'), {
         from: this.tokenAProvider,
       });
-      await this.tokenB.transfer(this.faucet.address, ether('100'), {
+      await this.tokenB.transfer(this.faucet.address, mwei('100'), {
         from: this.tokenBProvider,
       });
     });
 
     it('deposit radiant after flashloan', async function () {
       // Get flashloan params
-      const value = ether('1');
-      const depositValue = ether('0.5');
+      const valueA = ether('1');
+      const valueB = mwei('1');
+      const depositValue = mwei('0.5');
       const testTo1 = [this.hMock.address, this.hRadiant.address];
       const testConfig1 = [ZERO_BYTES32, ZERO_BYTES32];
       const testData1 = [
@@ -590,7 +610,7 @@ contract('Radiant flashloan', function ([_, user, someone]) {
               'drainTokens(address[],address[],uint256[])',
               [this.faucet.address, this.faucet.address],
               [this.tokenA.address, this.tokenB.address],
-              [value, value]
+              [valueA, valueB]
             )
             .toString('hex'),
         abi.simpleEncode(
@@ -609,7 +629,7 @@ contract('Radiant flashloan', function ([_, user, someone]) {
       const to1 = this.hRadiant.address;
       const data1 = _getFlashloanCubeData(
         [this.tokenA.address, this.tokenB.address], // assets
-        [value, value], // amounts
+        [valueA, valueB], // amounts
         [AAVE_RATEMODE.NODEBT, AAVE_RATEMODE.NODEBT], // modes
         params1
       );
@@ -631,12 +651,13 @@ contract('Radiant flashloan', function ([_, user, someone]) {
         await this.tokenB.balanceOf.call(this.proxy.address)
       ).to.be.bignumber.zero;
 
-      const fee = _getFlashloanFee(value);
+      const feeA = _getFlashloanFee(valueA);
+      const feeB = _getFlashloanFee(valueB);
       expect(await this.tokenA.balanceOf.call(user)).to.be.bignumber.eq(
-        tokenAUser.add(value).sub(fee)
+        tokenAUser.add(valueA).sub(feeA)
       );
       expect(await this.tokenB.balanceOf.call(user)).to.be.bignumber.eq(
-        tokenBUser.add(value.sub(depositValue).sub(fee))
+        tokenBUser.add(valueB.sub(depositValue).sub(feeB))
       );
       expect(await balanceUser.delta()).to.be.bignumber.eq(ether('0'));
     });
