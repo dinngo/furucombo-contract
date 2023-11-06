@@ -1,5 +1,5 @@
 const chainId = network.config.chainId;
-if (chainId == 42161) {
+if (chainId == 1 || chainId == 42161) {
   // This test supports to run on these chains.
 } else {
   return;
@@ -343,14 +343,22 @@ contract('Radiant Repay', function ([_, user]) {
       );
       await this.borrowToken.transfer(
         this.proxy.address,
-        value.sub(ether('0.01')),
+        value.sub(mwei('0.01')),
         { from: user }
       );
       await this.proxy.updateTokenMock(this.borrowToken.address);
-      await expectRevert(
-        this.proxy.execMock(to, data, { from: user }),
-        'HRadiant_repay: ERC20: transfer amount exceeds balance'
-      );
+
+      if (chainId == 1) {
+        await expectRevert(
+          this.proxy.execMock(to, data, { from: user }),
+          'HRadiant_repay: SafeERC20: low-level call failed'
+        );
+      } else {
+        await expectRevert(
+          this.proxy.execMock(to, data, { from: user }),
+          'HRadiant_repay: ERC20: transfer amount exceeds balance'
+        );
+      }
     });
 
     it('should revert: unsupported token', async function () {
