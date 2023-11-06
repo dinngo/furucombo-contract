@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+## [2.9.0] - 2023-11-06
+### Added
+
+- Support Radiant handler on Ethereum
+
+
 ## [2.8.0] - 2023-08-08
 
 ### Added
