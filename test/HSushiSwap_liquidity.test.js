@@ -275,7 +275,7 @@ contract('SushiSwap Liquidity', function ([_, user]) {
 
     it('normal', async function () {
       // Prepare handler data
-      const tokenAAmount = ether('0.002');
+      const tokenAAmount = ether('0.02');
       const tokenBAmount = ether('0.002');
       const minTokenAAmount = ether('0.000001');
       const minTokenBAmount = ether('0.000001');
@@ -360,7 +360,7 @@ contract('SushiSwap Liquidity', function ([_, user]) {
 
     it('max amount', async function () {
       // Prepare handler data
-      const tokenAAmount = ether('0.002');
+      const tokenAAmount = ether('0.02');
       const tokenBAmount = ether('0.002');
       const minTokenAAmount = ether('0.000001');
       const minTokenBAmount = ether('0.000001');
