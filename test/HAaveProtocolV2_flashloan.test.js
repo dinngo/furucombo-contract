@@ -207,8 +207,8 @@ contract('AaveV2 flashloan', function ([_, user, someone]) {
     });
 
     it('single asset with stable rate by borrowing from itself', async function () {
-      if (chainId == 137) {
-        // Stable Rate borrow is not available on Polygon.
+      if (chainId == 1 || chainId == 137) {
+        // Stable Rate borrow is not available on Ethereum and Polygon.
         return;
       }
       const value = ether('1');

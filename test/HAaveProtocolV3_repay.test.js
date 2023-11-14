@@ -101,8 +101,16 @@ contract('Aave V3', function ([_, user]) {
   });
 
   describe('Repay Stable Rate', function () {
-    if (chainId == 1 || chainId == 1088) {
+    if (
+      chainId == 1 ||
+      chainId == 10 ||
+      chainId == 137 ||
+      chainId == 1088 ||
+      chainId == 42161 ||
+      chainId == 43114
+    ) {
       // Ethereum and Metis does not support borrow in stable mode
+      // Optimism, Polygon, Arbitrum, Avalaunche disable stable mode in 2023/11
       return;
     }
     var supplyAmount = ether('5000');

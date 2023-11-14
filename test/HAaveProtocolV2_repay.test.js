@@ -91,8 +91,8 @@ contract('Aave V2', function ([_, user]) {
   });
 
   describe('Repay Stable Rate', function () {
-    if (chainId == 137) {
-      // Stable Rate borrow is not available on Polygon.
+    if (chainId == 1 || chainId == 137) {
+      // Stable Rate borrow is not available on Ethereum and Polygon.
       return;
     }
 
