@@ -22,7 +22,7 @@ const {
   WETH_TOKEN,
   UNISWAPV3_ROUTER,
   UNISWAPV3_QUOTER,
-  USDT_TOKEN,
+  USDC_TOKEN,
   WRAPPED_NATIVE_TOKEN,
 } = require('./utils/constants');
 const {
@@ -45,7 +45,7 @@ const IQuoter = artifacts.require('IQuoter');
 contract('UniswapV3 Swap', function ([_, user, someone]) {
   let id;
   const tokenAddress = DAI_TOKEN;
-  const token2Address = USDT_TOKEN;
+  const token2Address = USDC_TOKEN;
 
   let balanceUser;
   let balanceProxy;
