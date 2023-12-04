@@ -52,7 +52,7 @@ const URL_1INCH_SWAP = URL_1INCH + 'swap';
 // Get api key from 1inch dev portal
 const API_KEY_1INCH = 'Bearer ' + process.env.API_KEY_1INCH;
 
-contract('OneInchV5 Swap', function ([_, user]) {
+contract.skip('OneInchV5 Swap', function ([_, user]) {
   let id;
 
   before(async function () {
