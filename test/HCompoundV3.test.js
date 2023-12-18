@@ -1497,7 +1497,7 @@ contract('Compound V3', function ([_, user, someone]) {
           'WrappedNative',
           chainId
         );
-        const extraSupplyAmount = ether('2000');
+        const extraSupplyAmount = chainId == 137 ? ether('2000') : ether('20');
 
         await setTokenBalance(
           collateral.address,
@@ -2005,7 +2005,7 @@ contract('Compound V3', function ([_, user, someone]) {
   });
 
   describe('Borrow', function () {
-    const supplyAmount = ether('2000');
+    const supplyAmount = chainId == 137 ? ether('2000') : ether('20');
 
     describe('Token-base', function () {
       beforeEach(async function () {
@@ -2529,7 +2529,7 @@ contract('Compound V3', function ([_, user, someone]) {
   });
 
   describe('Repay', function () {
-    const supplyAmount = ether('2000');
+    const supplyAmount = chainId == 137 ? ether('2000') : ether('20');
 
     describe('Token-base', function () {
       const initAmount = mwei('2000');
@@ -3053,7 +3053,10 @@ contract('Compound V3', function ([_, user, someone]) {
             from: user,
             value: value,
           }),
-          "Returned error: sender doesn't have enough funds to send tx. The max upfront cost is: 2000000000000000000000 and the sender's account only has: 1000000000000000000000"
+          "Returned error: sender doesn't have enough funds to send tx. The max upfront cost is: " +
+            value.toString() +
+            " and the sender's account only has: " +
+            borrowAmount.toString()
         );
       });
 
