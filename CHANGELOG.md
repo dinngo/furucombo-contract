@@ -4,11 +4,15 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+### Deprecated
+
+- Deprecate 1inch
+
 ## [2.9.0] - 2023-11-06
+
 ### Added
 
 - Support Radiant handler on Ethereum
-
 
 ## [2.8.0] - 2023-08-08
 
@@ -18,6 +22,7 @@ All notable changes to this project will be documented in this file.
 - Support Radiant handler on Arbitrum
 
 ### Changed
+
 - Add diff returns to deposit/supply function of AAVE handlers
 
 ## [2.7.0] - 2023-06-07
